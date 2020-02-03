@@ -3,8 +3,8 @@ import numpy as np
 from cloudvolume.lib import mkdir, clamp, xyzrange, Vec, Bbox, min2, max2
 from cloudvolume.datasource.precomputed.metadata import PrecomputedMetadata
 
-# import brainlight
-# from brainlight.utils.ngl_pipeline import NeuroglancerSession
+# import brainlit
+# from brainlit.utils.ngl_pipeline import NeuroglancerSession
 from cloudvolume import CloudVolume
 
 

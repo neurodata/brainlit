@@ -1,7 +1,7 @@
 import pytest
-import brainlight
-from brainlight.algorithms.generate_fragments import adaptive_thresh
-from brainlight.utils.ngl_pipeline import NeuroglancerSession
+import brainlit
+from brainlit.algorithms.generate_fragments import adaptive_thresh
+from brainlit.utils.ngl_pipeline import NeuroglancerSession
 import SimpleITK as sitk
 import scipy.ndimage
 
