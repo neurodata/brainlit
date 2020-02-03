@@ -1,0 +1,29 @@
+dist: xenial
+sudo: true
+language: python
+python:
+- '3.5'
+- '3.6'
+matrix:
+  include:
+    - python: 3.7
+cache: pip
+install:
+- pip install -r requirements.txt
+- pip install -U pytest pytest-cov codecov
+- if [[ $TRAVIS_PYTHON_VERSION != '3.5' ]]; then travis_retry pip install black; fi
+script:
+- pytest brainlight/ tests/
+- if [[ $TRAVIS_PYTHON_VERSION != '3.5' ]]; then black --check --diff ./brainlight ./tests; fi
+after_success:
+- codecov
+
+deploy:
+- provider: pypi
+  user: "bvarjavand"
+  password:
+    secure: xd
+  on:
+    tags: true
+    repo: neurodata/brainlight
+    python: '3.6'
