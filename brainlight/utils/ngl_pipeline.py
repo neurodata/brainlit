@@ -11,7 +11,7 @@ import napari
 class NeuroglancerSession:
     def __init__(
         self,
-        url,
+        url="s3://mouse-light-viz/precomputed_volumes/brain1",
         mip=1,
     ):
         self.seed = 1111
@@ -117,7 +117,7 @@ class NeuroglancerSession:
         return self.labels
 
     def push_img(
-        self, img=None, url=""
+        self, img=None, url=self.url+"_seg"
     ):
         vol = CloudVolume(
             url,
