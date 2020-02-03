@@ -1,6 +1,9 @@
 import warnings
 
-import mouselight.utils
+import brainlight.algorithms
+import brainlight.plot
+import brainlight.preprocessing
+import brainlight.utils
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
