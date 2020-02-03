@@ -3,7 +3,7 @@ The preferred workflow for contributing is to clone the main repository on GitHu
 
 Steps:
 - Clone the repo from your GitHub account to your local disk:
-```git clone https://github.com/neurodata/mouselight.git```
+```git clone https://github.com/neurodata/brainlight.git```
 - Create a feature branch to hold your development changes:
 ```git checkout -b my-feature```
 - Develop the feature on your feature branch. Add changed files using git add and then git commit files:
