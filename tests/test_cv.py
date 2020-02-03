@@ -1,32 +1,32 @@
 import pytest
 import numpy as np
-from cloudvolume.lib import ( 
-  mkdir, clamp, xyzrange, Vec, 
-  Bbox, min2, max2
-)
+from cloudvolume.lib import mkdir, clamp, xyzrange, Vec, Bbox, min2, max2
 from cloudvolume.datasource.precomputed.metadata import PrecomputedMetadata
-#import brainlight
-#from brainlight.utils.ngl_pipeline import NeuroglancerSession
+
+# import brainlight
+# from brainlight.utils.ngl_pipeline import NeuroglancerSession
 from cloudvolume import CloudVolume
 
+
 def test_pull():
-    #ngl = NeuroglancerSession()
-    #meta = PrecomputedMetadata("s3://mouse-light-viz/precomputed_volumes/brain1_seg")
-    #print(meta)
-    #print(meta.chunk_size(0))
-    vol_up = CloudVolume('s3://mouse-light-viz/precomputed_volumes/brain1_seg')
+    # ngl = NeuroglancerSession()
+    # meta = PrecomputedMetadata("s3://mouse-light-viz/precomputed_volumes/brain1_seg")
+    # print(meta)
+    # print(meta.chunk_size(0))
+    vol_up = CloudVolume("s3://mouse-light-viz/precomputed_volumes/brain1_seg")
     print(vol_up.info)
     print(vol_up.info.chunk_size[0])
-    offset = (0,0,0)
-    arr = np.zeros((10,10,10,1)).astype('uint64')
+    offset = (0, 0, 0)
+    arr = np.zeros((10, 10, 10, 1)).astype("uint64")
     shape = Vec(*arr.shape)[:3]
     offset = Vec(*offset)[:3]
-    bounds = Bbox( offset, shape + offset)
-    #print(bounds)
-    #print(bounds.expand_to_chunk_size())
+    bounds = Bbox(offset, shape + offset)
+    # print(bounds)
+    # print(bounds.expand_to_chunk_size())
     vol_up[10:20, 10:20, 10:20] = arr
 
-'''
+
+"""
 vol = CloudVolume('s3://mouse-light-viz/precomputed_volumes/brain1', parallel=True, progress=True)
 vol_up = CloudVolume('s3://mouse-light-viz/precomputed_volumes/brain1_seg', parallel=False, progress=True)
 voltest = CloudVolume('s3://mouse-light-viz/precomputed_volumes/braintest', parallel=False, progress=True)
@@ -57,6 +57,4 @@ voltest[a*x:b*x,a*y:b*y,a*z:b*z] = initial2# read from braintest
 #print(initial)
 #print(back_down)
 #print(image)
-'''
-
-
+"""
