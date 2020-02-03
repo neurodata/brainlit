@@ -26,4 +26,4 @@ deploy:
   on:
     tags: true
     repo: neurodata/brainlight
-    python: '3.6'
+    python: '3.7'
