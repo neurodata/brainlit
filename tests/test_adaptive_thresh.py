@@ -1,20 +1,21 @@
 import pytest
-import adaptive_thresh
-from ngl_pipeline import NeuroglancerSession
+import brainlight
+from brainlight.algorithms.generate_fragments import adaptive_thresh
+from brainlight.utils.ngl_pipeline import NeuroglancerSession
 import SimpleITK as sitk
 import scipy.ndimage
 
-
-def test_get_seed():
-    ngl_session = NeuroglancerSession()
+def test_get_seed(get_url):
+    print(get_url)
+    ngl_session = NeuroglancerSession(get_url)
     img, _ = ngl_session.get_img(2, 400, sx=2, sy=2, sz=2)
     seed = adaptive_thresh.get_seed(ngl_session)
     assert isinstance(seed, tuple)
     assert img.squeeze().ndim == len(seed)
 
 
-def test_get_img_T1():
-    ngl_session = NeuroglancerSession()
+def test_get_img_T1(get_url):
+    ngl_session = NeuroglancerSession(get_url)
     img, _ = ngl_session.get_img(2, 400, sx=2, sy=2, sz=2)
     img_T1, img_T1_255 = adaptive_thresh.get_img_T1(img)
     correct_shape = img.squeeze().shape
@@ -28,8 +29,8 @@ def test_get_img_T1():
     assert img_T1_255_array.min() >= 0
 
 
-def test_thres_from_gmm():
-    ngl_session = NeuroglancerSession()
+def test_thres_from_gmm(get_url):
+    ngl_session = NeuroglancerSession(get_url)
     img, _ = ngl_session.get_img(2, 400, sx=2, sy=2, sz=2)
     thres = adaptive_thresh.thres_from_gmm(img)
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
@@ -38,8 +39,8 @@ def test_thres_from_gmm():
     assert img_T1_255_array.min() <= thres
 
 
-def test_fast_marching_seg():
-    ngl_session = NeuroglancerSession()
+def test_fast_marching_seg(get_url):
+    ngl_session = NeuroglancerSession(get_url)
     img, _ = ngl_session.get_img(2, 400, sx=2, sy=2, sz=2)
     seed = adaptive_thresh.get_seed(ngl_session)
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
@@ -55,8 +56,8 @@ def test_fast_marching_seg():
     assert num_features == 1
 
 
-def test_level_set_seg():
-    ngl_session = NeuroglancerSession()
+def test_level_set_seg(get_url):
+    ngl_session = NeuroglancerSession(get_url)
     img, _ = ngl_session.get_img(2, 400, sx=2, sy=2, sz=2)
     seed = adaptive_thresh.get_seed(ngl_session)
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
@@ -72,8 +73,8 @@ def test_level_set_seg():
     assert num_features == 1
 
 
-def test_connected_threshold():
-    ngl_session = NeuroglancerSession()
+def test_connected_threshold(get_url):
+    ngl_session = NeuroglancerSession(get_url)
     img, _ = ngl_session.get_img(2, 400, sx=2, sy=2, sz=2)
     seed = adaptive_thresh.get_seed(ngl_session)
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
@@ -89,8 +90,8 @@ def test_connected_threshold():
     assert num_features == 1
 
 
-def test_confidence_connected_threshold():
-    ngl_session = NeuroglancerSession()
+def test_confidence_connected_threshold(get_url):
+    ngl_session = NeuroglancerSession(get_url)
     img, _ = ngl_session.get_img(2, 400, sx=2, sy=2, sz=2)
     seed = adaptive_thresh.get_seed(ngl_session)
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
@@ -106,8 +107,8 @@ def test_confidence_connected_threshold():
     assert num_features == 1
 
 
-def test_neighborhood_connected_threshold():
-    ngl_session = NeuroglancerSession()
+def test_neighborhood_connected_threshold(get_url):
+    ngl_session = NeuroglancerSession(get_url)
     img, _ = ngl_session.get_img(2, 400, sx=2, sy=2, sz=2)
     seed = adaptive_thresh.get_seed(ngl_session)
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
@@ -123,8 +124,8 @@ def test_neighborhood_connected_threshold():
     assert num_features == 1
 
 
-def test_otsu():
-    ngl_session = NeuroglancerSession()
+def test_otsu(get_url):
+    ngl_session = NeuroglancerSession(get_url)
     img, _ = ngl_session.get_img(2, 400, sx=2, sy=2, sz=2)
     seed = adaptive_thresh.get_seed(ngl_session)
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
@@ -137,8 +138,8 @@ def test_otsu():
     assert labels[seed] == 1
 
 
-def test_gmm_seg():
-    ngl_session = NeuroglancerSession()
+def test_gmm_seg(get_url):
+    ngl_session = NeuroglancerSession(get_url)
     img, _ = ngl_session.get_img(2, 400, sx=2, sy=2, sz=2)
     seed = adaptive_thresh.get_seed(ngl_session)
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)

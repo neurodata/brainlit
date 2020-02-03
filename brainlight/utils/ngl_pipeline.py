@@ -11,7 +11,7 @@ import napari
 class NeuroglancerSession:
     def __init__(
         self,
-        url="https://",
+        url,
         mip=1,
     ):
         self.seed = 1111

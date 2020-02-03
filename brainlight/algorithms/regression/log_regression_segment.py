@@ -1,11 +1,12 @@
 import numpy as np
-from ..src import octree
-from ..src import combine_swc_img
-from ..src import read_swc
-from ..src import visualize
-from ..src import swc2voxel
-from ..src import image_process
-from ..src import preprocess
+import brainlight
+from brainlight.utils import read_octree as octree
+from brainlight.utils import combine_swc_img
+from brainlight.utils import read_swc
+from brainlight.plot import visualize
+from brainlight.utils import swc2voxel
+from brainlight.preprocessing import image_process
+from brainlight.preprocessing import preprocess
 from scipy import ndimage as ndi
 from matplotlib import pyplot as plt
 from pathlib import Path

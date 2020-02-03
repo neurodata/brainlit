@@ -1,2 +1,2 @@
-from brainlight.preprocess.features.linear_features import *
-from brainlight.preprocess.features.neighborhood import *
+from brainlight.preprocessing.features.linear_features import *
+from brainlight.preprocessing.features.neighborhood import *

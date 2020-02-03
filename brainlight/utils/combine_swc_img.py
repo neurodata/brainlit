@@ -1,7 +1,7 @@
 import numpy as np
 from pathlib import Path
 import pandas as pd
-from . import octree
+from . import read_octree as octree
 from . import read_swc
 
 def overlay_swc(parent_dir, swc_path, channel = 0):

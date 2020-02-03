@@ -1,4 +1,4 @@
-from brainlight.utils.combine_scw_image import *
+from brainlight.utils.combine_swc_img import *
 from brainlight.utils.read_swc import *
 from brainlight.utils.read_octree import *
 from brainlight.utils.swc2neuroglancer import *

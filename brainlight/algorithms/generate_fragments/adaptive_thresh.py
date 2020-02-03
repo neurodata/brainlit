@@ -1,6 +1,7 @@
 # Reference: http://insightsoftwareconsortium.github.io/SimpleITK-Notebooks/Python_html/300_Segmentation_Overview.html
 
-from ngl_pipeline import NeuroglancerSession
+import brainlight
+from brainlight.utils.ngl_pipeline import NeuroglancerSession
 import SimpleITK as sitk
 from sklearn.mixture import GaussianMixture
 import numpy as np
