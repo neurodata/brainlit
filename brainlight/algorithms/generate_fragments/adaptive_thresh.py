@@ -140,8 +140,17 @@ def fast_marching_seg(img, seed, stopping_value=150, sigma=0.5):
     return labels
 
 
-def level_set_seg(img, seed, lower_threshold=None, upper_threshold=None, factor=2,
-    max_rms_error=0.02, num_iter=1000, curvature_scaling=0.5, propagation_scaling=1):
+def level_set_seg(
+    img,
+    seed,
+    lower_threshold=None,
+    upper_threshold=None,
+    factor=2,
+    max_rms_error=0.02,
+    num_iter=1000,
+    curvature_scaling=0.5,
+    propagation_scaling=1,
+):
     """ 
     Computes a level-set segmentation.
     
@@ -202,9 +211,7 @@ def level_set_seg(img, seed, lower_threshold=None, upper_threshold=None, factor=
         upper_threshold = stats.GetMean(1) + factor * stats.GetSigma(1)
 
     init_ls = sitk.SignedMaurerDistanceMap(
-        seg,
-        insideIsPositive=True,
-        useImageSpacing=True
+        seg, insideIsPositive=True, useImageSpacing=True
     )
 
     lsFilter = sitk.ThresholdSegmentationLevelSetImageFilter()

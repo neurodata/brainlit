@@ -7,7 +7,9 @@ PACKAGE_NAME = "brainlight"
 DESCRIPTION = "Code to process and analyze brainlight data"
 with open("README.md", "r") as f:
     LONG_DESCRIPTION = f.read()
-AUTHOR = ("Bijan Varjivand, Ryan Lu, Matt Figdore, Alex Fiallos, Stanley Wang, Victor Wang",)
+AUTHOR = (
+    "Bijan Varjivand, Ryan Lu, Matt Figdore, Alex Fiallos, Stanley Wang, Victor Wang",
+)
 AUTHOR_EMAIL = "bvarjav1@jhu.edu"
 URL = "https://github.com/neurodata/brainlight"
 MINIMUM_PYTHON_VERSION = 3, 5  # Minimum of Python 3.5

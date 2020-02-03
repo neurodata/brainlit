@@ -5,6 +5,7 @@ import pandas as pd
 import re
 from random import shuffle
 
+
 def read_swc(path):
     """Read a single swc file
 
@@ -19,8 +20,8 @@ def read_swc(path):
         branch {int} -- branch number, from file name
     """
 
-    #check input
-    file = open(path,'r')
+    # check input
+    file = open(path, "r")
     in_header = True
     offset_found = False
     header_length = -1
@@ -30,39 +31,44 @@ def read_swc(path):
     branch = np.nan
     while in_header:
         line = file.readline().split()
-        if 'OFFSET' in line:
-            offset_found=True
-            idx = line.index('OFFSET')+1
-            offset = [float(line[i]) for i in np.arange(idx,idx+3)]
-        elif 'COLOR' in line:
-            idx = line.index('COLOR')+1
+        if "OFFSET" in line:
+            offset_found = True
+            idx = line.index("OFFSET") + 1
+            offset = [float(line[i]) for i in np.arange(idx, idx + 3)]
+        elif "COLOR" in line:
+            idx = line.index("COLOR") + 1
             line = line[idx]
-            line = line.split(',')
+            line = line.split(",")
             color = [float(line[i]) for i in np.arange(len(line))]
-        elif 'NAME' in line:
-            idx = line.index('NAME')+1
+        elif "NAME" in line:
+            idx = line.index("NAME") + 1
             name = line[idx]
-            name = re.split('_|-|\.',name)
-            idx = name.index('cc')+1
+            name = re.split("_|-|\.", name)
+            idx = name.index("cc") + 1
             cc = int(name[idx])
-            idx = name.index('branch')+1
+            idx = name.index("branch") + 1
             branch = int(name[idx])
-        elif line[0] != '#':
+        elif line[0] != "#":
             in_header = False
         header_length += 1
 
     if not offset_found:
-        raise IOError('No offset information found in: ' + path)
-    #read coordinates
-    df = pd.read_table(path,names=['sample','structure','x','y','z','r','parent'],skiprows=header_length,delim_whitespace=True)
+        raise IOError("No offset information found in: " + path)
+    # read coordinates
+    df = pd.read_table(
+        path,
+        names=["sample", "structure", "x", "y", "z", "r", "parent"],
+        skiprows=header_length,
+        delim_whitespace=True,
+    )
     return df, offset, color, cc, branch
 
 
 def read_swc_offset(path):
-    df, offset, color, cc,branch = read_swc(path)
-    df['x'] = df['x'] + offset[0]
-    df['y'] = df['y'] + offset[1]
-    df['z'] = df['z'] + offset[2]
+    df, offset, color, cc, branch = read_swc(path)
+    df["x"] = df["x"] + offset[0]
+    df["y"] = df["y"] + offset[1]
+    df["z"] = df["z"] + offset[2]
 
     return df, color, cc, branch
 
@@ -78,29 +84,38 @@ def append_df(cumulative, new):
     Returns:
         datafranme -- appended result
     """
-    #check cumulative df
-    samples = cumulative['sample'].values
+    # check cumulative df
+    samples = cumulative["sample"].values
     unq = np.unique(samples)
     if len(unq) != cumulative.shape[0]:
-        msg = 'cumulative df has ' + str(cumulative.shape[0]) + ' rows but only ' + str(len(unq)) + ' unique sample labels.'
+        msg = (
+            "cumulative df has "
+            + str(cumulative.shape[0])
+            + " rows but only "
+            + str(len(unq))
+            + " unique sample labels."
+        )
         raise ValueError(msg)
     mx = np.amax(unq)
-    sample_new = np.arange(mx+1, mx+1+new.shape[0])
-    sample_new = np.append(sample_new,-1)
-    sample_old = new['sample'].values
-    sample_old = np.append(sample_old,-1)
-    parent_old = new['parent'].values
+    sample_new = np.arange(mx + 1, mx + 1 + new.shape[0])
+    sample_new = np.append(sample_new, -1)
+    sample_old = new["sample"].values
+    sample_old = np.append(sample_old, -1)
+    parent_old = new["parent"].values
 
-    idxs = [np.argwhere(sample_old == parent_old[i])[0,0] for i in np.arange(len(parent_old))]
+    idxs = [
+        np.argwhere(sample_old == parent_old[i])[0, 0]
+        for i in np.arange(len(parent_old))
+    ]
     parent_new = [sample_new[idx] for idx in idxs]
 
-    new['sample'] = sample_new[:-1]
-    new['parent'] = parent_new
+    new["sample"] = sample_new[:-1]
+    new["parent"] = parent_new
     cumulative = cumulative.append(new)
     return cumulative.reset_index(drop=True)
 
 
-def read_swc_dir(path, nFiles = 1):
+def read_swc_dir(path, nFiles=1):
     """Read all swc files in a directory and create a large dataframe of all the results
 
     Arguments:
@@ -112,22 +127,22 @@ def read_swc_dir(path, nFiles = 1):
     Returns:
         pandas dataframe -- dataframe of all the fragment data
     """
-    files = list(Path(path).glob('**/*.swc'))[0:nFiles]
+    files = list(Path(path).glob("**/*.swc"))[0:nFiles]
 
-    for i,file in enumerate(files):
+    for i, file in enumerate(files):
         df, offset, color, cc, branch = read_swc(file)
-        df['x'] = df['x'] + offset[0]
-        df['y'] = df['y'] + offset[1]
-        df['z'] = df['z'] + offset[2]
+        df["x"] = df["x"] + offset[0]
+        df["y"] = df["y"] + offset[1]
+        df["z"] = df["z"] + offset[2]
 
-        df['color0'] = color[0]
-        df['color1'] = color[1]
-        df['color2'] = color[2]
+        df["color0"] = color[0]
+        df["color1"] = color[1]
+        df["color2"] = color[2]
 
-        df['cc'] = cc
-        df['branch'] = branch
+        df["cc"] = cc
+        df["branch"] = branch
 
-        if i==0:
+        if i == 0:
             df_cumulative = df
         else:
             df_cumulative = append_df(df_cumulative, df)
@@ -149,6 +164,6 @@ def bbox_vox(df):
     min_y, max_y = np.min(df.y), np.max(df.y)
     min_z, max_z = np.min(df.z), np.max(df.z)
 
-    start = [min_x,min_y,min_z]
-    end = [max_x,max_y,max_z]
+    start = [min_x, min_y, min_z]
+    end = [max_x, max_y, max_z]
     return start, end

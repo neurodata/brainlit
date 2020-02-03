@@ -9,18 +9,14 @@ import napari
 
 
 class NeuroglancerSession:
-    def __init__(
-        self,
-        url="s3://mouse-light-viz/precomputed_volumes/brain1",
-        mip=1,
-    ):
+    def __init__(self, url="s3://mouse-light-viz/precomputed_volumes/brain1", mip=1):
         self.seed = 1111
         self.url = url
         self.mip = mip
-        cv = CloudVolume(self.url, progress=True, mip=0, cache=False, parallel=True,)
+        cv = CloudVolume(self.url, progress=True, mip=0, cache=False, parallel=True)
         self.cv = cv
         cv_skel = CloudVolume(
-            self.url + "_segments", mip=0, cache=False, parallel=False,
+            self.url + "_segments", mip=0, cache=False, parallel=False
         )
         self.cv_skel = cv_skel
         self.img = None
@@ -116,9 +112,7 @@ class NeuroglancerSession:
         self.labels = labels
         return self.labels
 
-    def push_img(
-        self, img=None, url=None
-    ):
+    def push_img(self, img=None, url=None):
         if url is None:
             url = self.url + "_seg"
         vol = CloudVolume(

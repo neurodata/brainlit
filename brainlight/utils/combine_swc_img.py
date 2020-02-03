@@ -4,7 +4,8 @@ import pandas as pd
 from . import read_octree as octree
 from . import read_swc
 
-def overlay_swc(parent_dir, swc_path, channel = 0):
+
+def overlay_swc(parent_dir, swc_path, channel=0):
     """Most abstracted function to overlay swc on image data
     
     Arguments:
@@ -20,15 +21,16 @@ def overlay_swc(parent_dir, swc_path, channel = 0):
     """
     tree = octree.octree(parent_dir)
 
-    points,_,_,_= read_swc.read_swc_offset(swc_path)
+    points, _, _, _ = read_swc.read_swc_offset(swc_path)
 
-    img, start = points2img(tree,points)
+    img, start = points2img(tree, points)
 
-    points = points2voxel(tree,points, start)
+    points = points2voxel(tree, points, start)
 
     return img, points
 
-def points2img(tree,points,channel=0, pad = [2,2,2]):
+
+def points2img(tree, points, channel=0, pad=[2, 2, 2]):
     """Find the image data that surrounds a swc.
     Subsequently, points2voxel() can convert the points to voxel coordinates.
     
@@ -40,14 +42,15 @@ def points2img(tree,points,channel=0, pad = [2,2,2]):
         img -- image data that surrounds swc
         start -- voxel coordinates of upper left corner
     """
-    start,end = read_swc.bbox_vox(points)
+    start, end = read_swc.bbox_vox(points)
     start = tree.space_to_voxel(start) - pad
     end = tree.space_to_voxel(end) + pad
 
-    img = tree.get_interrectangle_voxel(start,end,channel)
+    img = tree.get_interrectangle_voxel(start, end, channel)
     return img, start
 
-def points2voxel(tree,points, start):
+
+def points2voxel(tree, points, start):
     """Find relative voxel coordinates in the image that surrounds the swc. 
     Intended use is right after points2img()
     
@@ -59,15 +62,13 @@ def points2voxel(tree,points, start):
     Returns:
         voxels -- numpy array of swc point coordinates
     """
-    voxels = np.zeros([points.shape[0],3],dtype=int)
+    voxels = np.zeros([points.shape[0], 3], dtype=int)
 
-    for idx,row in points.iterrows():
-        voxel = tree.space_to_voxel([row.x,row.y,row.z]) - start
+    for idx, row in points.iterrows():
+        voxel = tree.space_to_voxel([row.x, row.y, row.z]) - start
         voxels[idx,] = voxel
     points_new = points.copy()
-    points_new['xvox'] = voxels[:,0]
-    points_new['yvox'] = voxels[:,1]
-    points_new['zvox'] = voxels[:,2]
+    points_new["xvox"] = voxels[:, 0]
+    points_new["yvox"] = voxels[:, 1]
+    points_new["zvox"] = voxels[:, 2]
     return points_new
-
-    

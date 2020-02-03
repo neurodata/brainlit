@@ -41,7 +41,7 @@ def swc2skeleton(swc_file, colors=None, origin=None, segid=None):
     else:
         skel.id = segid
     # hard coding changing  data type of vertex_types
-    skel.extra_attributes[-1]['data_type'] = "float32"
+    skel.extra_attributes[-1]["data_type"] = "float32"
     skel.extra_attributes.append(
         {"id": "vertex_color", "data_type": "float32", "num_components": 4}
     )
@@ -58,20 +58,20 @@ def swc2skeleton(swc_file, colors=None, origin=None, segid=None):
     if colors is None:
         skel.vertex_color[:, :] = color
     else:
-        colors_normalized = (colors-np.min(colors))/np.max(colors)
+        colors_normalized = (colors - np.min(colors)) / np.max(colors)
         print(colors_normalized)
-        r = colors_normalized<0.33
-        g = (0.33<=colors_normalized) & (colors_normalized <0.66)
-        b = colors_normalized>=0.66
+        r = colors_normalized < 0.33
+        g = (0.33 <= colors_normalized) & (colors_normalized < 0.66)
+        b = colors_normalized >= 0.66
         skel.vertex_color[r, 0] = 1
         skel.vertex_color[g, 1] = 1
         skel.vertex_color[b, 2] = 1
-        skel.vertex_color[:,0] = colors_normalized
-        
+        skel.vertex_color[:, 0] = colors_normalized
+
         skel.id = 1000  # new seg id to show that its colored
     # print(color)
     # print(skel.color)
-    #print(skel.extra_attributes)
+    # print(skel.extra_attributes)
     return skel
 
 
@@ -103,7 +103,7 @@ def create_skeleton_layer(s3_bucket):
         "vertex_attributes": [
             {"id": "radius", "data_type": "float32", "num_components": 1},
             {"id": "vertex_types", "data_type": "float32", "num_components": 1},
-            {"id": "vertex_color", "data_type": "float32", "num_components": 4}
+            {"id": "vertex_color", "data_type": "float32", "num_components": 4},
         ],
     }
     # get cloudvolume info
@@ -170,7 +170,7 @@ def main():
 
     vol = create_skeleton_layer(args.s3_bucket)
 
-    for i in tqdm(skeletons,desc='uploading skeletons to S3..'):
+    for i in tqdm(skeletons, desc="uploading skeletons to S3.."):
         vol.skeleton.upload(i)
     print(segids)
 

@@ -5,6 +5,7 @@ from brainlight.utils.ngl_pipeline import NeuroglancerSession
 import SimpleITK as sitk
 import scipy.ndimage
 
+
 def test_get_seed():
     ngl_session = NeuroglancerSession()
     img, _ = ngl_session.get_img(2, 400, sx=2, sy=2, sz=2)
