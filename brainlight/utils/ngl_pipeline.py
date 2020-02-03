@@ -117,8 +117,10 @@ class NeuroglancerSession:
         return self.labels
 
     def push_img(
-        self, img=None, url=self.url+"_seg"
+        self, img=None, url=None
     ):
+        if url is None:
+            url = self.url + "_seg"
         vol = CloudVolume(
             url,
             mip=self.mip,
