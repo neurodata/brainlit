@@ -12,7 +12,7 @@ install:
 - pip install -U pytest pytest-cov codecov
 - pip install black
 script:
-- pytest brainlight/ tests/
+- pytest brainlit/ tests/
 - black --check --diff ./brainlit ./tests
 after_success:
 - codecov
