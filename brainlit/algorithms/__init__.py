@@ -1,5 +1,5 @@
-import brainlight.algorithms.connect_fragments
-import brainlight.algorithms.generate_fragments
+import brainlit.algorithms.connect_fragments
+import brainlit.algorithms.generate_fragments
 
-from brainlight.algorithms.connect_fragments import *
-from brainlight.algorithms.generate_fragments import *
+from brainlit.algorithms.connect_fragments import *
+from brainlit.algorithms.generate_fragments import *

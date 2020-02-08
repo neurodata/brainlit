@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 from sys import platform
 
 PACKAGE_NAME = "brainlit"
-DESCRIPTION = "Code to process and analyze brainlight data"
+DESCRIPTION = "Code to process and analyze brainlit data"
 with open("README.md", "r") as f:
     LONG_DESCRIPTION = f.read()
 AUTHOR = (

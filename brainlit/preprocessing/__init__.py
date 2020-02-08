@@ -1,2 +1,2 @@
-from brainlight.preprocessing.image_process import *
-from brainlight.preprocessing.preprocess import *
+from brainlit.preprocessing.image_process import *
+from brainlit.preprocessing.preprocess import *

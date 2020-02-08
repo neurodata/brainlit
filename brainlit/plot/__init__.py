@@ -1,1 +1,1 @@
-from brainlight.plot.visualize import *
+from brainlit.plot.visualize import *
