@@ -19,10 +19,12 @@ def get_seed(voxel):
     Returns
     -------
     tuple
-        A tuple containing the (z, y, x)-coordinates of the seed.
+        A tuple containing the (x, y, z)-coordinates of the seed.
   
     """
-    return (int(voxel[2]), int(voxel[1]), int(voxel[0]))
+    numpy_seed = (int(voxel[0]), int(voxel[1]), int(voxel[2]))
+    sitk_seed = (int(voxel[2]), int(voxel[1]), int(voxel[0]))
+    return numpy_seed, sitk_seed
 
 
 def get_img_T1(img):
@@ -126,7 +128,6 @@ def fast_marching_seg(img, seed, stopping_value=150, sigma=0.5):
     fm_img = sitk.Cast(sitk.RescaleIntensity(fm_img), sitk.sitkUInt8)
     labels = sitk.GetArrayFromImage(fm_img)
     labels = (~labels.astype(bool)).astype(int)
-    print(labels)
     return labels
 
 
