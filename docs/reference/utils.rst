@@ -1,7 +1,7 @@
 Utility
 =======
 
-.. currentmodule:: savanna.utils.utils
+.. currentmodule:: brainlit.utils.ngl_pipeline
 
 Data Helper Methods
 -------------------

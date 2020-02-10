@@ -3,15 +3,15 @@ import sys
 from setuptools import setup, find_packages
 from sys import platform
 
-PACKAGE_NAME = "brainlight"
-DESCRIPTION = "Code to process and analyze brainlight data"
+PACKAGE_NAME = "brainlit"
+DESCRIPTION = "Code to process and analyze brainlit data"
 with open("README.md", "r") as f:
     LONG_DESCRIPTION = f.read()
 AUTHOR = (
     "Bijan Varjivand, Ryan Lu, Matt Figdore, Alex Fiallos, Stanley Wang, Victor Wang",
 )
 AUTHOR_EMAIL = "bvarjav1@jhu.edu"
-URL = "https://github.com/neurodata/brainlight"
+URL = "https://github.com/neurodata/brainlit"
 MINIMUM_PYTHON_VERSION = 3, 5  # Minimum of Python 3.5
 REQUIRED_PACKAGES = [
     "networkx>=2.1",
@@ -23,7 +23,7 @@ REQUIRED_PACKAGES = [
 
 # Find savanna version.
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
-for line in open(os.path.join(PROJECT_PATH, "brainlight", "__init__.py")):
+for line in open(os.path.join(PROJECT_PATH, "brainlit", "__init__.py")):
     if line.startswith("__version__ = "):
         VERSION = line.strip().split()[2][1:-1]
 

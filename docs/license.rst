@@ -1,6 +1,6 @@
 License
 =======
-Mouselight is distributed with Apache 2.0 license.
+Brainlit is distributed with Apache 2.0 license.
 
 ::
 

@@ -17,8 +17,8 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'mouselight'
-copyright = '2020, mouselight'
+project = 'brainlit'
+copyright = '2020, brainlit'
 author = 'bvarjavand'
 
 # The full version, including alpha/beta/rc tags

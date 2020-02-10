@@ -12,8 +12,8 @@ install:
 - pip install -U pytest pytest-cov codecov
 - pip install black
 script:
-- pytest brainlight/ tests/
-- black --check --diff ./brainlight ./tests
+- pytest brainlit/ tests/
+- black --check --diff ./brainlit ./tests
 after_success:
 - codecov
 
@@ -24,5 +24,5 @@ deploy:
     secure: xd
   on:
     tags: true
-    repo: neurodata/brainlight
+    repo: neurodata/brainlit
     python: '3.7'

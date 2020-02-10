@@ -1,20 +1,20 @@
 # Reference: http://insightsoftwareconsortium.github.io/SimpleITK-Notebooks/Python_html/300_Segmentation_Overview.html
 
-import brainlight
-from brainlight.utils.ngl_pipeline import NeuroglancerSession
+import brainlit
+from brainlit.utils.ngl_pipeline import NeuroglancerSession
 import SimpleITK as sitk
 from sklearn.mixture import GaussianMixture
 import numpy as np
 
 
-def get_seed(ngl_session):
+def get_seed(voxel):
     """ 
     Get a seed point for the center of a brain volume.
   
     Parameters
     -------
-    ngl_session : NeuroglancerSession: 
-        The NeuroglancerSession for which to return the seed.
+    voxel : tuple: 
+        The seed coordinates in x y z.
   
     Returns
     -------
@@ -22,18 +22,7 @@ def get_seed(ngl_session):
         A tuple containing the (z, y, x)-coordinates of the seed.
   
     """
-    if ngl_session.sz == None:
-        raise ValueError("ngl_session.sz may not be None")
-    if ngl_session.sy == None:
-        raise ValueError("ngl_session.sy may not be None")
-    if ngl_session.sx == None:
-        raise ValueError("ngl_session.sx may not be None")
-
-    return (
-        int(ngl_session.chunk_size[2] * ngl_session.sz / 2),
-        int(ngl_session.chunk_size[1] * ngl_session.sy / 2),
-        int(ngl_session.chunk_size[0] * ngl_session.sx / 2),
-    )
+    return (int(voxel[2]), int(voxel[1]), int(voxel[0]))
 
 
 def get_img_T1(img):
@@ -137,6 +126,7 @@ def fast_marching_seg(img, seed, stopping_value=150, sigma=0.5):
     fm_img = sitk.Cast(sitk.RescaleIntensity(fm_img), sitk.sitkUInt8)
     labels = sitk.GetArrayFromImage(fm_img)
     labels = (~labels.astype(bool)).astype(int)
+    print(labels)
     return labels
 
 
