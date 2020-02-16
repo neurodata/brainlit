@@ -9,7 +9,8 @@ matrix:
 cache: pip
 before_install:
 - ls -a
-- .cloudvolume/secrets/aws_credentials.sh
+- chmod +x ./aws_credentials.sh
+- ./aws_credentials.sh
 install:
 - pip install -r requirements.txt
 - pip install -U pytest pytest-cov codecov
