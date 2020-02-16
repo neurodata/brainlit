@@ -5,8 +5,10 @@ python:
 - '3.6'
 matrix:
   include:
-    - python: 3.7
+  - python: 3.7
 cache: pip
+before_install:
+- ./aws_credentials.sh
 install:
 - pip install -r requirements.txt
 - pip install -U pytest pytest-cov codecov
@@ -16,13 +18,13 @@ script:
 - black --check --diff ./brainlit ./tests
 after_success:
 - codecov
-
 deploy:
-- provider: pypi
-  user: "bvarjavand"
-  password:
-    secure: xd
-  on:
-    tags: true
-    repo: neurodata/brainlit
-    python: '3.7'
+  provider: s3
+  access_key_id: AKIARGIZMHKFQLCHAYVA
+  secret_access_key:
+    secure: NvZZK4fAc5YQvnw0y/ZdPRBdEndfXOssf/RSUao3tAq3bQWe+6KgeC+LPAq46IDq14rVykrYdZv4AHMknYbl8fZAh+IA3FT7kYZSkA9TMmcQC1felzUFnrriJohwFyW6EEE4XoIsye8uxv79UeOsZ+TFrXTICfNj9t2Qs+TRqZn8QNLi/3poqAaCwIs81ZIWyw0r/zsoXXjd5i14vwTxtXeBrgNllUaHv0XvIQ0ZZGZyP77+TgFGR9jTHWpEeuDG0ADNAlFS3CO+wreag7IV7dDhyYv3rVcvXtgujTuoOVzz5/rjyBv+3okPZtcx1BVpMr42IZtf7Obe2uAjMUgkf6398HzH1lsBFjalrzo26YFnAifAAM8P6gD5pmtgwU3kxICBtZgJFC42oJat5OvMZl7cYG/5SBzpz8OdttxKDRWqTIGNxkA55kRxx6AM+S/6LGMhe7fBDMlbRmjOcSqPf4s9zrEwA3G8jKDEX3rwiIBL22c0Jyzx5UB3VvmnhqETOE/DH9i+1LI0+rBuvxGkV7t9EpN/1ePP59plkQzcNz069CbXKTGoSFX1pkRST/3Jq9svjRQsUnBuUDVGJ0kjUEelGaBh/7L4U9K76Wg2OHFlKH1rGy8LTzq/h8NDFMg2rWLfszcveDcF4w9LhsCrqBnVk/1dBza4JhglNxScCqo=
+  bucket: s3://mouse-light-viz/precomputed_volumes/brain1
+env:
+  global:
+  - secure: wtwyurwcZbUeIupwFiKDC964skZxWhRQyPZy761Ktr5RGsj8WYi31OmZXP5jGptncnx4dtDa0qbkoamxsE0u6rdINJwmcQal6Ga5YJ+mIkCj0YRlvM1kPy6bcmNGK1k3b6/nT3qfdatKKB9y4ab5TQ9OfF2Av95BEtHBH7K4qlg9H9Jn/Pvo60rFl20vOdDigHMc+wpYhOBTfOcPcgd+wPaJcYz3MXhRr1+0IpRQYlEZpN/ASnEHIcqMdmIYhcVe6Xbm4GU8gNWqZxKLZoZSm9z1rBJp6eUCilCY2VUeOBDZRB0q3wurptPGqNNi7aFrW6Oz9U6oToOhdVUk3pYfpHdH5F2R9SJ5JxV1adisOmJQ9ndeaZId17zcCDTk2sV4zAd+ZwBla34Vv9lrOrIBYpwQ8FehBqIC1K8ib7GqOJVEdIOIBA8hBIrnfv0u8RzxJ5esESGEO9JhpyfkWbUA6G05xRD61Qj99saqvIGv18aVSR3+ERvJHrP0V//JDHQ3+0VDlnEmR2I8kc4Ci1w0tV0rZqhUavxOSfPxy2A7Hslw0Eq9f/D5k/Mexq5BWuXN7UG1VWCtG34yTOfxJ9YgUGnZZ5w9t2U/euwyqSU/Q5QUITZP/XOsoUwUBoWZVZK9xr0CqbouTt2mJ4FnlWeGvh6hT9u2sQH/G4AtRTeqKLs=
+  - secure: V6wihCZjlzPgatrhNoZi9RI6cNFmHQQKq0NZCpiB+yfZHO+O68YdZ5zgsI71hidCQhm4NrZE+/Hxv/0eQoRvEHQZ3spVHpeO+++ng8dhbWg3UjKVuHtm614mUCbpCaNQ8qIPHulEDqiqcR49E/FFVBLDprY90pNdJLzXEAFxS+XlIAB4Ki3zqMtsFcuAynwQ6uxGhY5y1WSdLBCT7kEkuvpmpyyZjk2kpTeLH1qYuWB4RWdoMS+soV9Gd+cKpbHubpBUY0/i1whipASdt2ElECupAJ6jeLevjdYffuJpSqj2esszWdjFqZPmO9hAg64g71c5GcYYPU4LfZa7s10dIPsQFJtq2nbwT8DBesSR09NGDw8FxtFORXVxXfu4T+/wA31Y5mqRSbz804x2bB9o9CTF4wIyS56oiJoK55qQiovFOHFK53IH+vzIr+ONJ8zsTg+dswlQq64MQ6RBtEtLYXV2TstxFcbmfdZSIXajDof0wYRMEpKMwztc7L2TZBxa6dih1r3u3+F4w8eM3mIEem4mOlpJiZJYJl0gWQcjhRSpyHsmHBYFGWXoIOa5M/BRee8Ys6wNMiylylpoEA7Mh4vZ+Q3d5rJj2hZRp8B+ELqxqRHqxXRP/sCatWJRNjH37+4ps/BZ8MMYta3ubHlmMS2sVKg1Sqtrgz/IP9+UX6I=
