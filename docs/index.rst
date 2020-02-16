@@ -2,7 +2,7 @@
 
 .. _contents:
 
-Overview of brainlit 
+Overview of Brainlit 
 =======================
 
 Brainlit is a Python package for reading and analyzing mouselight data.
@@ -20,10 +20,10 @@ Brainlit is a Python package for reading and analyzing mouselight data.
 
 .. toctree::
     :maxdepth: 1
-    :caption: Links:
+    :caption: Links
 
     Brainlit @ GitHub <http://www.github.com/neurodata/brainlit/>
-    Issue Tracker <https://github.com/neurodatadesign/brainlit/issues>
+    Issue Tracker <https://github.com/neurodata/brainlit/issues>
 
 
 Indices and tables
