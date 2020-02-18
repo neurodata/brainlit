@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 from cloudvolume import CloudVolume
+from io import StringIO
 
 def read_s3(s3_path, seg_id, mip):
     """Read a s3 bucket path to a skeleton object 
@@ -35,7 +36,7 @@ def read_s3(s3_path, seg_id, mip):
     while in_h:
         h_len += 1
         line = splitted_string[h_len]
-        if line[0] != '#':
+        if len(line)==0 or line[0] != '#':
             in_h = False
     df = pd.read_table(
         string_io,
