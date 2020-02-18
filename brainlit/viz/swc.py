@@ -1,7 +1,53 @@
 import numpy as np
 import pandas as pd
 import networkx as nx
+from cloudvolume import CloudVolume
 
+def read_s3(s3_path, seg_id, mip):
+    """Read a s3 bucket path to a skeleton object 
+    into a pandas dataframe.
+
+    Parameters
+    ----------
+    s3_path : str
+        String representing the path to the s3 bucket
+    seg_id : int
+        The segement number to pull
+    mip : int
+        The resolution to use for scaling
+
+    Returns
+    -------
+    df : :class:`pandas.DataFrame`
+        Indicies, coordinates, and parents of each node in the swc.
+        Coordinates are in spatial units.
+    """
+    # TODO check header length
+
+    # check input
+    cv = CloudVolume(s3_path, mip=mip)
+    skeleton = cv.skeleton.get(seg_id)
+    swc_string = skeleton.to_swc()
+    string_io = StringIO(swc_string)
+    splitted_string = swc_string.split('\n')
+    in_h = True
+    h_len = -1
+    while in_h:
+        h_len += 1
+        line = splitted_string[h_len]
+        if line[0] != '#':
+            in_h = False
+    df = pd.read_table(
+        string_io,
+        names=['sample', 'structure', 'x', 'y', 'z', 'r', 'parent'],
+        skiprows=h_len,
+        delim_whitespace=True,
+    )
+    res = cv.scales[mip]['resolution']
+    df['x'] = np.round(df['x']/res[0])
+    df['y'] = np.round(df['y']/res[1])
+    df['z'] = np.round(df['z']/res[2])
+    return df
 
 def read_swc(swc_path):
     """Read a swc file into a pandas dataframe.

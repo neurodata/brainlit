@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 
-from napari.layers import swc
+from brainlit.viz import swc
+from brainlit.utils.ngl_pipeline import NeuroglancerSession
 
 # read in swc file to dataframe
 swc_path = 'napari/layers/swc/tests/2018-08-01_G-002_consensus.swc'
