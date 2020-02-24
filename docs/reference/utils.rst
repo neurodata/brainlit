@@ -1,9 +1,9 @@
 Utility
 =======
 
-.. currentmodule:: brainlit.utils.ngl_pipeline
+.. currentmodule:: brainlit.utils
 
 Data Helper Methods
 -------------------
 
-#.. autofunction:: test
+.. autoclass:: NeuroglancerSession

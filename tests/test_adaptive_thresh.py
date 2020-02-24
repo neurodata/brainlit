@@ -8,7 +8,6 @@ import numpy as np
 from cloudvolume import CloudVolume
 from cloudvolume.lib import Bbox
 
-
 def test_pull():
     url = "s3://mouse-light-viz/precomputed_volumes/brain1"
     ngl = NeuroglancerSession(url, mip=1)
@@ -41,7 +40,6 @@ def test_pull_label():
     ngl_seg.push(label, bounds)
     label2 = ngl_seg.pull_bounds_seg(bounds)
     assert(np.all(np.squeeze(np.array(label)==np.squeeze(np.array(label2)))))
-
 
 def test_get_seed():
     ngl_session = NeuroglancerSession()
@@ -189,3 +187,4 @@ def test_gmm_seg():
     assert labels.min() == 0
     assert labels.max() == 1
     assert labels[numpy_seed] == 1
+
