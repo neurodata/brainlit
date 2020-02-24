@@ -32,7 +32,6 @@ def test_get_img_T1():
     assert img_T1_255_array.min() >= 0
 
 
-
 # def test_thres_from_gmm():
 #     ngl_session = NeuroglancerSession()
 #     img, _, _ = ngl_session.pull_voxel(2, 400, nx=1, ny=1, nz=1)

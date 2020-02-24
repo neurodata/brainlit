@@ -30,7 +30,6 @@ class BaseFeatures(BaseEstimator):
         self.size = size
         self.offset = offset
 
-
     @abstractmethod
     def _convert_to_features(self, img):
         """
@@ -44,7 +43,6 @@ class BaseFeatures(BaseEstimator):
         features : ndarray
             Feature data.
         """
-
 
     def fit(self, seg_ids, num_verts=None):
         """
@@ -62,7 +60,7 @@ class BaseFeatures(BaseEstimator):
         """
         df = pd.DataFrame()
         ngl = NeuroglancerSession(self.url)
-        ngl_skel = NeuroglancerSession(self.url+"_segments")
+        ngl_skel = NeuroglancerSession(self.url + "_segments")
         for seg_id in seg_ids:
             segment = ngl_skel.cv.skeleton.get(seg_id)
             if num_verts is not None:
@@ -70,21 +68,28 @@ class BaseFeatures(BaseEstimator):
             else:
                 verts = segment.vertices
             for v_id, vertex in enumerate(verts):
-                img, bounds, voxel = ngl.pull_voxel(seg_id, v_id,
-                                        self.size[0], self.size[1], self.size[2])
+                img, bounds, voxel = ngl.pull_voxel(
+                    seg_id, v_id, self.size[0], self.size[1], self.size[2]
+                )
                 img_off = ngl.pull_bounds_img(bounds + self.offset)
                 features = self._convert_to_features(img)
                 features_off = self._convert_to_features(img_off)
                 df = df.append(
-                    {'Segment' : int(seg_id),
-                     'Vertex' : int(v_id),
-                     'Label' : 1,
-                     'Features': features},
-                     ignore_index=True)
+                    {
+                        "Segment": int(seg_id),
+                        "Vertex": int(v_id),
+                        "Label": 1,
+                        "Features": features,
+                    },
+                    ignore_index=True,
+                )
                 df = df.append(
-                    {'Segment' : int(seg_id),
-                     'Vertex' : int(v_id),
-                     'Label' : 0,
-                     'Features': features_off},
-                     ignore_index=True)
+                    {
+                        "Segment": int(seg_id),
+                        "Vertex": int(v_id),
+                        "Label": 0,
+                        "Features": features_off,
+                    },
+                    ignore_index=True,
+                )
         return df

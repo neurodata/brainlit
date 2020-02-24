@@ -12,10 +12,12 @@ from itertools import product
 
 from .base import BaseFeatures
 
+
 class NeighborhoodFeatures(BaseFeatures):
     """
     Computes features based off neighborhood properties.
     """
+
     def __init__(self, url, size=[1, 1, 1], offset=[15, 15, 15]):
         super().__init__(url=url, size=size, offset=offset)
 
