@@ -24,10 +24,12 @@ class LinearFeatures(BaseFeatures):
     def _convert_to_features(self, img):
         """
         Computes features from image data by applying linear filters.
+
         Parameters
         ----------
         img : ndarray
             Image data.
+
         Returns
         -------
         features : ndarray

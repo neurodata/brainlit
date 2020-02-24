@@ -24,10 +24,12 @@ class NeighborhoodFeatures(BaseFeatures):
     def _convert_to_features(self, img):
         """
         Computes features from image data by flattening the image.
+
         Parameters
         ----------
         img : ndarray
             Image data.
+
         Returns
         -------
         features : dict
