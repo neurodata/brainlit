@@ -70,7 +70,7 @@ def whiten(data, window_size, step_size, centered=False):
     References
     ----------
 
-    .. [1] FILL IN REFERENCE
+    .. [1] http://ufldl.stanford.edu/tutorial/unsupervised/PCAWhitening/
 
     """
     if not centered:
@@ -93,28 +93,20 @@ def whiten(data, window_size, step_size, centered=False):
 
 
 def undo_pad(data, pad_size):
-    """Pad image at edges so the window can convolve evenly.
-    Padding will be a copy of the edges.
+    """Remove padding fromt edges of images
 
     Parameters
     -------
-    img : array-like
-        image to be padded
-
-    window_size : array-like
-        window size that will be convolved, same number of dimensions as img
-
-    step_size : array-like
-        step size in each of direction of window convolution, same number of
-        dimensions as img
-
-    Returns
-    -------
-    img_padded : array-like
+    data : array-like
         padded image
 
     pad_size : array-like
-        amount of padding in every direction of the image
+            amount of padding in every direction of the image
+
+    Returns
+    -------
+    data : array-like
+        unpadded image
 
     """
     start = pad_size[:, 0].astype(int)
@@ -251,5 +243,6 @@ def imagize_vector(data, orig_shape, window_size, step_size):
         imagized_temp = data[:, step_num].reshape(window_size)
         stacked = np.stack((imagized[slices], imagized_temp), axis=-1)
         imagized[slices] = np.true_divide(stacked.sum(d), (stacked != 0).sum(d))
+        imagized[slices] = np.nan_to_num(imagized[slices])
 
     return imagized

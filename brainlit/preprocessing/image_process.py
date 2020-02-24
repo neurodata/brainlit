@@ -1,4 +1,4 @@
-import numpy as np
+ import numpy as np
 from skimage.measure import label
 import scipy.ndimage as ndi
 import matplotlib.pyplot as plt
@@ -35,73 +35,6 @@ def otsu_segment(data):
     mask = mask.astype(int)
     return mask, threshold
 
-
-def gabor_kernel_3d(
-    frequency,
-    theta=0,
-    phi=0,
-    sigma_x=None,
-    sigma_y=None,
-    sigma_z=None,
-    n_stds=3,
-    offset=0,
-):
-    # As in skimage, we interpret the inputs as sigmas along the principal axes of the Gaussian ellipse
-    # Thus, we need trigonometry to project the principal axes along the standard basis
-    x0 = np.ceil(
-        max(
-            np.abs(n_stds * sigma_x * np.cos(theta) * np.cos(phi)),
-            np.abs(n_stds * sigma_y * np.sin(phi)),
-            np.abs(n_stds * sigma_z * np.sin(theta) * np.cos(phi)),
-            1,
-        )
-    )
-    y0 = np.ceil(
-        max(
-            np.abs(n_stds * sigma_x * np.cos(theta) * np.sin(phi)),
-            np.abs(n_stds * sigma_y * np.cos(phi)),
-            np.abs(n_stds * sigma_z * np.sin(theta) * np.sin(phi)),
-            1,
-        )
-    )
-    z0 = np.ceil(
-        max(
-            np.abs(n_stds * sigma_x * np.sin(theta)),
-            np.abs(n_stds * sigma_z * np.cos(theta)),
-            1,
-        )
-    )
-
-    x, y, z = np.mgrid[-x0 : x0 + 1, -y0 : y0 + 1, -z0 : z0 + 1]
-
-    # the rot coordinates come from the inverse rotations by theta and phi
-    rotx = (
-        x * np.cos(theta) * np.cos(phi)
-        + y * np.cos(theta) * np.sin(phi)
-        - z * np.sin(theta)
-    )
-    roty = -x * np.sin(phi) + y * np.cos(phi)
-    rotz = (
-        x * np.sin(theta) * np.cos(phi)
-        + y * np.sin(theta) * np.cos(phi)
-        + z * np.cos(theta)
-    )
-
-    g = np.zeros(x.shape, dtype=np.complex)
-    g[:] = np.exp(
-        -0.5
-        * (
-            rotx ** 2 / sigma_x ** 2
-            + roty ** 2 / sigma_y ** 2
-            + rotz ** 2 / sigma_z ** 2
-        )
-    )
-    g /= 2 * np.pi * sigma_x * sigma_y * sigma_z
-    g *= np.exp(1j * (2 * np.pi * frequency * rotx + offset))
-
-    return g
-
-
 def gabor_filter(
     input,
     sigma,
@@ -131,9 +64,9 @@ def gabor_filter(
         is a sequence of length n-1. Convention follows
         https://en.wikipedia.org/wiki/N-sphere#Spherical_coordinates.
     frequency : scalar
-        Frequency of the complex exponential. Units are revolutions/voxels.
+        Frequency of the complex exponential. Units are revolutions/voxels. <- other one is pixels
     offset : scalar
-        Phase shift of the complex exponential. Units are voxels.
+        Phase shift of the complex exponential. Units are voxels. <-
 
     %(output)s
     %(mode_multiple)s
@@ -186,9 +119,12 @@ def gabor_filter(
     >>> plt.show()
     """
     input = np.asarray(input)
+
+    # Checks that dimensions of inputs are correct
     sigmas = ndi._ni_support._normalize_sequence(sigma, input.ndim)
     phi = ndi._ni_support._normalize_sequence(phi, input.ndim - 1)
 
+    #
     limits = [np.ceil(truncate * sigma).astype(int) for sigma in sigmas]
     ranges = [range(-limit, limit + 1) for limit in limits]
     coords = np.meshgrid(*ranges, indexing="ij")
@@ -216,37 +152,6 @@ def gabor_filter(
     output = ndi.convolve(input, weights=g, output=output, mode=mode, cval=cval)
 
     return output
-
-
-def gabor_kernel_nd(sigma, phi, frequency, offset=0.0, truncate=3.0):
-    dim = len(phi) + 1
-    sigmas = ndi._ni_support._normalize_sequence(sigma, dim)
-    phi = ndi._ni_support._normalize_sequence(phi, dim - 1)
-
-    limits = [np.ceil(truncate * sigma).astype(int) for sigma in sigmas]
-    ranges = [range(-limit, limit + 1) for limit in limits]
-    coords = np.meshgrid(*ranges, indexing="ij")
-    filter_size = coords[0].shape
-    coords = np.stack(coords, axis=-1)
-
-    new_shape = np.ones(dim)
-    new_shape = np.append(new_shape, -1).astype(int)
-    sigmas = np.reshape(sigmas, new_shape)
-
-    g = np.zeros(filter_size, dtype=np.complex)
-    g[:] = np.exp(-0.5 * np.sum(np.divide(coords, sigmas) ** 2, axis=-1))
-
-    g /= 2 * np.pi * np.prod(sigmas)
-
-    orientation = np.ones(dim)
-    for i, p in enumerate(phi):
-        orientation[i + 1] = orientation[i] * np.sin(p)
-        orientation[i] = orientation[i] * np.cos(p)
-
-    rotx = coords @ orientation
-
-    g *= np.exp(1j * (2 * np.pi * frequency * rotx + offset))
-    return g
 
 
 def getLargestCC(segmentation):
