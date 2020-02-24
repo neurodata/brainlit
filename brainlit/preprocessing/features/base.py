@@ -49,7 +49,7 @@ class BaseFeatures(BaseEstimator):
         Pulls image and background.
         Parameters
         ----------
-        seg_id : list of ints
+        seg_ids : list of ints
             A list of segment indices.
         num_verts : int, optional (default=None)
             If not none, only runs on a set number of vertices.
