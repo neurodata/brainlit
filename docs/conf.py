@@ -41,7 +41,7 @@ extensions = [
 ]
 
 # -- sphinxcontrib.rawfiles
-rawfiles = ["CNAME"]
+# rawfiles = ["CNAME"]
 
 # -- numpydoc
 # Below is needed to prevent errors
