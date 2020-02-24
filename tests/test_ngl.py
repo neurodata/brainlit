@@ -6,12 +6,13 @@ import numpy as np
 from cloudvolume import CloudVolume
 from cloudvolume.lib import Bbox
 
+
 def test_pull():
     url = "s3://mouse-light-viz/precomputed_volumes/brain1"
     ngl = NeuroglancerSession(url, mip=1)
     img, bounds, voxel = ngl.pull_voxel(2, 300)
     img2 = ngl.pull_bounds_img(bounds)
-    assert(np.all(np.squeeze(np.array(img)==np.squeeze(np.array(img2)))))
+    assert np.all(np.squeeze(np.array(img) == np.squeeze(np.array(img2))))
 
 
 def test_pull_label():
@@ -31,11 +32,12 @@ def test_pull_label():
         seg_clean = sitk.BinaryMorphologicalClosing(seg_con, vectorRadius, kernel)
         labels = sitk.GetArrayFromImage(seg_clean)
         return labels
+
     url = "s3://mouse-light-viz/precomputed_volumes/brain1"
     ngl = NeuroglancerSession(url, mip=1)
-    ngl_seg = NeuroglancerSession(url+"_seg", mip=1)
-    img, bounds, voxel = ngl.pull_voxel(2, 300)
+    ngl_seg = NeuroglancerSession(url + "_seg", mip=1)
+    img, bounds, voxel = ngl.pull_chunk(2, 300)
     label = _img_to_labels(img, voxel, low=11)
     ngl_seg.push(label, bounds)
     label2 = ngl_seg.pull_bounds_seg(bounds)
-    assert(np.all(np.squeeze(np.array(label)==np.squeeze(np.array(label2)))))
+    assert np.all(np.squeeze(np.array(label) == np.squeeze(np.array(label2))))
