@@ -42,6 +42,7 @@ class NeuroglancerSession:
         self.chunk_size = self.cv.info['scales'][self.mip]['chunk_sizes'][0]
         self.scales = self.cv.scales[self.mip]["resolution"]
 
+
     def _get_voxel(self, seg_id, v_id):
         skeleton_url = "s3://mouse-light-viz/precomputed_volumes/brain1_segments"
         cv_skel = CloudVolume(skeleton_url, mip=self.mip)
@@ -50,7 +51,51 @@ class NeuroglancerSession:
         voxel = np.round(np.divide(vertex, self.scales)).astype(int)
         return voxel
 
-    def pull_voxel(self, seg_id, v_id, nx=0, ny=0, nz=0):
+
+    def pull_voxel(self, seg_id, v_id, nx=1, ny=1, nz=1):
+        """
+        Pull a number of voxels around a specified skeleton vertex
+
+        Parameters
+        ----------
+        seg_id : int
+            ID of the segment to use, depends on data in s3.
+
+        v_id : int
+            ID of the vertex to use, depends on the segment.
+
+        nx : int, optional (default=1)
+            Number of voxels to pull on either side of the seed in x.
+
+        ny : int, optional (default=1)
+            Number of voxels to pull on either side of the seed in y.
+
+        nz : int, optional (default=1)
+            Number of voxels to pull on either side of the seed in z.
+
+        Returns
+        -------
+        img : ndarray
+            A 2*nx+1 X 2*ny+1 X 2*nz+1 volume.
+
+        bounds : Bbox object
+            Bounding box object which contains the bounds of the volume.
+
+        vox_in_img : ndarray
+            List of coordinates which locate the initial point in the volume.
+        """
+        voxel = self._get_voxel(seg_id, v_id)
+        bounds = Bbox(voxel, voxel)
+        seed = bounds.to_list()
+        shape = [nx, ny, nz]
+        bounds = Bbox(np.subtract(seed[:3], shape),
+                      np.add(np.add(seed[3:], shape), 1))
+        img = self.cv.download(bounds, mip=self.mip)
+        vox_in_img = voxel - np.array(bounds.to_list()[:3])
+        return np.squeeze(np.array(img)), bounds, vox_in_img
+
+
+    def pull_chunk(self, seg_id, v_id, nx=0, ny=0, nz=0):
         """
         Pull a number of chunks around a specified skeleton vertex
 
@@ -92,6 +137,7 @@ class NeuroglancerSession:
         vox_in_img = voxel - np.array(bounds.to_list()[:3])
         return np.squeeze(np.array(img)), bounds, vox_in_img
 
+
     def pull_bounds_img(self, bounds):
         """
         Pull a volume around a specified bounding box. Works on img channels.
@@ -108,6 +154,7 @@ class NeuroglancerSession:
         """
         img = self.cv.download(bounds, mip=self.mip)
         return np.squeeze(np.array(img))
+
 
     def pull_bounds_seg(self, bounds):
         """
@@ -126,6 +173,7 @@ class NeuroglancerSession:
         """
         img = self.cv[bounds]
         return np.squeeze(np.array(img))
+
 
     def push(self, img, bounds):
         """
