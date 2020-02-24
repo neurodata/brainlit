@@ -34,7 +34,7 @@ def test_pull_label():
     url = "s3://mouse-light-viz/precomputed_volumes/brain1"
     ngl = NeuroglancerSession(url, mip=1)
     ngl_seg = NeuroglancerSession(url+"_seg", mip=1)
-    img, bounds, voxel = ngl.pull_voxel(2, 300)
+    img, bounds, voxel = ngl.pull_chunk(2, 300)
     label = _img_to_labels(img, voxel, low=11)
     ngl_seg.push(label, bounds)
     label2 = ngl_seg.pull_bounds_seg(bounds)

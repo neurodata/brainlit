@@ -132,7 +132,8 @@ class NeuroglancerSession:
         bounds = Bbox(voxel, voxel).expand_to_chunk_size(self.chunk_size)
         seed = bounds.to_list()
         shape = [self.chunk_size[0]*nx, self.chunk_size[1]*ny, self.chunk_size[2]*nz]
-        bounds = Bbox(np.subtract(seed[:3], shape), np.add(seed[3:], shape))
+        bounds = Bbox(np.subtract(seed[:3], shape),
+                      np.add(seed[3:], shape))
         img = self.cv.download(bounds, mip=self.mip)
         vox_in_img = voxel - np.array(bounds.to_list()[:3])
         return np.squeeze(np.array(img)), bounds, vox_in_img
