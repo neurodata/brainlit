@@ -19,6 +19,8 @@ REQUIRED_PACKAGES = [
     "scikit-learn>=0.19.1",
     "scipy>=1.1.0",
     "seaborn>=0.9.0",
+    "simpleitk>=1.2.4",
+    "cloud-volume>=1.6.0",
 ]
 
 # Find savanna version.
