@@ -53,7 +53,7 @@ def test_get_seed():
 
 def test_get_img_T1():
     ngl_session = NeuroglancerSession()
-    img, _, _ = ngl_session.pull_voxel(2, 100, nx=1, ny=1, nz=1)
+    img, _, _ = ngl_session.pull_chunk(2, 100, nx=1, ny=1, nz=1)
     img_T1, img_T1_255 = adaptive_thresh.get_img_T1(img)
     correct_shape = img.squeeze().shape
     img_T1_array = sitk.GetArrayFromImage(img_T1)
@@ -117,7 +117,7 @@ def test_connected_threshold():
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
     img_T1_255_array = sitk.GetArrayFromImage(img_T1_255)
 
-    labels = adaptive_thresh.connected_threshold(img, sitk_seed)
+    labels = adaptive_thresh.connected_threshold(img, [sitk_seed])
     assert labels.shape == img_T1_255_array.shape
     assert labels.min() == 0
     assert labels.max() == 1
@@ -134,7 +134,7 @@ def test_confidence_connected_threshold():
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
     img_T1_255_array = sitk.GetArrayFromImage(img_T1_255)
 
-    labels = adaptive_thresh.confidence_connected_threshold(img, sitk_seed)
+    labels = adaptive_thresh.confidence_connected_threshold(img, [sitk_seed])
     assert labels.shape == img_T1_255_array.shape
     assert labels.min() == 0
     assert labels.max() == 1
@@ -151,7 +151,7 @@ def test_neighborhood_connected_threshold():
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
     img_T1_255_array = sitk.GetArrayFromImage(img_T1_255)
 
-    labels = adaptive_thresh.neighborhood_connected_threshold(img, sitk_seed)
+    labels = adaptive_thresh.neighborhood_connected_threshold(img, [sitk_seed])
     assert labels.shape == img_T1_255_array.shape
     assert labels.min() == 0
     assert labels.max() == 1

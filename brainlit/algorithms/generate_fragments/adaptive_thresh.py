@@ -230,7 +230,7 @@ def connected_threshold(img, seed, lower_threshold=None, upper_threshold=255):
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
     
-    seed : tuple
+    seed : tuple ## LIST
         The seed containing a coordinate within a known segment.
     
     lower_threshold : float
@@ -250,14 +250,16 @@ def connected_threshold(img, seed, lower_threshold=None, upper_threshold=255):
     img_T1, img_T1_255 = get_img_T1(img)
     seg = sitk.Image(img_T1.GetSize(), sitk.sitkUInt8)
     seg.CopyInformation(img_T1)
-    seg[seed] = 1
+    #seg[seed] = 1
+    for s in seed:
+        seg[s] = 1
     seg = sitk.BinaryDilate(seg, 1)
 
     if lower_threshold == None:
         lower_threshold = thres_from_gmm(img)
 
     seg_con = sitk.ConnectedThreshold(
-        img_T1_255, seedList=[seed], lower=lower_threshold, upper=upper_threshold
+        img_T1_255, seedList=seed, lower=lower_threshold, upper=upper_threshold
     )
 
     vectorRadius = (1, 1, 1)
@@ -288,7 +290,7 @@ def confidence_connected_threshold(
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
     
-    seed : tuple
+    seed : tuple ## LIST
         The seed containing a coordinate within a known segment.
     
     num_iter : int
@@ -313,12 +315,14 @@ def confidence_connected_threshold(
     img_T1, img_T1_255 = get_img_T1(img)
     seg = sitk.Image(img_T1.GetSize(), sitk.sitkUInt8)
     seg.CopyInformation(img_T1)
-    seg[seed] = 1
+    #seg[seed] = 1
+    for s in seed:
+        seg[s] = 1
     seg = sitk.BinaryDilate(seg, 1)
 
     seg_con = sitk.ConfidenceConnected(
         img_T1_255,
-        seedList=[seed],
+        seedList=seed,
         numberOfIterations=num_iter,
         multiplier=multiplier,
         initialNeighborhoodRadius=initial_neighborhood_radius,
@@ -346,7 +350,7 @@ def neighborhood_connected_threshold(
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
     
-    seed : tuple
+    seed : tuple ## LIST
         The seed containing a coordinate within a known segment.
     
     lower_threshold : float
@@ -366,14 +370,16 @@ def neighborhood_connected_threshold(
     img_T1, img_T1_255 = get_img_T1(img)
     seg = sitk.Image(img_T1.GetSize(), sitk.sitkUInt8)
     seg.CopyInformation(img_T1)
-    seg[seed] = 1
+    for s in seed:
+        seg[s] = 1
+    #seg[seed] = 1
     seg = sitk.BinaryDilate(seg, 1)
 
     if lower_threshold == None:
         lower_threshold = thres_from_gmm(img)
 
     seg_con = sitk.NeighborhoodConnected(
-        img_T1_255, seedList=[seed], lower=lower_threshold, upper=upper_threshold
+        img_T1_255, seedList=seed, lower=lower_threshold, upper=upper_threshold
     )
 
     vectorRadius = (1, 1, 1)
