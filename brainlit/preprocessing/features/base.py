@@ -7,20 +7,7 @@ import pandas as pd
 
 class BaseFeatures(BaseEstimator):
     """
-    Base class for generating features from precomputed volumes.
-    Parameters
-    ----------
-    embedding : { 'ase' (default), 'lse, 'omnibus'}
-        String describing the embedding method to use.
-        Must be one of:
-        'ase'
-            Embed each graph separately using adjacency spectral embedding
-            and use Procrustes to align the embeddings.
-        'omnibus'
-            Embed all graphs simultaneously using omnibus embedding.
-    n_components : None (default), or int
-        Number of embedding dimensions. If None, the optimal embedding
-        dimensions are found by the Zhu and Godsi algorithm.
+    Base class for generating features from precomputed volumes.    
     """
 
     def __init__(self, url, size=[1, 1, 1], offset=[15, 15, 15]):
@@ -34,10 +21,12 @@ class BaseFeatures(BaseEstimator):
     def _convert_to_features(self, img):
         """
         Computes features from image data.
+
         Parameters
         ----------
         img : ndarray
             Image data.
+
         Returns
         -------
         features : ndarray
@@ -47,12 +36,14 @@ class BaseFeatures(BaseEstimator):
     def fit(self, seg_ids, num_verts=None):
         """
         Pulls image and background.
+
         Parameters
         ----------
         seg_ids : list of ints
             A list of segment indices.
         num_verts : int, optional (default=None)
             If not none, only runs on a set number of vertices.
+
         Returns
         -------
         df : ndarray

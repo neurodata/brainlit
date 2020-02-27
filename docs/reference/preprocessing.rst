@@ -1,5 +1,5 @@
 Preprocessing
-=======
+=============
 
 .. currentmodule:: brainlit.preprocessing
 

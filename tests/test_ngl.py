@@ -12,7 +12,14 @@ def test_pull():
     ngl = NeuroglancerSession(url, mip=1)
     img, bounds, voxel = ngl.pull_voxel(2, 300)
     img2 = ngl.pull_bounds_img(bounds)
-    assert np.all(np.squeeze(np.array(img) == np.squeeze(np.array(img2))))
+    assert np.all(np.squeeze(np.array(img)) == np.squeeze(np.array(img2)))
+
+
+def test_pull_v_list():
+    url = "s3://mouse-light-viz/precomputed_volumes/brain1"
+    ngl = NeuroglancerSession(url, mip=1)
+    img, bounds, voxel = ngl.pull_vertex_list(2, np.arange(10))
+    assert True
 
 
 def test_pull_label():
