@@ -93,7 +93,6 @@ class NeuroglancerSession:
         vox_in_img = voxel - np.array(bounds.to_list()[:3])
         return np.squeeze(np.array(img)), bounds, vox_in_img
 
-
     def pull_vertex_list(self, seg_id, v_id_list, buffer=[0, 0, 0], expand=False):
         """
         Pull a number of chunks around a specified skeleton vertex
@@ -124,8 +123,8 @@ class NeuroglancerSession:
             List of coordinates which locate the vertices in the volume.
         """
         voxel_list = np.array([self._get_voxel(seg_id, i) for i in v_id_list])
-        lower = list(np.min(voxel_list, axis=0)-buffer)
-        higher = list(np.max(voxel_list, axis=0)+buffer)
+        lower = list(np.min(voxel_list, axis=0) - buffer)
+        higher = list(np.max(voxel_list, axis=0) + buffer)
         bounds = Bbox(lower, higher)
         if expand:
             bounds = bounds.expand_to_chunk_size(self.chunk_size)
@@ -133,7 +132,6 @@ class NeuroglancerSession:
         img = self.pull_bounds_img(bounds)
         vox_in_img_list = voxel_list - lower
         return img, bounds, vox_in_img_list
-
 
     def pull_chunk(self, seg_id, v_id, nx=0, ny=0, nz=0):
         """

@@ -22,7 +22,6 @@ def test_pull_v_list():
     assert True
 
 
-
 def test_pull_label():
     def _img_to_labels(img, voxel, low=None, up=255):
         img_T1 = sitk.GetImageFromArray(np.squeeze(img), isVector=False)
