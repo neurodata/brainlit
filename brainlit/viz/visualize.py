@@ -81,6 +81,7 @@ def plot_image_hist(imgs, rows=1, titles=None):
     Arguments:
         img {3d array} -- images from which to plot a intensity histogram
     """
+    print('asdf')
     if isinstance(imgs, list):
         l = len(imgs)
         cols = np.ceil(l / rows).astype(int)
@@ -97,8 +98,10 @@ def plot_image_hist(imgs, rows=1, titles=None):
             if titles is not None:
                 ax.title(titles[i], fontsize=12)
         return fig, axes
-    else:
-        plt.hist(imgs.flatten())
+    else: 
+        print('eh')
+        histo = plt.hist(imgs.flatten())
+        return histo
 
 
 def plot_image_pts(imgs, voxels, rows=1, titles=None, colorbar=False):

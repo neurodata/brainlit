@@ -17,7 +17,6 @@ df_s3 = swc.read_s3(s3_path,seg_id=2,mip=1)
 swc_path = './tests/2018-08-01_G-002_consensus.swc'
 df = swc.read_swc(swc_path)
 
-
 # # convert swc dataframe from spatial units to voxel units
 spacing = np.array([0.29875923, 0.3044159, 0.98840415])
 origin = np.array([70093.276, 15071.596, 29306.737])
