@@ -1,39 +1,9 @@
- import numpy as np
+import numpy as np
 from skimage.measure import label
 import scipy.ndimage as ndi
 import matplotlib.pyplot as plt
 from itertools import product
 
-
-def otsu_segment(data):
-    """Otsu binary segmentation
-    
-    Arguments:
-        data {numpy array of any shape/size} -- data to be segmented
-
-    Returns:
-        mask -- binary segmentation
-    """
-    unq = np.unique(data)
-    best_cost = np.inf
-    threshold = np.inf
-    for val in unq:
-
-        n0 = np.count_nonzero(data <= val)
-        var0 = np.var(data[data <= val])
-
-        n1 = np.count_nonzero(data > val)
-        if n1 > 0:
-            var1 = np.var(data[data > val])
-
-        cost = n0 * var0 + n1 * var1
-        if cost < best_cost:
-            best_cost = cost
-            threshold = val
-
-    mask = np.greater(data, threshold)
-    mask = mask.astype(int)
-    return mask, threshold
 
 def gabor_filter(
     input,
@@ -66,7 +36,7 @@ def gabor_filter(
     frequency : scalar
         Frequency of the complex exponential. Units are revolutions/voxels. <- other one is pixels
     offset : scalar
-        Phase shift of the complex exponential. Units are voxels. <-
+        Phase shift of the complex exponential. Units are radians.
 
     %(output)s
     %(mode_multiple)s
@@ -124,7 +94,7 @@ def gabor_filter(
     sigmas = ndi._ni_support._normalize_sequence(sigma, input.ndim)
     phi = ndi._ni_support._normalize_sequence(phi, input.ndim - 1)
 
-    #
+    
     limits = [np.ceil(truncate * sigma).astype(int) for sigma in sigmas]
     ranges = [range(-limit, limit + 1) for limit in limits]
     coords = np.meshgrid(*ranges, indexing="ij")
@@ -137,16 +107,14 @@ def gabor_filter(
 
     g = np.zeros(filter_size, dtype=np.complex)
     g[:] = np.exp(-0.5 * np.sum(np.divide(coords, sigmas) ** 2, axis=-1))
-
-    g /= 2 * np.pi * np.prod(sigmas)
-
+    
+    g /= (2 * np.pi)** (input.ndim / 2) * np.prod(sigmas)
     orientation = np.ones(input.ndim)
     for i, p in enumerate(phi):
         orientation[i + 1] = orientation[i] * np.sin(p)
         orientation[i] = orientation[i] * np.cos(p)
-
+    orientation = np.flip(orientation)
     rotx = coords @ orientation
-
     g *= np.exp(1j * (2 * np.pi * frequency * rotx + offset))
 
     output = ndi.convolve(input, weights=g, output=output, mode=mode, cval=cval)
@@ -155,6 +123,20 @@ def gabor_filter(
 
 
 def getLargestCC(segmentation):
+    """Returns the largest connected component of a image
+
+    Parameters
+    -------
+    segmentation : array-like
+        segmentation data of image or volume
+
+    Returns
+    -------
+    largeCC : array-like
+        segmentation with only largest connected component
+
+    """
+
     labels = label(segmentation)
     assert labels.max() != 0  # assume at least 1 CC
     largestCC = labels == np.argmax(np.bincount(labels.flat)[1:]) + 1
@@ -162,6 +144,22 @@ def getLargestCC(segmentation):
 
 
 def removeSmallCCs(segmentation, size):
+    """Removes small connected components from an image
+
+    Parameters
+    -------
+    segmentation : array-like
+        segmentation data of image or volume
+
+    size : scalar
+        maximize connected component size to remove
+
+    Returns
+    -------
+    largeCCs : array-like
+        segmentation with small connected components removed
+
+    """
     labels = label(segmentation, return_num=False)
 
     assert labels.max() != 0  # assume at least 1 CC
@@ -173,87 +171,3 @@ def removeSmallCCs(segmentation, size):
 
     largeCCs = labels != 0
     return largeCCs
-
-
-def getKernels(neighborhood=None):
-    if neighborhood is not None:
-        return getNeighborhoodKernels(neighborhood)
-    # ******Create filters
-    names = []
-    kernels = []
-    # Normal filters
-    r = 6
-    sz = 2 * r + 1
-
-    dirac = np.zeros((sz, sz, sz))
-    dirac[r, r, r] = 1
-    kernels.append(dirac)
-    names.append("0 dirac")
-
-    sigs = [0.5, 1, 2]
-
-    for s, sigma in enumerate(sigs):
-        gaussian = ndi.gaussian_filter(dirac, (sigma, sigma, 0.3 * sigma))
-        kernels.append(gaussian)
-        name = str(s + 1) + " gaussian" + str(sigma)
-        names.append(name)
-
-    # Gabor filters
-    freqs = [0.05, 0.1]
-    sigs = [[2, 2, 0.6], [4, 4, 1.2]]
-    offsets = [-np.pi / 2, 0, np.pi / 2]
-    angles = [[0, 0], [np.pi / 2, 0]]
-
-    for p, params in enumerate(product(freqs, sigs, offsets, angles)):
-        freq, sig, offset, angle = params
-        filter = gabor_kernel_nd(sigma=sig, phi=angle, frequency=freq, offset=offset)
-        kernels.append(np.real(filter))
-        name = (
-            str(p + 4)
-            + " gabor_"
-            + str(freq)
-            + "_"
-            + str(sig)
-            + "_%1.2f" % offset
-            + "_"
-            + str(angle)
-        )
-        names.append(name)
-
-    # to deal with anisotropy, we change the frequency
-    # when the periodic function points in the x3 direction
-    angles = [[np.pi / 2, np.pi / 2]]
-    freqs = [0.167, 0.333]
-    for p, params in enumerate(product(freqs, sigs, offsets, angles)):
-        freq, sig, offset, angle = params
-        filter = gabor_kernel_nd(sigma=sig, phi=angle, frequency=freq, offset=offset)
-        kernels.append(np.real(filter))
-        name = (
-            str(p + 28)
-            + " gabor_"
-            + str(freq)
-            + "_"
-            + str(sig)
-            + "_%1.2f" % offset
-            + "_"
-            + str(angle)
-        )
-        names.append(name)
-
-    return kernels, names
-
-
-def getNeighborhoodKernels(radii=[1, 1, 1]):
-    radii = np.array(radii)
-    shp = radii * 2 + 1
-    sz = np.product(shp)
-    kernels = []
-    for i in range(sz):
-        ker = np.zeros((sz))
-        ker[i] = 1
-        ker = np.reshape(ker, shp)
-        # because convolving will flip it back over
-        ker = np.flip(ker)
-        kernels.append(ker)
-
-    return kernels, None
