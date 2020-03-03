@@ -50,6 +50,30 @@ def read_s3(s3_path, seg_id, mip):
     df['z'] = np.round(df['z']/res[2])
     return df
 
+def generate_df_subset(swc_df, vox_in_img_list):
+    """Read a new subset of swc dataframe in coordinates in img spacing.
+
+    Parameters
+    ----------
+    swc_df : pd.DataFrame
+        DataFrame containing information from swc file
+    vox_in_img_list: list
+        List of voxels 
+
+    Returns
+    -------
+    df : :class:`pandas.DataFrame`
+        Indicies, coordinates (in img spacing) and parents of each node in the swc.
+        Coordinates are in spatial units.
+    """
+
+    # check input
+    df_new = swc_df.copy()
+    df_new['x'], df_new['y'], df_new['z'] = vox_in_img_list[:,0], vox_in_img_list[:,1], vox_in_img_list[:,2]
+
+    return df_new
+
+
 def read_swc(swc_path):
     """Read a swc file into a pandas dataframe.
 

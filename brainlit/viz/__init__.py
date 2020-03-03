@@ -1,3 +1,3 @@
-from brainlit.brainlit.swc import *
-from brainlit.brainlit.visualize import *
+from brainlit.viz.swc import *
+from brainlit.viz.visualize import *
 
