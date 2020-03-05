@@ -3,7 +3,7 @@ Link to mouselight article [here](https://www.hhmi.org/news/mouselight-project-m
 
 [![Python](https://img.shields.io/badge/python-3.6-blue.svg)]()
 [![Build Status](https://travis-ci.com/neurodata/brainlit.svg?branch=master)](https://travis-ci.com/neurodata/brainlit)
-[![Documentation Status](https://readthedocs.org/projects/brainlit/badge/?version=latest)](https://brainlit.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/brainlight/badge/?version=latest)](https://brainlight.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/neurodata/brainlit/branch/master/graph/badge.svg)](https://codecov.io/gh/neurodata/brainlit)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 

@@ -1,7 +1,6 @@
 import warnings
 
 import brainlit.algorithms
-import brainlit.plot
 import brainlit.preprocessing
 import brainlit.utils
 
