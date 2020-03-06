@@ -64,3 +64,47 @@ def test_gabor_filter():
     output1 = pp.gabor_filter(input, 1.0, [0.5, 0.5], 5, output=otype)
     output2 = pp.gabor_filter(input, 1.0, 0.5, 5, output=otype)
     assert_array_almost_equal(output1, output2)
+
+
+def test_getLargestCC():
+    img = np.zeros([50, 50])
+    with pytest.raises(ValueError):
+        pp.getLargestCC(img)
+    img[25, 25] = 1
+    output = pp.getLargestCC(img)
+    assert_array_equal(img, output)
+
+    img[25, 26] = 1
+    img[0, 0] = 1
+    expected_output = img
+    expected_output[0, 0] = 0
+
+    output = pp.getLargestCC(img)
+    assert_array_equal(expected_output, output)
+
+
+# removeSmallCCs(segmentation, size)
+def test_removeSmallCCs():
+    img = np.zeros([50,50])
+    with pytest.raises(ValueError):
+        pp.getLargestCC(img)
+    img[25, 25] = 1
+    img[25, 26] = 1
+    output = pp.removeSmallCCs(img, 1)
+    assert_array_equal(img, output)
+
+    img = np.zeros([50, 50])
+    expected_output = np.zeros([50, 50])
+    for i in range(0, 2):
+        for j in range(0, 2):
+            img[i, j] = 1
+    for i in range(4, 7):
+        for j in range(4, 7):
+            img[i, j] = 1
+            expected_output[i, j] = 1
+    for i in range(20, 30):
+        for j in range(20, 30):
+            img[i, j] = 1
+            expected_output[i, j] = 1
+    output = pp.removeSmallCCs(img, 5).astype(int)
+    assert_array_equal(expected_output, output)

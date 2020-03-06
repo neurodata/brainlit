@@ -5,17 +5,9 @@ import matplotlib.pyplot as plt
 from itertools import product
 
 
-def gabor_filter(
-    input,
-    sigma,
-    phi,
-    frequency,
-    offset=0.0,
-    output=None,
-    mode="reflect",
-    cval=0.0,
-    truncate=4.0,
-):
+def gabor_filter(input, sigma, phi, frequency, offset=0.0, 
+                output=None, mode="reflect", cval=0.0,
+                truncate=4.0,):
     """Multidimensional Gabor filter. A gabor filter
     is an elementwise product between a Gaussian 
     and a complex exponential.
@@ -47,8 +39,9 @@ def gabor_filter(
 
     Returns
     -------
-    gabor_filter : ndarray
-        Returned array of same shape as `input`.
+    real, imaginary : arrays
+        Returns real and imaginary responses, arrays of same 
+        shape as `input`.
 
     Notes
     -----
@@ -85,7 +78,7 @@ def gabor_filter(
     >>> ascent = misc.ascent()
     >>> result = gabor_filter(ascent, sigma=5, phi=[0.0], frequency=0.1)
     >>> ax1.imshow(ascent)
-    >>> ax2.imshow(result)
+    >>> ax2.imshow(result[0])
     >>> plt.show()
     """
     input = np.asarray(input)
@@ -117,8 +110,10 @@ def gabor_filter(
     rotx = coords @ orientation
     g *= np.exp(1j * (2 * np.pi * frequency * rotx + offset))
 
-    output = ndi.convolve(input, weights=g, output=output, mode=mode, cval=cval)
+    real = ndi.convolve(input, weights=np.real(g), output=output, mode=mode, cval=cval)
+    imaginary = ndi.convolve(input, weights=np.imag(g), output=output, mode=mode, cval=cval)
 
+    output = (real, imaginary)
     return output
 
 
@@ -138,7 +133,8 @@ def getLargestCC(segmentation):
     """
 
     labels = label(segmentation)
-    assert labels.max() != 0  # assume at least 1 CC
+    if labels.max() == 0:
+        raise ValueError("No connected components!")  # assume at least 1 CC
     largestCC = labels == np.argmax(np.bincount(labels.flat)[1:]) + 1
     return largestCC
 
@@ -162,7 +158,8 @@ def removeSmallCCs(segmentation, size):
     """
     labels = label(segmentation, return_num=False)
 
-    assert labels.max() != 0  # assume at least 1 CC
+    if labels.max() == 0:
+        raise ValueError("No connected components!")
     counts = np.bincount(labels.flat)[1:]
 
     for v, count in enumerate(counts):
