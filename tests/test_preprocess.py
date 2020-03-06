@@ -11,10 +11,10 @@ def test_center():
 
 def test_contrast_normalize():
     img = np.array([[1,2,3],[4,5,6],[7,8,9]])
-    normalized_image = np.load("./output/contrast_normalize.npy")
+    normalized_image = np.load("contrast_normalize.npy")
     assert(np.array_equal(preprocessing.contrast_normalize(img), normalized_image))
 
-    normalized_image = np.load("./output/contrast_normalize_uncentered.npy")
+    normalized_image = np.load("contrast_normalize_uncentered.npy")
     assert(np.array_equal(preprocessing.contrast_normalize(img, True), normalized_image))
 
 
