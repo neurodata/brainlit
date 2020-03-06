@@ -58,17 +58,19 @@ def test_gabor_filter():
     input = np.arange(100 * 100).astype(np.float32)
     input.shape = (100, 100)
     otype = np.float64
-    output1 = pp.gabor_filter(input, [1.0, 1.0], 0, 5, output=otype)
-    output2 = pp.gabor_filter(input, 1.0, 0, 5, output=otype)
-    assert_array_almost_equal(output1, output2)
+    real1, imag1 = pp.gabor_filter(input, [1.0, 1.0], 0, 5, output=otype)
+    real2, imag2 = pp.gabor_filter(input, 1.0, 0, 5, output=otype)
+    assert_array_almost_equal(real1, real2)
+    assert_array_almost_equal(imag1, imag2)
 
     # Tests that list of phi works
     input = np.arange(100 * 100 * 100).astype(np.float32)
     input.shape = (100, 100, 100)
     otype = np.float64
-    output1 = pp.gabor_filter(input, 1.0, [0.5, 0.5], 5, output=otype)
-    output2 = pp.gabor_filter(input, 1.0, 0.5, 5, output=otype)
-    assert_array_almost_equal(output1, output2)
+    real1, imag1 = pp.gabor_filter(input, 1.0, [0.5, 0.5], 5, output=otype)
+    real2, imag2 = pp.gabor_filter(input, 1.0, 0.5, 5, output=otype)
+    assert_array_almost_equal(real1, real2)
+    assert_array_almost_equal(imag1, imag2)
 
 
 def test_getLargestCC():
