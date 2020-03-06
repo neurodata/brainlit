@@ -110,11 +110,18 @@ def gabor_filter(input, sigma, phi, frequency, offset=0.0,
     rotx = coords @ orientation
     g *= np.exp(1j * (2 * np.pi * frequency * rotx + offset))
 
-    real = ndi.convolve(input, weights=np.real(g), output=output, mode=mode, cval=cval)
-    imaginary = ndi.convolve(input, weights=np.imag(g), output=output, mode=mode, cval=cval)
+    if isinstance(output, (type, np.dtype)):
+        otype = output
+    elif isinstance(output, str):
+        otype = np.typeDict[output]
+    else:
+        otype = None
 
-    output = (real, imaginary)
-    return output
+    output = ndi.convolve(input, weights=np.real(g), output=output, mode=mode, cval=cval)
+    imag = ndi.convolve(input, weights=np.imag(g), output=otype, mode=mode, cval=cval)
+
+    result = (output, imag)
+    return result
 
 
 def getLargestCC(segmentation):
