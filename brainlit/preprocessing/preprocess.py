@@ -43,7 +43,7 @@ def contrast_normalize(data, centered=False):
     return data
 
 
-def whiten(data, window_size, step_size, centered=False, epsilon=1e-5, type = 'PCA'):
+def whiten(data, window_size, step_size, centered=False, epsilon=1e-5, type="PCA"):
     """Performs PCA or ZCA whitening on an array. This preprocessing step is described
     in _[1].
 
@@ -87,7 +87,7 @@ def whiten(data, window_size, step_size, centered=False, epsilon=1e-5, type = 'P
 
     if len(window_size) != len(step_size):
         raise ValueError("Dimensions do not match")
-    
+
     if data.ndim != len(window_size):
         raise ValueError("Dimensions do not match")
 
@@ -100,10 +100,10 @@ def whiten(data, window_size, step_size, centered=False, epsilon=1e-5, type = 'P
     c = np.cov(data_vectorized)
     U, S, _ = linalg.svd(c)
 
-    if type == 'PCA':
+    if type == "PCA":
         whiten_matrix = np.dot(np.diag(1.0 / np.sqrt(S + epsilon)), U.T)
-    elif type == 'ZCA':
-        whiten_matrix = np.dot(U,np.dot(np.diag(1.0 / np.sqrt(S + epsilon)), U.T))
+    elif type == "ZCA":
+        whiten_matrix = np.dot(U, np.dot(np.diag(1.0 / np.sqrt(S + epsilon)), U.T))
     else:
         raise ValueError("Invalid Whitening Type (must be either 'PCA' or 'ZCA'")
     whitened = np.dot(whiten_matrix, data_vectorized)
@@ -144,7 +144,7 @@ def window_pad(img, window_size, step_size):
 
     if len(window_size) != len(step_size):
         raise ValueError("Dimensions do not match")
-    
+
     if img.ndim != len(window_size):
         raise ValueError("Dimensions do not match")
 
@@ -152,7 +152,7 @@ def window_pad(img, window_size, step_size):
     d = len(shp)
 
     pad_size = np.zeros([d, 2])
-    pad_size[:, 0] = np.floor(np.divide(window_size,2))
+    pad_size[:, 0] = np.floor(np.divide(window_size, 2))
 
     num_steps = np.floor(np.divide(shp, step_size))
     final_loc = np.multiply(num_steps, step_size) + np.floor(np.divide(window_size, 2))
@@ -187,7 +187,6 @@ def undo_pad(data, pad_size):
 
     if data.ndim != pad_size.shape[0]:
         raise ValueError("Dimensions do not match")
-
 
     start = pad_size[:, 0].astype(int)
     end = (data.shape - pad_size[:, 1]).astype(int)
@@ -225,7 +224,7 @@ def vectorize_img(img, window_size, step_size):
 
     if len(window_size) != len(step_size):
         raise ValueError("Dimensions do not match")
-    
+
     if img.ndim != len(window_size):
         raise ValueError("Dimensions do not match")
 
@@ -275,7 +274,7 @@ def imagize_vector(data, orig_shape, window_size, step_size):
 
     if len(window_size) != len(step_size):
         raise ValueError("Dimensions do not match")
-    
+
     if len(orig_shape) != len(window_size):
         raise ValueError("Dimensions do not match")
 

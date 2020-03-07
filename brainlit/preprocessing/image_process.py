@@ -5,9 +5,17 @@ import matplotlib.pyplot as plt
 from itertools import product
 
 
-def gabor_filter(input, sigma, phi, frequency, offset=0.0, 
-                output=None, mode="reflect", cval=0.0,
-                truncate=4.0,):
+def gabor_filter(
+    input,
+    sigma,
+    phi,
+    frequency,
+    offset=0.0,
+    output=None,
+    mode="reflect",
+    cval=0.0,
+    truncate=4.0,
+):
     """Multidimensional Gabor filter. A gabor filter
     is an elementwise product between a Gaussian 
     and a complex exponential.
@@ -87,7 +95,6 @@ def gabor_filter(input, sigma, phi, frequency, offset=0.0,
     sigmas = ndi._ni_support._normalize_sequence(sigma, input.ndim)
     phi = ndi._ni_support._normalize_sequence(phi, input.ndim - 1)
 
-    
     limits = [np.ceil(truncate * sigma).astype(int) for sigma in sigmas]
     ranges = [range(-limit, limit + 1) for limit in limits]
     coords = np.meshgrid(*ranges, indexing="ij")
@@ -100,8 +107,8 @@ def gabor_filter(input, sigma, phi, frequency, offset=0.0,
 
     g = np.zeros(filter_size, dtype=np.complex)
     g[:] = np.exp(-0.5 * np.sum(np.divide(coords, sigmas) ** 2, axis=-1))
-    
-    g /= (2 * np.pi)** (input.ndim / 2) * np.prod(sigmas)
+
+    g /= (2 * np.pi) ** (input.ndim / 2) * np.prod(sigmas)
     orientation = np.ones(input.ndim)
     for i, p in enumerate(phi):
         orientation[i + 1] = orientation[i] * np.sin(p)
@@ -117,7 +124,9 @@ def gabor_filter(input, sigma, phi, frequency, offset=0.0,
     else:
         otype = None
 
-    output = ndi.convolve(input, weights=np.real(g), output=output, mode=mode, cval=cval)
+    output = ndi.convolve(
+        input, weights=np.real(g), output=output, mode=mode, cval=cval
+    )
     imag = ndi.convolve(input, weights=np.imag(g), output=otype, mode=mode, cval=cval)
 
     result = (output, imag)

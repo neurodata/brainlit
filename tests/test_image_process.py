@@ -1,9 +1,13 @@
 import pytest
 import numpy as np
-from brainlit import preprocessing as pp 
-from numpy.testing import (assert_equal, assert_allclose,
-                           assert_array_equal, assert_almost_equal,
-                           assert_array_almost_equal)
+from brainlit import preprocessing as pp
+from numpy.testing import (
+    assert_equal,
+    assert_allclose,
+    assert_array_equal,
+    assert_almost_equal,
+    assert_array_almost_equal,
+)
 
 
 def test_gaussian_truncate():
@@ -12,12 +16,12 @@ def test_gaussian_truncate():
     # of nonzero elements.
     arr = np.zeros((100, 100), float)
     arr[50, 50] = 1
-    num_nonzeros_2 = (np.abs(pp.gabor_filter(arr, 5, 0, 5, truncate = 2)[0]) > 0).sum()
-    assert_equal(num_nonzeros_2, 21**2)
-    num_nonzeros_5 = (np.abs(pp.gabor_filter(arr, 5, 0, 5, truncate = 5)[0]) > 0).sum()
-    assert_equal(num_nonzeros_5, 51**2)
+    num_nonzeros_2 = (np.abs(pp.gabor_filter(arr, 5, 0, 5, truncate=2)[0]) > 0).sum()
+    assert_equal(num_nonzeros_2, 21 ** 2)
+    num_nonzeros_5 = (np.abs(pp.gabor_filter(arr, 5, 0, 5, truncate=5)[0]) > 0).sum()
+    assert_equal(num_nonzeros_5, 51 ** 2)
 
-    f = np.abs(pp.gabor_filter(arr, [0.5, 2.5], 0, 5, truncate = 3.5)[0])
+    f = np.abs(pp.gabor_filter(arr, [0.5, 2.5], 0, 5, truncate=3.5)[0])
     fpos = f > 0
     n0 = fpos.any(axis=0).sum()
     # n0 should be 2*int(2.5*3.5 + 0.5) + 1
@@ -26,10 +30,10 @@ def test_gaussian_truncate():
     # n1 should be 2*int(0.5*3.5 + 0.5) + 1
     assert_equal(n1, 5)
 
+
 def test_gabor_filter():
     # Test generic case
-    input = np.array([[1, 2, 3],
-                      [2, 4, 6]], np.float32)
+    input = np.array([[1, 2, 3], [2, 4, 6]], np.float32)
     real, imag = pp.gabor_filter(input, 1.0, 0, 5)
     assert_equal(input.dtype, real.dtype)
     assert_equal(input.shape, real.shape)
@@ -92,7 +96,7 @@ def test_getLargestCC():
 
 # removeSmallCCs(segmentation, size)
 def test_removeSmallCCs():
-    img = np.zeros([50,50])
+    img = np.zeros([50, 50])
     with pytest.raises(ValueError):
         pp.getLargestCC(img)
     img[25, 25] = 1
