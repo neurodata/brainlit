@@ -38,3 +38,4 @@ These tutorials demonstrate tools to load and visualize data from s3 buckets or 
    :maxdepth: 1
 
    tutorials/viz/loading
+   tutorials/viz/visualize
