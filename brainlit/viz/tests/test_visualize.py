@@ -1,3 +1,4 @@
+import brainlit
 from brainlit.utils.ngl_pipeline import NeuroglancerSession
 from brainlit.viz import visualize
 import matplotlib
