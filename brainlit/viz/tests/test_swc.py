@@ -4,7 +4,7 @@ import networkx as nx
 from cloudvolume import CloudVolume
 
 
-from brainlit.viz import swc
+from brainlit.brainlit.viz import swc
 from brainlit.utils.ngl_pipeline import NeuroglancerSession
 
 
