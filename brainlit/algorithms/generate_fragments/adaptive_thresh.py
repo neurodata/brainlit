@@ -19,10 +19,12 @@ def get_seed(voxel):
     Returns
     -------
     tuple
-        A tuple containing the (z, y, x)-coordinates of the seed.
+        A tuple containing the (x, y, z)-coordinates of the seed.
   
     """
-    return (int(voxel[2]), int(voxel[1]), int(voxel[0]))
+    numpy_seed = (int(voxel[0]), int(voxel[1]), int(voxel[2]))
+    sitk_seed = (int(voxel[2]), int(voxel[1]), int(voxel[0]))
+    return numpy_seed, sitk_seed
 
 
 def get_img_T1(img):
@@ -126,7 +128,6 @@ def fast_marching_seg(img, seed, stopping_value=150, sigma=0.5):
     fm_img = sitk.Cast(sitk.RescaleIntensity(fm_img), sitk.sitkUInt8)
     labels = sitk.GetArrayFromImage(fm_img)
     labels = (~labels.astype(bool)).astype(int)
-    print(labels)
     return labels
 
 
@@ -249,14 +250,16 @@ def connected_threshold(img, seed, lower_threshold=None, upper_threshold=255):
     img_T1, img_T1_255 = get_img_T1(img)
     seg = sitk.Image(img_T1.GetSize(), sitk.sitkUInt8)
     seg.CopyInformation(img_T1)
-    seg[seed] = 1
+    # seg[seed] = 1
+    for s in seed:
+        seg[s] = 1
     seg = sitk.BinaryDilate(seg, 1)
 
     if lower_threshold == None:
         lower_threshold = thres_from_gmm(img)
 
     seg_con = sitk.ConnectedThreshold(
-        img_T1_255, seedList=[seed], lower=lower_threshold, upper=upper_threshold
+        img_T1_255, seedList=seed, lower=lower_threshold, upper=upper_threshold
     )
 
     vectorRadius = (1, 1, 1)
@@ -312,12 +315,14 @@ def confidence_connected_threshold(
     img_T1, img_T1_255 = get_img_T1(img)
     seg = sitk.Image(img_T1.GetSize(), sitk.sitkUInt8)
     seg.CopyInformation(img_T1)
-    seg[seed] = 1
+    # seg[seed] = 1
+    for s in seed:
+        seg[s] = 1
     seg = sitk.BinaryDilate(seg, 1)
 
     seg_con = sitk.ConfidenceConnected(
         img_T1_255,
-        seedList=[seed],
+        seedList=seed,
         numberOfIterations=num_iter,
         multiplier=multiplier,
         initialNeighborhoodRadius=initial_neighborhood_radius,
@@ -365,14 +370,15 @@ def neighborhood_connected_threshold(
     img_T1, img_T1_255 = get_img_T1(img)
     seg = sitk.Image(img_T1.GetSize(), sitk.sitkUInt8)
     seg.CopyInformation(img_T1)
-    seg[seed] = 1
+    for s in seed:
+        seg[s] = 1
     seg = sitk.BinaryDilate(seg, 1)
 
     if lower_threshold == None:
         lower_threshold = thres_from_gmm(img)
 
     seg_con = sitk.NeighborhoodConnected(
-        img_T1_255, seedList=[seed], lower=lower_threshold, upper=upper_threshold
+        img_T1_255, seedList=seed, lower=lower_threshold, upper=upper_threshold
     )
 
     vectorRadius = (1, 1, 1)
@@ -383,7 +389,7 @@ def neighborhood_connected_threshold(
     return labels
 
 
-def otsu(img):
+def otsu(img, seed):
     """ 
     Compute a threshold-based segmentation via Otsu's method.
   
@@ -406,10 +412,12 @@ def otsu(img):
     otsu_filter.SetOutsideValue(1)
     seg = otsu_filter.Execute(img_T1_255)
     labels = sitk.GetArrayFromImage(seg)
+    if labels[seed] != 1:
+        labels = abs(labels - 1)
     return labels
 
 
-def gmm_seg(img, random_seed=2):
+def gmm_seg(img, seed, random_seed=3):
     """ 
     Compute a threshold-based segmentation via a 2-component Gaussian mixture model.
   
@@ -434,4 +442,6 @@ def gmm_seg(img, random_seed=2):
     gmm = GaussianMixture(n_components=2, random_state=random_seed)
     y = gmm.fit_predict(flat_array)
     labels = y.reshape(img.shape).squeeze()
+    if labels[seed] != 1:
+        labels = abs(labels - 1)
     return labels
