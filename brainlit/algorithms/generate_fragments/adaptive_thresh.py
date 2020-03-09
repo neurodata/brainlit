@@ -417,7 +417,7 @@ def otsu(img, seed):
     return labels
 
 
-def gmm_seg(img, seed ,random_seed=3):
+def gmm_seg(img, seed, random_seed=3):
     """ 
     Compute a threshold-based segmentation via a 2-component Gaussian mixture model.
   
