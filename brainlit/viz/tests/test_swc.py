@@ -5,7 +5,7 @@ from cloudvolume import CloudVolume
 
 
 from brainlit.viz import swc
-# from brainlit.utils.ngl_pipeline import NeuroglancerSession
+from brainlit.utils.ngl_pipeline import NeuroglancerSession
 
 
 # read in s3 path to dataframe
@@ -31,6 +31,15 @@ G_s3 = swc.df_to_graph(df_voxel=df_voxel_s3)
 # convert directed graph into list of paths
 paths = swc.graph_to_paths(G)
 paths_s3 = swc.graph_to_paths(G_s3)
+
+# create a subset of the dataframe
+url = "s3://mouse-light-viz/precomputed_volumes/brain1"
+mip = 1
+ngl = NeuroglancerSession(url, mip=mip)
+buffer = [10, 10, 10]
+img, bounds, vox_in_img_list = ngl.pull_vertex_list(seg_id, vertex_list, buffer = buffer, expand = True)
+df_s3_subset = swc.generate_df_subset(df_s3[0:5],vox_in_img_list)
+
 
 def test_read_s3_dataframe():
     """test if output is correct type (pd.DataFrame)"""
@@ -219,4 +228,8 @@ def test_graph_to_paths_path_dim():
 def test_graph_to_paths_s3_path_dim():
     """test if numpy.arrays have 3 columns"""
     assert all(a.shape[1] == 3 for a in paths_s3)
+
+def test_generate_df_subset():
+    """test if output is a dataframe"""
+    assert isinstance(df_s3_subset, pd.DataFrame)
 
