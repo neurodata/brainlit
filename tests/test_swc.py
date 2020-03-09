@@ -11,11 +11,11 @@ from brainlit.utils.ngl_pipeline import NeuroglancerSession
 
 # read in s3 path to dataframe
 s3_path = "s3://mouse-light-viz/precomputed_volumes/brain1_segments"
-df_s3 = swc.read_s3(s3_path,seg_id=2,mip=1)
+df_s3 = swc.read_s3(s3_path, seg_id=2, mip=1)
 
 
 # read in swc file to dataframe
-swc_path = './tests/2018-08-01_G-002_consensus.swc'
+swc_path = "./tests/2018-08-01_G-002_consensus.swc"
 df = swc.read_swc(swc_path)
 
 # # convert swc dataframe from spatial units to voxel units
@@ -38,39 +38,47 @@ url = "s3://mouse-light-viz/precomputed_volumes/brain1"
 mip = 1
 ngl = NeuroglancerSession(url, mip=mip)
 buffer = [10, 10, 10]
-subneuron_df = df_s3[0:5] 
-vertex_list = subneuron_df['sample'].array 
-img, bounds, vox_in_img_list = ngl.pull_vertex_list(2, vertex_list, buffer = buffer, expand = True)
-df_s3_subset = swc.generate_df_subset(df_s3[0:5],vox_in_img_list)
+subneuron_df = df_s3[0:5]
+vertex_list = subneuron_df["sample"].array
+img, bounds, vox_in_img_list = ngl.pull_vertex_list(
+    2, vertex_list, buffer=buffer, expand=True
+)
+df_s3_subset = swc.generate_df_subset(df_s3[0:5], vox_in_img_list)
 
 
 def test_read_s3_dataframe():
     """test if output is correct type (pd.DataFrame)"""
     assert isinstance(df_s3, pd.DataFrame)
 
+
 def test_read_swc_dataframe():
     """test if output is correct type (pd.DataFrame)"""
     assert isinstance(df, pd.DataFrame)
+
 
 def test_read_swc_shape():
     """test if output is correct shape"""
     correct_shape = (1650, 7)
     assert df.shape == correct_shape
 
+
 def test_read_s3_shape():
     """test if output is correct shape"""
     correct_shape = (1650, 7)
     assert df_s3.shape == correct_shape
 
+
 def test_read_swc_columns():
     """test if columns are correct"""
-    col = ['sample', 'structure', 'x', 'y', 'z', 'r', 'parent']
+    col = ["sample", "structure", "x", "y", "z", "r", "parent"]
     assert list(df.columns) == col
+
 
 def test_read_s3_columns():
     """test if columns are correct"""
-    col = ['sample', 'structure', 'x', 'y', 'z', 'r', 'parent']
+    col = ["sample", "structure", "x", "y", "z", "r", "parent"]
     assert list(df_s3.columns) == col
+
 
 def test_space_to_voxel_int64():
     """test if output is numpy.array of int"""
@@ -80,13 +88,16 @@ def test_space_to_voxel_int64():
     )
     assert all(isinstance(n, np.int64) for n in voxel_coord)
 
+
 def test_swc_to_voxel_dataframe():
     """test if output is correct type (pd.DataFrame)"""
     assert isinstance(df_voxel, pd.DataFrame)
 
+
 def test_s3_to_voxel_dataframe():
     """test if output is correct type (pd.DataFrame)"""
     assert isinstance(df_voxel_s3, pd.DataFrame)
+
 
 def test_swc_to_voxel_shape():
     """test if output is correct shape"""
@@ -99,19 +110,22 @@ def test_s3_to_voxel_shape():
     correct_shape = (1650, 7)
     assert df_voxel_s3.shape == correct_shape
 
+
 def test_swc_to_voxel_columns():
     """test if columns are correct"""
-    col = ['sample', 'structure', 'x', 'y', 'z', 'r', 'parent']
+    col = ["sample", "structure", "x", "y", "z", "r", "parent"]
     assert list(df_voxel.columns) == col
+
 
 def test_s3_to_voxel_columns():
     """test if columns are correct"""
-    col = ['sample', 'structure', 'x', 'y', 'z', 'r', 'parent']
+    col = ["sample", "structure", "x", "y", "z", "r", "parent"]
     assert list(df_voxel_s3.columns) == col
+
 
 def test_swc_to_voxel_nonnegative():
     """test if coordinates are all nonnegative"""
-    coord = df_voxel[['x', 'y', 'z']].values
+    coord = df_voxel[["x", "y", "z"]].values
     assert np.greater_equal(coord, np.zeros(coord.shape)).all()
 
 
@@ -119,21 +133,24 @@ def test_df_to_graph_digraph():
     """test if output is directed graph"""
     assert isinstance(G, nx.DiGraph)
 
-def test_df_to_graph_nodes():
-    """test if graph has correct number of nodes"""
-    assert len(G.nodes) == len(df_voxel)
 
 def test_df_to_graph_nodes():
     """test if graph has correct number of nodes"""
     assert len(G.nodes) == len(df_voxel)
+
+
+def test_df_to_graph_nodes():
+    """test if graph has correct number of nodes"""
+    assert len(G.nodes) == len(df_voxel)
+
 
 def test_df_to_graph_coordinates():
     """test if graph coordinates are same as that of df_voxel"""
-    coord_df = df_voxel[['x', 'y', 'z']].values
+    coord_df = df_voxel[["x", "y", "z"]].values
 
-    x_dict = nx.get_node_attributes(G, 'x')
-    y_dict = nx.get_node_attributes(G, 'y')
-    z_dict = nx.get_node_attributes(G, 'z')
+    x_dict = nx.get_node_attributes(G, "x")
+    y_dict = nx.get_node_attributes(G, "y")
+    z_dict = nx.get_node_attributes(G, "z")
 
     x = [x_dict[i] for i in G.nodes]
     y = [y_dict[i] for i in G.nodes]
@@ -143,13 +160,14 @@ def test_df_to_graph_coordinates():
 
     assert np.array_equal(coord_graph, coord_df)
 
+
 def test_df_s3_to_graph_coordinates():
     """test if graph coordinates are same as that of df_voxel"""
-    coord_df_s3 = df_voxel_s3[['x', 'y', 'z']].values
+    coord_df_s3 = df_voxel_s3[["x", "y", "z"]].values
 
-    x_dict = nx.get_node_attributes(G_s3, 'x')
-    y_dict = nx.get_node_attributes(G_s3, 'y')
-    z_dict = nx.get_node_attributes(G_s3, 'z')
+    x_dict = nx.get_node_attributes(G_s3, "x")
+    y_dict = nx.get_node_attributes(G_s3, "y")
+    z_dict = nx.get_node_attributes(G_s3, "z")
 
     x = [x_dict[i] for i in G_s3.nodes]
     y = [y_dict[i] for i in G_s3.nodes]
@@ -166,6 +184,7 @@ def test_get_sub_neuron_digraph():
     end = np.array([15840, 4800, 6656])
     G_sub = swc.get_sub_neuron(G, bounding_box=(start, end))
     assert isinstance(G_sub, nx.DiGraph)
+
 
 def test_get_sub_s3_neuron_digraph():
     """test if output is directed graph"""
@@ -194,6 +213,7 @@ def test_get_sub_neuron_bounding_box():
     assert len(G_sub.nodes) == 0
     assert len(G_sub.edges) == 0
 
+
 def test_get_sub_s3_neuron_bounding_box():
     """test if bounding box produces correct number of nodes and edges"""
 
@@ -214,25 +234,29 @@ def test_get_sub_s3_neuron_bounding_box():
     assert len(G_sub_s3.nodes) == 0
     assert len(G_sub_s3.edges) == 0
 
+
 def test_graph_to_paths_length():
     """test if output has correct length"""
     num_branches = 179
     assert len(paths) == num_branches
+
 
 def test_graph_to_paths_s3_length():
     """test if output has correct length"""
     num_branches = 179
     assert len(paths_s3) == num_branches
 
+
 def test_graph_to_paths_path_dim():
     """test if numpy.arrays have 3 columns"""
     assert all(a.shape[1] == 3 for a in paths)
+
 
 def test_graph_to_paths_s3_path_dim():
     """test if numpy.arrays have 3 columns"""
     assert all(a.shape[1] == 3 for a in paths_s3)
 
+
 def test_generate_df_subset():
     """test if output is a dataframe"""
     assert isinstance(df_s3_subset, pd.DataFrame)
-
