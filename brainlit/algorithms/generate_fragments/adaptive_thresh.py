@@ -389,7 +389,7 @@ def neighborhood_connected_threshold(
     return labels
 
 
-def otsu(img):
+def otsu(img, seed):
     """ 
     Compute a threshold-based segmentation via Otsu's method.
   
@@ -412,10 +412,12 @@ def otsu(img):
     otsu_filter.SetOutsideValue(1)
     seg = otsu_filter.Execute(img_T1_255)
     labels = sitk.GetArrayFromImage(seg)
+    if labels[seed] != 1:
+        labels = abs(labels - 1)
     return labels
 
 
-def gmm_seg(img, random_seed=2):
+def gmm_seg(img, seed ,random_seed=3):
     """ 
     Compute a threshold-based segmentation via a 2-component Gaussian mixture model.
   
@@ -440,4 +442,6 @@ def gmm_seg(img, random_seed=2):
     gmm = GaussianMixture(n_components=2, random_state=random_seed)
     y = gmm.fit_predict(flat_array)
     labels = y.reshape(img.shape).squeeze()
+    if labels[seed] != 1:
+        labels = abs(labels - 1)
     return labels
