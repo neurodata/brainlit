@@ -4,7 +4,7 @@ import networkx as nx
 from cloudvolume import CloudVolume
 
 
-from brainlit.brainlit.viz import swc
+from brainlit.viz import swc
 from brainlit.utils.ngl_pipeline import NeuroglancerSession
 
 
@@ -37,7 +37,9 @@ url = "s3://mouse-light-viz/precomputed_volumes/brain1"
 mip = 1
 ngl = NeuroglancerSession(url, mip=mip)
 buffer = [10, 10, 10]
-img, bounds, vox_in_img_list = ngl.pull_vertex_list(seg_id, vertex_list, buffer = buffer, expand = True)
+subneuron_df = df_s3[0:5] 
+vertex_list = subneuron_df['sample'].array 
+img, bounds, vox_in_img_list = ngl.pull_vertex_list(2, vertex_list, buffer = buffer, expand = True)
 df_s3_subset = swc.generate_df_subset(df_s3[0:5],vox_in_img_list)
 
 

@@ -72,7 +72,7 @@ def find_smalldim(imgs):
         img = imgs
     shp = img.shape
     smallest_axis = np.argmin(shp)
-    return smallest_axis
+    return int(smallest_axis)
 
 
 def plot_image_hist(imgs, rows=1, titles=None):

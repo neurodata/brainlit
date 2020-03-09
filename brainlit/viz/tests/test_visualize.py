@@ -1,4 +1,7 @@
 from brainlit.utils.ngl_pipeline import NeuroglancerSession
+from brainlit.viz import visualize
+import matplotlib
+
 ngl_sess = NeuroglancerSession(mip = 1)
 img, bbbox, vox = ngl_sess.pull_chunk(2, 300, 1, 1, 1)
 
@@ -6,7 +9,7 @@ fig_2d, axis_2d = visualize.plot_image_2d(img[:,100,:])
 fig_3d, axis_3d = visualize.plot_image_mip(img)
 smallest_axis = visualize.find_smalldim(img)
 
-hist_tuple = visualize.plot_image_hist(imgs)
+hist_tuple = visualize.plot_image_hist(img)
 
 def test_fig_plot_image_2d():
     """test if fig output is correct type (matplotlib figure)"""
