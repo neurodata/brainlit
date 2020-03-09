@@ -1,4 +1,4 @@
-# Brainlight
+# Brainlit
 Link to mouselight article [here](https://www.hhmi.org/news/mouselight-project-maps-1000-neurons-and-counting-in-the-mouse-brain).
 
 [![Python](https://img.shields.io/badge/python-3.7-blue.svg)]()
