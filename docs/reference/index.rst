@@ -7,4 +7,5 @@ Reference
     :maxdepth: 2
 
     preprocessing
+    viz
     utils
