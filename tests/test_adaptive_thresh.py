@@ -8,9 +8,10 @@ import numpy as np
 from cloudvolume import CloudVolume
 from cloudvolume.lib import Bbox
 
+
 def test_get_seed():
     ngl_session = NeuroglancerSession()
-    img, _, vox = ngl_session.pull_voxel(2, 102)#, nx=1, ny=1, nz=1)
+    img, _, vox = ngl_session.pull_voxel(2, 102)
     numpy_seed, sitk_seed = adaptive_thresh.get_seed(vox)
     assert isinstance(numpy_seed, tuple)
     assert img.squeeze().ndim == len(numpy_seed)
@@ -20,7 +21,7 @@ def test_get_seed():
 
 def test_get_img_T1():
     ngl_session = NeuroglancerSession()
-    img, _, _ = ngl_session.pull_voxel(2, 102)#, nx=1, ny=1, nz=1)
+    img, _, _ = ngl_session.pull_voxel(2, 102)
     img_T1, img_T1_255 = adaptive_thresh.get_img_T1(img)
     correct_shape = img.squeeze().shape
     img_T1_array = sitk.GetArrayFromImage(img_T1)
@@ -35,7 +36,7 @@ def test_get_img_T1():
 
 def test_thres_from_gmm():
     ngl_session = NeuroglancerSession()
-    img, _, _ = ngl_session.pull_voxel(2, 102)#, nx=1, ny=1, nz=1)
+    img, _, _ = ngl_session.pull_voxel(2, 102)
     thres = adaptive_thresh.thres_from_gmm(img)
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
     img_T1_255_array = sitk.GetArrayFromImage(img_T1_255)
@@ -62,12 +63,12 @@ def test_fast_marching_seg():
 
 def test_level_set_seg():
     ngl_session = NeuroglancerSession()
-    img, _, vox = ngl_session.pull_voxel(2, 102)#, nx=1, ny=1, nz=1)
+    img, _, vox = ngl_session.pull_voxel(2, 102)
     numpy_seed, sitk_seed = adaptive_thresh.get_seed(vox)
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
     img_T1_255_array = sitk.GetArrayFromImage(img_T1_255)
 
-    labels = adaptive_thresh.level_set_seg(img, sitk_seed, factor = 1.5)
+    labels = adaptive_thresh.level_set_seg(img, sitk_seed, factor=1.5)
     assert labels.shape == img_T1_255_array.shape
     assert labels.min() == 0
     assert labels.max() == 1
@@ -79,7 +80,7 @@ def test_level_set_seg():
 
 def test_connected_threshold():
     ngl_session = NeuroglancerSession()
-    img, _, vox = ngl_session.pull_voxel(2, 102)#, nx=1, ny=1, nz=1)
+    img, _, vox = ngl_session.pull_voxel(2, 102)
     numpy_seed, sitk_seed = adaptive_thresh.get_seed(vox)
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
     img_T1_255_array = sitk.GetArrayFromImage(img_T1_255)
@@ -96,7 +97,7 @@ def test_connected_threshold():
 
 def test_confidence_connected_threshold():
     ngl_session = NeuroglancerSession()
-    img, _, vox = ngl_session.pull_voxel(2, 102)#, nx=1, ny=1, nz=1)
+    img, _, vox = ngl_session.pull_voxel(2, 102)  # , nx=1, ny=1, nz=1)
     numpy_seed, sitk_seed = adaptive_thresh.get_seed(vox)
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
     img_T1_255_array = sitk.GetArrayFromImage(img_T1_255)
@@ -113,7 +114,7 @@ def test_confidence_connected_threshold():
 
 def test_neighborhood_connected_threshold():
     ngl_session = NeuroglancerSession()
-    img, _, vox = ngl_session.pull_voxel(2, 102)#, nx=1, ny=1, nz=1)
+    img, _, vox = ngl_session.pull_voxel(2, 102)
     numpy_seed, sitk_seed = adaptive_thresh.get_seed(vox)
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
     img_T1_255_array = sitk.GetArrayFromImage(img_T1_255)
@@ -130,7 +131,7 @@ def test_neighborhood_connected_threshold():
 
 def test_otsu():
     ngl_session = NeuroglancerSession()
-    img, _, vox = ngl_session.pull_voxel(2, 102)#, nx=1, ny=1, nz=1)
+    img, _, vox = ngl_session.pull_voxel(2, 102)
     numpy_seed, _ = adaptive_thresh.get_seed(vox)
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
     img_T1_255_array = sitk.GetArrayFromImage(img_T1_255)
@@ -144,7 +145,7 @@ def test_otsu():
 
 def test_gmm_seg():
     ngl_session = NeuroglancerSession()
-    img, _, vox = ngl_session.pull_voxel(2, 102)#, nx=1, ny=1, nz=1)
+    img, _, vox = ngl_session.pull_voxel(2, 102)
     numpy_seed, _ = adaptive_thresh.get_seed(vox)
     _, img_T1_255 = adaptive_thresh.get_img_T1(img)
     img_T1_255_array = sitk.GetArrayFromImage(img_T1_255)
@@ -154,4 +155,3 @@ def test_gmm_seg():
     assert labels.min() == 0
     assert labels.max() == 1
     assert labels[numpy_seed] == 1
-
