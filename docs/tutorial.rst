@@ -6,7 +6,7 @@ Tutorial
 
 Preprocessing
 =============
-This tutorial demonstrates different preprocessing methods: connected components, PCA whitening, paddinng, and using gabor filters.
+These tutorials demonstrate different preprocessing methods: connected components, PCA whitening, paddinng, and gabor filters.
 
 .. toctree::
    :maxdepth: 1
@@ -28,3 +28,13 @@ This tutorial presents feature extraction methods: neighborhood-based and linear
       
    tutorials/features/features
 
+.. _viz_tutorials:
+
+Vizualization
+=============
+These tutorials demonstrate tools to load and visualize data from s3 buckets or .swc files.
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/viz/loading
