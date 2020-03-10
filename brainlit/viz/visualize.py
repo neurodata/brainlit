@@ -104,47 +104,22 @@ def plot_image_hist(imgs, rows=1, titles=None):
         return histo
 
 
-def plot_image_pts(imgs, voxels, rows=1, titles=None, colorbar=False):
+def plot_image_pts(img, voxels, colorbar=False):
+    """ Visualize a chunk around a voxel 
+    Arguments:
+        img {2D array} 
+        voxels: 2D array 
+    """
+    fig, axes = plt.subplots()
 
-    if len(imgs) != len(voxels):
-        raise ValueError("imgs and voxels must have same length in plot_image_pts")
+    if len(voxels.shape) > 1:
+        axes.imshow(img)
+        axes.scatter(voxels[:,0],voxels[:,1])
+    else:
+        axes.imshow(img)
+        axes.scatter(voxels[0],voxels[1])
 
-    axis = find_smalldim(imgs)
-
-    l = len(imgs)
-    cols = np.ceil(l / rows).astype(int)
-    fig, axes = plt.subplots(rows, cols)
-
-    for i, img in enumerate(imgs):
-        img = np.amax(img, axis)
-        img = np.swapaxes(img, 0, 1)
-        if len(imgs) > 1:
-            ax = axes.flatten()[i]
-        else:
-            ax = axes
-        ax.imshow(img)
-
-        vox = voxels[i]
-        if axis == 0:
-            x = vox[:, 1]
-            y = vox[:, 2]
-            c = vox[:, axis] - imgs[i].shape[axis] / 2
-        elif axis == 1:
-            x = vox[:, 0]
-            y = vox[:, 2]
-            c = vox[:, axis] - imgs[i].shape[axis] / 2
-        elif axis == 2:
-            x = vox[:, 0]
-            y = vox[:, 1]
-            c = vox[:, axis] - imgs[i].shape[axis] / 2
-
-        sc = ax.scatter(x, y, c=c, cmap=plt.get_cmap("magma"))
-        ax.set_xticks([])
-        ax.set_yticks([])
-        if titles is not None:
-            ax.set_title(titles[i])
     if colorbar:
-        cbar = plt.colorbar(sc)
-        cbar.ax.get_yaxis()
-        cbar.ax.set_ylabel("Depth coordinate distance from center")
+            axes.colorbar()
+
     return fig, axes
