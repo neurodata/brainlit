@@ -153,6 +153,31 @@ def upload_chunks(vol, files, bin_paths, parallel=True):
                 upload_chunk(vol, ranges, img)
 
 
+def get_file_paths(image_dir, num_resolutions, channel):
+    """Get filepaths along the octree-format image directory
+
+    Arguments:
+        image_dir {str} -- filepath to HIGHEST LEVEL(lowest res) of octree dir
+        num_resolutions {int} -- Number of resolutions for which downsampling has been done
+        channel {int} -- Channel number to upload
+    Returns:
+        files_ordered {list} -- list of file paths, 1st dim contains list for each res
+        paths_bin {list} -- list of binary paths, 1st dim contains lists for each res
+    """
+    files = [str(i).split("/") for i in Path(image_dir).rglob(f"*.{channel}.tif")]
+    parent_dirs = len(image_dir.split("/"))
+    # Create list with 3 indices, first is the resolution level, second is the file, third are the elements of the file's path
+    files_ordered = [
+        [i for i in files if len(i) == j + parent_dirs] for j in range(num_resolutions)
+    ]
+    paths_bin = [
+        [[f"{int(j)-1:03b}" for j in k if len(j) == 1] for k in i]
+        for i in files_ordered
+    ]
+    print(f"got files and binary representations of paths.")
+    return files_ordered, paths_bin
+
+
 def main():
     """
     Runs the script to upload big brain files organized as octree (see https://github.com/neurodata/mouselight_code/issues/1)
@@ -193,26 +218,28 @@ def main():
         default=7,
         type=int,
     )
-
     args = parser.parse_args()
-    files = [
-        str(i).split("/") for i in Path(args.image_dir).rglob(f"*.{args.channel}.tif")
-    ]
-    parent_dirs = len(args.image_dir.split("/"))
-    # Create list with 3 indices, first is the resolution level, second is the file, third are the elements of the file's path
-    files_ordered = [
-        [i for i in files if len(i) == j + parent_dirs]
-        for j in range(args.num_resolutions)
-    ]
-    paths_bin = [
-        [[f"{int(j)-1:03b}" for j in k if len(j) == 1] for k in i]
-        for i in files_ordered
-    ]
-    print(f"got files and binary representations of paths.")
+    # files = [
+    #     str(i).split("/") for i in Path(args.image_dir).rglob(f"*.{args.channel}.tif")
+    # ]
+    # parent_dirs = len(args.image_dir.split("/"))
+    # # Create list with 3 indices, first is the resolution level, second is the file, third are the elements of the file's path
+    # files_ordered = [
+    #     [i for i in files if len(i) == j + parent_dirs]
+    #     for j in range(args.num_resolutions)
+    # ]
+    # paths_bin = [
+    #     [[f"{int(j)-1:03b}" for j in k if len(j) == 1] for k in i]
+    #     for i in files_ordered
+    # ]
+    # print(f"got files and binary representations of paths.")
+    files_ordered, bin_paths = get_file_paths(
+        args.image_dir, args.num_resolutions, args.channel
+    )
 
     vols = create_image_layer(args.s3_bucket, args.voxel_size, args.num_resolutions)
 
-    pbar = tqdm(enumerate(zip(files_ordered, paths_bin)), total=len(files_ordered))
+    pbar = tqdm(enumerate(zip(files_ordered, bin_paths)), total=len(files_ordered))
     for idx, item in pbar:
         if args.chosen_res == -1:
             pbar.set_description_str(
