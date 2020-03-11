@@ -114,12 +114,12 @@ def plot_image_pts(img, voxels, colorbar=False):
 
     if len(voxels.shape) > 1:
         axes.imshow(img)
-        axes.scatter(voxels[:,0],voxels[:,1])
+        axes.scatter(voxels[:, 0], voxels[:, 1])
     else:
         axes.imshow(img)
-        axes.scatter(voxels[0],voxels[1])
+        axes.scatter(voxels[0], voxels[1])
 
     if colorbar:
-            axes.colorbar()
+        axes.colorbar()
 
     return fig, axes
