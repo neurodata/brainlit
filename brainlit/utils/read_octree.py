@@ -3,6 +3,7 @@ from pathlib import Path
 from skimage import io
 import cv2
 
+
 class octree(object):
     def __init__(self, root_dir):
         """Create octree object based on the root directory
