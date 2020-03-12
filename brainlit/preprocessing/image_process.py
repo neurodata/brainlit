@@ -22,7 +22,8 @@ def gabor_filter(
 
     Parameters
     ----------
-    %(input)s
+    input : array_like
+        The input array.
     sigma : scalar or sequence of scalars
         Standard deviation for Gaussian kernel. The standard
         deviations of the Gaussian filter are given for each axis as a
@@ -34,13 +35,18 @@ def gabor_filter(
         is a sequence of length n-1. Convention follows
         https://en.wikipedia.org/wiki/N-sphere#Spherical_coordinates.
     frequency : scalar
-        Frequency of the complex exponential. Units are revolutions/voxels. <- other one is pixels
+        Frequency of the complex exponential. Units are revolutions/voxels. 
     offset : scalar
         Phase shift of the complex exponential. Units are radians.
-
-    %(output)s
-    %(mode_multiple)s
-    %(cval)s
+    output : array or dtype, optional
+        The array in which to place the output, or the dtype of the returned array. 
+        By default an array of the same dtype as input will be created. Only the real component will be saved
+        if output is an array.
+    mode : {‘reflect’, ‘constant’, ‘nearest’, ‘mirror’, ‘wrap’}, optional
+        The mode parameter determines how the input array is extended beyond its boundaries. 
+        Default is ‘reflect’.
+    cval : scalar, optional
+        Value to fill past edges of input if mode is ‘constant’. Default is 0.0.
     truncate : float
         Truncate the filter at this many standard deviations.
         Default is 4.0.
@@ -66,7 +72,7 @@ def gabor_filter(
 
     Examples
     --------
-    >>> from scipy.ndimage import gabor_filter
+    >>> from brainlit.preprocessing import gabor_filter
     >>> a = np.arange(50, step=2).reshape((5,5))
     >>> a
     array([[ 0,  2,  4,  6,  8],
@@ -75,7 +81,16 @@ def gabor_filter(
            [30, 32, 34, 36, 38],
            [40, 42, 44, 46, 48]])
     >>> gabor_filter(a, sigma=1, phi=[0.0], frequency=0.1)
-    array([[ ? ]])
+    (array([[ 3,  5,  6,  8,  9],
+            [ 9, 10, 12, 13, 14],
+            [16, 18, 19, 21, 22],
+            [24, 25, 27, 28, 30],
+            [29, 30, 32, 34, 35]]), 
+     array([[ 0,  0, -1,  0,  0],
+            [ 0,  0, -1,  0,  0],
+            [ 0,  0, -1,  0,  0],
+            [ 0,  0, -1,  0,  0],
+            [ 0,  0, -1,  0,  0]]))
 
     >>> from scipy import misc
     >>> import matplotlib.pyplot as plt
