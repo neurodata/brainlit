@@ -5,18 +5,15 @@ import matplotlib
 
 ngl_sess = NeuroglancerSession(mip=1)
 img, bbbox, vox = ngl_sess.pull_chunk(2, 300, 1, 1, 1)
-img_slices = [img[:, 100, :],
-            img[:, 99, :],
-            img[:, 97, :],
-            img[:, 96, :]]
+img_slices = [img[:, 100, :], img[:, 99, :], img[:, 97, :], img[:, 96, :]]
 img_list = [img, img]
 
 
 def test_fig_plot_image_2d_given_one():
     """test if fig output is correct type (matplotlib figure)"""
-    fig_2d, axis_2d = visualize.plot_image_2d(img[:, 100, :],
-                                            titles=["test"],
-                                            colorbar=True)
+    fig_2d, axis_2d = visualize.plot_image_2d(
+        img[:, 100, :], titles=["test"], colorbar=True
+    )
     assert isinstance(fig_2d, matplotlib.figure.Figure)
     assert isinstance(axis_2d, matplotlib.axes._subplots.Subplot)
 
@@ -70,6 +67,6 @@ def test_plot_image_hist_list():
 
 def test_plot_img_pts():
     """test plot_image_pts method with voxels"""
-    fig, axes = visualize.plot_image_pts(img[:,:,100], vox, colorbar=True)
+    fig, axes = visualize.plot_image_pts(img[:, :, 100], vox, colorbar=True)
     assert isinstance(fig, matplotlib.figure.Figure)
     assert isinstance(axes, matplotlib.axes._subplots.Subplot)
