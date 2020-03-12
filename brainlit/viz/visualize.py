@@ -28,11 +28,11 @@ def plot_image_2d(imgs, titles=None, rows=1, colorbar=False):
     else:
         img = np.swapaxes(imgs, 0, 1)
         fig, axis = plt.subplots()
-        axis.imshow(img)
+        im = axis.imshow(img)
         axis.set_xticks([])
         axis.set_yticks([])
         if colorbar:
-            axis.colorbar()
+            plt.colorbar(im, ax=axis)
         return fig, axis
 
 
@@ -90,8 +90,6 @@ def plot_image_hist(imgs, rows=1, titles=None):
             img = np.swapaxes(img, 0, 1)
             ax = axes[i]
             ax.hist(img.flatten(), bins=50)
-            ax.set_xticks(fontsize=12)
-            ax.set_yticks(fontsize=12)
             ax.set_ylabel("Count", fontsize=12)
             ax.set_xlabel("Intensity", fontsize=12)
             if titles is not None:
@@ -113,13 +111,13 @@ def plot_image_pts(img, voxels, colorbar=False):
     fig, axes = plt.subplots()
 
     if len(voxels.shape) > 1:
-        axes.imshow(img)
+        im = axes.imshow(img)
         axes.scatter(voxels[:, 0], voxels[:, 1])
     else:
-        axes.imshow(img)
+        im = axes.imshow(img)
         axes.scatter(voxels[0], voxels[1])
 
     if colorbar:
-        axes.colorbar()
+        plt.colorbar(im, ax=axes)
 
     return fig, axes
