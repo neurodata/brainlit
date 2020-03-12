@@ -1,238 +1,190 @@
-import numpy as np
-import brainlit
-from brainlit.utils import read_octree as octree
-from brainlit.utils import combine_swc_img
-from brainlit.utils import read_swc
-from brainlit.plot import visualize
-from brainlit.utils import swc2voxel
-from brainlit.preprocessing import image_process
-from brainlit.preprocessing import preprocess
-from scipy import ndimage as ndi
-from matplotlib import pyplot as plt
-from pathlib import Path
 import pandas as pd
-from skimage import exposure
-from sklearn.model_selection import train_test_split
+import numpy as np
+import pickle
+import time
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
-from sklearn.utils import shuffle
-from itertools import product
 from statsmodels.discrete.discrete_model import Logit
-from statsmodels.api import add_constant
-from sklearn.model_selection import KFold
-from sklearn.metrics import auc
 from sklearn.metrics import plot_roc_curve
-from sklearn import preprocessing
+from sklearn import datasets, metrics, model_selection
+
+from keras.models import Sequential
+from keras.layers import Dense,  Activation
+from keras.regularizers import L1L2
+from keras.utils import plot_model
+
+from sklearn.preprocessing import LabelEncoder
+from scipy import stats
+import seaborn as sns
 
 
-examine_failure = False
-stats = False
-append = "nei"
-output_fail = "/cis/home/tathey/projects/mouselight/images/01_22_failure/"
-
-kernels, names = image_process.getKernels(neighborhood=[12, 12, 4])
-
-num_kernels = len(kernels)
-
-# ****************Read data**********
-print("Loading Training Data...")
-df_iter = pd.read_csv(
-    "../large_files/neighborhood_01_24_555.csv", header=None, index_col=0
-)  # , chunksize=100000, iterator=True)
-
-df_iter = [df_iter]
-
-for iter_num, df in enumerate(df_iter, 1):
-    #%%
-    print("Iteration: " + str(iter_num))
-    if iter_num >= 5:
-        break
-    vars = np.arange(125)  # [0,3,7,12,13,19,25,29,35,38]
-
-    kernels = [kernels[v] for v in vars]
-
-    dfn = df.to_numpy()
-    X = dfn[:, 3:].astype(float)
-    print(X.shape)
-    X = X[:, vars]
-    # names = list(names[v] for v in vars)
-    # names.insert(0,'constant')
-    y = dfn[:, 2].astype(int)
-    locs = dfn[:, :2].astype(int)
-
+def MLP_LR_NN(X_train,y_train):
     """
-    #**************read manual data*****
-    df = pd.read_csv('./mouselight_code/experiment_output/features_01_14_manual.csv',header=None,
-        index_col=0)
+    Keras model for nonlinear feature activation regression.
+    Running this method defines and trains the model.
 
-    #%%
+    Parameters
+    ----------
+    X_train : np.array
+        The training data points
+    y_train : np.array
+        The training data labels
 
-    dfn = df.to_numpy()
-    X2 = dfn[:,4:].astype(float)
-    X2 = X2[:,vars]
-    print(X2.shape)
-    X = np.concatenate((X,X2), axis=0)
-    y2 = dfn[:,3].astype(int)
-    y = np.concatenate((y,y2), axis=0)
-    locs2 = -1* np.ones((X2.shape[0],2),dtype=int)
-    locs = np.concatenate((locs,locs2), axis=0)
+    Returns
+    -------
+    model : Model object
+        The model after it has been trained
+    history : list
+        Contains accuracy and score over epochs.
+        Used to compare results with validation.
     """
+    encoder = LabelEncoder()
+    encoder.fit(y_train)
+    encoded_Y = encoder.transform(y_train)
+    model = Sequential()
 
-    print("Preprocessing Data...")
-    preprocesser = preprocessing.StandardScaler().fit(X)
-    X = preprocesser.transform(X)
+    model.add(Dense(63, activation='relu',kernel_regularizer=L1L2(l1=0.0, l2=0.1),
+                   input_dim = len(X_train[0])))
+    model.add(Dense(1,  # output dim is 2, one score per each class
+                    activation='sigmoid',
+                    kernel_regularizer=L1L2(l1=0.0, l2=0.1),
+                    input_dim=20))  # input dimension = number of features your data has
+    model.compile(optimizer='adam',loss='binary_crossentropy',metrics=['accuracy'])
+    history = model.fit(X_train, encoded_Y, epochs=70, batch_size = 20,verbose = 0)
+    return model,history
 
-    if stats:
-        X = add_constant(X)
-    else:
-        tprs = []
-        aucs = []
-        mean_fpr = np.linspace(0, 1, 100)
-        fig, ax = plt.subplots()
 
-    print(X.shape)
-    print(np.sum(y))
-    # *******************************************8
-    print("Training and Evaluating...")
-    kf = KFold(n_splits=5, shuffle=True)
-    acc = []
+def run_classifiers(X_sel, y_sel, X_test, y_test, classifiers,
+           names, filename='Non_linear_classification.csv',
+           num_runs=2):
+    """
+    Partially complete.
+    Trains a list of classifiers and evaluates them.
 
-    for i, (train_index, test_index) in enumerate(kf.split(X)):
-        X_train, X_test = X[train_index, :], X[test_index, :]
-        y_train, y_test = y[train_index], y[test_index]
-        locs_train, locs_test = locs[train_index, :], locs[test_index, :]
+    Paramters
+    ---------
+    X_sel : np.array
+        training data points
+    y_sel : np.array
+        training data labels
+    X_test : np.array
+        testing data points
+    y_test : np.array
+        testing data labels
+    classifiers : list
+        a list of classifier objects
+    names : dict
+        dictionary of names for each classifier along with color of line
+    filename : str, optional (default = "Non_linear_classification.csv")
+        the filename to save results to, as a csv
+    num_runs : int, optional (default = 2)
+        the number of runs to average across
 
-        if stats:
-            # *************************statsmodels
+    Returns
+    -------
+    f : file
+        the csv file containing names, accuracies, train and test time
+    """
+    size = len(y_sel)
 
-            logr_model = Logit(y_train, X_train)
+    f = open(filename, 'w+')
+    f.write("classifier,n,Accuracy,trainTime,testTime,iterate\n")
+    f.flush()
 
-            logr = logr_model.fit_regularized(method="l1", max_iter=500, alpha=1.0)
+    ns = np.logspace(1, np.log10(size), base=10, num=4).astype(int)
+    runList = [(clf) for clf in zip(classifiers, [key for key in names])]
+    for n in tqdm(ns):
+        for iteration in tqdm(range(num_runs)):
+            X_train = X_sel[:n]
+            y_train = np.array(y_sel[:n]).ravel()
 
-            print(logr.summary(xname=names))
+            for clf in tqdm(runList):
+                if(clf[1] == "MLP-relu-LR" ): #check if from Keras
+                    trainStartTime = time.time()
+                    cls,his = MLP_LR_NN(X_train,y_train)
+                    trainEndTime = time.time()
+                    trainTime = trainEndTime - trainStartTime
+                    encoder = LabelEncoder()
+                    encoder.fit(y_test)
+                    en_y_test = encoder.transform(y_test)
 
-            y_test_predict = logr.predict(X_test)
-            y_test_predict = np.rint(y_test_predict).astype(int)
-            acc.append(accuracy_score(y_test, y_test_predict))
-        else:
-            print("split")
-            logr = LogisticRegression(max_iter=2000).fit(X_train, y_train)
+                    testStartTime = time.time()
+                    score = cls.evaluate(X_test, en_y_test, batch_size=20)
+                    testEndTime = time.time()
+                    testTime = testEndTime - testStartTime
+                    acc=score[1]
+                else:
+                    #training
+                    trainStartTime = time.time()
+                    clf[0].fit(X_train, y_train)
+                    trainEndTime = time.time()
+                    trainTime = trainEndTime - trainStartTime
+                    #prediction
+                    testStartTime = time.time()
+                    out = clf[0].predict(X_test)
+                    testEndTime = time.time()
+                    testTime = testEndTime - testStartTime
+                    #accuracy
+                    acc = accuracy_score(y_test,out)
+                #writing to file
+                ####("variable,num of training samples,Lhat,avg precision,trainTime,testTime,iterate")
+                f.write(f"{clf[1]}, {n}, {acc:2.9f}, {trainTime:2.9f}, {testTime:2.9f}, {iteration}\n")
+                f.flush()
+    f.close()
+    return f
 
-            viz = plot_roc_curve(
-                logr,
-                X_test,
-                y_test,
-                name="ROC fold {}".format(i),
-                alpha=0.3,
-                lw=1,
-                ax=ax,
-            )
-            interp_tpr = np.interp(mean_fpr, viz.fpr, viz.tpr)
-            interp_tpr[0] = 0.0
-            tprs.append(interp_tpr)
-            aucs.append(viz.roc_auc)
-            y_test_predict = logr.predict(X_test)
-            acc.append(accuracy_score(y_test, y_test_predict))
 
-            if examine_failure:
-                examine_failures(y_test, y_test_predict, locs_test)
+def plot_data(filepath, names, plotWhat, y_label, title):
+    """
+    Plots data stored in the file generated by run_classifiers.
 
-    if not stats:
-        ax.plot(
-            [0, 1], [0, 1], linestyle="--", lw=2, color="r", label="Chance", alpha=0.8
-        )
-        mean_tpr = np.mean(tprs, axis=0)
-        mean_tpr[-1] = 1.0
-        mean_auc = auc(mean_fpr, mean_tpr)
-        std_auc = np.std(aucs)
-        ax.plot(
-            mean_fpr,
-            mean_tpr,
-            color="b",
-            label=r"Mean ROC (AUC = %0.2f $\pm$ %0.4f)" % (mean_auc, std_auc),
-            lw=2,
-            alpha=0.8,
-        )
-        print("AUC:")
-        print(mean_auc)
-        std_tpr = np.std(tprs, axis=0)
-        tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
-        tprs_lower = np.maximum(mean_tpr - std_tpr, 0)
-        ax.fill_between(
-            mean_fpr,
-            tprs_lower,
-            tprs_upper,
-            color="grey",
-            alpha=0.2,
-            label=r"$\pm$ 1 std. dev.",
-        )
+    Parameters
+    ----------
+    filepath : string
+        Path to data file.
+    names : dict
+        dictionary of names for each classifier along with color of line
+    plotWhat : string
+        Parameter to plot.
+    y_label : string
+        The y axis label.
+    title : string
+        The title of the plot.
 
-        ax.set(
-            xlim=[-0.05, 1.05],
-            ylim=[-0.05, 1.05],
-            title="ROC for Feature-based Classifier",
-        )
-        ax.legend(loc="lower right")
-        plt.show()
-    print(np.mean(acc))
+    Returns
+    -------
+    fig : Matplotlib figure object
+    ax : Matplotlib axis object
+    """
+    dat = pd.read_csv(filepath)
+    d1 = pd.DataFrame(columns = ['classifier', 'n', plotWhat, 'color'])
 
-# *******************************************8
-def examine_failures(y_true, y_guess, locs):
-    im_path = "/cis/net/io50/local/jacs/data/jacsstorage/samples/2018-08-01"
-    tree = octree.octree(im_path)
-    swc_dir_path = Path(
-        "/cis/net/io50/local/jacs/data/jacsstorage/samples/2018-08-01/swcs/17_9_19_consensus/2018-08-01-consensus-swcs/"
-    )
-    files = list(swc_dir_path.glob("**/*.swc"))[1:]
+    k = 0
+    for ni in np.unique(dat['n']):
+        for cl in np.unique(dat['classifier']):
 
-    len_swcpts = locs.shape[0]
+            tmp = dat[np.logical_and(dat['classifier'] == cl,dat['n'] == ni)][['n', plotWhat]]
+            se = stats.sem(tmp[plotWhat].astype(float))
+            list(tmp.mean())
+            d1.loc[k] = [cl] + list(tmp.mean()) + [names[cl]]
+            k += 1
 
-    wrong_idxs = np.argwhere(y_true != y_guess).squeeze()
 
-    for wrong_idx in wrong_idxs:
-        if np.random.rand() < 0.995:
-            continue
-        true_class = y_true[wrong_idx]
-        loc = locs[wrong_idx, :]
-        print(loc)
-        # sample from manual data
-        if loc[0] == -1:
-            continue
+    sns.set(style="darkgrid", rc={'figure.figsize':[12,8], 'figure.dpi': 300})
+    fig, ax = plt.subplots(figsize = (8,6))
 
-        file = loc[0]
-        pt = loc[1]
+    for key in names.keys():
+        grp = d1[d1['classifier'] == key]
+        ax = grp.plot(ax=ax, kind='line', x='n', y=plotWhat, label=key, \
+                c = names[key], alpha =0.65)
+        ax.set_xscale('log')
 
-        df, _, _, _ = read_swc.read_swc_offset(files[file])
-        img0, start = combine_swc_img.points2img(
-            tree, df.iloc[pt : pt + 1].reset_index(), pad=[31, 31, 31]
-        )
-        img0 = preprocess.center(img0)
-
-        if true_class == 1:
-            print(1)
-            points = combine_swc_img.points2voxel(
-                tree, df.iloc[pt : pt + 1].reset_index(), start
-            )
-            voxels = points[["xvox", "yvox", "zvox"]].values
-            ttl = "Incorrectly Labeled as Background"
-        else:
-            voxels = np.array([[15, 15, 15]])
-            print(0)
-            ttl = "Incorrectly Labeled as Axon"
-        voxels = [voxels]
-
-        f, a = visualize.plot_image_pts([img0], voxels, titles=[ttl])
-
-        fname = (
-            output_fail
-            + str(file)
-            + "_"
-            + str(pt)
-            + "_"
-            + append
-            + "_"
-            + str(true_class)
-            + ".png"
-        )
-        plt.savefig(fname)
-        plt.close()
+    plt.legend(loc='top left',title='Algorithm')
+    plt.title(title)
+    plt.ylabel(y_label)
+    plt.xlabel('Number of Training Samples')
+    return fig, ax
