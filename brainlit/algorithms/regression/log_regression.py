@@ -22,7 +22,7 @@ from scipy import stats
 import seaborn as sns
 
 
-def MLP_LR_NN(X_train,y_train):
+def MLP_LR_NN(X_train,y_train,n_features):
     """
     Keras model for nonlinear feature activation regression.
     Running this method defines and trains the model.
@@ -33,6 +33,8 @@ def MLP_LR_NN(X_train,y_train):
         The training data points
     y_train : np.array
         The training data labels
+    n_features: int
+        Number of input features (X_train)
 
     Returns
     -------
@@ -47,7 +49,7 @@ def MLP_LR_NN(X_train,y_train):
     encoded_Y = encoder.transform(y_train)
     model = Sequential()
 
-    model.add(Dense(63, activation='relu',kernel_regularizer=L1L2(l1=0.0, l2=0.1),
+    model.add(Dense(n_features, activation='relu',kernel_regularizer=L1L2(l1=0.0, l2=0.1),
                    input_dim = len(X_train[0])))
     model.add(Dense(1,  # output dim is 2, one score per each class
                     activation='sigmoid',
@@ -131,7 +133,6 @@ def run_classifiers(X_sel, y_sel, X_test, y_test, classifiers,
                     #accuracy
                     acc = accuracy_score(y_test,out)
                 #writing to file
-                ####("variable,num of training samples,Lhat,avg precision,trainTime,testTime,iterate")
                 f.write(f"{clf[1]}, {n}, {acc:2.9f}, {trainTime:2.9f}, {testTime:2.9f}, {iteration}\n")
                 f.flush()
     f.close()
@@ -181,7 +182,7 @@ def plot_data(filepath, names, plotWhat, y_label, title):
         grp = d1[d1['classifier'] == key]
         ax = grp.plot(ax=ax, kind='line', x='n', y=plotWhat, label=key, \
                 c = names[key], alpha =0.65)
-        ax.set_xscale('log')
+        #ax.set_xscale('log')
 
     plt.legend(loc='top left',title='Algorithm')
     plt.title(title)
