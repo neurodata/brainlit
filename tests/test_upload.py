@@ -65,12 +65,13 @@ def test_upload_chunks():
     vols = upload_to_neuroglancer.create_image_layer(
         "file://" + dir + "/test_precomputed2/", test_vox_size, num_res
     )
+    upload_to_neuroglancer.upload_chunks(
+        par_vols[0], ordered_files[0], bin_paths[0], parallel=True
+    )
+
     for i in range(num_res):
         upload_to_neuroglancer.upload_chunks(
-            par_vols[i], ordered_files[i], bin_paths[i], parallel=True
-        )
-        upload_to_neuroglancer.upload_chunks(
-            vols[i], ordered_files[i], bin_paths[i], parallel=False
+            par_vols[i], ordered_files[i], bin_paths[i], parallel=False
         )
     assert (np.squeeze(par_vols[0][:, :, :]) == low_res.T).all()
     assert np.squeeze(par_vols[0][:, :, :]).shape == (528, 400, 208)
