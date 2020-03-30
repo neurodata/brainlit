@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 
 from brainlit.algorithms.regression.log_regression import *
 
-output_feats = "flat_neighbourhoods_3.csv"
+output_feats = "tests/flat_neighbourhoods_3.csv"
 df_iter = pd.read_csv(output_feats, header=None, index_col=0)
 n_features = df_iter.shape[1] - 1
 X_all = df_iter.iloc[:, :n_features]
