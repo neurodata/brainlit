@@ -2,18 +2,24 @@
 Tutorial
 ********
 
-.. _algorithm_tutorials:
+.. _pipeline_tutorials:
 
-Algortihms
-==========
-Fragment Generation
-------------------
-Demonstrate algorithms which generate fragments of axons
+Pipelines
+=========
+
+Semi-automatic Annotation Pipeline
+----------------------------------
+Demonstrate pulling data and pushing traced annotations.
 
 .. toctree::
    :maxdepth: 1
 
-   tutorials/gaborfilter
+   tutorials/seg_pipeline_demo.ipynb
+
+.. _algorithm_tutorials:
+
+Algortihms
+==========
 
 Regression Clasifiers
 ---------------------
