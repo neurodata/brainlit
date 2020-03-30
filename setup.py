@@ -17,6 +17,7 @@ REQUIRED_PACKAGES = [
     "networkx>=2.1",
     "numpy>=1.8.1",
     "scikit-learn>=0.19.1",
+    "opencv-python==4.2.0.32",
     "scipy>=1.1.0",
     "seaborn>=0.9.0",
     "simpleitk>=1.2.4",
