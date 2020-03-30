@@ -22,7 +22,7 @@ REQUIRED_PACKAGES = [
     "simpleitk>=1.2.4",
     "cloud-volume>=1.6.0",
     "tensorflow>=1.15",
-    "statsmodels"
+    "statsmodels",
 ]
 
 # Find savanna version.
