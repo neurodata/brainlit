@@ -84,16 +84,6 @@ def test_upload_chunks():
         ranges = upload_to_neuroglancer.get_data_ranges(bin, volume_size)
         assert (
             np.squeeze(
-                par_vols[1][
-                    ranges[0][0] : ranges[0][1],
-                    ranges[1][0] : ranges[1][1],
-                    ranges[2][0] : ranges[2][1],
-                ]
-            )
-            == low_res.T
-        ).all()
-        assert (
-            np.squeeze(
                 vols[1][
                     ranges[0][0] : ranges[0][1],
                     ranges[1][0] : ranges[1][1],
