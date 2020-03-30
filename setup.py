@@ -21,6 +21,7 @@ REQUIRED_PACKAGES = [
     "seaborn>=0.9.0",
     "simpleitk>=1.2.4",
     "cloud-volume>=1.6.0",
+    "tensorflow>=1.15",
     "statsmodels>=0.11.1"
 ]
 
