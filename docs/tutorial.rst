@@ -2,6 +2,28 @@
 Tutorial
 ********
 
+.. _algorithm_tutorials:
+
+Algortihms
+==========
+Fragment Generation
+------------------
+Demonstrate algorithms which generate fragments of axons
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/gaborfilter
+
+Regression Clasifiers
+---------------------
+Demonstrate collecting features and using them for axon classification.
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/gaborfilter
+
 .. _preprocessing_tutorials:
 
 Preprocessing
@@ -39,3 +61,12 @@ These tutorials demonstrate tools to load and visualize data from s3 buckets or 
 
    tutorials/viz/loading
    tutorials/viz/visualize
+
+Uploading Brains
+================
+This notebook describes the process to upload brain data.
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/uploading_brains.ipynb

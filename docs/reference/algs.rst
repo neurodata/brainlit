@@ -19,4 +19,12 @@ Fragment Generation
 .. autofunction:: otsu
 .. autofunction:: gmm_seg
 
+Regression
+----------
+
+.. currentmodule:: brainlit.algorithms.regression
+
+.. autofunction:: MLP_LR_NN
+.. autofunction:: run_classifiers
+.. autofunction:: plot_data
 
