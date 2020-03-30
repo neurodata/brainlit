@@ -9,12 +9,12 @@ from brainlit.algorithms.regression.log_regression import *
 
 output_feats = 'flat_neighbourhoods_3.csv'
 df_iter = pd.read_csv(output_feats,header=None,index_col=0)
-X_all = df_iter.iloc[:, :63]
-y_all = df_iter.iloc[:, 63:]
+n_features = df_iter.shape[1] - 1
+X_all = df_iter.iloc[:, :n_features]
+y_all = df_iter.iloc[:, n_features:]
 X_all = StandardScaler().fit_transform(X_all)
 X_sel, X_test, y_sel, y_test = \
         train_test_split(X_all, y_all, test_size=40,random_state=42)
-n_features = X_sel.shape[1]
 classifiers = [MLPClassifier(hidden_layer_sizes = 4,activation = 'logistic', alpha=1, max_iter=1000),
                LogisticRegression(max_iter=2000),
                MLP_LR_NN(X_sel,y_sel,n_features)]
