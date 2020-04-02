@@ -312,3 +312,38 @@ def graph_to_paths(G):
         paths.append(path)
 
     return paths
+
+def get_bfs_subgraph(G, node_id, depth, df=None):
+    """
+    Creates a spanning subgraph from a seed node and parent graph using BFS.
+
+    Parameters
+    ----------
+    G : :class:`networkx.classes.digraph.DiGraph`
+        Neuron from swc represented as directed graph.
+    
+    node_id : int
+        The id of the node to use as a seed. 
+        If df is not None this become the node index.
+
+    depth : int
+        The max depth for BFS to traven in each direction.
+
+    df : None, DataFrame (default = None)
+        Dataframe storing indices. 
+        In some cases indexing by row number is preferred.
+
+    Returns
+    -------
+    G_sub : :class:`networkx.classes.digraph.DiGraph`
+        Subgraph
+
+    tree : DiGraph
+        The tree returned by BFS.
+    """
+    if df is not None:
+        node_id = int(df.iloc[node_id]['sample'])
+    G_undir = G.to_undirected()
+    tree = nx.bfs_tree(G_undir, node_id, depth_limit=depth) #forward BFS
+    G_sub = nx.subgraph(G, list(tree.nodes))
+    return G_sub, tree
