@@ -33,7 +33,9 @@ def test_run_classifiers():
     f = run_classifiers(
         X_sel, y_sel, X_test, y_test, classifiers, names, filename="test.csv"
     )
-    assert os.stat(f).st_size != 0
+    t = open(f, 'r') 
+    assert t.seek(1)
+    t.close()
 
 
 def test_plot_data():
