@@ -156,7 +156,7 @@ def run_classifiers(
                 )
                 f.flush()
     f.close()
-    return f
+    return filename
 
 
 def plot_data(filepath, names, plotWhat, y_label, title):
