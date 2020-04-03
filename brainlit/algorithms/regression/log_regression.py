@@ -206,7 +206,7 @@ def plot_data(filepath, names, plotWhat, y_label, title):
         )
         # ax.set_xscale('log')
 
-    plt.legend(loc="top left", title="Algorithm")
+    plt.legend(loc="upper left", title="Algorithm")
     plt.title(title)
     plt.ylabel(y_label)
     plt.xlabel("Number of Training Samples")
