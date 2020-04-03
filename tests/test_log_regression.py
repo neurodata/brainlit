@@ -5,6 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+import matplotlib
 
 from brainlit.algorithms.regression.log_regression import *
 
