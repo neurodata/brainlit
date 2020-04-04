@@ -21,10 +21,10 @@ def test_neighborhood():
 def test_linear_features():
     lin = linear_features.LinearFeatures(url=URL, size=[1, 1, 1], offset=[15, 15, 15])
     lin.add_filter("gaussian", sigma=[1, 1, 0.3])
-    lin.add_filter('gaussian gradient', sigma=[1, 1, 0.3])
-    lin.add_filter('gaussian laplace', sigma=[1, 1, 0.3])
-    lin.add_filter('gabor', sigma=[1, 1, 0.3], phi=[0, 0], frequency=2)
-    lin.add_filter('gabor', sigma=[1, 1, 0.3], phi=[0, np.pi/2], frequency=2)
+    lin.add_filter("gaussian gradient", sigma=[1, 1, 0.3])
+    lin.add_filter("gaussian laplace", sigma=[1, 1, 0.3])
+    lin.add_filter("gabor", sigma=[1, 1, 0.3], phi=[0, 0], frequency=2)
+    lin.add_filter("gabor", sigma=[1, 1, 0.3], phi=[0, np.pi / 2], frequency=2)
     df_lin = lin.fit([2, 7], 5)
     assert df_lin.shape == (20, 4)
     assert not df_lin.empty
