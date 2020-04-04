@@ -26,7 +26,7 @@ def test_linear_features():
     assert not df_lin.empty
 
 
-def test_add_filters():
+def test_add_filter():
     lin = linear_features.LinearFeatures(url=URL, size=[1, 1, 1], offset=[15, 15, 15])
     with pytest.raises(ValueError):
         lin.add_filter("asdf")
