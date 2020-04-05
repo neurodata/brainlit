@@ -133,7 +133,7 @@ class LinearFeatures(BaseFeatures):
                 gb_temp = gb_temp[0]
                 gb.append(float(gb_temp[[voxel[0]], [voxel[1]], [voxel[2]]]))
         return {
-            "Gausssian": g,
+            "Gaussian": g,
             "Gaussian Gradient": gg,
             "Gaussian Laplacian": gl,
             "Gabor": gb,
