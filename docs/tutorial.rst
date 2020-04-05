@@ -2,6 +2,34 @@
 Tutorial
 ********
 
+.. _pipeline_tutorials:
+
+Pipelines
+=========
+
+Semi-automatic Annotation Pipeline
+----------------------------------
+Demonstrate pulling data and pushing traced annotations.
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/seg_pipeline_demo.ipynb
+
+.. _algorithm_tutorials:
+
+Algortihms
+==========
+
+Regression Clasifiers
+---------------------
+Demonstrate collecting features and using them for axon classification.
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/gaborfilter
+
 .. _preprocessing_tutorials:
 
 Preprocessing
@@ -39,3 +67,12 @@ These tutorials demonstrate tools to load and visualize data from s3 buckets or 
 
    tutorials/viz/loading
    tutorials/viz/visualize
+
+Uploading Brains
+================
+This notebook describes the process to upload brain data.
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/uploading_brains.ipynb
