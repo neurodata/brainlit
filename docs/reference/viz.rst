@@ -6,24 +6,24 @@ Visualization
 DataFrame Loading 
 -----------------
 
-.. autofunction:: read_s3
-.. autofunction:: generate_df_subset
-.. autofunction:: read_swc
+.. autoapifunction:: read_s3
+.. autoapifunction:: generate_df_subset
+.. autoapifunction:: read_swc
 
 Data Manipulation
 -----------------
-.. autofunction:: swc_to_voxel
-.. autofunction:: df_to_graph
-.. autofunction:: get_sub_neuron
-.. autofunction:: graph_to_paths
-.. autofunction:: get_bfs_subgraph
+.. autoapifunction:: swc_to_voxel
+.. autoapifunction:: df_to_graph
+.. autoapifunction:: get_sub_neuron
+.. autoapifunction:: graph_to_paths
+.. autoapifunction:: get_bfs_subgraph
 
 Visualization
 -------------
-.. autofunction:: plot_image_2d
-.. autofunction:: plot_image_mip
-.. autofunction:: find_smalldim
-.. autofunction:: plot_image_hist
+.. autoapifunction:: plot_image_2d
+.. autoapifunction:: plot_image_mip
+.. autoapifunction:: find_smalldim
+.. autoapifunction:: plot_image_hist
 
 
 
