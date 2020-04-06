@@ -266,3 +266,9 @@ def test_generate_BFS_subgraph():
     """test if subgraph matches nodes and edges"""
     G_sub, tree = swc.get_bfs_subgraph(G, 400, 50)
     assert set(G_sub.nodes) == set(tree.nodes)
+
+
+def test_generate_BFS_subgraph_df():
+    """test if subgraph matches nodes and edges"""
+    G_sub, tree = swc.get_bfs_subgraph(G, 100, 50, df_voxel)
+    assert set(G_sub.nodes) == set(tree.nodes)
