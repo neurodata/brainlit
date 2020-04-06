@@ -3,7 +3,8 @@ set -ex
 
 pip install -r docs/requirements.txt
 cd docs
-make html
+sphinx-build -b html . _build
 cd ..
 
 set +ex
+#make html

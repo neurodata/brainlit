@@ -27,6 +27,7 @@ release = "0.0.0"
 
 # -- Extension configuration -------------------------------------------------
 extensions = [
+    "autoapi.extension",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.todo",
@@ -39,6 +40,8 @@ extensions = [
     "nbsphinx",
     "sphinx.ext.intersphinx",
 ]
+
+autoapi_dirs = ['../brainlit']
 
 # -- sphinxcontrib.rawfiles
 # rawfiles = ["CNAME"]
