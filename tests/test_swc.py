@@ -260,3 +260,15 @@ def test_graph_to_paths_s3_path_dim():
 def test_generate_df_subset():
     """test if output is a dataframe"""
     assert isinstance(df_s3_subset, pd.DataFrame)
+
+
+def test_generate_BFS_subgraph():
+    """test if subgraph matches nodes and edges"""
+    G_sub, tree = swc.get_bfs_subgraph(G, 400, 50)
+    assert set(G_sub.nodes) == set(tree.nodes)
+
+
+def test_generate_BFS_subgraph_df():
+    """test if subgraph matches nodes and edges"""
+    G_sub, tree = swc.get_bfs_subgraph(G, 100, 50, df_voxel)
+    assert set(G_sub.nodes) == set(tree.nodes)

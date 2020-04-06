@@ -14,7 +14,17 @@ Demonstrate pulling data and pushing traced annotations.
 .. toctree::
    :maxdepth: 1
 
-   tutorials/seg_pipeline_demo.ipynb
+   notebooks/seg_pipeline_demo.ipynb
+
+Manual Segmentation
+-------------------
+Notebook showing how to manually segment data.
+
+.. toctree::
+   :maxdepth: 1
+
+   notebooks/manual_segmentation.ipynb
+
 
 .. _algorithm_tutorials:
 
