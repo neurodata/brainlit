@@ -41,7 +41,9 @@ extensions = [
     "sphinx.ext.intersphinx",
 ]
 
-autoapi_dirs = ['../brainlit']
+autoapi_dirs = ["../brainlit"]
+autoapi_add_toctree_entry = False
+autoapi_generate_api_docs = False
 
 # -- sphinxcontrib.rawfiles
 # rawfiles = ["CNAME"]
