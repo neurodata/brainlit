@@ -6,7 +6,7 @@ def center(data):
     """Centers data by subtracting the mean
 
     Parameters
-    -------
+    ----------
     data : array-like
         data to be centered
 
@@ -24,7 +24,7 @@ def contrast_normalize(data, centered=False):
     """Normalizes image data to have variance of 1
 
     Parameters
-    -------
+    ----------
     data : array-like
         data to be normalized
 
@@ -48,7 +48,7 @@ def whiten(data, window_size, step_size, centered=False, epsilon=1e-5, type="PCA
     in _[1].
 
     Parameters
-    -------
+    ----------
     img : array-like
         image to be vectorized
 
@@ -119,7 +119,7 @@ def window_pad(img, window_size, step_size):
     Padding will be a copy of the edges.
 
     Parameters
-    -------
+    ----------
     img : array-like
         image to be padded
 
@@ -169,7 +169,7 @@ def undo_pad(data, pad_size):
     """Remove padding fromt edges of images
 
     Parameters
-    -------
+    ----------
     data : array-like
         padded image
 
@@ -201,7 +201,7 @@ def vectorize_img(img, window_size, step_size):
     """Reshapes an image by vectorizing different neighborhoods of the image.
 
     Parameters
-    -------
+    ----------
     img : array-like
         image to be vectorized
 
@@ -248,7 +248,7 @@ def imagize_vector(data, orig_shape, window_size, step_size):
     """Reshapes a vectorized image back to its original shape.
 
     Parameters
-    -------
+    ----------
     data : array-like
         vectorized image
 

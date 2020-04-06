@@ -20,7 +20,7 @@ Data Manipulation
 
 Visualization
 -------------
-.. autofunction:: plot_image_2D
+.. autofunction:: plot_image_2d
 .. autofunction:: plot_image_mip
 .. autofunction:: find_smalldim
 .. autofunction:: plot_image_hist
