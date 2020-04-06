@@ -29,7 +29,7 @@ def create_image_layer(s3_bucket, voxel_size, num_resolutions):
         layer_type="image",
         data_type="uint16",  # Channel images might be 'uint8'
         encoding="raw",  # raw, jpeg, compressed_segmentation, fpzip, kempressed
-        resolution= voxel_size,  # Voxel scaling, units are in nanometers
+        resolution=voxel_size,  # Voxel scaling, units are in nanometers
         voxel_offset=[0, 0, 0],  # x,y,z offset in voxels from the origin
         # Pick a convenient size for your underlying chunk representation
         # Powers of two are recommended, doesn't need to cover image exactly
@@ -43,13 +43,14 @@ def create_image_layer(s3_bucket, voxel_size, num_resolutions):
         ],
     )
     # get cloudvolume info
-    vol = CloudVolume(s3_bucket, info=info, parallel=True, compress = False)
+    vol = CloudVolume(s3_bucket, info=info, parallel=True, compress=False)
     print(vol.info)
     # scales resolution up, volume size down
     [vol.add_scale((2 ** i, 2 ** i, 2 ** i)) for i in range(num_resolutions)]
     vol.commit_info()
     vols = [
-        CloudVolume(s3_bucket,mip=i, parallel=True, compress = False) for i in range(num_resolutions - 1, -1, -1)
+        CloudVolume(s3_bucket, mip=i, parallel=True, compress=False)
+        for i in range(num_resolutions - 1, -1, -1)
     ]
     return vols
 
@@ -103,9 +104,9 @@ def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
         chunk_size {list} -- 3 ints for original tif image dimensions
         num_workers {int} -- max number of concurrently running jobs
     """
-    tiff_jobs = int(num_workers/2) if num_workers==cpu_count() else num_workers
+    tiff_jobs = int(num_workers / 2) if num_workers == cpu_count() else num_workers
 
-    tiffs = Parallel(tiff_jobs, backend="loky", verbose = 50)(
+    tiffs = Parallel(tiff_jobs, backend="loky", verbose=50)(
         delayed(tf.imread)("/".join(i)) for i in files
     )
     ranges = Parallel(tiff_jobs)(
@@ -114,7 +115,7 @@ def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
     print("loaded tiffs and bin paths")
     vol_ = CloudVolume(vol.layer_cloudpath, parallel=False, mip=vol.mip)
 
-    Parallel(num_workers, verbose = 50)(
+    Parallel(num_workers, verbose=50)(
         delayed(upload_chunk)(vol_, r, i) for r, i in zip(ranges, tiffs)
     )
 
