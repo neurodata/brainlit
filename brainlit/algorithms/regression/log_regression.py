@@ -204,12 +204,12 @@ def plot_data(filepath, names, plotWhat, y_label, title):
         ax = grp.plot(
             ax=ax, kind="line", x="n", y=plotWhat, label=key, c=names[key], alpha=0.65
         )
-        #ax.set_xscale('log')
+        # ax.set_xscale('log')
 
     plt.legend(loc="upper left", title="Algorithm")
     plt.title(title)
     plt.ylabel(y_label)
     plt.xlabel("Number of Training Samples")
-    fig.savefig('classification_accuracy_plot.png')
+    fig.savefig("classification_accuracy_plot.png")
     plt.close()
     return fig, ax

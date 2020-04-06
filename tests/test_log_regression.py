@@ -25,15 +25,17 @@ classifiers = [
 ]
 names = {"MLP-LR": "black", "LR": "blue", "MLP-relu-LR": "red"}
 
+
 def test_MLP_LR_NN():
-    model,history = MLP_LR_NN(X_sel, y_sel, n_features)
+    model, history = MLP_LR_NN(X_sel, y_sel, n_features)
     assert len(history.history) != 0
+
 
 def test_run_classifiers():
     f = run_classifiers(
         X_sel, y_sel, X_test, y_test, classifiers, names, filename="test.csv"
     )
-    t = open(f, 'r') 
+    t = open(f, "r")
     assert t.seek(1)
     t.close()
 
