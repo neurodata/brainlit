@@ -29,7 +29,7 @@ def create_image_layer(s3_bucket, voxel_size, num_resolutions):
         layer_type="image",
         data_type="uint16",  # Channel images might be 'uint8'
         encoding="raw",  # raw, jpeg, compressed_segmentation, fpzip, kempressed
-        resolution=voxel_size,  # Voxel scaling, units are in nanometers
+        resolution= voxel_size,  # Voxel scaling, units are in nanometers
         voxel_offset=[0, 0, 0],  # x,y,z offset in voxels from the origin
         # Pick a convenient size for your underlying chunk representation
         # Powers of two are recommended, doesn't need to cover image exactly
@@ -43,14 +43,13 @@ def create_image_layer(s3_bucket, voxel_size, num_resolutions):
         ],
     )
     # get cloudvolume info
-    vol = CloudVolume(s3_bucket, info=info, parallel=True)
+    vol = CloudVolume(s3_bucket, info=info, parallel=True, compress = False)
+    print(vol.info)
     # scales resolution up, volume size down
     [vol.add_scale((2 ** i, 2 ** i, 2 ** i)) for i in range(num_resolutions)]
-    print(vol.info)
     vol.commit_info()
     vols = [
-        CloudVolume(s3_bucket, mip=i, parallel=True)
-        for i in range(num_resolutions - 1, -1, -1)
+        CloudVolume(s3_bucket,mip=i, parallel=True, compress = False) for i in range(num_resolutions - 1, -1, -1)
     ]
     return vols
 
@@ -77,7 +76,6 @@ def get_data_ranges(bin_path, chunk_size):
     x_range = [x_curr, x_curr + chunk_size[0]]
     y_range = [y_curr, y_curr + chunk_size[1]]
     z_range = [z_curr, z_curr + chunk_size[2]]
-
     return x_range, y_range, z_range
 
 
@@ -105,20 +103,19 @@ def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
         chunk_size {list} -- 3 ints for original tif image dimensions
         num_workers {int} -- max number of concurrently running jobs
     """
-    tiffs = Parallel(num_workers, require="sharedmem")(
+    tiff_jobs = int(num_workers/2) if num_workers==cpu_count() else num_workers
+
+    tiffs = Parallel(tiff_jobs, backend="loky", verbose = 50)(
         delayed(tf.imread)("/".join(i)) for i in files
     )
-    ranges = Parallel(num_workers)(
+    ranges = Parallel(tiff_jobs)(
         delayed(get_data_ranges)(i, chunk_size) for i in bin_paths
     )
     print("loaded tiffs and bin paths")
-    vols_ = [CloudVolume(vol.layer_cloudpath, parallel=False, mip=vol.mip)] * len(
-        ranges
-    )
-    print("dim of uploaded lists")
-    print(len([r for r in ranges]), len([i for i in tiffs]), len([v for v in vols_]))
-    Parallel(num_workers)(
-        delayed(upload_chunk)(v, r, i) for v, r, i in zip(vols_, ranges, tiffs)
+    vol_ = CloudVolume(vol.layer_cloudpath, parallel=False, mip=vol.mip)
+
+    Parallel(num_workers, verbose = 50)(
+        delayed(upload_chunk)(vol_, r, i) for r, i in zip(ranges, tiffs)
     )
 
 
@@ -204,7 +201,7 @@ def main():
         type=float,
     )
     parser.add_argument(
-        "chosen_res",
+        "--chosen_res",
         help="Specified resolution to upload. 0 is highest. Default uploads all",
         default=-1,
         type=int,
@@ -219,26 +216,12 @@ def main():
         type=int,
     )
     args = parser.parse_args()
-    # files = [
-    #     str(i).split("/") for i in Path(args.image_dir).rglob(f"*.{args.channel}.tif")
-    # ]
-    # parent_dirs = len(args.image_dir.split("/"))
-    # # Create list with 3 indices, first is the resolution level, second is the file, third are the elements of the file's path
-    # files_ordered = [
-    #     [i for i in files if len(i) == j + parent_dirs]
-    #     for j in range(args.num_resolutions)
-    # ]
-    # paths_bin = [
-    #     [[f"{int(j)-1:03b}" for j in k if len(j) == 1] for k in i]
-    #     for i in files_ordered
-    # ]
-    # print(f"got files and binary representations of paths.")
+
     files_ordered, bin_paths = get_file_paths(
         args.image_dir, args.num_resolutions, args.channel
     )
 
     vols = create_image_layer(args.s3_bucket, args.voxel_size, args.num_resolutions)
-
     pbar = tqdm(enumerate(zip(files_ordered, bin_paths)), total=len(files_ordered))
     for idx, item in pbar:
         if args.chosen_res == -1:
