@@ -313,6 +313,7 @@ def graph_to_paths(G):
 
     return paths
 
+
 def get_bfs_subgraph(G, node_id, depth, df=None):
     """
     Creates a spanning subgraph from a seed node and parent graph using BFS.
@@ -342,8 +343,8 @@ def get_bfs_subgraph(G, node_id, depth, df=None):
         The tree returned by BFS.
     """
     if df is not None:
-        node_id = int(df.iloc[node_id]['sample'])
+        node_id = int(df.iloc[node_id]["sample"])
     G_undir = G.to_undirected()
-    tree = nx.bfs_tree(G_undir, node_id, depth_limit=depth) #forward BFS
+    tree = nx.bfs_tree(G_undir, node_id, depth_limit=depth)  # forward BFS
     G_sub = nx.subgraph(G, list(tree.nodes))
     return G_sub, tree
