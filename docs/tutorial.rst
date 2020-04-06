@@ -28,7 +28,7 @@ Demonstrate collecting features and using them for axon classification.
 .. toctree::
    :maxdepth: 1
 
-   tutorials/gaborfilter
+   notebooks/log_regression_classifiers_tutorial
 
 .. _preprocessing_tutorials:
 
@@ -49,7 +49,7 @@ These tutorials demonstrate different preprocessing methods: connected component
 
 Features
 ========
-This tutorial presents feature extraction methods: neighborhood-based and linear filer-based methods.
+This tutorial presents feature extraction methods: neighborhood-based and linear filter-based methods.
 
 .. toctree::
    :maxdepth: 1
