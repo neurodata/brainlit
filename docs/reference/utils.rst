@@ -6,15 +6,17 @@ Utility
 Data Helper Methods
 -------------------
 
-.. autoclass:: NeuroglancerSession
+.. autoapiclass:: NeuroglancerSession
+
+.. currentmodule:: brainlit.utils.upload_to_neuroglancer
 
 S3 Helper Methods
 -----------------
 
-.. autofunction:: create_image_layer
-.. autofunction:: get_data_ranges
-.. autofunction:: upload_chunk
-.. autofunction:: parallel_upload_chunks
-.. autofunctions:: upload_chunks
-.. autofunction:: get_file_paths
-.. autofunction:: main
+.. autoapifunction:: create_image_layer
+.. autoapifunction:: get_data_ranges
+.. autoapifunction:: upload_chunk
+.. autoapifunction:: parallel_upload_chunks
+.. autoapifunction:: upload_chunks
+.. autoapifunction:: get_file_paths
+.. autoapifunction:: main

@@ -14,12 +14,31 @@ Demonstrate pulling data and pushing traced annotations.
 .. toctree::
    :maxdepth: 1
 
-   tutorials/seg_pipeline_demo.ipynb
+   notebooks/seg_pipeline_demo
+
+Manual Segmentation
+-------------------
+Notebook showing how to manually segment data.
+
+.. toctree::
+   :maxdepth: 1
+
+   notebooks/manual_segmentation
+
 
 .. _algorithm_tutorials:
 
 Algortihms
 ==========
+
+Adaptive Thresholding
+---------------------
+Demonstrate region growing methods using GMM and simple ITK
+
+.. toctree::
+   :maxdepth: 1
+
+   notebooks/tutorial_notebook_adaptive_thresh.ipynb
 
 Regression Clasifiers
 ---------------------
@@ -28,7 +47,8 @@ Demonstrate collecting features and using them for axon classification.
 .. toctree::
    :maxdepth: 1
 
-   tutorials/gaborfilter
+   notebooks/log_regression_classifiers_tutorial
+
 
 .. _preprocessing_tutorials:
 
@@ -39,7 +59,7 @@ These tutorials demonstrate different preprocessing methods: connected component
 .. toctree::
    :maxdepth: 1
 
-   tutorials/connnectedcomponents
+   tutorials/connectedcomponents
    tutorials/pcawhitening
    tutorials/windowpad
    tutorials/gaborfilter
@@ -49,7 +69,7 @@ These tutorials demonstrate different preprocessing methods: connected component
 
 Features
 ========
-This tutorial presents feature extraction methods: neighborhood-based and linear filer-based methods.
+This tutorial presents feature extraction methods: neighborhood-based and linear filter-based methods.
 
 .. toctree::
    :maxdepth: 1
@@ -65,8 +85,8 @@ These tutorials demonstrate tools to load and visualize data from s3 buckets or 
 .. toctree::
    :maxdepth: 1
 
-   tutorials/viz/loading
-   tutorials/viz/visualize
+   notebooks/loading
+   notebooks/visualization
 
 Uploading Brains
 ================
