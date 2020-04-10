@@ -96,7 +96,7 @@ class LinearFeatures(BaseFeatures):
         else:
             raise ValueError("Invalid filter name")
 
-    def _convert_to_features(self, img):
+    def _convert_to_features(self, img, include_neighborhood):
         """
         Computes features from image data by applying linear filters.
 
@@ -104,6 +104,10 @@ class LinearFeatures(BaseFeatures):
         ----------
         img : ndarray
             Image data.
+        
+        include_neighborhood : boolean
+            If True, the neighborhood itself is also included with the
+            feature responses.
 
         Returns
         -------
@@ -112,29 +116,36 @@ class LinearFeatures(BaseFeatures):
         """
         voxel = (np.subtract(img.shape, 1) / 2).astype(int)
 
-        g = []
-        gg = []
-        gl = []
-        gb = []
+        if include_neighborhood:
+            filter_response = dict(enumerate(img.flatten()))
+            filter_count = len(img.flatten())
+        else:
+            filter_response = {}
+            filter_count = 0
+
         for filter in self.filters:
             parameters = filter[1]
             parameters["input"] = img
             if filter[0] == "gaussian":
                 g_temp = ndi.gaussian_filter(**parameters)
-                g.append(float(g_temp[[voxel[0]], [voxel[1]], [voxel[2]]]))
+                filter_response[filter_count] = float(
+                    g_temp[[voxel[0]], [voxel[1]], [voxel[2]]]
+                )
             elif filter[0] == "gaussian gradient":
                 gg_temp = ndi.gaussian_gradient_magnitude(**parameters)
-                gg.append(float(gg_temp[[voxel[0]], [voxel[1]], [voxel[2]]]))
+                filter_response[filter_count] = float(
+                    gg_temp[[voxel[0]], [voxel[1]], [voxel[2]]]
+                )
             elif filter[0] == "gaussian laplace":
                 gl_temp = ndi.gaussian_laplace(**parameters)
-                gl.append(float(gl_temp[[voxel[0]], [voxel[1]], [voxel[2]]]))
+                filter_response[filter_count] = float(
+                    gl_temp[[voxel[0]], [voxel[1]], [voxel[2]]]
+                )
             elif filter[0] == "gabor":
                 gb_temp = image_process.gabor_filter(**parameters)
                 gb_temp = gb_temp[0]
-                gb.append(float(gb_temp[[voxel[0]], [voxel[1]], [voxel[2]]]))
-        return {
-            "Gaussian": g,
-            "Gaussian Gradient": gg,
-            "Gaussian Laplacian": gl,
-            "Gabor": gb,
-        }
+                filter_response[filter_count] = float(
+                    gb_temp[[voxel[0]], [voxel[1]], [voxel[2]]]
+                )
+            filter_count += 1
+        return filter_response
