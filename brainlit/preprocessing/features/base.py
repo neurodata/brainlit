@@ -130,9 +130,25 @@ class BaseFeatures(BaseEstimator):
                         feather.write_dataframe(df, path)
                         voxel_dict = {}
                         batch_id += 1
+
         if file_path is None:
             df = pd.DataFrame.from_dict(voxel_dict, "index")
             return df
+        else:
+            if not (counter % batch_size == 0 or counter + 1 % batch_size == 0):
+                df = pd.DataFrame.from_dict(voxel_dict, "index")
+                path = (
+                    file_path
+                    + str(batch_id * batch_size)
+                    + "_"
+                    + str(counter)
+                    + "_"
+                    + str(seg_id)
+                    + "_"
+                    + str(v_id)
+                    + ".feather"
+                )
+                feather.write_dataframe(df, path)
 
     def fit2(self, seg_ids, num_verts=None):
         """
