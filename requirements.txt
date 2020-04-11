@@ -22,6 +22,7 @@ decorator==4.4.1
 docutils==0.15.2
 DracoPy==0.0.15
 fastremap==1.8.0
+feather-format==0.4.0
 fpzip==1.1.4
 freetype-py==2.1.0.post1
 fsspec==0.6.2
