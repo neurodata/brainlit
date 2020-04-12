@@ -16,6 +16,7 @@ Data Manipulation
 .. autofunction:: df_to_graph
 .. autofunction:: get_sub_neuron
 .. autofunction:: graph_to_paths
+.. autofunction:: get_bfs_subgraph
 
 Visualization
 -------------
