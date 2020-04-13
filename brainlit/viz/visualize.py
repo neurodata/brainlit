@@ -46,7 +46,16 @@ def plot_2d(img, title=None, margin=0.05, dpi=80, show_plot=True):
     return fig, ax
 
 
-def plot_3d(img, xslices=[], yslices=[], zslices=[], title=None, margin=0.05, dpi=80, show_plot=True):
+def plot_3d(
+    img,
+    xslices=[],
+    yslices=[],
+    zslices=[],
+    title=None,
+    margin=0.05,
+    dpi=80,
+    show_plot=True,
+):
     img_xslices = [img[s, :, :] for s in xslices]
     img_yslices = [img[:, s, :] for s in yslices]
     img_zslices = [img[:, :, s] for s in zslices]
@@ -88,7 +97,9 @@ def napari_viewer(img, labels=None, shapes=None, label_name="Segmentation"):
     if labels is not None:
         viewer.add_labels(labels, name=label_name)
     if shapes is not None:
-        viewer.add_shapes(data=shapes, shape_type='path', edge_color='blue', name='Skeleton')
+        viewer.add_shapes(
+            data=shapes, shape_type="path", edge_color="blue", name="Skeleton"
+        )
     return viewer
 
 
