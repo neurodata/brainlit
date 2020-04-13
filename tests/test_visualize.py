@@ -14,6 +14,11 @@ img, bbbox, vox = ngl_sess.pull_chunk(2, 300, 1, 1, 1)
 img_slices = [img[:, 100, :], img[:, 99, :], img[:, 97, :], img[:, 96, :]]
 img_list = [img, img]
 
+def test_napari_viewer():
+    """test if output is a napari viewer object"""
+    n = visualize.napari_viewer(img)
+
+    assert isinstance(n, napari.viewer.Viewer)
 
 def test_fig_plot_3d():
     """test if fig output is correct type (matplotlib figure)"""
