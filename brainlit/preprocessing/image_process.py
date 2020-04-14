@@ -152,7 +152,7 @@ def getLargestCC(segmentation):
     """Returns the largest connected component of a image
 
     Parameters
-    -------
+    ----------
     segmentation : array-like
         segmentation data of image or volume
 
@@ -174,7 +174,7 @@ def removeSmallCCs(segmentation, size):
     """Removes small connected components from an image
 
     Parameters
-    -------
+    ----------
     segmentation : array-like
         segmentation data of image or volume
 

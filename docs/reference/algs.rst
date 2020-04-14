@@ -8,23 +8,23 @@ Fragment Generation
 
 .. currentmodule:: brainlit.algorithms.generate_fragments
 
-.. autofunction:: get_seed
-.. autofunction:: get_img_T1
-.. autofunction:: thres_from_gmm
-.. autofunction:: fast_marching_seg
-.. autofunction:: level_set_seg
-.. autofunction:: connected_threshold
-.. autofunction:: confidence_connected_threshold
-.. autofunction:: neighborhood_connected_threshold
-.. autofunction:: otsu
-.. autofunction:: gmm_seg
+.. autoapifunction:: get_seed
+.. autoapifunction:: get_img_T1
+.. autoapifunction:: thres_from_gmm
+.. autoapifunction:: fast_marching_seg
+.. autoapifunction:: level_set_seg
+.. autoapifunction:: connected_threshold
+.. autoapifunction:: confidence_connected_threshold
+.. autoapifunction:: neighborhood_connected_threshold
+.. autoapifunction:: otsu
+.. autoapifunction:: gmm_seg
 
 Regression
 ----------
 
 .. currentmodule:: brainlit.algorithms.regression
 
-.. autofunction:: MLP_LR_NN
-.. autofunction:: run_classifiers
-.. autofunction:: plot_data
+.. autoapifunction:: MLP_LR_NN
+.. autoapifunction:: run_classifiers
+.. autoapifunction:: plot_data
 
