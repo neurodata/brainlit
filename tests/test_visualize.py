@@ -23,10 +23,10 @@ def test_napari_viewer():
 def test_fig_plot_2d_dim3():
     """test if 3 dim SITKImage output is correct type (matplotlib figure)"""
 
-    test_img = np.zeros((100,100,100))
+    test_img = np.zeros((100, 100, 100))
     test_img = sitk.GetImageFromArray(test_img)
 
-    fig_2d, axis_2d = visualize.plot_2d(test_img, title = "Test", show_plot=False)
+    fig_2d, axis_2d = visualize.plot_2d(test_img, title="Test", show_plot=False)
 
     assert isinstance(fig_2d, matplotlib.figure.Figure)
     assert isinstance(axis_2d, matplotlib.axes._subplots.Subplot)
@@ -35,10 +35,10 @@ def test_fig_plot_2d_dim3():
 def test_fig_plot_2d_dim4():
     """test if 4 dim SITKImage output is correct type (matplotlib figure)"""
 
-    test_img = np.zeros((100,100,100,4))
+    test_img = np.zeros((100, 100, 100, 4))
     test_img = sitk.GetImageFromArray(test_img)
 
-    fig_2d, axis_2d = visualize.plot_2d(test_img, title = "Test", show_plot=False)
+    fig_2d, axis_2d = visualize.plot_2d(test_img, title="Test", show_plot=False)
 
     assert isinstance(fig_2d, matplotlib.figure.Figure)
     assert isinstance(axis_2d, matplotlib.axes._subplots.Subplot)
@@ -47,11 +47,11 @@ def test_fig_plot_2d_dim4():
 def test_fig_plot_2d_dim4_exception():
     """test if 4 dim SITKImage output is correct type (matplotlib figure)"""
 
-    test_img = np.zeros((100,100,100,100))
+    test_img = np.zeros((100, 100, 100, 100))
     test_img = sitk.GetImageFromArray(test_img)
 
     try:
-        visualize.plot_2d(test_img, title = "Test", show_plot=False)
+        visualize.plot_2d(test_img, title="Test", show_plot=False)
         assert False
     except RuntimeError:
         assert True
