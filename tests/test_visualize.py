@@ -12,12 +12,12 @@ img_slices = [img[:, 100, :], img[:, 99, :], img[:, 97, :], img[:, 96, :]]
 img_list = [img, img]
 
 
-def test_napari_viewer():
-    """test if output is a napari viewer object"""
-
-    with napari.gui_qt():
-        n = visualize.napari_viewer(img)
-        assert isinstance(n, napari.viewer.Viewer)
+# def test_napari_viewer():
+#     """test if output is a napari viewer object"""
+#
+#     with napari.gui_qt():
+#         n = visualize.napari_viewer(img)
+#         assert isinstance(n, napari.viewer.Viewer)
 
 
 def test_fig_plot_2d_dim3():
