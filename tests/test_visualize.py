@@ -12,12 +12,16 @@ img_slices = [img[:, 100, :], img[:, 99, :], img[:, 97, :], img[:, 96, :]]
 img_list = [img, img]
 
 
-# def test_napari_viewer():
-#     """test if output is a napari viewer object"""
-#
-#     with napari.gui_qt():
-#         n = visualize.napari_viewer(img)
-#         assert isinstance(n, napari.viewer.Viewer)
+def test_napari_viewer():
+    """test if output is a napari viewer object"""
+
+    try:
+        napari.gui_qt()
+        n = visualize.napari_viewer(img)
+        n.window.close()
+        assert isinstance(n, napari.viewer.Viewer)
+    except RuntimeError:
+        napari.gui_qt()
 
 
 def test_fig_plot_2d_dim3():
@@ -78,31 +82,6 @@ def test_fig_plot_3d():
         xslices=range(48, 53),
         yslices=range(48, 53),
         zslices=range(48, 53),
-        title="Downloaded Mouselight Volume",
-        show_plot=False,
-    )
-    assert isinstance(fig_2d, matplotlib.figure.Figure)
-    assert isinstance(axis_2d, matplotlib.axes._subplots.Subplot)
-
-
-def test_fig_plot_3d_empty_slices():
-    """test if fig output is correct type (matplotlib figure)"""
-    url = "s3://mouse-light-viz/precomputed_volumes/brain1"
-    seg_id = 11
-    mip = 2
-    df = read_s3(url + "_segments", seg_id, mip)
-
-    df["sample"].size  # the number of vertex IDs [1, 2, ..., df['sample'].size]
-    subneuron_df = df[0:5]  # choose vertices to use for the subneuron
-    vertex_list = subneuron_df["sample"].array
-    ngl = NeuroglancerSession(url, mip=mip)
-    buffer = [10, 10, 10]
-    img, bounds, vox_in_img_list = ngl.pull_vertex_list(
-        seg_id, vertex_list, buffer=buffer, expand=True
-    )
-
-    fig_2d, axis_2d = visualize.plot_3d(
-        sitk.GetImageFromArray(np.squeeze(img), isVector=False),
         title="Downloaded Mouselight Volume",
         show_plot=False,
     )
