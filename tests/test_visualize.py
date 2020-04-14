@@ -73,8 +73,6 @@ def test_fig_plot_3d():
         seg_id, vertex_list, buffer=buffer, expand=True
     )
 
-    napari.gui_qt()
-
     fig_2d, axis_2d = visualize.plot_3d(
         sitk.GetImageFromArray(np.squeeze(img), isVector=False),
         xslices=range(48, 53),
