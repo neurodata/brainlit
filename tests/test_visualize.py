@@ -1,24 +1,61 @@
-import numpy as np
-
-import brainlit
 from brainlit.utils.ngl_pipeline import NeuroglancerSession
 from brainlit.viz.swc import *
 from brainlit.viz import visualize
 import matplotlib
 import SimpleITK as sitk
 import napari
-
+import numpy as np
 
 ngl_sess = NeuroglancerSession(mip=1)
 img, bbbox, vox = ngl_sess.pull_chunk(2, 300, 1, 1, 1)
 img_slices = [img[:, 100, :], img[:, 99, :], img[:, 97, :], img[:, 96, :]]
 img_list = [img, img]
 
+
 def test_napari_viewer():
     """test if output is a napari viewer object"""
-    n = visualize.napari_viewer(img)
 
-    assert isinstance(n, napari.viewer.Viewer)
+    with napari.gui_qt():
+        n = visualize.napari_viewer(img)
+        assert isinstance(n, napari.viewer.Viewer)
+
+
+def test_fig_plot_2d_dim3():
+    """test if 3 dim SITKImage output is correct type (matplotlib figure)"""
+
+    test_img = np.zeros((100,100,100))
+    test_img = sitk.GetImageFromArray(test_img)
+
+    fig_2d, axis_2d = visualize.plot_2d(test_img, title = "Test", show_plot=False)
+
+    assert isinstance(fig_2d, matplotlib.figure.Figure)
+    assert isinstance(axis_2d, matplotlib.axes._subplots.Subplot)
+
+
+def test_fig_plot_2d_dim4():
+    """test if 4 dim SITKImage output is correct type (matplotlib figure)"""
+
+    test_img = np.zeros((100,100,100,4))
+    test_img = sitk.GetImageFromArray(test_img)
+
+    fig_2d, axis_2d = visualize.plot_2d(test_img, title = "Test", show_plot=False)
+
+    assert isinstance(fig_2d, matplotlib.figure.Figure)
+    assert isinstance(axis_2d, matplotlib.axes._subplots.Subplot)
+
+
+def test_fig_plot_2d_dim4_exception():
+    """test if 4 dim SITKImage output is correct type (matplotlib figure)"""
+
+    test_img = np.zeros((100,100,100,100))
+    test_img = sitk.GetImageFromArray(test_img)
+
+    try:
+        visualize.plot_2d(test_img, title = "Test", show_plot=False)
+        assert False
+    except RuntimeError:
+        assert True
+
 
 def test_fig_plot_3d():
     """test if fig output is correct type (matplotlib figure)"""
@@ -40,6 +77,8 @@ def test_fig_plot_3d():
 
     fig_2d, axis_2d = visualize.plot_3d(
         sitk.GetImageFromArray(np.squeeze(img), isVector=False),
+        xslices=range(48, 53),
+        yslices=range(48, 53),
         zslices=range(48, 53),
         title="Downloaded Mouselight Volume",
         show_plot=False,
