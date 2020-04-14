@@ -34,8 +34,6 @@ deploy:
     repo: neurodata/brainlit
     python: '3.6'
 
-ignore:
-  - "test_napari*.py"
 
 
 
