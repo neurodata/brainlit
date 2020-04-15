@@ -123,7 +123,9 @@ def test_fig_plot_image_2d_given_one():
 
 def test_fig_plot_image_2d_given_list():
     """test if fig output is correct type (matplotlib figure)"""
-    fig_2d_list, ax_2d_list = visualize.plot_image_2d(img_slices)
+    fig_2d_list, ax_2d_list = visualize.plot_image_2d(
+        img_slices, titles=["t1", "t2", "t3", "t4"]
+    )
     assert isinstance(fig_2d_list, matplotlib.figure.Figure)
     for ax in ax_2d_list:
         assert isinstance(ax, matplotlib.axes._subplots.Subplot)
@@ -158,7 +160,7 @@ def test_find_smalldim_list():
 
 def test_plot_image_hist():
     """test if output is correct type (tuple (n, bins, patches))"""
-    hist_tuple = visualize.plot_image_hist(img)
+    hist_tuple = visualize.plot_image_hist(img, titles="histogram test")
     assert isinstance(hist_tuple, tuple)
 
 
@@ -168,8 +170,16 @@ def test_plot_image_hist_list():
     assert isinstance(hist_tuple, tuple)
 
 
-def test_plot_img_pts():
+def test_plot_img_pts_single_scatter():
     """test plot_image_pts method with voxels"""
     fig, axes = visualize.plot_image_pts(img[:, :, 100], vox, colorbar=True)
+    assert isinstance(fig, matplotlib.figure.Figure)
+    assert isinstance(axes, matplotlib.axes._subplots.Subplot)
+
+
+def test_plot_img_pts_multi_scatter():
+    """test plot_image_pts method with voxels"""
+    voxes = np.random.rand(3, 2)
+    fig, axes = visualize.plot_image_pts(img[:, :, 100], voxes, colorbar=True)
     assert isinstance(fig, matplotlib.figure.Figure)
     assert isinstance(axes, matplotlib.axes._subplots.Subplot)
