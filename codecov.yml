@@ -1,0 +1,2 @@
+ignore:
+  - "napari_*".py

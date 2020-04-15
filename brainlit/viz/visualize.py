@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import SimpleITK as sitk
-import napari
 
 
 def plot_2d(img, title=None, margin=0.05, dpi=80, show_plot=True):
@@ -90,17 +89,6 @@ def plot_3d(
             img = sitk.Compose(img_comps)
 
     return plot_2d(img, title, margin, dpi, show_plot)
-
-
-def napari_viewer(img, labels=None, shapes=None, label_name="Segmentation"):
-    viewer = napari.view_image(np.squeeze(np.array(img)))
-    if labels is not None:
-        viewer.add_labels(labels, name=label_name)
-    if shapes is not None:
-        viewer.add_shapes(
-            data=shapes, shape_type="path", edge_color="blue", name="Skeleton"
-        )
-    return viewer
 
 
 def plot_image_2d(imgs, titles=None, rows=1, colorbar=False):

@@ -13,40 +13,6 @@ img_slices = [img[:, 100, :], img[:, 99, :], img[:, 97, :], img[:, 96, :]]
 img_list = [img, img]
 
 
-def test_napari_viewer():
-    """test if output is a napari viewer object"""
-
-    seg_id = 11
-    mip = 2
-    url = "s3://mouse-light-viz/precomputed_volumes/brain1"
-    df = read_s3(url + "_segments", seg_id, mip)
-    subneuron_df = df[0:5]  # choose vertices to use for the subneuron
-    vertex_list = subneuron_df["sample"].array
-    buffer = [10, 10, 10]
-    img, bounds, vox_in_img_list = ngl_sess.pull_vertex_list(
-        seg_id, vertex_list, buffer=buffer, expand=True
-    )
-    seed = [adaptive_thresh.get_seed(sample)[1] for sample in vox_in_img_list]
-    labels = adaptive_thresh.confidence_connected_threshold(
-        img, seed, num_iter=1, multiplier=0.7
-    )
-    corrected_subneuron_df = generate_df_subset(subneuron_df, vox_in_img_list)
-    G = df_to_graph(corrected_subneuron_df)
-    paths = graph_to_paths(G)
-    try:
-        napari.gui_qt()
-        n = visualize.napari_viewer(
-            img,
-            labels=labels,
-            shapes=paths,
-            label_name="Confidence-Connected Threshold",
-        )
-        assert isinstance(n, napari.viewer.Viewer)
-        n.window.close()
-    except RuntimeError:
-        napari.gui_qt()
-
-
 def test_fig_plot_2d_dim3():
     """test if 3 dim SITKImage output is correct type (matplotlib figure)"""
 
