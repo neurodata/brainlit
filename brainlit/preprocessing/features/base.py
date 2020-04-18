@@ -18,6 +18,9 @@ class BaseFeatures(BaseEstimator):
         self.url = url
         self.size = size
         self.offset = offset
+        self.download_time = 0
+        self.conversion_time = 0
+        self.write_time = 0
 
     @abstractmethod
     def _convert_to_features(self, img):
@@ -86,6 +89,8 @@ class BaseFeatures(BaseEstimator):
         ngl = NeuroglancerSession(self.url)
         ngl_skel = NeuroglancerSession(self.url + "_segments")
 
+
+
         if start_seg is not None:
             seg_ids = seg_ids[seg_ids.index(start_seg) :]
 
@@ -97,12 +102,25 @@ class BaseFeatures(BaseEstimator):
                 verts = segment.vertices[start_vert:]
             start_vert = 0
             for v_id, vertex in enumerate(verts):
+
+                start = time.time()
+
                 img, bounds, voxel = ngl.pull_voxel(
                     seg_id, v_id, self.size[0], self.size[1], self.size[2]
                 )
                 img_off = ngl.pull_bounds_img(bounds + self.offset)
+
+                end = time.time()
+                self.download_time += (end-start)
+
+                start = time.time()
+
                 features = self._convert_to_features(img, include_neighborhood)
                 features_off = self._convert_to_features(img_off, include_neighborhood)
+
+                end = time.time()
+                self.conversion_time += (end-start)
+
                 voxel_dict[counter] = {
                     **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 0},
                     **features,
@@ -127,9 +145,18 @@ class BaseFeatures(BaseEstimator):
                             + str(v_id)
                             + ".feather"
                         )
+
+                        start = time.time()
+
                         feather.write_dataframe(df, path)
+
+                        end = time.time()
+                        self.write_time += (end-start)
+
                         voxel_dict = {}
                         batch_id += 1
+
+
 
         if file_path is None:
             df = pd.DataFrame.from_dict(voxel_dict, "index")
@@ -148,4 +175,13 @@ class BaseFeatures(BaseEstimator):
                     + str(v_id)
                     + ".feather"
                 )
+
+                start = time.time()
+
                 feather.write_dataframe(df, path)
+
+                end = time.time()
+                self.write_time += (end-start)
+    
+    def time(self):
+        return self.download_time, self.conversion_time, self.write_time
