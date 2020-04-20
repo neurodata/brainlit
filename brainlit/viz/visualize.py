@@ -26,7 +26,7 @@ def plot_2d(img, title=None, margin=0.05, dpi=80, show_plot=True):
 
     figsize = (1 + margin) * xsize / dpi, (1 + margin) * ysize / dpi
 
-    fig = plt.figure(figsize=figsize, dpi=dpi, tight_layout=True)
+    fig = plt.figure(figsize=figsize, dpi=dpi)
     ax = plt.gca()
 
     if show_plot:
@@ -55,38 +55,46 @@ def plot_3d(
     dpi=80,
     show_plot=True,
 ):
-    img_xslices = [img[s, :, :] for s in xslices]
-    img_yslices = [img[:, s, :] for s in yslices]
-    img_zslices = [img[:, :, s] for s in zslices]
+    if not isinstance(img, sitk.SimpleITK.Image):
+        raise Exception("Sorry, input must be an sitk image")
+    else:
 
-    maxlen = max(len(img_xslices), len(img_yslices), len(img_zslices))
+        img_xslices = [img[s, :, :] for s in xslices]
+        img_yslices = [img[:, s, :] for s in yslices]
+        img_zslices = [img[:, :, s] for s in zslices]
 
-    img_null = sitk.Image([0, 0], img.GetPixelID(), img.GetNumberOfComponentsPerPixel())
+        maxlen = max(len(img_xslices), len(img_yslices), len(img_zslices))
 
-    img_slices = []
-    d = 0
+        img_null = sitk.Image(
+            [0, 0], img.GetPixelID(), img.GetNumberOfComponentsPerPixel()
+        )
 
-    if len(img_xslices):
-        img_slices += img_xslices + [img_null] * (maxlen - len(img_xslices))
-        d += 1
+        img_slices = []
+        d = 0
 
-    if len(img_yslices):
-        img_slices += img_yslices + [img_null] * (maxlen - len(img_yslices))
-        d += 1
+        if len(img_xslices):
+            img_slices += img_xslices + [img_null] * (maxlen - len(img_xslices))
+            d += 1
 
-    if len(img_zslices):
-        img_slices += img_zslices + [img_null] * (maxlen - len(img_zslices))
-        d += 1
+        if len(img_yslices):
+            img_slices += img_yslices + [img_null] * (maxlen - len(img_yslices))
+            d += 1
 
-    if maxlen != 0:
-        if img.GetNumberOfComponentsPerPixel() == 1:
-            img = sitk.Tile(img_slices, [maxlen, d])
-        else:
-            img_comps = []
-            for i in range(0, img.GetNumberOfComponentsPerPixel()):
-                img_slices_c = [sitk.VectorIndexSelectionCast(s, i) for s in img_slices]
-                img_comps.append(sitk.Tile(img_slices_c, [maxlen, d]))
-            img = sitk.Compose(img_comps)
+        if len(img_zslices):
+            img_slices += img_zslices + [img_null] * (maxlen - len(img_zslices))
+            d += 1
+
+        if maxlen != 0:
+            if img.GetNumberOfComponentsPerPixel() == 1:
+                img = sitk.Tile(img_slices, [maxlen, d])
+            else:
+                img_comps = []
+                for i in range(0, img.GetNumberOfComponentsPerPixel()):
+                    img_slices_c = [
+                        sitk.VectorIndexSelectionCast(s, i) for s in img_slices
+                    ]
+                    img_comps.append(sitk.Tile(img_slices_c, [maxlen, d]))
+                img = sitk.Compose(img_comps)
 
     return plot_2d(img, title, margin, dpi, show_plot)
 
