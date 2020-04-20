@@ -37,7 +37,7 @@ class NeuroglancerSession:
         The resolution of the volume at the specified mip, given as [x, y, z].
     """
 
-    def __init__(self, url="s3://mouse-light-viz/precomputed_volumes/brain1", mip=0):
+    def __init__(self, url="s3://mouse-light-viz/precomputed_volumes/brain1", mip=1):
         self.url = url
         self.cv = CloudVolume(self.url, parallel=True)
         self.mip = mip
