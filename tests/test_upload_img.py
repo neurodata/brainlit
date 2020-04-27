@@ -8,38 +8,43 @@ top_level = os.path.join(dir, "data/")
 low_res = tf.imread(top_level + "default.0.tif")
 
 num_res = 2
-test_vox_size = [10.5, 9.78, 8.99]
-volume_size = [528, 400, 208]
+test_vox_size = [9536, 9728, 31616]
+image_size = (528, 400, 208)
 
 # Test volume before uploading chunks
 def test_create_image_layer():
-    vols = upload_to_neuroglancer.create_image_layer("file://", test_vox_size, num_res)
+    vols = upload_to_neuroglancer.create_image_layer(
+        "file://", image_size, test_vox_size, num_res
+    )
 
     assert len(vols) == num_res
     assert vols[0].mip == 1
     assert vols[1].mip == 0
-    assert vols[0].info["scales"][0]["size"] == [2 * i for i in volume_size]
-    assert vols[1].info["scales"][1]["size"] == volume_size
-    # assert vols[r].info['scales'][r]['resolution'] == [res*2**r for res in test_vox_size]
+    assert vols[0].info["scales"][0]["size"] == [2 * i for i in image_size]
+    assert vols[1].info["scales"][1]["size"] == list(image_size)
 
 
-def test_get_file_paths():
-    ordered_files, bin_paths = upload_to_neuroglancer.get_file_paths(
-        top_level, num_res, 0
+def test_get_volume_info():
+    ordered_files, bin_paths, vox_size, tiff_dims = upload_to_neuroglancer.get_volume_info(
+        top_level, num_resolutions=2, channel=0
     )
     assert len(ordered_files) == num_res
     assert len(bin_paths) == num_res
     assert len(ordered_files[0]) == 1 and len(ordered_files[1]) == 8
+    assert vox_size == test_vox_size
+    assert tiff_dims == image_size
 
 
 # Test stitching ability,
 def test_get_data_ranges():
-    bin_paths = upload_to_neuroglancer.get_file_paths(top_level, num_res, 0)[1]
+    _, bin_paths, _, tiff_dims = upload_to_neuroglancer.get_volume_info(
+        top_level, num_res, 0
+    )
     for res_bins in bin_paths:
         for bin in res_bins:
             x_curr, y_curr, z_curr = 0, 0, 0
             tree_level = len(bin)
-            ranges = upload_to_neuroglancer.get_data_ranges(bin, volume_size)
+            ranges = upload_to_neuroglancer.get_data_ranges(bin, tiff_dims)
             if tree_level == 0:
                 assert ranges == ([0, 528], [0, 400], [0, 208])
             else:
@@ -55,15 +60,15 @@ def test_get_data_ranges():
 
 # Test cloudvolume attributes (info, shape) for both parallel and non-parallel
 def test_upload_chunks():
-    ordered_files, bin_paths = upload_to_neuroglancer.get_file_paths(
+    ordered_files, bin_paths, vox_size, tiff_dims = upload_to_neuroglancer.get_volume_info(
         top_level, num_res, 0
     )
 
     par_vols = upload_to_neuroglancer.create_image_layer(
-        "file://" + dir + "/test_precomputed1/", test_vox_size, num_res
+        "file://" + dir + "/test_precomputed1/", tiff_dims, vox_size, num_res
     )
     vols = upload_to_neuroglancer.create_image_layer(
-        "file://" + dir + "/test_precomputed2/", test_vox_size, num_res
+        "file://" + dir + "/test_precomputed2/", tiff_dims, vox_size, num_res
     )
     upload_to_neuroglancer.upload_chunks(
         par_vols[0], ordered_files[0], bin_paths[0], parallel=True
@@ -73,16 +78,17 @@ def test_upload_chunks():
         upload_to_neuroglancer.upload_chunks(
             vols[i], ordered_files[i], bin_paths[i], parallel=False
         )
+
     assert (np.squeeze(par_vols[0][:, :, :]) == low_res.T).all()
-    assert np.squeeze(par_vols[0][:, :, :]).shape == (528, 400, 208)
-    # assert np.squeeze(par_vols[1][:, :, :]).shape == (528 * 2, 400 * 2, 208 * 2)
+    assert np.squeeze(par_vols[0][:, :, :]).shape == image_size
+    assert np.squeeze(par_vols[1][:, :, :]).shape == tuple([i * 2 for i in image_size])
 
     assert (np.squeeze(vols[0][:, :, :]) == low_res.T).all()
-    assert np.squeeze(vols[0][:, :, :]).shape == (528, 400, 208)
-    assert np.squeeze(vols[1][:, :, :]).shape == (528 * 2, 400 * 2, 208 * 2)
+    assert np.squeeze(vols[0][:, :, :]).shape == image_size
+    assert np.squeeze(vols[1][:, :, :]).shape == tuple([i * 2 for i in image_size])
 
     for bin in bin_paths[1]:
-        ranges = upload_to_neuroglancer.get_data_ranges(bin, volume_size)
+        ranges = upload_to_neuroglancer.get_data_ranges(bin, tiff_dims)
         assert (
             np.squeeze(
                 vols[1][
