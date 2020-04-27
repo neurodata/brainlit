@@ -48,13 +48,11 @@ def swc2skeleton(swc_file, colors=None, origin=None, segid=None):
     )
     # add offset to vertices
     # and shift by origin
-    # print(offset)
     skel.vertices += offset
     if origin is not None:
         skel.vertices -= origin
     # convert from microns to nanometers
     skel.vertices *= 1000
-    # print(skel.vertices)
     skel.vertex_color = np.zeros((skel.vertices.shape[0], 4), dtype="float32")
     if colors is None:
         skel.vertex_color[:, :] = color
@@ -74,7 +72,7 @@ def swc2skeleton(swc_file, colors=None, origin=None, segid=None):
     return skel
 
 
-def create_skeleton_layer(s3_bucket, skel_res, img_dims):
+def create_skeleton_layer(s3_bucket, skel_res, img_dims, num_res=7):
     """Creates segmentation layer for skeletons
 
     Arguments:
@@ -97,7 +95,7 @@ def create_skeleton_layer(s3_bucket, skel_res, img_dims):
         # Pick a convenient size for your underlying chunk representation
         # Powers of two are recommended, doesn't need to cover image exactly
         chunk_size=[128, 128, 64],  # units are voxels
-        volume_size=[i * 2 ** 6 for i in img_dims],  # units are voxels
+        volume_size=[i * 2 ** (num_res - 1) for i in img_dims],  # units are voxels
         skeletons="skeletons",
     )
     skel_info = {
@@ -111,7 +109,7 @@ def create_skeleton_layer(s3_bucket, skel_res, img_dims):
     }
     # get cloudvolume info
     vol = CloudVolume(s3_bucket, info=info, parallel=True)
-    [vol.add_scale((2 ** i, 2 ** i, 2 ** i)) for i in range(7)]
+    [vol.add_scale((2 ** i, 2 ** i, 2 ** i)) for i in range(num_res - 1)]
     vol.commit_info()
 
     # upload skeleton info to /skeletons/ dir
@@ -177,6 +175,19 @@ def create_skel_segids(swc_dir, origin, colors=None):
     return skeletons, segids
 
 
+def upload_skels(skeletons, skel_layer):
+    """ Push skeletons to layer
+
+    Arguments:
+        skeletons {list} -- swc skeleton objects to be pushed to bucket
+        skel_layer {cloudvolume.CloudVolume} -- CloudVolume to upload skeletons to
+
+    """
+
+    for skel in tqdm(skeletons, desc="uploading skeletons to S3.."):
+        skel_layer.skeleton.upload(skel)
+
+
 def main():
     """Runs the script to upload SWC files to S3 in neuroglancer format.
 
@@ -210,9 +221,8 @@ def main():
 
     vol = create_skeleton_layer(args.s3_bucket, vox_size, tiff_dims)
 
-    for skel in tqdm(skeletons, desc="uploading skeletons to S3.."):
-        vol.skeleton.upload(skel)
-    print(segids)
+    upload_skels(skeletons, vol)
+    print("Uploaded segment ids: " + str(segids))
 
 
 if __name__ == "__main__":
