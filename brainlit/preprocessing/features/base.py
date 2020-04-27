@@ -169,7 +169,7 @@ class BaseFeatures(BaseEstimator):
                 }
                 counter += 1
                 voxel_dict[counter] = {
-                    **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 0},
+                    **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 1},
                     **features_off,
                 }
                 counter += 1
