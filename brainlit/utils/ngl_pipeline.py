@@ -16,7 +16,7 @@ class NeuroglancerSession:
     url : string
         URL of the s3 bucket to pull from and push to.
 
-    mip : int, optional (default=1)
+    mip : int, optional (default=0)
         Resolution level to pull and push at. 0 is the highest resolution.
 
     Attributes
@@ -37,7 +37,7 @@ class NeuroglancerSession:
         The resolution of the volume at the specified mip, given as [x, y, z].
     """
 
-    def __init__(self, url="s3://mouse-light-viz/precomputed_volumes/brain1", mip=1):
+    def __init__(self, url="s3://mouse-light-viz/precomputed_volumes/brain1", mip=0):
         self.url = url
         self.cv = CloudVolume(self.url, parallel=True)
         self.mip = mip
