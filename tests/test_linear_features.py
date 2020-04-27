@@ -51,7 +51,7 @@ def test_file_write():
 
     lin = linear_features.LinearFeatures(url=URL, size=[1, 1, 1], offset=[15, 15, 15])
     lin.add_filter("gaussian", sigma=[1, 1, 0.3])
-    df_lin = lin.fit([2, 7], 5, file_path="test", batch_size=10)
+    lin.fit([2, 7], 5, file_path="test", batch_size=10)
 
     files = sorted(glob.glob("*.feather"))
     for f in sorted(files):
@@ -73,3 +73,32 @@ def test_file_write():
     for f in sorted(files):
         os.remove(f)
     assert files == ["test0_10_7_4.feather"]
+
+
+def test_parallel():
+    files = sorted(glob.glob("*.feather"))
+    for f in sorted(files):
+        os.remove(f)
+
+    nbr = neighborhood.NeighborhoodFeatures(
+        url=URL, size=[1, 1, 1], offset=[15, 15, 15]
+    )
+    nbr.fit(seg_ids=[2, 7], num_verts=4, file_path="test", batch_size=4, n_jobs=2)
+    files = sorted(glob.glob("*.feather"))
+    for f in sorted(files):
+        os.remove(f)
+    assert files == [
+        "test0_4_2_1.feather",
+        "test0_4_7_1.feather",
+        "test4_8_2_3.feather",
+        "test4_8_7_3.feather",
+    ]
+
+    nbr = neighborhood.NeighborhoodFeatures(
+        url=URL, size=[1, 1, 1], offset=[15, 15, 15]
+    )
+    nbr.fit(seg_ids=[2, 7], num_verts=2, file_path="test", batch_size=6, n_jobs=2)
+    files = sorted(glob.glob("*.feather"))
+    for f in sorted(files):
+        os.remove(f)
+    assert files == ["test0_4_2_1.feather", "test0_4_7_1.feather"]
