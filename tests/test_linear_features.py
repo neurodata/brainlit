@@ -11,6 +11,20 @@ import os
 URL = "s3://mouse-light-viz/precomputed_volumes/brain1"
 
 
+def test_segment_url():
+    temp_url = "s3://mouse-light-viz/precomputed_volumes/test"
+    temp_seg_url = "s3://mouse-light-viz/precomputed_volumes/segment_test"
+    nbr = neighborhood.NeighborhoodFeatures(
+        url=URL,
+        size=[1, 1, 1],
+        offset=[15, 15, 15],
+        segment_url="s3://mouse-light-viz/precomputed_volumes/segment_test",
+    )
+    df_nbr = nbr.fit([2, 7], 5)
+    assert df_nbr.shape == (20, 30)  # 5on, 5off for each swc
+    assert not df_nbr.empty
+
+
 def test_neighborhood():
     nbr = neighborhood.NeighborhoodFeatures(
         url=URL, size=[1, 1, 1], offset=[15, 15, 15]

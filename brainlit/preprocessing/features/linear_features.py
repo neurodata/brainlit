@@ -14,8 +14,8 @@ class LinearFeatures(BaseFeatures):
     Computes features based off linear filters.
     """
 
-    def __init__(self, url, size=[1, 1, 1], offset=[15, 15, 15]):
-        super().__init__(url=url, size=size, offset=offset)
+    def __init__(self, url, size=[1, 1, 1], offset=[15, 15, 15], segment_url=None):
+        super().__init__(url=url, size=size, offset=offset, segment_url=segment_url)
         self.filters = []
 
     def add_filter(
