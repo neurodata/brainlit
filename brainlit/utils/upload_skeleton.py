@@ -7,15 +7,13 @@ import pandas as pd
 import tifffile as tf
 
 
-def swc2skeleton(swc_file, colors=None, origin=None, segid=None):
+def swc2skeleton(swc_file, origin=None):
     """Converts swc file into Skeleton object
 
     Arguments:
         swc_file {str} -- path to SWC file
     Keyword Arguments:
-        color {iterable with same length as number of vertices} - values to be used as vertex colors.
         origin {numpy array with shape (3,1)} -- origin of coordinate frame in microns, (default: None assumes (0,0,0) origin)
-        segid {int} -- id associated with this skeleton. Default is None and is pulled from filename
     Returns:
         skel {cloudvolume.Skeleton} -- Skeleton object of given SWC file
     """
@@ -33,14 +31,10 @@ def swc2skeleton(swc_file, colors=None, origin=None, segid=None):
     # space can be 'physical' or 'voxel'
     skel.space = "physical"
     # hard coding parsing the id from the filename
-    if segid == None:
-        idx = swc_file.find("G")
-        if idx == -1:
-            skel.id = hash(swc_file)
-        else:
-            skel.id = int(swc_file[idx + 2 : idx + 5])
-    else:
-        skel.id = segid
+    idx = swc_file.find("G")
+
+    skel.id = int(swc_file[idx + 2 : idx + 5])
+
     # hard coding changing  data type of vertex_types
     skel.extra_attributes[-1]["data_type"] = "float32"
     skel.extra_attributes.append(
@@ -49,24 +43,11 @@ def swc2skeleton(swc_file, colors=None, origin=None, segid=None):
     # add offset to vertices
     # and shift by origin
     skel.vertices += offset
-    if origin is not None:
-        skel.vertices -= origin
+    skel.vertices -= origin
     # convert from microns to nanometers
     skel.vertices *= 1000
     skel.vertex_color = np.zeros((skel.vertices.shape[0], 4), dtype="float32")
-    if colors is None:
-        skel.vertex_color[:, :] = color
-    else:
-        colors_normalized = (colors - np.min(colors)) / np.max(colors)
-        r = colors_normalized < 0.33
-        g = (0.33 <= colors_normalized) & (colors_normalized < 0.66)
-        b = colors_normalized >= 0.66
-        skel.vertex_color[r, 0] = 1
-        skel.vertex_color[g, 1] = 1
-        skel.vertex_color[b, 2] = 1
-        skel.vertex_color[:, 0] = colors_normalized
-
-        skel.id = 1000  # new seg id to show that its colored
+    skel.vertex_color[:, :] = color
 
     return skel
 
@@ -78,6 +59,9 @@ def create_skeleton_layer(s3_bucket, skel_res, img_dims, num_res=7):
         s3_bucket {str} -- path to precomputed skeleton destination
         skel_res {list} -- x,y,z dimensions of highest res voxel size (nm)
         img_dims {list} -- x,y,z voxel dimensions of tiff images
+
+    Keyword Arguments:
+        num_res {int} -- number of image resolutions to be downsampled
 
     Returns:
         vol {cloudvolume.CloudVolume} -- CloudVolume to upload skeletons to
@@ -143,34 +127,24 @@ def get_volume_info(brain_dir, num_resolutions=7):
     return origin, vox_size, tiff_dims
 
 
-def create_skel_segids(swc_dir, origin, colors=None):
+def create_skel_segids(swc_dir, origin):
     """ Create skeletons to be uploaded as precomputed format
 
     Arguments:
         swc_dir {str} -- path to consensus swc files
         origin {list} -- x,y,z coordinate of coordinate frame in space in mircons
-        colors {iterable with same length as number of vertices} - values to be used as vertex colors.
 
     Returns:
         skeletons {list} -- swc skeletons to be pushed to bucket
         segids {list} --  list of ints for each swc's label
     """
-    if colors is None:
-        files = glob(f"{swc_dir}/*.swc")
-        skeletons = []
-        segids = []
-        for i in tqdm(files, desc="converting swcs to neuroglancer format..."):
-            skeletons.append(swc2skeleton(i, origin=origin))
-            segids.append(skeletons[-1].id)
-    else:
-        files = glob(swc_dir)  # a single file
-        colors = pd.read_csv(colors[0], header=None, names=["idx", "SNR0"], index_col=0)
-        skeletons = []
-        segids = []
-        for i in tqdm(files, desc="converting swcs to neuroglancer format..."):
-            skeletons.append(swc2skeleton(i, colors=colors.SNR0.values, origin=origin))
-            segids.append(skeletons[-1].id)
-
+    # if colors is None:
+    files = glob(f"{swc_dir}/*.swc")
+    skeletons = []
+    segids = []
+    for i in tqdm(files, desc="converting swcs to neuroglancer format..."):
+        skeletons.append(swc2skeleton(i, origin=origin))
+        segids.append(skeletons[-1].id)
     return skeletons, segids
 
 
@@ -208,7 +182,7 @@ def main():
     vol = create_skeleton_layer(args.s3_bucket, vox_size, tiff_dims)
 
     for skel in tqdm(skeletons, desc="uploading skeletons to S3.."):
-        skel_layer.skeleton.upload(skel)
+        vol.skeleton.upload(skel)
 
     print("Uploaded segment ids: " + str(segids))
 
