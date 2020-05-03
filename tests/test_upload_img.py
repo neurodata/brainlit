@@ -25,9 +25,12 @@ def test_create_image_layer():
 
 
 def test_get_volume_info():
-    ordered_files, bin_paths, vox_size, tiff_dims = upload_to_neuroglancer.get_volume_info(
-        top_level, num_resolutions=2, channel=0
-    )
+    (
+        ordered_files,
+        bin_paths,
+        vox_size,
+        tiff_dims,
+    ) = upload_to_neuroglancer.get_volume_info(top_level, num_resolutions=2, channel=0)
     assert len(ordered_files) == num_res
     assert len(bin_paths) == num_res
     assert len(ordered_files[0]) == 1 and len(ordered_files[1]) == 8
@@ -60,9 +63,12 @@ def test_get_data_ranges():
 
 # Test cloudvolume attributes (info, shape) for both parallel and non-parallel
 def test_upload_chunks():
-    ordered_files, bin_paths, vox_size, tiff_dims = upload_to_neuroglancer.get_volume_info(
-        top_level, num_res, 0
-    )
+    (
+        ordered_files,
+        bin_paths,
+        vox_size,
+        tiff_dims,
+    ) = upload_to_neuroglancer.get_volume_info(top_level, num_res, 0)
 
     par_vols = upload_to_neuroglancer.create_image_layer(
         "file://" + dir + "/test_precomputed1/", tiff_dims, vox_size, num_res
