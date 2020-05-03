@@ -6,7 +6,7 @@ dir = os.path.dirname(os.path.abspath(__file__))
 top_level = os.path.join(dir, "data/")
 
 num_res = 2
-test_vox_size = [9536, 9728, 31616]
+test_vox_size = [6173, 6173, 6173]
 image_size = (528, 400, 208)
 
 
