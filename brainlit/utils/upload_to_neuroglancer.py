@@ -200,12 +200,6 @@ def main():
         help="Path to local directory where image hierarchy lives. Assuming it is formatted as a resolution octree.",
     )
     parser.add_argument(
-        "voxel_size",
-        help="Voxel size for highest resolution image.",
-        nargs=3,
-        type=float,
-    )
-    parser.add_argument(
         "--chosen_res",
         help="Specified resolution to upload. 0 is highest. Default uploads all",
         default=-1,

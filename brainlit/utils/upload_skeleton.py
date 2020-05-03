@@ -58,7 +58,6 @@ def swc2skeleton(swc_file, colors=None, origin=None, segid=None):
         skel.vertex_color[:, :] = color
     else:
         colors_normalized = (colors - np.min(colors)) / np.max(colors)
-        print(colors_normalized)
         r = colors_normalized < 0.33
         g = (0.33 <= colors_normalized) & (colors_normalized < 0.66)
         b = colors_normalized >= 0.66
@@ -89,7 +88,7 @@ def create_skeleton_layer(s3_bucket, skel_res, img_dims, num_res=7):
         layer_type="segmentation",
         data_type="uint64",  # Channel images might be 'uint8'
         encoding="raw",  # raw, jpeg, compressed_segmentation, fpzip, kempressed
-        # resolution=[300.991, 300.303, 997.254],  # Voxel scaling, units are in nanometers
+        # Voxel scaling, units are in nanometers
         resolution=skel_res,
         voxel_offset=[0, 0, 0],  # x,y,z offset in voxels from the origin
         # Pick a convenient size for your underlying chunk representation
@@ -175,19 +174,6 @@ def create_skel_segids(swc_dir, origin, colors=None):
     return skeletons, segids
 
 
-def upload_skels(skeletons, skel_layer):
-    """ Push skeletons to layer
-
-    Arguments:
-        skeletons {list} -- swc skeleton objects to be pushed to bucket
-        skel_layer {cloudvolume.CloudVolume} -- CloudVolume to upload skeletons to
-
-    """
-
-    for skel in tqdm(skeletons, desc="uploading skeletons to S3.."):
-        skel_layer.skeleton.upload(skel)
-
-
 def main():
     """Runs the script to upload SWC files to S3 in neuroglancer format.
 
@@ -221,7 +207,9 @@ def main():
 
     vol = create_skeleton_layer(args.s3_bucket, vox_size, tiff_dims)
 
-    upload_skels(skeletons, vol)
+    for skel in tqdm(skeletons, desc="uploading skeletons to S3.."):
+        skel_layer.skeleton.upload(skel)
+
     print("Uploaded segment ids: " + str(segids))
 
 
