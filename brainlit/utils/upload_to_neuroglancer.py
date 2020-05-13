@@ -97,6 +97,7 @@ def upload_chunk(vol, ranges, image):
 
 def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
     """Push tif images as chunks in CloudVolume object in Parallel
+
     Arguments:
         vol {cloudvolume.CloudVolume} -- volume that will contain image data
         files {list} -- strings of tif image filepaths
@@ -122,6 +123,7 @@ def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
 
 def upload_chunks(vol, files, bin_paths, parallel=True):
     """Push tif images into vols with or without joblib Parallel
+
     Arguments:
         vol {cloudvolume.CloudVolume} -- volume that will contain image data
         files {list} -- strings of tif image filepaths

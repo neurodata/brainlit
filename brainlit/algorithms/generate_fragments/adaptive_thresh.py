@@ -12,7 +12,7 @@ def get_seed(voxel):
     Get a seed point for the center of a brain volume.
   
     Parameters
-    -------
+    ----------
     voxel : tuple: 
         The seed coordinates in x y z.
   
@@ -33,7 +33,7 @@ def get_img_T1(img):
     as a SimpleITK image with scaled intensity values to 0-255.
   
     Parameters
-    -------
+    ----------
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to convert to a SimpleITK image. 
   
@@ -62,7 +62,7 @@ def thres_from_gmm(img, random_seed=2):
     mixture model-component containning the highest intensity value.
   
     Parameters
-    ------- 
+    ----------
     img : cloudvolume.volumecutout.VolumeCutout
         The image or volume to threshold.
     
@@ -97,7 +97,7 @@ def fast_marching_seg(img, seed, stopping_value=150, sigma=0.5):
     Computes a fast-marching segmentation.
   
     Parameters
-    -------
+    ----------
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
     
@@ -147,10 +147,10 @@ def level_set_seg(
     
     When root mean squared change in the level set function for an iteration is below 
     the threshold, or the maximum number of iteration have elapsed,
-     the algorithm is said to have converged.
+    the algorithm is said to have converged.
   
     Parameters
-    -------
+    ----------
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
     
@@ -226,7 +226,7 @@ def connected_threshold(img, seed, lower_threshold=None, upper_threshold=255):
     Labelled pixels are connected to a seed and lie within a range of values.
   
     Parameters
-    -------
+    ----------
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
     
@@ -286,7 +286,7 @@ def confidence_connected_threshold(
     are calculated again at each iteration using pixels in the previous segmentation.
   
     Parameters
-    -------
+    ----------
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
     
@@ -346,7 +346,7 @@ def neighborhood_connected_threshold(
     Labelled pixels are connected to a seed and lie within a neighborhood.
   
     Parameters
-    -------
+    ----------
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
     
@@ -394,7 +394,7 @@ def otsu(img, seed):
     Compute a threshold-based segmentation via Otsu's method.
   
     Parameters
-    -------
+    ----------
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
   
@@ -422,7 +422,7 @@ def gmm_seg(img, seed, random_seed=3):
     Compute a threshold-based segmentation via a 2-component Gaussian mixture model.
   
     Parameters
-    -------
+    ----------
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
     
