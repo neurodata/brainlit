@@ -164,12 +164,12 @@ class BaseFeatures(BaseEstimator):
                 features = self._convert_to_features(img, include_neighborhood)
                 features_off = self._convert_to_features(img_off, include_neighborhood)
                 voxel_dict[counter] = {
-                    **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 0},
+                    **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 1},
                     **features,
                 }
                 counter += 1
                 voxel_dict[counter] = {
-                    **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 1},
+                    **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 0},
                     **features_off,
                 }
                 counter += 1
@@ -236,7 +236,7 @@ class BaseFeatures(BaseEstimator):
             features = self._convert_to_features(img, include_neighborhood)
             features_off = self._convert_to_features(img_off, include_neighborhood)
             voxel_dict[counter] = {
-                **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 0},
+                **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 1},
                 **features,
             }
             counter += 1
