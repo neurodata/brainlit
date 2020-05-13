@@ -13,12 +13,13 @@ class BaseFeatures(BaseEstimator):
     Base class for generating features from precomputed volumes.    
     """
 
-    def __init__(self, url, size=[1, 1, 1], offset=[15, 15, 15]):
+    def __init__(self, url, size=[1, 1, 1], offset=[15, 15, 15], segment_url=None):
         if type(url) is not str:
             raise TypeError("URL must be str")
         self.url = url
         self.size = size
         self.offset = offset
+        self.segment_url = segment_url
 
     @abstractmethod
     def _convert_to_features(self, img):
@@ -89,7 +90,10 @@ class BaseFeatures(BaseEstimator):
         counter = 0
         batch_id = 0
         ngl = NeuroglancerSession(self.url)
-        ngl_skel = NeuroglancerSession(self.url + "_segments")
+        if self.segment_url is None:
+            ngl_skel = NeuroglancerSession(self.url + "_segments")
+        else:
+            ngl_skel = NeuroglancerSession(self.segment_url)
 
         if start_seg is not None:
             seg_ids = seg_ids[seg_ids.index(start_seg) :]
@@ -160,7 +164,7 @@ class BaseFeatures(BaseEstimator):
                 features = self._convert_to_features(img, include_neighborhood)
                 features_off = self._convert_to_features(img_off, include_neighborhood)
                 voxel_dict[counter] = {
-                    **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 0},
+                    **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 1},
                     **features,
                 }
                 counter += 1
@@ -232,7 +236,7 @@ class BaseFeatures(BaseEstimator):
             features = self._convert_to_features(img, include_neighborhood)
             features_off = self._convert_to_features(img_off, include_neighborhood)
             voxel_dict[counter] = {
-                **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 0},
+                **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 1},
                 **features,
             }
             counter += 1
