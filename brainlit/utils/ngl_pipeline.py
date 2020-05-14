@@ -16,7 +16,7 @@ class NeuroglancerSession:
     url : string
         URL of the s3 bucket to pull from and push to.
 
-    mip : int, optional (default=1)
+    mip : int, optional (default=0)
         Resolution level to pull and push at. 0 is the highest resolution.
 
     Attributes
