@@ -13,7 +13,7 @@ def chunks(l, n):
         yield l[i : i + n]
 
 
-def create_image_layer(s3_bucket, voxel_size, num_resolutions):
+def create_image_layer(s3_bucket, tif_dimensions, voxel_size, num_resolutions):
     """Creates segmentation layer for skeletons
 
     Arguments:
@@ -33,23 +33,17 @@ def create_image_layer(s3_bucket, voxel_size, num_resolutions):
         voxel_offset=[0, 0, 0],  # x,y,z offset in voxels from the origin
         # Pick a convenient size for your underlying chunk representation
         # Powers of two are recommended, doesn't need to cover image exactly
-        chunk_size=[66, 50, 52],  # units are voxels
-        # volume_size     =  [528, 400, 208] # units are voxels
+        chunk_size=[int(d / 4) for d in tif_dimensions],  # units are voxels
         # USING MAXIMUM VOLUME size
-        volume_size=[
-            528 * 2 ** (num_resolutions - 1),
-            400 * 2 ** (num_resolutions - 1),
-            208 * 2 ** (num_resolutions - 1),
-        ],
+        volume_size=[i * 2 ** (num_resolutions - 1) for i in tif_dimensions],
     )
     # get cloudvolume info
-    vol = CloudVolume(s3_bucket, info=info, parallel=True)
+    vol = CloudVolume(s3_bucket, info=info, parallel=True, compress=False)
     # scales resolution up, volume size down
     [vol.add_scale((2 ** i, 2 ** i, 2 ** i)) for i in range(num_resolutions)]
-    print(vol.info)
     vol.commit_info()
     vols = [
-        CloudVolume(s3_bucket, mip=i, parallel=True)
+        CloudVolume(s3_bucket, mip=i, parallel=True, compress=False)
         for i in range(num_resolutions - 1, -1, -1)
     ]
     return vols
@@ -77,7 +71,6 @@ def get_data_ranges(bin_path, chunk_size):
     x_range = [x_curr, x_curr + chunk_size[0]]
     y_range = [y_curr, y_curr + chunk_size[1]]
     z_range = [z_curr, z_curr + chunk_size[2]]
-
     return x_range, y_range, z_range
 
 
@@ -106,20 +99,19 @@ def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
         chunk_size {list} -- 3 ints for original tif image dimensions
         num_workers {int} -- max number of concurrently running jobs
     """
-    tiffs = Parallel(num_workers, require="sharedmem")(
+    tiff_jobs = int(num_workers / 2) if num_workers == cpu_count() else num_workers
+
+    tiffs = Parallel(tiff_jobs, backend="loky", verbose=50)(
         delayed(tf.imread)("/".join(i)) for i in files
     )
-    ranges = Parallel(num_workers)(
+    ranges = Parallel(tiff_jobs)(
         delayed(get_data_ranges)(i, chunk_size) for i in bin_paths
     )
     print("loaded tiffs and bin paths")
-    vols_ = [CloudVolume(vol.layer_cloudpath, parallel=False, mip=vol.mip)] * len(
-        ranges
-    )
-    print("dim of uploaded lists")
-    print(len([r for r in ranges]), len([i for i in tiffs]), len([v for v in vols_]))
-    Parallel(num_workers)(
-        delayed(upload_chunk)(v, r, i) for v, r, i in zip(vols_, ranges, tiffs)
+    vol_ = CloudVolume(vol.layer_cloudpath, parallel=False, mip=vol.mip)
+
+    Parallel(tiff_jobs, verbose=50)(
+        delayed(upload_chunk)(vol_, r, i) for r, i in zip(ranges, tiffs)
     )
 
 
@@ -155,7 +147,7 @@ def upload_chunks(vol, files, bin_paths, parallel=True):
                 upload_chunk(vol, ranges, img)
 
 
-def get_file_paths(image_dir, num_resolutions, channel):
+def get_volume_info(image_dir, num_resolutions, channel=0):
     """Get filepaths along the octree-format image directory
 
     Arguments:
@@ -165,10 +157,12 @@ def get_file_paths(image_dir, num_resolutions, channel):
     Returns:
         files_ordered {list} -- list of file paths, 1st dim contains list for each res
         paths_bin {list} -- list of binary paths, 1st dim contains lists for each res
+        vox_size {list} -- list of highest resolution voxel sizes (nm)
+        tiff_dims {3-tuple} -- (x,y,z) voxel dimensions for a single tiff image
     """
     files = [str(i).split("/") for i in Path(image_dir).rglob(f"*.{channel}.tif")]
     parent_dirs = len(image_dir.split("/"))
-    # Create list with 3 indices, first is the resolution level, second is the file, third are the elements of the file's path
+
     files_ordered = [
         [i for i in files if len(i) == j + parent_dirs] for j in range(num_resolutions)
     ]
@@ -177,7 +171,15 @@ def get_file_paths(image_dir, num_resolutions, channel):
         for i in files_ordered
     ]
     print(f"got files and binary representations of paths.")
-    return files_ordered, paths_bin
+    tiff_dims = np.squeeze(tf.imread(image_dir + "/default.0.tif")).T.shape
+    transform = open(image_dir + "/transform.txt", "r")
+    vox_size = [
+        float(s[4:].rstrip("\n")) * (0.5 ** (num_resolutions - 1))
+        for s in transform.readlines()
+        if "s" in s
+    ]
+    print(f"got dimensions of volume")
+    return files_ordered, paths_bin, vox_size, tiff_dims
 
 
 def main():
@@ -186,7 +188,7 @@ def main():
     to S3 in neuroglancer format.
 
     Example:
-    >> python upload_to_neuroglancer.py s3://mouse-light-viz/precomputed_volumes/brain1 /cis/local/jacs/data/jacsstorage/samples/2018-08-01/ 1 1 1
+    >> python upload_to_neuroglancer.py s3://mouse-light-viz/precomputed_volumes/brain1 /cis/local/jacs/data/jacsstorage/samples/2018-08-01/
     """
     parser = argparse.ArgumentParser(
         "Convert a folder of SWC files to neuroglancer format and upload them to the given S3 bucket location."
@@ -200,13 +202,7 @@ def main():
         help="Path to local directory where image hierarchy lives. Assuming it is formatted as a resolution octree.",
     )
     parser.add_argument(
-        "voxel_size",
-        help="Voxel size for highest resolution image.",
-        nargs=3,
-        type=float,
-    )
-    parser.add_argument(
-        "chosen_res",
+        "--chosen_res",
         help="Specified resolution to upload. 0 is highest. Default uploads all",
         default=-1,
         type=int,
@@ -221,26 +217,11 @@ def main():
         type=int,
     )
     args = parser.parse_args()
-    # files = [
-    #     str(i).split("/") for i in Path(args.image_dir).rglob(f"*.{args.channel}.tif")
-    # ]
-    # parent_dirs = len(args.image_dir.split("/"))
-    # # Create list with 3 indices, first is the resolution level, second is the file, third are the elements of the file's path
-    # files_ordered = [
-    #     [i for i in files if len(i) == j + parent_dirs]
-    #     for j in range(args.num_resolutions)
-    # ]
-    # paths_bin = [
-    #     [[f"{int(j)-1:03b}" for j in k if len(j) == 1] for k in i]
-    #     for i in files_ordered
-    # ]
-    # print(f"got files and binary representations of paths.")
-    files_ordered, bin_paths = get_file_paths(
+
+    files_ordered, bin_paths, vox_size, tiff_dims = get_volume_info(
         args.image_dir, args.num_resolutions, args.channel
     )
-
-    vols = create_image_layer(args.s3_bucket, args.voxel_size, args.num_resolutions)
-
+    vols = create_image_layer(args.s3_bucket, tiff_dims, vox_size, args.num_resolutions)
     pbar = tqdm(enumerate(zip(files_ordered, bin_paths)), total=len(files_ordered))
     for idx, item in pbar:
         if args.chosen_res == -1:
