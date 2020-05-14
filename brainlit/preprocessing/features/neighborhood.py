@@ -36,6 +36,7 @@ class NeighborhoodFeatures(BaseFeatures):
         """
         return dict(enumerate(img.flatten()))
 
+
 def subsample(arr, orig_shape, dest_shape):
     """
     Subsamples a flattened neighborhood to a smaller flattened neighborhood.
@@ -47,10 +48,19 @@ def subsample(arr, orig_shape, dest_shape):
     dest_shape : tuple
         The desired shape of the array before flattening
     """
-    start = np.subtract(orig_shape, dest_shape)//2
+    start = np.subtract(orig_shape, dest_shape) // 2
     end = start + dest_shape
     if len(orig_shape) is 2:
-        idx = np.ravel_multi_index((np.mgrid[start[0]:end[0],start[1]:end[1]].reshape(2, -1)), orig_shape)
+        idx = np.ravel_multi_index(
+            (np.mgrid[start[0] : end[0], start[1] : end[1]].reshape(2, -1)), orig_shape
+        )
     elif len(orig_shape) is 3:
-        idx = np.ravel_multi_index((np.mgrid[start[0]:end[0],start[1]:end[1],start[2]:end[2]].reshape(3, -1)), orig_shape)
+        idx = np.ravel_multi_index(
+            (
+                np.mgrid[
+                    start[0] : end[0], start[1] : end[1], start[2] : end[2]
+                ].reshape(3, -1)
+            ),
+            orig_shape,
+        )
     return arr[idx]
