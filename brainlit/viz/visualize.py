@@ -1,16 +1,120 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import SimpleITK as sitk
+
+
+def plot_2d(img, title=None, margin=0.05, dpi=80, show_plot=True):
+    nda = sitk.GetArrayFromImage(img)
+    spacing = img.GetSpacing()
+
+    if nda.ndim == 3:
+        c = nda.shape[-1]
+
+        if c not in (3, 4):
+            nda = nda[nda.shape[0] // 2, :, :]
+
+    elif nda.ndim == 4:
+        c = nda.shape[-1]
+
+        if c not in (3, 4):
+            raise RuntimeError("Unable to show 3D-vector Image")
+
+        nda = nda[nda.shape[0] // 2, :, :, :]
+
+    xsize = nda.shape[1] * 2
+    ysize = nda.shape[0] * 2
+
+    figsize = (1 + margin) * xsize / dpi, (1 + margin) * ysize / dpi
+
+    fig = plt.figure(figsize=figsize, dpi=dpi)
+    ax = plt.gca()
+
+    if show_plot:
+        extent = (0, xsize * spacing[0], ysize * spacing[1], 0)
+
+        t = ax.imshow(nda, extent=extent, interpolation=None)
+
+        if nda.ndim == 2:
+            t.set_cmap("gray")
+
+        if title:
+            plt.title(title)
+
+        plt.show()
+
+    return fig, ax
+
+
+def plot_3d(
+    img,
+    xslices=[],
+    yslices=[],
+    zslices=[],
+    title=None,
+    margin=0.05,
+    dpi=80,
+    show_plot=True,
+):
+    if not isinstance(img, sitk.SimpleITK.Image):
+        raise Exception("Sorry, input must be an sitk image")
+    else:
+
+        img_xslices = [img[s, :, :] for s in xslices]
+        img_yslices = [img[:, s, :] for s in yslices]
+        img_zslices = [img[:, :, s] for s in zslices]
+
+        maxlen = max(len(img_xslices), len(img_yslices), len(img_zslices))
+
+        img_null = sitk.Image(
+            [0, 0], img.GetPixelID(), img.GetNumberOfComponentsPerPixel()
+        )
+
+        img_slices = []
+        d = 0
+
+        if len(img_xslices):
+            img_slices += img_xslices + [img_null] * (maxlen - len(img_xslices))
+            d += 1
+
+        if len(img_yslices):
+            img_slices += img_yslices + [img_null] * (maxlen - len(img_yslices))
+            d += 1
+
+        if len(img_zslices):
+            img_slices += img_zslices + [img_null] * (maxlen - len(img_zslices))
+            d += 1
+
+        if maxlen != 0:
+            if img.GetNumberOfComponentsPerPixel() == 1:
+                img = sitk.Tile(img_slices, [maxlen, d])
+            else:
+                img_comps = []
+                for i in range(0, img.GetNumberOfComponentsPerPixel()):
+                    img_slices_c = [
+                        sitk.VectorIndexSelectionCast(s, i) for s in img_slices
+                    ]
+                    img_comps.append(sitk.Tile(img_slices_c, [maxlen, d]))
+                img = sitk.Compose(img_comps)
+
+    return plot_2d(img, title, margin, dpi, show_plot)
 
 
 def plot_image_2d(imgs, titles=None, rows=1, colorbar=False):
-    """Plot image using matplotlib
-    
-    Arguments:
-        img {numpy array} -- image to be displayed
-
-    Keyword Arguments:
-        rows {int} -- number of rows in the subplot
     """
+        Plots a 2D image
+
+        Parameters
+        ----------
+        imgs : single 2D np.array or list of 2D np.arrays
+            slice of image data frog ngl_pipeline class.
+            example use: img_slice = img[:,100,:]
+
+        titles : str, default = None
+
+        Returns
+        -------
+        matplotlib figure and axis
+     """
     if isinstance(imgs, list):
         l = len(imgs)
         cols = np.ceil(l / rows).astype(int)
@@ -28,25 +132,27 @@ def plot_image_2d(imgs, titles=None, rows=1, colorbar=False):
     else:
         img = np.swapaxes(imgs, 0, 1)
         fig, axis = plt.subplots()
-        axis.imshow(img)
+        im = axis.imshow(img)
         axis.set_xticks([])
         axis.set_yticks([])
         if colorbar:
-            axis.colorbar()
+            plt.colorbar(im, ax=axis)
         return fig, axis
 
 
 def plot_image_mip(imgs, titles=None, rows=1, axis=2, colorbar=False):
-    """max intensity projection
-    
-    Arguments:
-        imgs {3d array or list of 3d arrays} -- image(s)
-    
-    Keyword Arguments:
-        titles {list of strings} -- titles for the images (default: None)
-        axis {int} -- axis along which to project (default: {2})
-        rows {int} -- number of rows in the subplot (default: 1)
-        colorbar {bool} -- whether a colorbar should be included (default: False)
+    """
+        Max Intensity Projection of 3D image
+
+        Parameters
+        ----------
+        imgs : single 3D np.array or list of 3D np.arrays
+
+        titles : str, default = None
+
+        Returns
+        -------
+        matplotlib figure and axis
     """
     if isinstance(imgs, list):
         for i, img in enumerate(imgs):
@@ -60,11 +166,18 @@ def plot_image_mip(imgs, titles=None, rows=1, axis=2, colorbar=False):
 
 
 def find_smalldim(imgs):
-    """Find the smallest dimension of the image
+    """
+        Find smallest dimension of an image or list of images.
 
-    Arguments:
-        imgs {3d array or list of 3d arrays} -- image(s)
-    
+        Parameters
+        ----------
+        imgs : single 3D np.array or list of 3D np.arrays {
+
+        titles : str, default = None
+
+        Returns
+        -------
+        smallest_axis: int
     """
     if isinstance(imgs, list):
         img = imgs[0]
@@ -76,10 +189,18 @@ def find_smalldim(imgs):
 
 
 def plot_image_hist(imgs, rows=1, titles=None):
-    """Histograms
-    
-    Arguments:
-        img {3d array} -- images from which to plot a intensity histogram
+    """
+        Histogram
+
+        Parameters
+        ----------
+        imgs : single 3D np.array or list of 3D np.arrays {
+
+        titles : str, default = None
+
+        Returns
+        -------
+        matplotlib figure and axis
     """
     if isinstance(imgs, list):
         l = len(imgs)
@@ -90,8 +211,6 @@ def plot_image_hist(imgs, rows=1, titles=None):
             img = np.swapaxes(img, 0, 1)
             ax = axes[i]
             ax.hist(img.flatten(), bins=50)
-            ax.set_xticks(fontsize=12)
-            ax.set_yticks(fontsize=12)
             ax.set_ylabel("Count", fontsize=12)
             ax.set_xlabel("Intensity", fontsize=12)
             if titles is not None:
@@ -105,21 +224,30 @@ def plot_image_hist(imgs, rows=1, titles=None):
 
 
 def plot_image_pts(img, voxels, colorbar=False):
-    """ Visualize a chunk around a voxel 
-    Arguments:
-        img {2D array} 
-        voxels: 2D array 
+    """
+        Visualize a chunk around a voxel
+
+        Parameters
+        ----------
+        img : single 2D np.array
+
+        voxels : np.array
+            voxel output from ngl_pipeline class
+
+        Returns
+        -------
+        matplotlib figure and axis
     """
     fig, axes = plt.subplots()
 
     if len(voxels.shape) > 1:
-        axes.imshow(img)
+        im = axes.imshow(img)
         axes.scatter(voxels[:, 0], voxels[:, 1])
     else:
-        axes.imshow(img)
+        im = axes.imshow(img)
         axes.scatter(voxels[0], voxels[1])
 
     if colorbar:
-        axes.colorbar()
+        plt.colorbar(im, ax=axes)
 
     return fig, axes
