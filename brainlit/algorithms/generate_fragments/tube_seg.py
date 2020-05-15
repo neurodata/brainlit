@@ -3,6 +3,7 @@ from skimage import draw
 import itertools
 from scipy.ndimage.morphology import distance_transform_edt
 
+
 def pairwise(iterable):
     # Adapted from https://stackoverflow.com/a/5434936
     a, b = itertools.tee(iterable)
@@ -72,7 +73,6 @@ def draw_tube_from_spheres(img, vertex0, vertex1, radius):
     seg = np.zeros(img.shape)
     for pt in line:
         s = draw_sphere(img.shape, pt, radius)
-        # print(s.sum())
         seg += s
 
     labels = np.where(seg >= 1, 1, 0)
@@ -104,25 +104,14 @@ def draw_tube_from_edt(img, vertex0, vertex1, radius):
     
     """
     line = draw.line_nd(vertex0, vertex1, endpoint=True)
-    line_array = np.zeros(img.shape) # TODO: convert line to mask
-    threshold = 1 # TODO: relate to radius as param
-    seg = distance_transform_edt(seg)
-    labels = np.where(seg >= threshold, 1, 0)
+    line_array = np.ones(img.shape, dtype=int)
+    line_array[line] = 0
+    seg = distance_transform_edt(line_array)
+    labels = np.where(seg <= radius, 1, 0)
     return labels
 
 
-    line = np.array(line).T
-    seg = np.zeros(img.shape)
-    for pt in line:
-        s = draw_sphere(img.shape, pt, radius)
-        # print(s.sum())
-        seg += s
-
-    labels = np.where(seg >= 1, 1, 0)
-    return labels
-
-
-def tubes_seg(img, vertices, radius, spheres=True):
+def tubes_seg(img, vertices, radius, spheres=False):
     """
     Generate a segmentation mask of cylinders connecting known vertices.
     
@@ -136,6 +125,9 @@ def tubes_seg(img, vertices, radius, spheres=True):
     
     radius : float
         The radius of the cylinder.
+
+    spheres : bool
+        True if sphere-based segmentation should be used; False for EDT-based segmentation.
     
     Returns
     -------
