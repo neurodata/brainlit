@@ -1,7 +1,7 @@
 import numpy as np
 from skimage import draw
 import itertools
-
+from scipy.ndimage.morphology import distance_transform_edt
 
 def pairwise(iterable):
     # Adapted from https://stackoverflow.com/a/5434936
@@ -43,7 +43,7 @@ def draw_sphere(shape, center, radius):
     return sphere
 
 
-def draw_tube(img, vertex0, vertex1, radius):
+def draw_tube_from_spheres(img, vertex0, vertex1, radius):
     """
     Generate a segmentation mask of a tube (series of spheres) connecting known vertices.
     
@@ -79,7 +79,50 @@ def draw_tube(img, vertex0, vertex1, radius):
     return labels
 
 
-def tubes_seg(img, vertices, radius):
+def draw_tube_from_edt(img, vertex0, vertex1, radius):
+    """
+    Generate a segmentation mask of a tube connecting known vertices.
+    
+    Parameters
+    -------
+    img : cloudvolume.volumecutout.VolumeCutout
+        The volume to segment.
+    
+    vertex0 : tuple
+        A vertex containing a coordinate within a known segment.
+    
+    vertex1 : tuple
+        A vertex containing a coordinate within a known segment.
+    
+    radius : float
+        The radius of the cylinder.
+    
+    Returns
+    -------
+    labels : numpy.ndarray
+        An array consisting of the pixelwise segmentation.
+    
+    """
+    line = draw.line_nd(vertex0, vertex1, endpoint=True)
+    line_array = np.zeros(img.shape) # TODO: convert line to mask
+    threshold = 1 # TODO: relate to radius as param
+    seg = distance_transform_edt(seg)
+    labels = np.where(seg >= threshold, 1, 0)
+    return labels
+
+
+    line = np.array(line).T
+    seg = np.zeros(img.shape)
+    for pt in line:
+        s = draw_sphere(img.shape, pt, radius)
+        # print(s.sum())
+        seg += s
+
+    labels = np.where(seg >= 1, 1, 0)
+    return labels
+
+
+def tubes_seg(img, vertices, radius, spheres=True):
     """
     Generate a segmentation mask of cylinders connecting known vertices.
     
@@ -102,6 +145,9 @@ def tubes_seg(img, vertices, radius):
     """
     output = np.zeros(img.shape)
     for a, b in pairwise(vertices):
-        output += draw_tube(img, a, b, radius)
+        if spheres:
+            output += draw_tube_from_spheres(img, a, b, radius)
+        else:
+            output += draw_tube_from_edt(img, a, b, radius)
     labels = np.where(output >= 1, 1, 0)
     return labels
