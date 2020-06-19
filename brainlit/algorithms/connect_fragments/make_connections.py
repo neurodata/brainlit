@@ -385,13 +385,13 @@ def cube_fill(loc_list):
 def dist_graphs_general(g1, g2, locattr="loc", intattr="intensity"):
     """Compute 3 component dissimilarity between graph objects.
         Nodes in the graphs must have the attributes locattr and intattr
-    
+
     Arguments:
         g1 {GeometricGraph} -- graph #1
         g2 {GeometricGraph} -- graph #2
         locattr {string} -- name of location attribute in the graph nodes
         intattr {string} -- name of intensity attribute in the graph nodes
-    
+
     Returns:
         tuple -- distance between the graphs, and the "closest" pair of nodes
     """
@@ -503,11 +503,11 @@ def curvature_cost(curv1, curv2, normalization, mode="sq"):
 
 def convert_paths_to_locmats(graph, paths):
     """Convert paths to array of locations
-    
+
     Arguments:
         graph {nx.Graph} -- graph with location info of paths (e.g. connected component)
         paths {list of lists} -- list of paths
-    
+
     Returns:
         list of nd.arrays -- list of arrays that hold the spatial locations of the paths
     """
@@ -542,13 +542,13 @@ def get_paths_to_leaves(digraph, root):
 
 
 def checkIfDuplicates_2(listOfElems):
-    ''' Check if given list contains any duplicates '''    
+    ''' Check if given list contains any duplicates '''
     setOfElems = set()
     for elem in listOfElems:
         if elem in setOfElems:
             return True
         else:
-            setOfElems.add(elem)         
+            setOfElems.add(elem)
     return False
 
 """
@@ -562,6 +562,31 @@ class GeometricGraph(nx.Graph):
         self.segments = None
         self.cycle = None
         self.root = 1
+
+    def fit_dataframe(self, df):
+        """
+        Fits a GeometricGraph object to a dataframe by adding each node row by
+        row, and adding edges between nodes and their parents.
+
+        Parameters
+        ----------
+        df : dataframe
+            the axon object
+        """
+        num_pts = df.shape[0]
+        first = True
+        for row in df.itertuples(index=False):
+            samp = row.sample
+            loc = np.array([row.x, row.y, row.z])
+            if first:
+                soma = loc
+                first = False
+            self.add_node(samp, loc=loc)
+            par = row.parent
+            if par != -1:
+                if par > samp:
+                    raise ValueError("Parent has not been added yet")
+                self.add_edge(samp, par)
 
     def set_root(self, root):
         self.root_node = root
@@ -884,7 +909,7 @@ class GeometricGraph(nx.Graph):
 
         for node in spline_tree.nodes:
             path = spline_tree.nodes[node]["path"]
-            
+
             spline_tree.nodes[node]["spline"] = self.fit_spline_path(path)
 
         return spline_tree
@@ -911,7 +936,7 @@ class GeometricGraph(nx.Graph):
         self.check_multiplicity(tck[0])
 
         return tck, u
-    
+
     def check_multiplicity(self, t):
         knots = list(t.copy())
         first = knots[0]
@@ -922,7 +947,7 @@ class GeometricGraph(nx.Graph):
         if dup:
             print(t)
             raise RuntimeError("Duplicates found in the above knot list")
-        
+
     def find_longest_path(self, tree, starting_length=0):
         other_trees = []
         if len(tree.nodes) == 1:
@@ -1001,7 +1026,7 @@ class GeometricGraph(nx.Graph):
             self, source=root
         )
 
-        
+
         path, length = self.get_segment_branch(successors, root)
         spline_tree.add_node(curr_spline_num, path=path, starting_length=0)
         end_pt = path[-1]
