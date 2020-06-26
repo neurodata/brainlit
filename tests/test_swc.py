@@ -16,7 +16,7 @@ df_s3 = swc.read_s3(s3_path, seg_id=2, mip=1)
 
 # read in swc file to dataframe
 swc_path = "./tests/2018-08-01_G-002_consensus.swc"
-df = swc.read_swc(swc_path)
+df, offset, color, cc, branch = swc.read_swc(swc_path)
 
 # # convert swc dataframe from spatial units to voxel units
 spacing = np.array([0.29875923, 0.3044159, 0.98840415])
@@ -54,6 +54,10 @@ def test_read_s3_dataframe():
 def test_read_swc_dataframe():
     """test if output is correct type (pd.DataFrame)"""
     assert isinstance(df, pd.DataFrame)
+    assert isinstance(offset, list)
+    assert isinstance(color, list)
+    assert isinstance(cc, np.nan)
+    assert isinstance(branch, int)
 
 
 def test_read_swc_shape():
