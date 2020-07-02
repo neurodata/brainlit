@@ -1,6 +1,6 @@
 from brainlit.utils.ngl_pipeline import NeuroglancerSession
 from brainlit.algorithms.generate_fragments import adaptive_thresh
-from brainlit.viz.swc import *
+from brainlit.utils.swc import *
 from brainlit.viz import visualize
 import matplotlib
 import SimpleITK as sitk

@@ -5,7 +5,7 @@ from cloudvolume import CloudVolume
 
 
 import brainlit
-from brainlit.viz import swc
+from brainlit.utils import swc
 from brainlit.utils.ngl_pipeline import NeuroglancerSession
 
 

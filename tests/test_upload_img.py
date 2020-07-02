@@ -4,7 +4,7 @@ from brainlit.utils import upload_to_neuroglancer
 import os
 
 dir = os.path.dirname(os.path.abspath(__file__))
-top_level = os.path.join(dir, "data/")
+top_level = os.path.join(dir, "data_octree/")
 low_res = tf.imread(top_level + "default.0.tif")
 
 num_res = 2
