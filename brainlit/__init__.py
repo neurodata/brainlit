@@ -3,6 +3,7 @@ import warnings
 import brainlit.algorithms
 import brainlit.preprocessing
 import brainlit.utils
+import brainlit.viz
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
