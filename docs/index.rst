@@ -5,17 +5,18 @@
 Overview of Brainlit 
 ====================
 
-Brainlit is a Python package for reading and analyzing mouselight data.
+Brainlit is a Python package for reading and analyzing brain data.
+The brain data is assumed to consist of image files in an octree structure to handle mutliple resolutions.
+Optionally, the package is able to handle skeletonized axon data stored in a `.swc` file format.
 
-Python
-------
+Brainlit is able to handle this data, visualizing and running analysis with morphological and statistical methods.
+A diagram demonstrating the capabilities of the package is shown.
 
-Python is awesome and lots of other people agree. So many people know Python that having open-source code matters.
+.. image:: images/figure.png
+   :width: 600
 
 Documentation
 =============
-
-Brainlit is a Python package for reading and analyzing mouselight data.
 
 .. toctree::
     :maxdepth: 1

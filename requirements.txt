@@ -92,6 +92,7 @@ pytz==2019.3
 PyWavelets==1.1.1
 pyzmq==18.1.1
 qtconsole==4.6.0
+quadprog==0.1.7
 QtPy==1.9.0
 requests==2.22.0
 rsa==4.0

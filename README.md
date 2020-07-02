@@ -10,3 +10,5 @@ Link to mouselight article [here](https://www.hhmi.org/news/mouselight-project-m
 # Overview
 Tools to read and analyze brainlit data sets.
 
+## Brainlight Features
+![Brainlight Features](https://raw.githubusercontent.com/neurodata/brainlight/diagram/Brainlight.png)
