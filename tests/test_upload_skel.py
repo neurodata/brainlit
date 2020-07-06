@@ -32,9 +32,7 @@ def test_create_skeleton_layer():
 
 def test_create_skel_segids():
     origin = upload_skeleton.get_volume_info(top_level, num_res)[0]
-    skels, segids = upload_skeleton.create_skel_segids(
-        top_level_swc, origin
-    )
+    skels, segids = upload_skeleton.create_skel_segids(top_level_swc, origin)
     assert len(segids) == 2
     assert len(skels) == 2
     for skel in skels:

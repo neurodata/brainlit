@@ -6,6 +6,7 @@ import networkx as nx
 from cloudvolume import CloudVolume
 from io import StringIO
 
+
 def read_swc(path):
     """Read a single swc file
 
@@ -249,7 +250,7 @@ def generate_df_subset(swc_df, vox_in_img_list):
 
 # def read_swc(swc_path):
 #     """Read a swc file into a pandas dataframe.
-# 
+#
 #     Parameters
 #     ----------
 #     swc_path : str

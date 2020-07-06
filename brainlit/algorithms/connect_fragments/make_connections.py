@@ -542,7 +542,7 @@ def get_paths_to_leaves(digraph, root):
 
 
 def checkIfDuplicates_2(listOfElems):
-    ''' Check if given list contains any duplicates '''
+    """ Check if given list contains any duplicates """
     setOfElems = set()
     for elem in listOfElems:
         if elem in setOfElems:
@@ -550,6 +550,7 @@ def checkIfDuplicates_2(listOfElems):
         else:
             setOfElems.add(elem)
     return False
+
 
 """
 Geometric Graph class
@@ -920,11 +921,14 @@ class GeometricGraph(nx.Graph):
         for row, node in enumerate(path):
             x[row, :] = self.nodes[node]["loc"]
         orig = x.shape[0]
-        x = [xi for i,xi in enumerate(x) if i==0 or (xi!=x[i-1,:]).any()]
+        x = [xi for i, xi in enumerate(x) if i == 0 or (xi != x[i - 1, :]).any()]
         x = np.stack(x, axis=0)
         new = x.shape[0]
         if orig != new:
-            warnings.warn(f'{orig-new} duplicate points removed in the trace segment', category=UserWarning)
+            warnings.warn(
+                f"{orig-new} duplicate points removed in the trace segment",
+                category=UserWarning,
+            )
         m = x.shape[0]
         diffs = np.diff(x, axis=0)
         diffs = np.linalg.norm(diffs, axis=1)
@@ -942,7 +946,7 @@ class GeometricGraph(nx.Graph):
         first = knots[0]
         last = knots[-1]
         indices_keep = (knots != first) & (knots != last)
-        knots = [i for (i,v) in zip(knots, indices_keep) if v]
+        knots = [i for (i, v) in zip(knots, indices_keep) if v]
         dup = checkIfDuplicates_2(knots)
         if dup:
             print(t)
@@ -1026,7 +1030,6 @@ class GeometricGraph(nx.Graph):
             self, source=root
         )
 
-
         path, length = self.get_segment_branch(successors, root)
         spline_tree.add_node(curr_spline_num, path=path, starting_length=0)
         end_pt = path[-1]
@@ -1044,7 +1047,7 @@ class GeometricGraph(nx.Graph):
             start = item[0]
             parent_num = item[1]
             start_len = item[2]
-            branch_pt = spline_tree.nodes[parent_num]['path'][-1]
+            branch_pt = spline_tree.nodes[parent_num]["path"][-1]
             path, length = self.get_segment_branch(successors, start)
             path.insert(0, branch_pt)
             end_pt = path[-1]
@@ -1056,7 +1059,7 @@ class GeometricGraph(nx.Graph):
                 children = successors[end_pt]
 
                 for child in reversed(children):
-                    item = (child, curr_spline_num, start_len+length)
+                    item = (child, curr_spline_num, start_len + length)
                     stack.append(item)
 
         for node in spline_tree.nodes:
@@ -1075,7 +1078,9 @@ class GeometricGraph(nx.Graph):
             while len(children) == 1:
                 child = children[0]
                 sequence.append(child)
-                length = length + np.linalg.norm(self.nodes[sequence[-1]]['loc']-self.nodes[sequence[-2]]['loc'])
+                length = length + np.linalg.norm(
+                    self.nodes[sequence[-1]]["loc"] - self.nodes[sequence[-2]]["loc"]
+                )
                 children = successors[child]
         except KeyError:
             pass

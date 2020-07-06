@@ -24,7 +24,7 @@ spacing = np.array([0.29875923, 0.3044159, 0.98840415])
 origin = np.array([70093.276, 15071.596, 29306.737])
 
 df_voxel = swc.swc_to_voxel(df, spacing=spacing, origin=origin)
-df_voxel_s3 = swc.swc_to_voxel(df_s3, spacing=spacing, origin=np.array([0,0,0]))
+df_voxel_s3 = swc.swc_to_voxel(df_s3, spacing=spacing, origin=np.array([0, 0, 0]))
 
 # convert from dataframe to directed graph
 G = swc.df_to_graph(df_voxel=df_voxel)
@@ -53,6 +53,7 @@ def test_read_s3_dataframe():
         assert isinstance(df_s3, pd.DataFrame)
     except:
         print("s3 still buggin")
+
 
 def test_read_swc_dataframe():
     """test if output is correct type (pd.DataFrame)"""
@@ -213,7 +214,7 @@ def test_get_sub_neuron_bounding_box():
         assert len(G_sub.nodes) == num_nodes
         assert len(G_sub.edges) == num_edges
     except:
-        pass # coordinates screwed up bc of s3
+        pass  # coordinates screwed up bc of s3
 
     # case 2: bounding box has no nodes and edges
     start = np.array([15312, 4400, 6448])

@@ -1,27 +1,30 @@
 from scipy.interpolate import splev
 import numpy as np
 
-def splev_deg0(x, xi, i):
-    if i < len(xi)-2:
-        within = (x >= xi[i]) & (x < xi[i+1])
-    else:
-        within = (x >= xi[i]) & (x <= xi[i+1])
 
-    return np.array(1*(within))
+def splev_deg0(x, xi, i):
+    if i < len(xi) - 2:
+        within = (x >= xi[i]) & (x < xi[i + 1])
+    else:
+        within = (x >= xi[i]) & (x <= xi[i + 1])
+
+    return np.array(1 * (within))
+
 
 def splev_degreecontrol(x, tck):
     if tck[2] < 0:
-        return 0*x
+        return 0 * x
     elif tck[2] == 0:
-        val = 0*x
+        val = 0 * x
         cs = tck[1]
         xi = tck[0]
         for j, c in enumerate(cs):
             if c != 0:
-                val = val + c*splev_deg0(x, xi, j)
+                val = val + c * splev_deg0(x, xi, j)
         return val
     else:
         return splev(x, tck)
+
 
 def splev_deriv(x, tck):
     cs = tck[1]
@@ -67,7 +70,9 @@ def splev_deriv(x, tck):
         tckb2[2] = p - 1
         tckb2 = tuple(tckb2)
 
-        deriv = deriv + cs[j] * (splev_degreecontrol(x, tckb1) * c1 - splev_degreecontrol(x, tckb2) * c2)
+        deriv = deriv + cs[j] * (
+            splev_degreecontrol(x, tckb1) * c1 - splev_degreecontrol(x, tckb2) * c2
+        )
     deriv = deriv * p
 
     return deriv
@@ -154,7 +159,7 @@ def splev_deriv3(x, tck):
     p = tck[2]
     xi = tck[0]
 
-    pad = np.amax((3, p+1))
+    pad = np.amax((3, p + 1))
 
     pre_xi = (xi[0] - 1) * np.ones(pad)
     post_xi = (xi[-1] + 1) * np.ones(pad)
@@ -258,7 +263,6 @@ def splev_deriv3(x, tck):
         tck2b2 = (xi, csj3, pm3)
         d2b2 = splev_degreecontrol(x, tck2b2)
 
-
         deriv3 = deriv3 + cs[j] * (
             c1 * (c1a * (d1a1 * c1a1 - d1a2 * c1a2) - c1b * (c1b1 * d1b1 - c1b2 * d1b2))
             - c2
@@ -306,7 +310,7 @@ def curvature(x, tck):
 
     curvature = np.nan_to_num(num / denom)
     if np.isnan(np.sum(curvature)):
-        print('torsion nan')
+        print("torsion nan")
 
     return curvature
 
@@ -335,5 +339,5 @@ def torsion(x, tck):
     denom = np.linalg.norm(cross, axis=1) ** 2
 
     torsion = np.nan_to_num(num / denom)
-    
+
     return torsion
