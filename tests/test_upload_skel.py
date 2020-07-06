@@ -1,9 +1,11 @@
 import numpy as np
+import tifffile as tf
 from brainlit.utils import upload_skeleton
 import os
 
 dir = os.path.dirname(os.path.abspath(__file__))
-top_level = os.path.join(dir, "data/")
+top_level = os.path.join(dir, "data_octree/")
+top_level_swc = os.path.join(dir, "data_swcs/")
 
 num_res = 2
 test_vox_size = [6173, 6173, 6173]
@@ -31,7 +33,7 @@ def test_create_skeleton_layer():
 def test_create_skel_segids():
     origin = upload_skeleton.get_volume_info(top_level, num_res)[0]
     skels, segids = upload_skeleton.create_skel_segids(
-        top_level + "consensus-swcs", origin
+        top_level_swc, origin
     )
     assert len(segids) == 2
     assert len(skels) == 2
