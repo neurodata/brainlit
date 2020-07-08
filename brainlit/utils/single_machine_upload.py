@@ -21,6 +21,7 @@ def validate_upload(vol, ranges, image):
         print('all 0')
         return False
     else:
+        print('valid')
         return True
 
 
@@ -61,9 +62,8 @@ def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
         delayed(get_data_ranges)(i, chunk_size) for i in bin_paths
     )
     print("loaded tiffs and bin paths")
-    res = str(int(np.log2(len(bin_paths))/3))
 
-    progress_dir = mkdir('./progress/'+str(res))
+    progress_dir = mkdir('./progress/'+str(curr_idx)) # unlike os.mkdir doesn't crash on prexisting
     done_files = set([ z for z in os.listdir(progress_dir) ])
     all_files = set([str(range) for range in ranges])
 
