@@ -7,9 +7,9 @@ from pathlib import Path
 import tifffile as tf
 from joblib import Parallel, delayed, cpu_count
 from cloudvolume.lib import mkdir, touch
+import warnings
 import os
 from brainlit.utils.upload_to_neuroglancer import chunks, create_image_layer, get_data_ranges, upload_chunks, get_volume_info
-
 
 
 def validate_upload(vol, ranges, image):
@@ -19,10 +19,8 @@ def validate_upload(vol, ranges, image):
         ranges[2][0] : ranges[2][1],
     ]
     if np.sum(pulled_img) == 0:
-        print("all 0")
         return False
     else:
-        print("valid")
         return True
 
 
@@ -34,7 +32,7 @@ def upload_chunk(vol, ranges, image, progress_dir, to_upload):
         ranges {tuple} -- 3 tuple of lists for image stitch min,max bounds
         image {numpy array} -- 3D image array
     """
-    if not str(ranges) in to_upload:
+    if not str(ranges) in done_files:
         vol[
             ranges[0][0] : ranges[0][1],
             ranges[1][0] : ranges[1][1],
@@ -44,8 +42,16 @@ def upload_chunk(vol, ranges, image, progress_dir, to_upload):
         if validate_upload(vol, ranges, image):
             print("valid")
             touch(os.path.join(progress_dir, str(ranges)))
+        else:
+            warnings.warn("Invalid chunk, all 0")
     else:
-        print("passs")
+        print("already uploaded")
+
+
+def process(file, bin_path, chunk_size, vol, progress_dir, done_files):
+    tiff = tf.imread("/".join(file))
+    range = get_data_ranges(bin_path, chunk_size)
+    upload_chunk(vol_, range, tiff, progress_dir, done_files)
 
 
 def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
@@ -60,26 +66,33 @@ def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
     """
     tiff_jobs = int(num_workers / 2) if num_workers == cpu_count() else num_workers
 
-    tiffs = Parallel(tiff_jobs, backend="loky", verbose=50)(
-        delayed(tf.imread)("/".join(i)) for i in files
-    )
-    ranges = Parallel(tiff_jobs, backend='threading')(
-        delayed(get_data_ranges)(i, chunk_size) for i in bin_paths
-    )
-    print("loaded tiffs and bin paths")
+    # tiffs = Parallel(tiff_jobs, backend="loky", verbose=50)(
+    #     delayed(tf.imread)("/".join(i)) for i in files
+    # )
+    # ranges = Parallel(tiff_jobs, backend='threading')(
+    #     delayed(get_data_ranges)(i, chunk_size) for i in bin_paths
+    # )
+    # print("loaded tiffs and bin paths")
 
     progress_dir = mkdir(
-        "./progress/" + str(curr_idx)
+        "./progress/" + str(vol.mip)
     )  # unlike os.mkdir doesn't crash on prexisting
     done_files = set([z for z in os.listdir(progress_dir)])
-    all_files = set([str(range) for range in ranges])
 
-    to_upload = [z for z in list(all_files.difference(done_files))]
     vol_ = CloudVolume(vol.layer_cloudpath, parallel=False, mip=vol.mip)
+    # all_files = set([str(range) for range in ranges])
+    #
+    # to_upload = [z for z in list(all_files.difference(done_files))]
+    # vol_ = CloudVolume(vol.layer_cloudpath, parallel=False, mip=vol.mip)
 
-    Parallel(tiff_jobs, verbose=50)(
-        delayed(upload_chunk)(vol_, r, i, progress_dir, to_upload)
-        for r, i in zip(ranges, tiffs)
+    # Parallel(tiff_jobs, verbose=50)(
+    #     delayed(upload_chunk)(vol_, r, i, progress_dir, to_upload)
+    #     for r, i in zip(ranges, tiffs)
+    # )
+
+    Parallel(tiff_jobs, timeout=1800, verbose=10)(
+        delayed(process)(f, b, chunk_size, vol_, progress_dir, done_files) for f, b in zip(files, bin_paths)
+        )
     )
 
 
