@@ -8,7 +8,7 @@ import tifffile as tf
 from joblib import Parallel, delayed, cpu_count
 from cloudvolume.lib import mkdir, touch
 import os
-from .upload_to_neuroglancer import chunks, create_image_layer, get_data_ranges, upload_chunks, get_volume_info
+from brainlit.utils.upload_to_neuroglancer import chunks, create_image_layer, get_data_ranges, upload_chunks, get_volume_info
 
 
 def validate_upload(vol, ranges, image):
@@ -39,8 +39,12 @@ def upload_chunk(vol, ranges, image, progress_dir, to_upload):
             ranges[1][0] : ranges[1][1],
             ranges[2][0] : ranges[2][1],
         ] = image.T
+        print("uploaded")
         if validate_upload(vol, ranges, image):
+            print("valid")
             touch(os.path.join(progress_dir, str(ranges)))
+    else:
+        print("passs")
 
 
 def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
@@ -58,7 +62,7 @@ def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
     tiffs = Parallel(tiff_jobs, backend="loky", verbose=50)(
         delayed(tf.imread)("/".join(i)) for i in files
     )
-    ranges = Parallel(tiff_jobs)(
+    ranges = Parallel(tiff_jobs, backend='threading')(
         delayed(get_data_ranges)(i, chunk_size) for i in bin_paths
     )
     print("loaded tiffs and bin paths")
@@ -70,7 +74,7 @@ def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
     to_upload = [ z for z in list(all_files.difference(done_files)) ]
     vol_ = CloudVolume(vol.layer_cloudpath, parallel=False, mip=vol.mip)
 
-    Parallel(tiff_jobs, verbose=50)(
+    Parallel(tiff_jobs, backend='threading', verbose=50)(
         delayed(upload_chunk)(vol_, r, i, progress_dir, to_upload) for r, i in zip(ranges, tiffs)
     )
 
