@@ -95,7 +95,7 @@ class NeuroglancerSession:
 
     def pull_vertex_list(self, seg_id, v_id_list, buffer=[0, 0, 0], expand=False):
         """
-        Pull a number of chunks around a specified skeleton vertex
+        Pull a region containing all listed vertices.
 
         Parameters
         ----------

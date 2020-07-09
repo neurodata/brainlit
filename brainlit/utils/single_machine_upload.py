@@ -11,17 +11,18 @@ import os
 from brainlit.utils.upload_to_neuroglancer import chunks, create_image_layer, get_data_ranges, upload_chunks, get_volume_info
 
 
+
 def validate_upload(vol, ranges, image):
     pulled_img = vol[
         ranges[0][0] : ranges[0][1],
         ranges[1][0] : ranges[1][1],
         ranges[2][0] : ranges[2][1],
     ]
-    if np.sum(pulled_img)==0:
-        print('all 0')
+    if np.sum(pulled_img) == 0:
+        print("all 0")
         return False
     else:
-        print('valid')
+        print("valid")
         return True
 
 
@@ -67,15 +68,18 @@ def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
     )
     print("loaded tiffs and bin paths")
 
-    progress_dir = mkdir('./progress/'+str(curr_idx)) # unlike os.mkdir doesn't crash on prexisting
-    done_files = set([ z for z in os.listdir(progress_dir) ])
+    progress_dir = mkdir(
+        "./progress/" + str(curr_idx)
+    )  # unlike os.mkdir doesn't crash on prexisting
+    done_files = set([z for z in os.listdir(progress_dir)])
     all_files = set([str(range) for range in ranges])
 
-    to_upload = [ z for z in list(all_files.difference(done_files)) ]
+    to_upload = [z for z in list(all_files.difference(done_files))]
     vol_ = CloudVolume(vol.layer_cloudpath, parallel=False, mip=vol.mip)
 
-    Parallel(tiff_jobs, backend='threading', verbose=50)(
-        delayed(upload_chunk)(vol_, r, i, progress_dir, to_upload) for r, i in zip(ranges, tiffs)
+    Parallel(tiff_jobs, verbose=50)(
+        delayed(upload_chunk)(vol_, r, i, progress_dir, to_upload)
+        for r, i in zip(ranges, tiffs)
     )
 
 
@@ -121,7 +125,7 @@ def main():
     vols = create_image_layer(args.s3_bucket, tiff_dims, vox_size, args.num_resolutions)
 
     pbar = tqdm(enumerate(zip(files_ordered, bin_paths)), total=len(files_ordered))
-    mkdir('./progress/')
+    mkdir("./progress/")
     for idx, item in pbar:
         if args.chosen_res == -1:
             pbar.set_description_str(
