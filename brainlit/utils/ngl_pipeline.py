@@ -45,7 +45,7 @@ class NeuroglancerSession:
         self.scales = self.cv.scales[self.mip]["resolution"]
 
     def _get_voxel(self, seg_id, v_id):
-        skeleton_url = "s3://mouse-light-viz/precomputed_volumes/brain1_segments"
+        skeleton_url = self.url + "_segments"
         cv_skel = CloudVolume(skeleton_url, mip=self.mip)
         skel = cv_skel.skeleton.get(seg_id)
         vertex = skel.vertices[v_id]
