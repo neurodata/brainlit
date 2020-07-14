@@ -1,6 +1,6 @@
 import numpy as np
 
-from ardent.utilities import _validate_ndarray
+from ..lddmm._lddmm_utilities import _validate_ndarray
 
 def _verify_data_is_ndarray(data):
     if not isinstance(data, np.ndarray):

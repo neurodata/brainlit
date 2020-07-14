@@ -1,4 +1,4 @@
-from ardent.preprocessing import preprocess
+from ..preprocessing import preprocess
 
 def basic_preprocessing(data):
     """

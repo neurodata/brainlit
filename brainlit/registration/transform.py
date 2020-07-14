@@ -125,8 +125,7 @@ class Transform:
         # Contrast map specifiers.
         contrast_order=None,
         spatially_varying_contrast_map=None,
-        contrast_maxiter=None,
-        contrast_tolerance=None,
+        contrast_iterations=None,
         sigma_contrast=None,
         contrast_smooth_length=None,
         # Smoothness vs. accuracy tradeoff.
@@ -166,18 +165,18 @@ class Transform:
             num_affine_only_iterations (int, optional): The number of iterations at the start of the process without deformative adjustments. Defaults to 100.
             num_rigid_affine_iterations (int, optional): The number of iterations at the start of the process in which the affine is kept rigid. Defaults to 50.
             affine_stepsize (float, optional): The unitless stepsize for affine adjustments. Should be between 0 and 1. Defaults to 0.3.
-            deformative_stepsize (float, optional): The stepsize for deformative adjustments. Optimal values are problem-specific. If equal to 0 then the result is affine-only registration. Defaults to 0.
+            deformative_stepsize (float, optional): The stepsize for deformative adjustments. Optimal values are problem-specific. Setting preconditioner_velocity_smooth_length increases the appropriate value of deformative_stepsize. 
+                If equal to 0 then the result is affine-only registration. By default 0.
             fixed_affine_scale (float, optional): The scale to impose on the affine at all iterations. If None, no scale is imposed. Otherwise, this has the effect of making the affine always rigid. Defaults to None.
             sigma_regularization (float, optional): A scalar indicating the freedom to deform. Overrides 0 input. Defaults to 10 * np.max(self.template_resolution).
             velocity_smooth_length (float, optional): The length scale of smoothing. Overrides 0 input. Defaults to 2 * np.max(self.template_resolution).
-            preconditioner_velocity_smooth_length (float, optional): The length of preconditioner smoothing of the velocity_fields in physical units. 
-                Determines the optimization of the velocity_fields. By default 5 * np.max(self.template_resolution).
-            maximum_velocity_fields_update (float, optional): The maximum allowed update to the velocity_fields in units of voxels. Defaults to 1.
+            preconditioner_velocity_smooth_length (float, optional): The length of preconditioner smoothing of the velocity_fields in physical units. Affects the optimization of the velocity_fields, but not the optimum. Defaults to 0.
+            maximum_velocity_fields_update (float, optional): The maximum allowed update to the velocity_fields in physical units. Affects the optimization of the velocity_fields, but not the optimum. 
+                Overrides 0 input. Defaults to np.max(self.template.shape * self.template_resolution).
             num_timesteps (int, optional): The number of composed sub-transformations in the diffeomorphism. Overrides 0 input. Defaults to 5.
             contrast_order (int, optional): The order of the polynomial fit between the contrasts of the template and target. Overrides 0 input. Defaults to 1.
             spatially_varying_contrast_map (bool, optional): If True, uses a polynomial per voxel to compute the contrast map rather than a single polynomial. Defaults to False.
-            contrast_maxiter (int, optional): The maximum number of iterations to converge toward the optimal contrast_coefficients if spatially_varying_contrast_map == True. Overrides 0 input. Defaults to 5.
-            contrast_tolerance (float, optional): Deprecated. The tolerance for convergence to the optimal contrast_coefficients if spatially_varying_contrast_map == True. Defaults to 1e-5.
+            contrast_iterations (int, optional): The number of iterations of gradient descent to converge toward the optimal contrast_coefficients if spatially_varying_contrast_map == True. Overrides 0 input. Defaults to 5.
             sigma_contrast (float, optional): The scale of variation in the contrast_coefficients if spatially_varying_contrast_map == True. Overrides 0 input. Defaults to 1e-2.
             contrast_smooth_length (float, optional): The length scale of smoothing of the contrast_coefficients if spatially_varying_contrast_map == True. Overrides 0 input. Defaults to 2 * np.max(self.target_resolution).
             sigma_matching (float, optional): An estimate of the spread of the noise in the target, 
@@ -226,8 +225,7 @@ class Transform:
             # Contrast map specifiers.
             contrast_order=contrast_order,
             spatially_varying_contrast_map=spatially_varying_contrast_map,
-            contrast_maxiter=contrast_maxiter,
-            contrast_tolerance=contrast_tolerance,
+            contrast_iterations=contrast_iterations,
             sigma_contrast=sigma_contrast,
             contrast_smooth_length=contrast_smooth_length,
             # # vs. accuracy tradeoff.

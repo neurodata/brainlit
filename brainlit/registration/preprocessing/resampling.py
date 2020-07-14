@@ -2,11 +2,11 @@ import numpy as np
 from skimage.transform import resize
 from scipy.interpolate import interpn
 
-from ardent.utilities import _validate_scalar_to_multi
-from ardent.utilities import _validate_ndarray
-from ardent.utilities import _validate_xyz_resolution
-from ardent.utilities import _compute_axes
-from ardent.utilities import _compute_coords
+from ..lddmm._lddmm_utilities import _validate_scalar_to_multi
+from ..lddmm._lddmm_utilities import _validate_ndarray
+from ..lddmm._lddmm_utilities import _validate_resolution
+from ..lddmm._lddmm_utilities import _compute_axes
+from ..lddmm._lddmm_utilities import _compute_coords
 
 def _resample(image, resolution, final_resolution, **interpn_kwargs):
     # interpn wrapper, not to be used without achievable final_resolution.
@@ -18,8 +18,8 @@ def _resample(image, resolution, final_resolution, **interpn_kwargs):
     
     # Validate inputs.
     image = _validate_ndarray(image)
-    resolution = _validate_xyz_resolution(image.ndim, resolution)
-    desired_resolution = _validate_xyz_resolution(image.ndim, desired_resolution)
+    resolution = _validate_resolution(resolution, image.ndim)
+    desired_resolution = _validate_resolution(desired_resolution, image.ndim)
     
     # Construct arguments for scipy.interpolate.interpn.
     real_axes = _compute_axes(shape=image.shape, resolution=resolution)
@@ -34,8 +34,8 @@ pad_to_match_res=True, err_to_higher_res=True, return_final_resolution=False, **
 
     # Validate inputs.
     image = _validate_ndarray(image)
-    resolution = _validate_xyz_resolution(image.ndim, resolution)
-    desired_resolution = _validate_xyz_resolution(image.ndim, desired_resolution)
+    resolution = _validate_resolution(resolution, image.ndim)
+    desired_resolution = _validate_resolution(desired_resolution, image.ndim)
     
     # Compute final_shape and final_resolution.
 
@@ -89,7 +89,7 @@ pad_to_match_res=True, err_to_higher_res=True, return_final_resolution=False, **
 
     image = _validate_ndarray(image)
     scales = _validate_scalar_to_multi(scales, size=image.ndim)
-    resolution = _validate_xyz_resolution(image.ndim, resolution)
+    resolution = _validate_resolution(resolution, image.ndim)
     desired_resolution = resolution / scales
 
     change_resolution_to_kwargs = dict(
