@@ -241,6 +241,7 @@ class _Lddmm:
             raise RuntimeError(f"Known issue: Images with a 1 in their shape are not supported by scipy.interpolate.interpn.\n"
                                f"self.template.shape: {self.template.shape}, self.target.shape: {self.target.shape}.\n")
 
+
     def register(self):
         """
         Register the template to the target using the current state of the attributes.
@@ -875,11 +876,12 @@ class _Lddmm:
             maximum_velocities
         """
 
-
         for timestep in range(self.num_timesteps):
             velocity_fields_update = velocity_fields_gradients[timestep] * self.deformative_stepsize
             # Apply a sigmoid squashing function to the velocity_fields_update to ensure they yield an update of less than self.maximum_velocity_fields_update voxels while remaining smooth.
             velocity_fields_update_norm = np.sqrt(np.sum(velocity_fields_update**2, axis=-1))
+            # When the norm is 0 the update is zero so we can change the norm to 1 and avoid division by 0.
+            velocity_fields_update_norm[velocity_fields_update_norm == 0] = 1
             velocity_fields_update = (
                 velocity_fields_update / velocity_fields_update_norm[..., None] * 
                 np.arctan(velocity_fields_update_norm[..., None] * np.pi / 2 / self.maximum_velocity_fields_update) * 
@@ -1060,7 +1062,7 @@ def lddmm_register(
             The scale to impose on the affine at all iterations. If None, no scale is imposed. Otherwise, this has the effect of making the affine always rigid. By default None.
         sigma_regularization: float, optional
             A scalar indicating the freedom to deform. Small values put harsher constraints on the smoothness of a deformation. 
-            For sufficiently large values, the registration will eventually recreate the target exactly, but this may still be appropriate for a finite number of iterations. 
+            With sufficiently large values, the registration will overfit any noise in the target, leading to unrealistic deformations. However, this may still be appropriate with a small num_iterations. 
             Overrides 0 input. By default np.inf.
         velocity_smooth_length: float, optional
             The length scale of smoothing of the velocity_fields in physical units. Affects the optimum velocity_fields smoothness. By default 2 * np.max(self.template_resolution).
@@ -1140,8 +1142,8 @@ def lddmm_register(
 
     # Validate images and resolutions.
     # Images.
-    template = _validate_ndarray(template)
-    target = _validate_ndarray(target, required_ndim=template.ndim)
+    template = _validate_ndarray(template, dtype=float)
+    target = _validate_ndarray(target, dtype=float, required_ndim=template.ndim)
     # Resolution.
     template_resolution = _validate_scalar_to_multi(template_resolution if template_resolution is not None else 1, template.ndim, float)
     target_resolution = _validate_scalar_to_multi(target_resolution if target_resolution is not None else 1, target.ndim, float)

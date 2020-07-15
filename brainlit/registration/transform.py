@@ -168,7 +168,9 @@ class Transform:
             deformative_stepsize (float, optional): The stepsize for deformative adjustments. Optimal values are problem-specific. Setting preconditioner_velocity_smooth_length increases the appropriate value of deformative_stepsize. 
                 If equal to 0 then the result is affine-only registration. By default 0.
             fixed_affine_scale (float, optional): The scale to impose on the affine at all iterations. If None, no scale is imposed. Otherwise, this has the effect of making the affine always rigid. Defaults to None.
-            sigma_regularization (float, optional): A scalar indicating the freedom to deform. Overrides 0 input. Defaults to 10 * np.max(self.template_resolution).
+            sigma_regularization (float, optional): A scalar indicating the freedom to deform. Small values put harsher constraints on the smoothness of a deformation. 
+                With sufficiently large values, the registration will overfit any noise in the target, leading to unrealistic deformations. 
+                However, this may still be appropriate with a small num_iterations. Overrides 0 input. Defaults to np.inf.
             velocity_smooth_length (float, optional): The length scale of smoothing. Overrides 0 input. Defaults to 2 * np.max(self.template_resolution).
             preconditioner_velocity_smooth_length (float, optional): The length of preconditioner smoothing of the velocity_fields in physical units. Affects the optimization of the velocity_fields, but not the optimum. Defaults to 0.
             maximum_velocity_fields_update (float, optional): The maximum allowed update to the velocity_fields in physical units. Affects the optimization of the velocity_fields, but not the optimum. 
