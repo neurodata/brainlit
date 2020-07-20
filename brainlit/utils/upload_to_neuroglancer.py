@@ -38,12 +38,14 @@ def create_image_layer(s3_bucket, tif_dimensions, voxel_size, num_resolutions):
         volume_size=[i * 2 ** (num_resolutions - 1) for i in tif_dimensions],
     )
     # get cloudvolume info
-    vol = CloudVolume(s3_bucket, info=info, parallel=True, compress=False)
+    vol = CloudVolume(s3_bucket, info=info, parallel=False)  # compress = False
     # scales resolution up, volume size down
-    [vol.add_scale((2 ** i, 2 ** i, 2 ** i)) for i in range(num_resolutions)]
+    [
+        vol.add_scale((2 ** i, 2 ** i, 2 ** i)) for i in range(num_resolutions)
+    ]  # ignore chunk size
     vol.commit_info()
     vols = [
-        CloudVolume(s3_bucket, mip=i, parallel=True, compress=False)
+        CloudVolume(s3_bucket, mip=i, parallel=False)  # parallel False, compress
         for i in range(num_resolutions - 1, -1, -1)
     ]
     return vols
