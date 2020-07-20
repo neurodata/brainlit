@@ -9,7 +9,13 @@ from joblib import Parallel, delayed, cpu_count
 from cloudvolume.lib import mkdir, touch
 import warnings
 import os
-from brainlit.utils.upload_to_neuroglancer import chunks, create_image_layer, get_data_ranges, upload_chunks, get_volume_info
+from brainlit.utils.upload_to_neuroglancer import (
+    chunks,
+    create_image_layer,
+    get_data_ranges,
+    upload_chunks,
+    get_volume_info,
+)
 
 
 def validate_upload(vol, ranges, image):
@@ -91,8 +97,8 @@ def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
     # )
 
     Parallel(tiff_jobs, timeout=1800, verbose=10)(
-        delayed(process)(f, b, chunk_size, vol_, progress_dir, done_files) for f, b in zip(files, bin_paths)
-        )
+        delayed(process)(f, b, chunk_size, vol_, progress_dir, done_files)
+        for f, b in zip(files, bin_paths)
     )
 
 
