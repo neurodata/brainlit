@@ -5,7 +5,30 @@ import numpy as np
 from cloudvolume import CloudVolume, Skeleton, storage
 from pathlib import Path
 import tifffile as tf
+import contextlib
+import joblib
 from joblib import Parallel, delayed, cpu_count
+
+@contextlib.contextmanager
+def tqdm_joblib(tqdm_object):
+    """
+    Context manager to patch joblib to report into tqdm progress bar given as argument
+    """
+    class TqdmBatchCompletionCallback(joblib.parallel.BatchCompletionCallBack):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+        def __call__(self, *args, **kwargs):
+            tqdm_object.update(n=self.batch_size)
+            return super().__call__(*args, **kwargs)
+
+    old_batch_callback = joblib.parallel.BatchCompletionCallBack
+    joblib.parallel.BatchCompletionCallBack = TqdmBatchCompletionCallback
+    try:
+        yield tqdm_object
+    finally:
+        joblib.parallel.BatchCompletionCallBack = old_batch_callback
+        tqdm_object.close() 
 
 # chunk data for parallel work
 def chunks(l, n):
@@ -103,18 +126,21 @@ def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
     """
     tiff_jobs = int(num_workers / 2) if num_workers == cpu_count() else num_workers
 
-    tiffs = Parallel(tiff_jobs, backend="loky", verbose=50)(
-        delayed(tf.imread)("/".join(i)) for i in files
-    )
-    ranges = Parallel(tiff_jobs)(
-        delayed(get_data_ranges)(i, chunk_size) for i in bin_paths
-    )
+    with tqdm_joblib(tqdm(desc="Load tiffs", total=len(files))) as progress_bar:
+        tiffs = Parallel(tiff_jobs, timeout=1800, backend="multiprocessing", verbose=50)(
+            delayed(tf.imread)("/".join(i)) for i in files
+        )
+    with tqdm_joblib(tqdm(desc="Load ranges", total=len(bin_paths))) as progress_bar:
+        ranges = Parallel(tiff_jobs, timeout=1800, backend="multiprocessing", verbose=50)(
+            delayed(get_data_ranges)(i, chunk_size) for i in bin_paths
+        )
     print("loaded tiffs and bin paths")
     vol_ = CloudVolume(vol.layer_cloudpath, parallel=False, mip=vol.mip)
 
-    Parallel(tiff_jobs, verbose=50)(
-        delayed(upload_chunk)(vol_, r, i) for r, i in zip(ranges, tiffs)
-    )
+    with tqdm_joblib(tqdm(desc="Upload chunks", total=len(ranges))) as progress_bar:
+        Parallel(tiff_jobs, timeout=1800, backend="multiprocessing", verbose=50)(
+            delayed(upload_chunk)(vol_, r, i) for r, i in zip(ranges, tiffs)
+        )
 
 
 def upload_chunks(vol, files, bin_paths, parallel=True):
