@@ -62,46 +62,46 @@ def test_get_data_ranges():
 
 
 # Test cloudvolume attributes (info, shape) for both parallel and non-parallel
-def test_upload_chunks():
-    (
-        ordered_files,
-        bin_paths,
-        vox_size,
-        tiff_dims,
-    ) = upload_to_neuroglancer.get_volume_info(top_level, num_res, 0)
+# def test_upload_chunks():
+#     (
+#         ordered_files,
+#         bin_paths,
+#         vox_size,
+#         tiff_dims,
+#     ) = upload_to_neuroglancer.get_volume_info(top_level, num_res, 0)
 
-    par_vols = upload_to_neuroglancer.create_image_layer(
-        "file://" + dir + "/test_precomputed1/", tiff_dims, vox_size, num_res
-    )
-    vols = upload_to_neuroglancer.create_image_layer(
-        "file://" + dir + "/test_precomputed2/", tiff_dims, vox_size, num_res
-    )
-    upload_to_neuroglancer.upload_chunks(
-        par_vols[0], ordered_files[0], bin_paths[0], parallel=True
-    )
+#     par_vols = upload_to_neuroglancer.create_image_layer(
+#         "file://" + dir + "/test_precomputed1/", tiff_dims, vox_size, num_res
+#     )
+#     vols = upload_to_neuroglancer.create_image_layer(
+#         "file://" + dir + "/test_precomputed2/", tiff_dims, vox_size, num_res
+#     )
+#     upload_to_neuroglancer.upload_chunks(
+#         par_vols[0], ordered_files[0], bin_paths[0], parallel=True
+#     )
 
-    for i in range(num_res):
-        upload_to_neuroglancer.upload_chunks(
-            vols[i], ordered_files[i], bin_paths[i], parallel=False
-        )
+#     for i in range(num_res):
+#         upload_to_neuroglancer.upload_chunks(
+#             vols[i], ordered_files[i], bin_paths[i], parallel=False
+#         )
 
-    assert (np.squeeze(par_vols[0][:, :, :]) == low_res.T).all()
-    assert np.squeeze(par_vols[0][:, :, :]).shape == image_size
-    assert np.squeeze(par_vols[1][:, :, :]).shape == tuple([i * 2 for i in image_size])
+#     assert (np.squeeze(par_vols[0][:, :, :]) == low_res.T).all()
+#     assert np.squeeze(par_vols[0][:, :, :]).shape == image_size
+#     assert np.squeeze(par_vols[1][:, :, :]).shape == tuple([i * 2 for i in image_size])
 
-    assert (np.squeeze(vols[0][:, :, :]) == low_res.T).all()
-    assert np.squeeze(vols[0][:, :, :]).shape == image_size
-    assert np.squeeze(vols[1][:, :, :]).shape == tuple([i * 2 for i in image_size])
+#     assert (np.squeeze(vols[0][:, :, :]) == low_res.T).all()
+#     assert np.squeeze(vols[0][:, :, :]).shape == image_size
+#     assert np.squeeze(vols[1][:, :, :]).shape == tuple([i * 2 for i in image_size])
 
-    for bin in bin_paths[1]:
-        ranges = upload_to_neuroglancer.get_data_ranges(bin, tiff_dims)
-        assert (
-            np.squeeze(
-                vols[1][
-                    ranges[0][0] : ranges[0][1],
-                    ranges[1][0] : ranges[1][1],
-                    ranges[2][0] : ranges[2][1],
-                ]
-            )
-            == low_res.T
-        ).all()
+#     for bin in bin_paths[1]:
+#         ranges = upload_to_neuroglancer.get_data_ranges(bin, tiff_dims)
+#         assert (
+#             np.squeeze(
+#                 vols[1][
+#                     ranges[0][0] : ranges[0][1],
+#                     ranges[1][0] : ranges[1][1],
+#                     ranges[2][0] : ranges[2][1],
+#                 ]
+#             )
+#             == low_res.T
+#         ).all()
