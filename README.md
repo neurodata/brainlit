@@ -3,12 +3,11 @@ This repository is a container of methods that Neurodata usees to expose their o
 
 [![Python](https://img.shields.io/badge/python-3.7-blue.svg)]()
 [![Build Status](https://travis-ci.com/neurodata/brainlit.svg?branch=master)](https://travis-ci.com/neurodata/brainlit)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)  
 [![codecov](https://codecov.io/gh/neurodata/brainlit/branch/master/graph/badge.svg)](https://codecov.io/gh/neurodata/brainlit)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 - [Motivation](#motivation)
-- [Build Status](#build-status)
-- [Code Style](#code-style)
 - [How to Use Brainlit](#how-to-use-brainlit)
   * [Data Setup](#data-setup)
   * [Create a Session](#create-a-session)
@@ -28,13 +27,6 @@ This repository is a container of methods that Neurodata usees to expose their o
 ## Motivation
 The repository originated as the project of a team in Joshua Vogelstein's clsss **Neurodata** at Johns Hopkins University. This project was focused on data science towards the [mouselight data](https://www.hhmi.org/news/mouselight-project-maps-1000-neurons-and-counting-in-the-mouse-brain). It becme aparrent that the tools developed for the class would be useful for other groups doing data science on large data volumes.
 The repository can now be considered a "holding bay" for code developed by Neruodata for collaborators and researchers to use.
-
-### Build Status
-[![Build Status](https://travis-ci.com/neurodata/brainlit.svg?branch=master)](https://travis-ci.com/neurodata/brainlit) 
-
-### Code Style
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)  
-Code in this project is formatted via the `black` auto-formatter.
 
 ## How to use Brainlit
 ### Data setup
