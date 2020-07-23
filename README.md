@@ -9,17 +9,17 @@ This repository is a container of methods that Neurodata usees to expose their o
 - [Motivation](#motivation)
 - [Build Status](#build-status)
 - [Code Style](#code-style)
+- [How to Use Brainlit](#how-to-use-brainlit)
+  * [Data Setup](#data-setup)
+  * [Create a Session](#create-a-session)
+- [Installation](#installation)
 - [Features](#features)
   * [Push/Pull Data](#push-and-pull-data)
   * [Visualize](#visualize)
   * [Manually Segment](#manually-segment)
   * [Automatically Segment](#automatically-and-semi-automatically-segment)
-- [Installation](#installation)
 - [API reference](#api-reference)
 - [Tests](#tests)
-- [How to Use Brainlit](#how-to-use-brainlit)
-  * [Data Setup](#data-setup)
-  * [Create a Session](#create-a-session)
 - [Contribute](#contribute)
 - [Credits](#credits)
 - [License](#license)
@@ -29,12 +29,34 @@ This repository is a container of methods that Neurodata usees to expose their o
 The repository originated as the project of a team in Joshua Vogelstein's clsss **Neurodata** at Johns Hopkins University. This project was focused on data science towards the [mouselight data](https://www.hhmi.org/news/mouselight-project-maps-1000-neurons-and-counting-in-the-mouse-brain). It becme aparrent that the tools developed for the class would be useful for other groups doing data science on large data volumes.
 The repository can now be considered a "holding bay" for code developed by Neruodata for collaborators and researchers to use.
 
-## Build Status
-[![Build Status](https://travis-ci.com/neurodata/brainlit.svg?branch=master)](https://travis-ci.com/neurodata/brainlit)  
+### Build Status
+[![Build Status](https://travis-ci.com/neurodata/brainlit.svg?branch=master)](https://travis-ci.com/neurodata/brainlit) 
 
-## Code Style
+### Code Style
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)  
 Code in this project is formatted via the `black` auto-formatter.
+
+## How to use Brainlit
+### Data setup
+First, decide for your team how you'd like to store the data - whether it will be on a local machine or on the cloud. If on the cloud,
+each collaborator will need to create a file at `~/.cloudvolume/secrets/x-secret.json`, where `x` is one of `[aws, gc, azure]` which contains your id and secret key for your cloud platform. [Interactive demo]().
+### Create a session
+Each user will start their scripts with approximately the same lines:
+```
+from brainlit.utils.ngl import NeuroglancerSession
+
+session = NeuroglancerSession(url='file:///abc123xyz')
+```
+From here, any number of tools can be run such as the visualization or annotation tools. [Interactive demo]().
+
+## Installation
+(pypi release badge)
+Simply create and activate a python3.7 or greater virtual environment via conda or virtualenv, and either `pip install brainlit`, or
+```
+git clone
+cd brainlit
+pip install -e .
+```
 
 ## Features
 The core brain-lit package can be described by the diagram below:
@@ -42,13 +64,13 @@ The core brain-lit package can be described by the diagram below:
 ![Brainlight Features](https://raw.githubusercontent.com/neurodata/brainlight/diagram/Brainlight.png)
 
 ### (Push and Pull Data)
-Brainlit uses the Seung Lab's ![Cloudvolume](https://github.com/seung-lab/cloud-volume) package to push and pull data through the cloud or a local machine in an efficient and parallelized fashion. ![Interactive demo]().  
+Brainlit uses the Seung Lab's [Cloudvolume](https://github.com/seung-lab/cloud-volume) package to push and pull data through the cloud or a local machine in an efficient and parallelized fashion. [Interactive demo]().  
 The only requirement is to have an account on a cloud service on s3, azure, or google cloud.
 
-Loading data via local filepath of an octree structure is also supported. ![Interactive demo]().
+Loading data via local filepath of an octree structure is also supported. [Interactive demo]().
 
 ### Visualize
-Brainlit supports many methods to visualize large data. Visualizing the entire data can be done via Google's ![Neuroglancer](https://github.com/google/neuroglancer), which provides a web link as shown below.
+Brainlit supports many methods to visualize large data. Visualizing the entire data can be done via Google's [Neuroglancer](https://github.com/google/neuroglancer), which provides a web link as shown below.
 
 screenshot
 
@@ -60,37 +82,15 @@ screenshot
 Brainlit includes a lightweight manual segmentation pipeline. This allows collaborators of a projec to pull data from the cloud, create annotations, and push their annotations back up as a separate channel. ![Interactive demo]().
 
 ### Automatically and Semi-automatically Segment
-Similar to the above pipeline, segmentations can be automatically or semi-automatically generated and pushed to a separate channel for viewing. ![Interactive demo](). 
-
-## Installation
-(pypi release badge)
-Simply create and activate a python3.7 or greater virtual environment via conda or virtualenv, and either `pip install brainlit`, or
-```
-git clone
-cd brainlit
-pip install -e .
-```
+Similar to the above pipeline, segmentations can be automatically or semi-automatically generated and pushed to a separate channel for viewing. [Interactive demo](). 
 
 ## API Reference
 [![Documentation Status](https://readthedocs.org/projects/brainlight/badge/?version=latest)](https://brainlight.readthedocs.io/en/latest/?badge=latest)
-The documentation can be found at ![https://brainlight.readthedocs.io/en/latest/](https://brainlight.readthedocs.io/en/latest/).
+The documentation can be found at [https://brainlight.readthedocs.io/en/latest/](https://brainlight.readthedocs.io/en/latest/).
 
 ## Tests
 Running tests can easily be done by moving to the root directory of the brainlit package ant typing `pytest tests` or `python -m pytest tests`.  
 Running a specific test, such as `test_upload.py` can be done simply by `ptest tests/test_upload.py`.
-
-## How to use Brainlit
-### Data setup
-First, decide for your team how you'd like to store the data - whether it will be on a local machine or on the cloud. If on the cloud,
-each collaborator will need to create a file at `~/.cloudvolume/secrets/x-secret.json`, where `x` is one of `[aws, gc, azure]` which contains your id and secret key for your cloud platform.
-### Create a session
-Each user will start their scripts with approximately the same lines:
-```
-from brainlit.utils.ngl import NeuroglancerSession
-
-session = NeuroglancerSession(url='file:///abc123xyz')
-```
-From here, any number of tools can be run such as the visualization or annotation tools.
 
 ## Contribute
 TODO create contributing.md
