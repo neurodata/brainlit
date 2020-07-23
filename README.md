@@ -6,24 +6,24 @@ This repository is a container of methods that Neurodata usees to expose their o
 [![codecov](https://codecov.io/gh/neurodata/brainlit/branch/master/graph/badge.svg)](https://codecov.io/gh/neurodata/brainlit)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-- [Install](#install)
-- [CLI](#cli)
-- [Highlights](#highlights)
+- [Motivation](#motivation)
+- [Build Status](#buildstatus)
+- [Code Style](#codestyle)
+- [Features](#features)
+  * [Push/Pull Data](#pushpull)
+  * [Visualize](#visualize)
+  * [Manually Segment](#manual-segment)
+  * [Automatically Segment](#auto-segment)
+- [Installation](#installation)
+- [API reference](#api)
+- [Tests](#tests)
 - [Usage](#usage)
-- [API](#api)
-  * [toc.plugin](#tocplugin)
-  * [toc.json](#tocjson)
-  * [toc.insert](#tocinsert)
-  * [Utility functions](#utility-functions)
-- [Options](#options)
-  * [options.append](#optionsappend)
-  * [options.filter](#optionsfilter)
-  * [options.slugify](#optionsslugify)
-  * [options.bullets](#optionsbullets)
-  * [options.maxdepth](#optionsmaxdepth)
-  * [options.firsth1](#optionsfirsth1)
-  * [options.stripHeadingTags](#optionsstripheadingtags)
-- [About](#about)
+  * [Data Setup](#datasetup)
+  * [Create a Session](#createsession)
+- [Contribute](#contribute)
+- [Credits](#credits)
+- [License](#license)
+
 
 ## Motivation
 The repository originated as the project of a team in Joshua Vogelstein's clsss **Neurodata** at Johns Hopkins University. This project was focused on data science towards the [mouselight data](https://www.hhmi.org/news/mouselight-project-maps-1000-neurons-and-counting-in-the-mouse-brain). It becme aparrent that the tools developed for the class would be useful for other groups doing data science on large data volumes.
@@ -35,9 +35,6 @@ The repository can now be considered a "holding bay" for code developed by Neruo
 ## Code Style
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)  
 Code in this project is formatted via the `black` auto-formatter.
-
-## Screenshots
-Include logo/demo screenshot etc.
 
 ## Features
 The core brain-lit package can be described by the diagram below:
@@ -103,4 +100,4 @@ Thanks to the neurodata team and the group in the neurodata class which started 
 This project is currently managed by Tommy Athey and Bijan Varjavand.
 
 ## License
-MIT © Neurodata
+Apache © Neurodata
