@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import SimpleITK as sitk
 from cloudvolume import CloudVolume, view
 from cloudvolume.lib import Bbox
+import napari
 
 
 class NeuroglancerSession:
@@ -227,3 +228,9 @@ class NeuroglancerSession:
             Tuple containing (x0, y0, z0, x1, y1, z1) bounds
         """
         self.cv[bounds] = img.astype("uint64")
+
+    def napari_viewer(self, img, labels=None, label_name="Segmentation"):
+        viewer = napari.view_image(np.squeeze(np.array(img)))
+        if labels is not None:
+            viewer.add_labels(labels, name=label_name)
+        return viewer

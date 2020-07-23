@@ -9,11 +9,13 @@ import contextlib
 import joblib
 from joblib import Parallel, delayed, cpu_count
 
+
 @contextlib.contextmanager
 def tqdm_joblib(tqdm_object):
     """
     Context manager to patch joblib to report into tqdm progress bar given as argument
     """
+
     class TqdmBatchCompletionCallback(joblib.parallel.BatchCompletionCallBack):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -28,7 +30,8 @@ def tqdm_joblib(tqdm_object):
         yield tqdm_object
     finally:
         joblib.parallel.BatchCompletionCallBack = old_batch_callback
-        tqdm_object.close() 
+        tqdm_object.close()
+
 
 # chunk data for parallel work
 def chunks(l, n):
@@ -127,13 +130,13 @@ def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
     tiff_jobs = int(num_workers / 2) if num_workers == cpu_count() else num_workers
 
     with tqdm_joblib(tqdm(desc="Load tiffs", total=len(files))) as progress_bar:
-        tiffs = Parallel(tiff_jobs, timeout=1800, backend="multiprocessing", verbose=50)(
-            delayed(tf.imread)("/".join(i)) for i in files
-        )
+        tiffs = Parallel(
+            tiff_jobs, timeout=1800, backend="multiprocessing", verbose=50
+        )(delayed(tf.imread)("/".join(i)) for i in files)
     with tqdm_joblib(tqdm(desc="Load ranges", total=len(bin_paths))) as progress_bar:
-        ranges = Parallel(tiff_jobs, timeout=1800, backend="multiprocessing", verbose=50)(
-            delayed(get_data_ranges)(i, chunk_size) for i in bin_paths
-        )
+        ranges = Parallel(
+            tiff_jobs, timeout=1800, backend="multiprocessing", verbose=50
+        )(delayed(get_data_ranges)(i, chunk_size) for i in bin_paths)
     print("loaded tiffs and bin paths")
     vol_ = CloudVolume(vol.layer_cloudpath, parallel=False, mip=vol.mip)
 
