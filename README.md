@@ -10,10 +10,10 @@ This repository is a container of methods that Neurodata usees to expose their o
 - [Build Status](#build-status)
 - [Code Style](#code-style)
 - [Features](#features)
-  * [Push/Pull Data](#push/pull-data)
+  * [Push/Pull Data](#push-and-pull-data)
   * [Visualize](#visualize)
   * [Manually Segment](#manually-segment)
-  * [Automatically Segment](#automatically/semiautomatically-segment)
+  * [Automatically Segment](#automatically-and-semi-automatically-segment)
 - [Installation](#installation)
 - [API reference](#api-reference)
 - [Tests](#tests)
@@ -41,7 +41,7 @@ The core brain-lit package can be described by the diagram below:
 
 ![Brainlight Features](https://raw.githubusercontent.com/neurodata/brainlight/diagram/Brainlight.png)
 
-### (Push/Pull data)
+### (Push and Pull Data)
 Brainlit uses the Seung Lab's ![Cloudvolume](https://github.com/seung-lab/cloud-volume) package to push and pull data through the cloud or a local machine in an efficient and parallelized fashion. ![Interactive demo]().  
 The only requirement is to have an account on a cloud service on s3, azure, or google cloud.
 
@@ -59,7 +59,7 @@ screenshot
 ### Manually Segment
 Brainlit includes a lightweight manual segmentation pipeline. This allows collaborators of a projec to pull data from the cloud, create annotations, and push their annotations back up as a separate channel. ![Interactive demo]().
 
-### Automatically/Semi-automatically Segment
+### Automatically and Semi-automatically Segment
 Similar to the above pipeline, segmentations can be automatically or semi-automatically generated and pushed to a separate channel for viewing. ![Interactive demo](). 
 
 ## Installation
