@@ -26,8 +26,8 @@ This repository is a container of methods that Neurodata usees to expose their o
 
 
 ## Motivation
-The repository originated as the project of a team in Joshua Vogelstein's clsss **Neurodata** at Johns Hopkins University. This project was focused on data science towards the [mouselight data](https://www.hhmi.org/news/mouselight-project-maps-1000-neurons-and-counting-in-the-mouse-brain). It becme aparrent that the tools developed for the class would be useful for other groups doing data science on large data volumes.
-The repository can now be considered a "holding bay" for code developed by Neruodata for collaborators and researchers to use.
+The repository originated as the project of a team in Joshua Vogelstein's class **Neurodata** at Johns Hopkins University. This project was focused on data science towards the [mouselight data](https://www.hhmi.org/news/mouselight-project-maps-1000-neurons-and-counting-in-the-mouse-brain). It becme apparent that the tools developed for the class would be useful for other groups doing data science on large data volumes.
+The repository can now be considered a "holding bay" for code developed by Neurodata for collaborators and researchers to use.
 
 ## Build Status
 [![Build Status](https://travis-ci.com/neurodata/brainlit.svg?branch=master)](https://travis-ci.com/neurodata/brainlit)  
