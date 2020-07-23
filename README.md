@@ -1,17 +1,18 @@
 # Brainlit
-This repository is a container of methods that Neurodata usees to expose their open-source code while it is in the process of being merged with larger scientific libraries such as scipy, scikit-image, or scikit-learn. Additioanlly, methods for computational neuroscience on brains too specific for a general scientific library can be found here, such as image registration software tuned specifically for large brain volumes.
-
 [![Python](https://img.shields.io/badge/python-3.7-blue.svg)]()
 [![Build Status](https://travis-ci.com/neurodata/brainlit.svg?branch=master)](https://travis-ci.com/neurodata/brainlit)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)  
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![codecov](https://codecov.io/gh/neurodata/brainlit/branch/master/graph/badge.svg)](https://codecov.io/gh/neurodata/brainlit)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)  
+This repository is a container of methods that Neurodata usees to expose their open-source code while it is in the process of being merged with larger scientific libraries such as scipy, scikit-image, or scikit-learn. Additioanlly, methods for computational neuroscience on brains too specific for a general scientific library can be found here, such as image registration software tuned specifically for large brain volumes.
+
+![Brainlight Features](https://raw.githubusercontent.com/neurodata/brainlight/diagram/Brainlight.png)
 
 - [Motivation](#motivation)
+- [Installation](#installation)
 - [How to Use Brainlit](#how-to-use-brainlit)
   * [Data Setup](#data-setup)
   * [Create a Session](#create-a-session)
-- [Installation](#installation)
 - [Features](#features)
   * [Push/Pull Data](#push-and-pull-data)
   * [Visualize](#visualize)
@@ -28,6 +29,15 @@ This repository is a container of methods that Neurodata usees to expose their o
 The repository originated as the project of a team in Joshua Vogelstein's clsss **Neurodata** at Johns Hopkins University. This project was focused on data science towards the [mouselight data](https://www.hhmi.org/news/mouselight-project-maps-1000-neurons-and-counting-in-the-mouse-brain). It becme aparrent that the tools developed for the class would be useful for other groups doing data science on large data volumes.
 The repository can now be considered a "holding bay" for code developed by Neruodata for collaborators and researchers to use.
 
+## Installation
+(pypi release badge)
+Simply create and activate a python3.7 or greater virtual environment via conda or virtualenv, and either `pip install brainlit`, or
+```
+git clone
+cd brainlit
+pip install -e .
+```
+
 ## How to use Brainlit
 ### Data setup
 First, decide for your team how you'd like to store the data - whether it will be on a local machine or on the cloud. If on the cloud,
@@ -41,19 +51,8 @@ session = NeuroglancerSession(url='file:///abc123xyz')
 ```
 From here, any number of tools can be run such as the visualization or annotation tools. [Interactive demo]().
 
-## Installation
-(pypi release badge)
-Simply create and activate a python3.7 or greater virtual environment via conda or virtualenv, and either `pip install brainlit`, or
-```
-git clone
-cd brainlit
-pip install -e .
-```
-
 ## Features
-The core brain-lit package can be described by the diagram below:
-
-![Brainlight Features](https://raw.githubusercontent.com/neurodata/brainlight/diagram/Brainlight.png)
+The core brain-lit package can be described by the diagram at the top of the readme:
 
 ### (Push and Pull Data)
 Brainlit uses the Seung Lab's [Cloudvolume](https://github.com/seung-lab/cloud-volume) package to push and pull data through the cloud or a local machine in an efficient and parallelized fashion. [Interactive demo]().  
