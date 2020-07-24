@@ -20,9 +20,7 @@ This repository is a container of methods that Neurodata usees to expose their o
   * [Automatically Segment](#automatically-and-semi-automatically-segment)
 - [API reference](#api-reference)
 - [Tests](#tests)
-- [Contribute](#contribute)
 - [Credits](#credits)
-- [License](#license)
 
 
 ## Motivation
@@ -31,9 +29,9 @@ The repository can now be considered a "holding bay" for code developed by Neruo
 
 ## Installation
 (pypi release badge)
-Simply create and activate a python3.7 or greater virtual environment via conda or virtualenv, and either `pip install brainlit`, or
+Simply create and activate a python3.7 or greater virtual environment via conda or virtualenv, and either `pip install brainlit` (outdated currenty), or
 ```
-git clone
+git clone https://github.com/neurodata/brainlit.git
 cd brainlit
 pip install -e .
 ```
@@ -41,7 +39,7 @@ pip install -e .
 ## How to use Brainlit
 ### Data setup
 First, decide for your team how you'd like to store the data - whether it will be on a local machine or on the cloud. If on the cloud,
-each collaborator will need to create a file at `~/.cloudvolume/secrets/x-secret.json`, where `x` is one of `[aws, gc, azure]` which contains your id and secret key for your cloud platform. [Interactive demo]().
+each collaborator will need to create a file at `~/.cloudvolume/secrets/x-secret.json`, where `x` is one of `[aws, gc, azure]` which contains your id and secret key for your cloud platform. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/archive/uploading_brains.ipynb).
 ### Create a session
 Each user will start their scripts with approximately the same lines:
 ```
@@ -49,31 +47,31 @@ from brainlit.utils.ngl import NeuroglancerSession
 
 session = NeuroglancerSession(url='file:///abc123xyz')
 ```
-From here, any number of tools can be run such as the visualization or annotation tools. [Interactive demo]().
+From here, any number of tools can be run such as the visualization or annotation tools. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/notebooks/visualization/visualization.ipynb).
 
 ## Features
 The core brain-lit package can be described by the diagram at the top of the readme:
 
 ### (Push and Pull Data)
-Brainlit uses the Seung Lab's [Cloudvolume](https://github.com/seung-lab/cloud-volume) package to push and pull data through the cloud or a local machine in an efficient and parallelized fashion. [Interactive demo]().  
+Brainlit uses the Seung Lab's [Cloudvolume](https://github.com/seung-lab/cloud-volume) package to push and pull data through the cloud or a local machine in an efficient and parallelized fashion. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/notebooks/utils/uploading_brains.ipynb).  
 The only requirement is to have an account on a cloud service on s3, azure, or google cloud.
 
-Loading data via local filepath of an octree structure is also supported. [Interactive demo]().
+Loading data via local filepath of an octree structure is also supported. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/notebooks/utils/upload_brains.ipynb).
 
 ### Visualize
 Brainlit supports many methods to visualize large data. Visualizing the entire data can be done via Google's [Neuroglancer](https://github.com/google/neuroglancer), which provides a web link as shown below.
 
 screenshot
 
-Brainlit also has tools to visualize chunks of data as 2d slices or as a 3d model. ![Interactive demo]().
+Brainlit also has tools to visualize chunks of data as 2d slices or as a 3d model. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/notebooks/visualization/visualization.ipynb).
 
 screenshot
 
 ### Manually Segment
-Brainlit includes a lightweight manual segmentation pipeline. This allows collaborators of a projec to pull data from the cloud, create annotations, and push their annotations back up as a separate channel. ![Interactive demo]().
+Brainlit includes a lightweight manual segmentation pipeline. This allows collaborators of a projec to pull data from the cloud, create annotations, and push their annotations back up as a separate channel. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/notebooks/pipelines/manual_segementation.ipynb).
 
 ### Automatically and Semi-automatically Segment
-Similar to the above pipeline, segmentations can be automatically or semi-automatically generated and pushed to a separate channel for viewing. [Interactive demo](). 
+Similar to the above pipeline, segmentations can be automatically or semi-automatically generated and pushed to a separate channel for viewing. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/notebooks/pipelines/seg_pipeline_demo.ipynb). 
 
 ## API Reference
 [![Documentation Status](https://readthedocs.org/projects/brainlight/badge/?version=latest)](https://brainlight.readthedocs.io/en/latest/?badge=latest)
@@ -83,12 +81,6 @@ The documentation can be found at [https://brainlight.readthedocs.io/en/latest/]
 Running tests can easily be done by moving to the root directory of the brainlit package ant typing `pytest tests` or `python -m pytest tests`.  
 Running a specific test, such as `test_upload.py` can be done simply by `ptest tests/test_upload.py`.
 
-## Contribute
-TODO create contributing.md
-
 ## Credits
 Thanks to the neurodata team and the group in the neurodata class which started the project.
 This project is currently managed by Tommy Athey and Bijan Varjavand.
-
-## License
-Apache © Neurodata
