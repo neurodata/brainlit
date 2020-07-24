@@ -27,3 +27,5 @@ This is the original LDDMM paper:
 Beg, M. Faisal, et al. "Computing large deformation metric mappings via geodesic flows of diffeomorphisms." International journal of computer vision 61.2 (2005): 139-157.
 
 https://doi.org/10.1023/B:VISI.0000043755.93987.aa
+
+A tutorial is available in docs/notebooks/registration_demo.ipynb.
