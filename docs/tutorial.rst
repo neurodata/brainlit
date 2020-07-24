@@ -11,7 +11,7 @@ Tutorials showcasing how to use the utils folder.
 .. toctree::
    :maxdepth: 1
 
-   notebooks/utils
+   notebooks/utils/utils
 
 .. _pipeline_tutorials:
 
@@ -25,7 +25,7 @@ Demonstrate pulling data and pushing traced annotations.
 .. toctree::
    :maxdepth: 1
 
-   notebooks/seg_pipeline_demo
+   notebooks/pipelines/seg_pipeline_demo
 
 Manual Segmentation
 -------------------
@@ -34,7 +34,7 @@ Notebook showing how to manually segment data.
 .. toctree::
    :maxdepth: 1
 
-   notebooks/manual_segmentation
+   notebooks/pipelines/manual_segmentation
 
 
 .. _algorithm_tutorials:
@@ -49,7 +49,7 @@ Demonstrate region growing methods using GMM and simple ITK
 .. toctree::
    :maxdepth: 1
 
-   notebooks/tutorial_notebook_adaptive_thresh.ipynb
+   notebooks/algorithms/tutorial_notebook_adaptive_thresh.ipynb
 
 Regression Clasifiers
 ---------------------
@@ -58,7 +58,7 @@ Demonstrate collecting features and using them for axon classification.
 .. toctree::
    :maxdepth: 1
 
-   notebooks/log_regression_classifiers_tutorial
+   notebooks/algorithms/log_regression_classifiers_tutorial
 
 
 .. _preprocessing_tutorials:
@@ -70,10 +70,10 @@ These tutorials demonstrate different preprocessing methods: connected component
 .. toctree::
    :maxdepth: 1
 
-   tutorials/connectedcomponents
-   tutorials/pcawhitening
-   tutorials/windowpad
-   tutorials/gaborfilter
+   notebooks/connectedcomponents
+   notebooks/pcawhitening
+   notebooks/windowpad
+   notebooks/gaborfilter
 
 
 .. _features_tutorials:
@@ -85,7 +85,7 @@ This tutorial presents feature extraction methods: neighborhood-based and linear
 .. toctree::
    :maxdepth: 1
       
-   tutorials/features/features
+   notebooks/features/features
 
 .. _viz_tutorials:
 
@@ -96,8 +96,8 @@ These tutorials demonstrate tools to load and visualize data from s3 buckets or 
 .. toctree::
    :maxdepth: 1
 
-   notebooks/loading
-   notebooks/visualization
+   notebooks/visualization/loading
+   notebooks/visualization/visualization
 
 Uploading Brains
 ================
@@ -106,4 +106,4 @@ This notebook describes the process to upload brain data.
 .. toctree::
    :maxdepth: 1
 
-   tutorials/uploading_brains.ipynb
+   notebooks/utils/uploading_brains.ipynb
