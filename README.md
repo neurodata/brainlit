@@ -20,6 +20,7 @@ This repository is a container of methods that Neurodata usees to expose their o
   * [Automatically Segment](#automatically-and-semi-automatically-segment)
 - [API reference](#api-reference)
 - [Tests](#tests)
+- [Contributing](#contributing)
 - [Credits](#credits)
 
 
@@ -80,6 +81,9 @@ The documentation can be found at [https://brainlight.readthedocs.io/en/latest/]
 ## Tests
 Running tests can easily be done by moving to the root directory of the brainlit package ant typing `pytest tests` or `python -m pytest tests`.  
 Running a specific test, such as `test_upload.py` can be done simply by `ptest tests/test_upload.py`.
+
+## Contributing
+Contribution guidelines can be found via [CONTRIBUTING.md](https://github.com/neurodata/brainlit/blob/master/CONTRIBUTING.md)
 
 ## Credits
 Thanks to the neurodata team and the group in the neurodata class which started the project.

@@ -70,10 +70,10 @@ These tutorials demonstrate different preprocessing methods: connected component
 .. toctree::
    :maxdepth: 1
 
-   notebooks/connectedcomponents
-   notebooks/pcawhitening
-   notebooks/windowpad
-   notebooks/gaborfilter
+   notebooks/preprocessing/connectedcomponents
+   notebooks/preprocessing/pcawhitening
+   notebooks/preprocessing/windowpad
+   notebooks/preprocessing/gaborfilter
 
 
 .. _features_tutorials:
