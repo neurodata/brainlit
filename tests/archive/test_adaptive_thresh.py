@@ -156,4 +156,3 @@ def test_gmm_seg():
     assert labels.max() == 1
     assert labels[numpy_seed] == 1
 """
-
