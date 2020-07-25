@@ -1,0 +1,1 @@
+{"@type": "neuroglancer_skeletons", "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0], "vertex_attributes": [{"id": "radius", "data_type": "float32", "num_components": 1}, {"id": "vertex_types", "data_type": "float32", "num_components": 1}, {"id": "vertex_color", "data_type": "float32", "num_components": 4}]}

@@ -43,7 +43,8 @@ def swc2skeleton(swc_file, origin=None):
     # add offset to vertices
     # and shift by origin
     skel.vertices += offset
-    skel.vertices -= origin
+    if origin is not None:
+        skel.vertices -= origin
     # convert from microns to nanometers
     skel.vertices *= 1000
     skel.vertex_color = np.zeros((skel.vertices.shape[0], 4), dtype="float32")
@@ -93,7 +94,7 @@ def create_skeleton_layer(s3_bucket, skel_res, img_dims, num_res=7):
     # get cloudvolume info
     vol = CloudVolume(s3_bucket, info=info, parallel=True)
     [vol.add_scale((2 ** i, 2 ** i, 2 ** i)) for i in range(num_res - 1)]
-    vol.commit_info()
+    # vol.commit_info() COMMENT OUT IF LOCAL DIRECTORY
 
     # upload skeleton info to /skeletons/ dir
     with storage.SimpleStorage(vol.cloudpath) as stor:
