@@ -7,7 +7,11 @@ import SimpleITK as sitk
 import napari
 import numpy as np
 
-ngl_sess = NeuroglancerSession(mip=1)
+# from pathlib import Path
+
+# URL = str(Path(__file__).resolve().parents[0] / "upload")
+URL = "s3://mouse-light-viz/precomputed_volumes/brain1"
+ngl_sess = NeuroglancerSession(URL, mip=1, segment_url=URL + "_segments")
 img, bbbox, vox = ngl_sess.pull_chunk(2, 300, 1, 1, 1)
 img_slices = [img[:, 100, :], img[:, 99, :], img[:, 97, :], img[:, 96, :]]
 img_list = [img, img]

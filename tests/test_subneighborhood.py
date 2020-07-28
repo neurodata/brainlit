@@ -5,11 +5,15 @@ import numpy as np
 import pandas as pd
 from cloudvolume import CloudVolume
 
+# from pathlib import Path
 
+# URL = str(Path(__file__).resolve().parents[0] / "upload")
 URL = "s3://mouse-light-viz/precomputed_volumes/brain1"
 SIZE = [2, 2, 2]
 
-nbr = nbrhood.NeighborhoodFeatures(url=URL, size=SIZE, offset=[15, 15, 15])
+nbr = nbrhood.NeighborhoodFeatures(
+    url=URL, size=SIZE, offset=[15, 15, 15], segment_url=URL + "_segments"
+)
 df_nbr = nbr.fit([2, 7], 5)
 ind = SIZE[0] * 2 + 1
 arr = df_nbr.iloc[2, 3:].values.reshape((ind, ind, ind))

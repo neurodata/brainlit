@@ -4,6 +4,7 @@ from brainlit.utils.ngl_pipeline import NeuroglancerSession
 import numpy as np
 import pandas as pd
 import time
+from cloudvolume import CloudVolume
 import feather
 from joblib import Parallel, delayed
 
@@ -89,25 +90,24 @@ class BaseFeatures(BaseEstimator):
         voxel_dict = {}
         counter = 0
         batch_id = 0
-        ngl = NeuroglancerSession(self.url)
-        if self.segment_url is None:
-            ngl_skel = NeuroglancerSession(self.url + "_segments")
-        else:
-            ngl_skel = NeuroglancerSession(self.segment_url)
+        ngl = NeuroglancerSession(self.url, segment_url=self.segment_url)
+        # if self.segment_url is None:
+        #     ngl_skel = NeuroglancerSession(self.url)
+        # else:
+        #     ngl_skel = NeuroglancerSession(self.url, self.segment_url)
 
         if start_seg is not None:
             seg_ids = seg_ids[seg_ids.index(start_seg) :]
 
         if file_path is None:
             return self._serial_processing(
-                seg_ids, ngl, ngl_skel, num_verts, start_vert, include_neighborhood
+                seg_ids, ngl, num_verts, start_vert, include_neighborhood
             )
         else:
             if n_jobs == 1:
                 self._serial_processing(
                     seg_ids,
                     ngl,
-                    ngl_skel,
                     num_verts,
                     start_vert,
                     include_neighborhood,
@@ -137,7 +137,6 @@ class BaseFeatures(BaseEstimator):
         self,
         seg_ids,
         ngl,
-        ngl_skel,
         num_verts,
         start_vert,
         include_neighborhood,
@@ -150,7 +149,11 @@ class BaseFeatures(BaseEstimator):
         batch_id = 0
 
         for seg_id in seg_ids:
-            segment = ngl_skel.cv.skeleton.get(seg_id)
+            if self.segment_url is None:
+                segment = ngl.cv.skeleton.get(seg_id)
+            else:
+                cv_skel = CloudVolume(self.segment_url)
+                segment = cv_skel.skeleton.get(seg_id)
             if num_verts is not None:
                 verts = segment.vertices[start_vert:num_verts]
             else:
@@ -213,7 +216,6 @@ class BaseFeatures(BaseEstimator):
         self,
         seg_id,
         ngl,
-        ngl_skel,
         num_verts,
         start_vert,
         include_neighborhood,
@@ -223,7 +225,11 @@ class BaseFeatures(BaseEstimator):
         voxel_dict = {}
         counter = 0
         batch_id = 0
-        segment = ngl_skel.cv.skeleton.get(seg_id)
+        if self.segment_url is None:
+            segment = ngl.cv.skeleton.get(seg_id)
+        else:
+            cv_skel = CloudVolume(self.segment_url)
+            segment = cv_skel.skeleton.get(seg_id)
         if num_verts is not None:
             verts = segment.vertices[start_vert:num_verts]
         else:
