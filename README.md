@@ -14,6 +14,8 @@ This repository is a container of methods that Neurodata usees to expose their o
   * [Data Setup](#data-setup)
   * [Create a Session](#create-a-session)
 - [Features](#features)
+  * [Registration](#registration)
+- [Core](#core)
   * [Push/Pull Data](#push-and-pull-data)
   * [Visualize](#visualize)
   * [Manually Segment](#manually-segment)
@@ -51,6 +53,25 @@ session = NeuroglancerSession(url='file:///abc123xyz')
 From here, any number of tools can be run such as the visualization or annotation tools. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/notebooks/visualization/visualization.ipynb).
 
 ## Features
+
+### Registration
+The registration subpackage is a facsimile of ARDENT, a pip-installable (pip install ardent) package for nonlinear image registration wrapped in an object-oriented framework for ease of use. This is an implementation of the LDDMM algorithm with modifications, written by Devin Crowley and based on "Diffeomorphic registration with intensity transformation and missing data: Application to 3D digital pathology of Alzheimer's disease." This paper extends on an older LDDMM paper, "Computing large deformation metric mappings via geodesic flows of diffeomorphisms."
+
+This is the more recent paper:
+
+Tward, Daniel, et al. "Diffeomorphic registration with intensity transformation and missing data: Application to 3D digital pathology of Alzheimer's disease." Frontiers in neuroscience 14 (2020).
+
+https://doi.org/10.3389/fnins.2020.00052
+
+This is the original LDDMM paper:
+
+Beg, M. Faisal, et al. "Computing large deformation metric mappings via geodesic flows of diffeomorphisms." International journal of computer vision 61.2 (2005): 139-157.
+
+https://doi.org/10.1023/B:VISI.0000043755.93987.aa
+
+A tutorial is available in docs/notebooks/registration_demo.ipynb.
+
+## Core
 The core brain-lit package can be described by the diagram at the top of the readme:
 
 ### (Push and Pull Data)
