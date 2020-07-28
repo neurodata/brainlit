@@ -25,6 +25,8 @@ REQUIRED_PACKAGES = [
     "cloud-volume>=1.6.0",
     "tifffile>=2020.7.17",
     "statsmodels>=0.11.1",
+    "nibabel>=2.4.1",
+    "nilearn>=0.5.2",
 ]
 
 # Find savanna version.
