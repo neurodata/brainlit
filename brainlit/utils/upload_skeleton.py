@@ -4,6 +4,7 @@ import argparse
 import numpy as np
 from cloudvolume import CloudVolume, Skeleton, storage
 import pandas as pd
+from pathlib import Path
 import tifffile as tf
 
 
@@ -98,7 +99,7 @@ def create_skeleton_layer(s3_bucket, skel_res, img_dims, num_res=7):
 
     # upload skeleton info to /skeletons/ dir
     with storage.SimpleStorage(vol.cloudpath) as stor:
-        stor.put_json("skeletons/info", skel_info)
+        stor.put_json(str(Path("skeletons") / "info"), skel_info)
 
     return vol
 
@@ -115,8 +116,8 @@ def get_volume_info(brain_dir, num_resolutions=7):
         vox_size {list} -- x,y,z resoltions of highest res brain images
         tiff_dims {list} --  x,y,z size of tiff images
     """
-    tiff_dims = np.squeeze(tf.imread(brain_dir + "/default.0.tif")).T.shape
-    transform = open(brain_dir + "/transform.txt", "r")
+    tiff_dims = np.squeeze(tf.imread(str(Path(brain_dir) / "default.0.tif"))).T.shape
+    transform = open(str(Path(brain_dir) / "transform.txt"), "r")
     vox_size = [
         float(s[4:].rstrip("\n")) * (0.5 ** (num_resolutions - 1))
         for s in transform.readlines()
@@ -140,7 +141,8 @@ def create_skel_segids(swc_dir, origin):
         segids {list} --  list of ints for each swc's label
     """
     # if colors is None:
-    files = glob(f"{swc_dir}/*.swc")
+    p = Path(swc_dir)
+    files = [str(i) for i in p.rglob(f"*.swc")]
     skeletons = []
     segids = []
     for i in tqdm(files, desc="converting swcs to neuroglancer format..."):

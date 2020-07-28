@@ -128,11 +128,10 @@ def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
         num_workers {int} -- max number of concurrently running jobs
     """
     tiff_jobs = int(num_workers / 2) if num_workers == cpu_count() else num_workers
-
     with tqdm_joblib(tqdm(desc="Load tiffs", total=len(files))) as progress_bar:
         tiffs = Parallel(
             tiff_jobs, timeout=1800, backend="multiprocessing", verbose=50
-        )(delayed(tf.imread)("/".join(i)) for i in files)
+        )(delayed(tf.imread)(i) for i in files)
     with tqdm_joblib(tqdm(desc="Load ranges", total=len(bin_paths))) as progress_bar:
         ranges = Parallel(
             tiff_jobs, timeout=1800, backend="multiprocessing", verbose=50
@@ -170,11 +169,11 @@ def upload_chunks(vol, files, bin_paths, parallel=True):
         print("Not paralleling")
         for f, bin_path in zip(files, bin_paths):
             if vol.mip == len(vol.info["scales"]) - 1:
-                img = np.squeeze(tf.imread("/".join(f)))
+                img = np.squeeze(tf.imread(f))
                 vol[:, :, :] = img.T
             else:
                 ranges = get_data_ranges(bin_path, chunk_size)
-                img = np.squeeze(tf.imread("/".join(f)))
+                img = np.squeeze(tf.imread(f))
                 upload_chunk(vol, ranges, img)
 
 
@@ -191,19 +190,32 @@ def get_volume_info(image_dir, num_resolutions, channel=0):
         vox_size {list} -- list of highest resolution voxel sizes (nm)
         tiff_dims {3-tuple} -- (x,y,z) voxel dimensions for a single tiff image
     """
-    files = [str(i).split("/") for i in Path(image_dir).rglob(f"*.{channel}.tif")]
-    parent_dirs = len(image_dir.split("/"))
+
+    def RepresentsInt(s):
+        try:
+            int(s)
+            return True
+        except ValueError:
+            return False
+
+    p = Path(image_dir)
+    files = [i.parts for i in p.rglob(f"*.{channel}.tif")]
+    parent_dirs = len(p.parts)
 
     files_ordered = [
-        [i for i in files if len(i) == j + parent_dirs] for j in range(num_resolutions)
+        [i for i in files if len(i) == j + parent_dirs + 1]
+        for j in range(num_resolutions)
     ]
     paths_bin = [
-        [[f"{int(j)-1:03b}" for j in k if len(j) == 1] for k in i]
+        [[f"{int(j)-1:03b}" for j in k if len(j) == 1 and RepresentsInt(j)] for k in i]
         for i in files_ordered
     ]
+    for i, resolution in enumerate(files_ordered):
+        for j, filepath in enumerate(resolution):
+            files_ordered[i][j] = str(Path(*filepath))
     print(f"got files and binary representations of paths.")
-    tiff_dims = np.squeeze(tf.imread(image_dir + "/default.0.tif")).T.shape
-    transform = open(image_dir + "/transform.txt", "r")
+    tiff_dims = np.squeeze(tf.imread(p / "default.0.tif")).T.shape
+    transform = open(p / "transform.txt", "r")
     vox_size = [
         float(s[4:].rstrip("\n")) * (0.5 ** (num_resolutions - 1))
         for s in transform.readlines()

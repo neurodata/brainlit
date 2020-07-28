@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import SimpleITK as sitk
 from cloudvolume import CloudVolume, view
 from cloudvolume.lib import Bbox
+from pathlib import Path
 import napari
 
 
@@ -46,9 +47,7 @@ class NeuroglancerSession:
         self.scales = self.cv.scales[self.mip]["resolution"]
 
     def _get_voxel(self, seg_id, v_id):
-        skeleton_url = self.url + "_segments"
-        cv_skel = CloudVolume(skeleton_url, mip=self.mip)
-        skel = cv_skel.skeleton.get(seg_id)
+        skel = self.cv.skeleton.get(seg_id)
         vertex = skel.vertices[v_id]
         voxel = np.round(np.divide(vertex, self.scales)).astype(int)
         return voxel
