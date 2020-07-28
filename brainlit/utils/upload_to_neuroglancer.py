@@ -214,8 +214,8 @@ def get_volume_info(image_dir, num_resolutions, channel=0):
         for j, filepath in enumerate(resolution):
             files_ordered[i][j] = str(Path(*filepath))
     print(f"got files and binary representations of paths.")
-    tiff_dims = np.squeeze(tf.imread(p / "default.0.tif")).T.shape
-    transform = open(p / "transform.txt", "r")
+    tiff_dims = np.squeeze(tf.imread(str(p / "default.0.tif"))).T.shape
+    transform = open(str(p / "transform.txt"), "r")
     vox_size = [
         float(s[4:].rstrip("\n")) * (0.5 ** (num_resolutions - 1))
         for s in transform.readlines()
