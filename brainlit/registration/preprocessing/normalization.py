@@ -2,6 +2,7 @@ import numpy as np
 
 from ..lddmm._lddmm_utilities import _validate_ndarray
 
+
 def _verify_data_is_ndarray(data):
     if not isinstance(data, np.ndarray):
         raise TypeError(f"data must be of type np.ndarray.\ntype(data): {type(data)}.")
@@ -32,7 +33,7 @@ def normalize_by_MAD(data):
     Returns:
         np.ndarray: A copy of data divided by its mean absolute deviation.
     """
-    
+
     _verify_data_is_ndarray(data)
 
     mean_absolute_deviation = np.mean(np.abs(data - np.median(data)))
@@ -59,7 +60,7 @@ def center_to_mean(data):
     return centered_data
 
 
-def pad(data, pad_width=10, mode='constant', constant_values=None):
+def pad(data, pad_width=10, mode="constant", constant_values=None):
     """
     Returns a padded copy of data.
     
@@ -76,13 +77,12 @@ def pad(data, pad_width=10, mode='constant', constant_values=None):
     _verify_data_is_ndarray(data)
 
     if constant_values is None:
-        constant_values = np.quantile(data, 10**-data.ndim)
+        constant_values = np.quantile(data, 10 ** -data.ndim)
 
-    pad_kwargs = {'array':data, 'pad_width':pad_width, 'mode':mode}
-    if mode == 'constant': pad_kwargs.update(constant_values=constant_values)
+    pad_kwargs = {"array": data, "pad_width": pad_width, "mode": mode}
+    if mode == "constant":
+        pad_kwargs.update(constant_values=constant_values)
 
     padded_data = np.pad(**pad_kwargs)
 
     return padded_data
-
-

@@ -39,7 +39,8 @@ def _validate_scalar_to_multi(value, size=None, dtype=None):
             size = int(size)
         except (TypeError, ValueError) as exception:
             raise TypeError(
-                f"size must be either None or interpretable as an integer.\n" f"type(size): {type(size)}."
+                f"size must be either None or interpretable as an integer.\n"
+                f"type(size): {type(size)}."
             ) from exception
 
         if size < 0:
@@ -49,7 +50,9 @@ def _validate_scalar_to_multi(value, size=None, dtype=None):
     try:
         value = np.array(value, dtype=dtype)
     except ValueError as exception:
-        raise ValueError(f"value and dtype are incompatible with one another.") from exception
+        raise ValueError(
+            f"value and dtype are incompatible with one another."
+        ) from exception
 
     # Validate value's dimensionality and length.
     if value.ndim == 0:
@@ -71,7 +74,7 @@ def _validate_scalar_to_multi(value, size=None, dtype=None):
         )
 
     # Check for np.nan values if the dtype is not object.
-    if value.dtype != 'object' and np.any(np.isnan(value)):
+    if value.dtype != "object" and np.any(np.isnan(value)):
         raise NotImplementedError(
             "np.nan values encountered for a value not cast to dtype object. What input led to this result?\n"
             "Write in an exception as appropriate."
@@ -156,7 +159,7 @@ def _validate_ndarray(
     # Cast array to np.ndarray.
     # Validate compliance with dtype.
     try:
-        array = np.array(array, dtype) # Side effect: breaks alias.
+        array = np.array(array, dtype)  # Side effect: breaks alias.
     except TypeError as exception:
         raise TypeError(
             f"array is of a type that is incompatible with dtype.\n"
@@ -198,15 +201,19 @@ def _validate_ndarray(
     # Verify compliance with required_shape if appropriate.
     if required_shape is not None:
         try:
-            required_shape_satisfied = np.array_equal(array.reshape(required_shape).shape, array.shape)
+            required_shape_satisfied = np.array_equal(
+                array.reshape(required_shape).shape, array.shape
+            )
         except ValueError as exception:
             raise ValueError(
                 f"array is incompatible with required_shape.\n"
                 f"array.shape: {array.shape}, required_shape: {required_shape}."
             ) from exception
         if not required_shape_satisfied:
-            raise ValueError(f"array is compatible with required_shape but does not match required_shape.\n"
-                             f"array.shape: {array.shape}, required_shape: {required_shape}.")
+            raise ValueError(
+                f"array is compatible with required_shape but does not match required_shape.\n"
+                f"array.shape: {array.shape}, required_shape: {required_shape}."
+            )
 
     return array
 
@@ -304,8 +311,8 @@ def _multiply_coords_by_affine(affine, array):
     if not np.array_equal(affine[-1], np.array([0] * (len(affine) - 1) + [1])):
         warnings.warn(
             message=f"affine is not in homogenous coordinates.\n"
-                    f"affine[-1] should be zeros with a 1 on the right.\n"
-                    f"affine[-1]: {affine[-1]}.",
+            f"affine[-1] should be zeros with a 1 on the right.\n"
+            f"affine[-1]: {affine[-1]}.",
             category=RuntimeWarning,
         )
 
@@ -323,22 +330,30 @@ def _compute_tail_determinant(array):
 
     # Validate that array is square on its last 2 dimensions.
     if array.shape[-1] != array.shape[-2]:
-        raise ValueError(f"array must be square on its last 2 dimensions.\n"
-                         f"array.shape[-2:]: {array.shape[-2:]}.")
+        raise ValueError(
+            f"array must be square on its last 2 dimensions.\n"
+            f"array.shape[-2:]: {array.shape[-2:]}."
+        )
 
     # Compute the determinant recursively.
 
     if array.shape[-1] == 2:
         # Handle 2-dimensional base case.
-        determinant = array[...,0,0] * array[...,1,1] - array[...,0,1] * array[...,1,0]
+        determinant = (
+            array[..., 0, 0] * array[..., 1, 1] - array[..., 0, 1] * array[..., 1, 0]
+        )
     else:
         # Handle more than 2-dimensional recursive case.
         determinant = 0
         for dim in range(array.shape[-1]):
             recursive_indices = list(range(array.shape[-1]))
             recursive_indices.remove(dim)
-            determinant += (-1)**dim * array[...,0,dim] * _compute_tail_determinant(array[...,1:,recursive_indices])
-    
+            determinant += (
+                (-1) ** dim
+                * array[..., 0, dim]
+                * _compute_tail_determinant(array[..., 1:, recursive_indices])
+            )
+
     return determinant
 
 
@@ -384,7 +399,7 @@ def resample(
     """
 
     # Validate inputs and define ndim & old_shape based on image_is_coords.
-    image = _validate_ndarray(image) # Breaks alias.
+    image = _validate_ndarray(image)  # Breaks alias.
     if image_is_coords:
         ndim = image.ndim - 1
         old_shape = image.shape[:-1]
@@ -397,7 +412,7 @@ def resample(
     # Handle trivial case.
     if np.array_equal(new_resolution, old_resolution):
         return (
-            image # Note: this is a copy of the input image and is not the same object.
+            image  # Note: this is a copy of the input image and is not the same object.
         )
 
     # Compute new_coords and old_axes.
@@ -452,13 +467,17 @@ def sinc_resample(array, new_shape):
 
     # Validate inputs.
     array = _validate_ndarray(array)
-    new_shape = _validate_ndarray(new_shape, dtype=int, required_ndim=1, required_shape=array.ndim)
+    new_shape = _validate_ndarray(
+        new_shape, dtype=int, required_ndim=1, required_shape=array.ndim
+    )
 
     resampled_array = np.copy(array)
 
     for dim in range(array.ndim):
         fourier_transformed_array = np.fft.rfft(resampled_array, axis=dim)
-        resampled_array = np.fft.irfft(fourier_transformed_array, axis=dim, n=new_shape[dim])
+        resampled_array = np.fft.irfft(
+            fourier_transformed_array, axis=dim, n=new_shape[dim]
+        )
     resampled_array *= resampled_array.size / array.size
 
     return resampled_array

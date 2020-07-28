@@ -35,8 +35,10 @@ def correct_bias_field(image, correct_at_scale=1, as_float32=True, **kwargs):
     # Verify correct_at_scale.
     correct_at_scale = float(correct_at_scale)
     if correct_at_scale < 1:
-        raise ValueError(f"correct_at_scale must be equal to or greater than 1.\n"
-                         f"correct_at_scale: {correct_at_scale}.")
+        raise ValueError(
+            f"correct_at_scale must be equal to or greater than 1.\n"
+            f"correct_at_scale: {correct_at_scale}."
+        )
 
     # Shift image such that its minimum value lies at 1.
     image_min = image.min()
@@ -47,31 +49,36 @@ def correct_bias_field(image, correct_at_scale=1, as_float32=True, **kwargs):
 
     # Bias correct downsampled_image.
     N4BiasFieldCorrection_kwargs = dict(
-        image=downsampled_image, 
-        maskImage=np.ones_like(downsampled_image), 
-        convergenceThreshold=0.001, 
-        maximumNumberOfIterations=[50, 50, 50, 50], 
-        biasFieldFullWidthAtHalfMaximum=0.15, 
-        wienerFilterNoise=0.01, 
+        image=downsampled_image,
+        maskImage=np.ones_like(downsampled_image),
+        convergenceThreshold=0.001,
+        maximumNumberOfIterations=[50, 50, 50, 50],
+        biasFieldFullWidthAtHalfMaximum=0.15,
+        wienerFilterNoise=0.01,
         numberOfHistogramBins=200,
-        numberOfControlPoints=[4, 4, 4], 
-        splineOrder=3, 
-        useMaskLabel=True, 
-        maskLabel=1, 
+        numberOfControlPoints=[4, 4, 4],
+        splineOrder=3,
+        useMaskLabel=True,
+        maskLabel=1,
     )
     # Overwrite default arguments with user-supplied kwargs.
     N4BiasFieldCorrection_kwargs.update(kwargs)
     # Convert image and maskImage N4BiasFieldCorrection_kwargs from type np.ndarray to type sitk.Image.
-    sitk_image = sitk.GetImageFromArray(N4BiasFieldCorrection_kwargs['image'])
-    sitk_image = sitk.Cast(sitk_image, sitk.sitkFloat32 if as_float32 else sitk.sitkFloat64)
-    sitk_maskImage = N4BiasFieldCorrection_kwargs['maskImage'].astype(np.uint8)
+    sitk_image = sitk.GetImageFromArray(N4BiasFieldCorrection_kwargs["image"])
+    sitk_image = sitk.Cast(
+        sitk_image, sitk.sitkFloat32 if as_float32 else sitk.sitkFloat64
+    )
+    sitk_maskImage = N4BiasFieldCorrection_kwargs["maskImage"].astype(np.uint8)
     sitk_maskImage = sitk.GetImageFromArray(sitk_maskImage)
     N4BiasFieldCorrection_kwargs.update(
-        image=sitk_image,
-        maskImage=sitk_maskImage,
+        image=sitk_image, maskImage=sitk_maskImage,
     )
-    bias_corrected_downsampled_image = sitk.N4BiasFieldCorrection(*N4BiasFieldCorrection_kwargs.values())
-    bias_corrected_downsampled_image = sitk.GetArrayFromImage(bias_corrected_downsampled_image)
+    bias_corrected_downsampled_image = sitk.N4BiasFieldCorrection(
+        *N4BiasFieldCorrection_kwargs.values()
+    )
+    bias_corrected_downsampled_image = sitk.GetArrayFromImage(
+        bias_corrected_downsampled_image
+    )
 
     # Compute bias from bias_corrected_downsampled_image.
     downsample_computed_bias = bias_corrected_downsampled_image / downsampled_image
@@ -88,7 +95,15 @@ def correct_bias_field(image, correct_at_scale=1, as_float32=True, **kwargs):
     return bias_corrected_image
 
 
-def remove_grid_artifact(image, z_axis=0, sigma_blur=None, mask='Otsu', otsu_nbins=256, otsu_binary_closing_radius=None, otsu_background_is_dim=True):
+def remove_grid_artifact(
+    image,
+    z_axis=0,
+    sigma_blur=None,
+    mask="Otsu",
+    otsu_nbins=256,
+    otsu_binary_closing_radius=None,
+    otsu_background_is_dim=True,
+):
     """
     Remove the grid artifact from tiled data.
     
@@ -117,10 +132,18 @@ def remove_grid_artifact(image, z_axis=0, sigma_blur=None, mask='Otsu', otsu_nbi
     image = _validate_ndarray(image, dtype=float)
 
     # Validate sigma_blur.
-    sigma_blur = float(sigma_blur) if sigma_blur is not None else np.ceil(np.sqrt(np.min(image.shape)))
+    sigma_blur = (
+        float(sigma_blur)
+        if sigma_blur is not None
+        else np.ceil(np.sqrt(np.min(image.shape)))
+    )
 
     # Validate otsu_binary_closing_radius.
-    otsu_binary_closing_radius = int(otsu_binary_closing_radius) if otsu_binary_closing_radius is not None else int(np.ceil(np.sqrt(np.min(image.shape)) / 3))
+    otsu_binary_closing_radius = (
+        int(otsu_binary_closing_radius)
+        if otsu_binary_closing_radius is not None
+        else int(np.ceil(np.sqrt(np.min(image.shape)) / 3))
+    )
 
     # Validate otsu_background_is_dim.
     otsu_background_is_dim = bool(otsu_background_is_dim)
@@ -130,27 +153,31 @@ def remove_grid_artifact(image, z_axis=0, sigma_blur=None, mask='Otsu', otsu_nbi
     # Interpret input mask.
     if mask is None:
         mask = np.ones_like(image, bool)
-    elif isinstance(mask, str) and mask == 'Otsu':
-        # Finds the optimal split threshold between the foreground anad background, 
-        # by maximizing the interclass variance and minimizing the intraclass variance between voxel intensities, 
+    elif isinstance(mask, str) and mask == "Otsu":
+        # Finds the optimal split threshold between the foreground anad background,
+        # by maximizing the interclass variance and minimizing the intraclass variance between voxel intensities,
         # with he higher-intensity class labeled as 1.
         otsu_threshold = threshold_otsu(image, nbins=otsu_nbins)
         mask = np.ones_like(image, int)
         # Segment image by otsu_threshold.
-        mask[image <= otsu_threshold if otsu_background_is_dim else image >= otsu_threshold] = 0
+        mask[
+            image <= otsu_threshold
+            if otsu_background_is_dim
+            else image >= otsu_threshold
+        ] = 0
         # Perform binary closing and then binary fill hole on image to remove mislabed background voxels inside the foreground regions.
         mask = sitk.GetArrayFromImage(
             sitk.BinaryFillhole(
                 sitk.BinaryMorphologicalClosing(
-                    sitk.GetImageFromArray(mask), 
-                    otsu_binary_closing_radius, 
-                    sitk.sitkBall
+                    sitk.GetImageFromArray(mask),
+                    otsu_binary_closing_radius,
+                    sitk.sitkBall,
                 )
             )
         ).astype(bool)
     else:
         mask = _validate_ndarray(mask, reshape_to_shape=image.shape, dtype=bool)
-    
+
     # Use the inverse of mask to create masked_image.
     masked_image = ma.masked_array(image, mask=~mask)
 

@@ -3,6 +3,7 @@ import SimpleITK as sitk
 from pathlib import Path
 import pickle
 
+
 def _validate_inputs(**kwargs):
     """Accepts arbitrary kwargs. If recognized, they are validated.
     If they cannot be validated an exception is raised.
@@ -10,15 +11,17 @@ def _validate_inputs(**kwargs):
 
     # Validate data.
 
-    if 'data' in kwargs.keys():
-        data = kwargs['data']
+    if "data" in kwargs.keys():
+        data = kwargs["data"]
         if isinstance(data, dict):
             # Verify that each value in the dict is a np.ndarray object and recursion will stop at 1 level.
             if not all(map(lambda datum: isinstance(datum, np.ndarray), data.values())):
-                raise TypeError(f"data must be either a np.ndarray or a dictionary mapping only to np.ndarray objects.")
+                raise TypeError(
+                    f"data must be either a np.ndarray or a dictionary mapping only to np.ndarray objects."
+                )
             # Recurse into each element of the dictionary keys of np.ndarray objects.
             for key, datum in data.items():
-                data[key] = _validate_inputs(data=datum)['data']
+                data[key] = _validate_inputs(data=datum)["data"]
         # If data is neither a list, dict, nor a np.ndarray, raise TypeError.
         elif not isinstance(data, np.ndarray):
             raise TypeError(f"data must be a np.ndarray.\ntype(data): {type(data)}.")
@@ -27,15 +30,19 @@ def _validate_inputs(**kwargs):
 
     # Validate file_path.
 
-    if 'file_path' in kwargs.keys():
-        file_path = kwargs['file_path']
-        file_path = Path(file_path).expanduser().resolve() # Will raise exceptions if file_path is not an oppropriate type.
+    if "file_path" in kwargs.keys():
+        file_path = kwargs["file_path"]
+        file_path = (
+            Path(file_path).expanduser().resolve()
+        )  # Will raise exceptions if file_path is not an oppropriate type.
         if not file_path.parent.is_dir():
-            raise FileNotFoundError(f"file_path corresponds to a location that does not presently exist.\n"
-                f"file_path.parent: {file_path.parent}.")
+            raise FileNotFoundError(
+                f"file_path corresponds to a location that does not presently exist.\n"
+                f"file_path.parent: {file_path.parent}."
+            )
         # Validate extension.
         if not file_path.suffix:
-            default_extension = '.vtk'
+            default_extension = ".vtk"
             file_path = file_path.with_suffix(default_extension)
         # file_path is valid.
         kwargs.update(file_path=file_path)
@@ -54,12 +61,12 @@ def save(data, file_path):
     Raises:
         Exception: Raised if _validate_inputs has failed to catch an improper type for data.
     """
-    
+
     # Validate inputs.
-    inputs = {'data':data, 'file_path':file_path}
+    inputs = {"data": data, "file_path": file_path}
     validated_inputs = _validate_inputs(**inputs)
-    data = validated_inputs['data']
-    file_path = validated_inputs['file_path']
+    data = validated_inputs["data"]
+    file_path = validated_inputs["file_path"]
 
     # data is either a single np.ndarray or a list of np.ndarrays.
 
@@ -67,16 +74,18 @@ def save(data, file_path):
         # Convert data to sitk.Image.
         # Take the transpose of data to premptively correct for the f-ordering of SimpleITK Images.
         data = data.T
-        data_Image = sitk.GetImageFromArray(data) # Side effect: breaks alias.
+        data_Image = sitk.GetImageFromArray(data)  # Side effect: breaks alias.
         # Save data to file_path.
         sitk.WriteImage(data_Image, str(file_path))
     # If data is a dictionary it must map to np.ndarray objects.
     elif isinstance(data, dict):
-        np.savez(file_path.with_suffix(''), **data) # '.npz' is appended.
+        np.savez(file_path.with_suffix(""), **data)  # '.npz' is appended.
     else:
         # _validate_inputs has failed.
-        raise Exception(f"_validate_inputs has failed to prevent an improper type for data.\n"
-            f"type(data): {type(data)}.")
+        raise Exception(
+            f"_validate_inputs has failed to prevent an improper type for data.\n"
+            f"type(data): {type(data)}."
+        )
 
 
 def load(file_path):
@@ -91,11 +100,11 @@ def load(file_path):
     """
 
     # Validate inputs.
-    inputs = {'file_path':file_path}
+    inputs = {"file_path": file_path}
     validated_inputs = _validate_inputs(**inputs)
-    file_path = validated_inputs['file_path']
+    file_path = validated_inputs["file_path"]
 
-    if file_path.suffix == '.npz':
+    if file_path.suffix == ".npz":
         data = np.load(file_path)
         # data is a dictionary.
         return data
@@ -120,9 +129,9 @@ def save_pickled(obj, file_path):
     """
 
     # Validate file_path.
-    file_path = _validate_inputs(file_path=file_path)['file_path']
+    file_path = _validate_inputs(file_path=file_path)["file_path"]
 
-    with open(file_path, 'wb') as file:
+    with open(file_path, "wb") as file:
         pickle.dump(obj, file)
 
 
@@ -138,8 +147,8 @@ def load_pickled(file_path):
     """
 
     # Validate file_path.
-    file_path = _validate_inputs(file_path=file_path)['file_path']
+    file_path = _validate_inputs(file_path=file_path)["file_path"]
 
     # TODO: verify behavior of suffixes.
-    with open(file_path, 'rb') as file:
+    with open(file_path, "rb") as file:
         return pickle.load(file)

@@ -14,7 +14,7 @@ class Transform:
     Transform stores the deformation that is output by a registration 
     and provides methods for applying that transformation to various images.
     """
-    
+
     def __init__(self):
         """
         Initialize Transform object. Sets attributes to None.
@@ -28,43 +28,45 @@ class Transform:
         # lddmm_dict.
 
         # Core.
-        self.affine=None,
-        self.phi=None,
-        self.phi_inv=None,
-        self.affine_phi=None,
-        self.phi_inv_affine_inv=None,
-        self.contrast_coefficients=None,
-        self.velocity_fields=None
+        self.affine = (None,)
+        self.phi = (None,)
+        self.phi_inv = (None,)
+        self.affine_phi = (None,)
+        self.phi_inv_affine_inv = (None,)
+        self.contrast_coefficients = (None,)
+        self.velocity_fields = None
 
         # Helpers.
-        self.template_resolution=None,
-        self.target_resolution=None,
-        
+        self.template_resolution = (None,)
+        self.target_resolution = (None,)
+
         # Accumulators.
-        self.matching_energies=None,
-        self.regularization_energies=None,
-        self.total_energies=None,
+        self.matching_energies = (None,)
+        self.regularization_energies = (None,)
+        self.total_energies = (None,)
 
         # Debuggers.
-        self.lddmm=None,
-        
+        self.lddmm = (None,)
 
     def _update_lddmm_attributes(self, lddmm_dict):
         """Update attributes with the output dictionary from lddmm_register."""
 
         # Verify lddmm_dict.
         if not isinstance(lddmm_dict, dict):
-            raise TypeError(f"lddmm_dict must be of type dict.\n"
-                            f"type(lddmm_dict): {type(lddmm_dict)}.")
+            raise TypeError(
+                f"lddmm_dict must be of type dict.\n"
+                f"type(lddmm_dict): {type(lddmm_dict)}."
+            )
 
         # Set attributes.
 
         for key, value in lddmm_dict.items():
             if not hasattr(self, key):
-                raise ValueError(f"lddmm_dict must only have keys that are attributes of self.\n"
-                                 f"key: {key}.")
+                raise ValueError(
+                    f"lddmm_dict must only have keys that are attributes of self.\n"
+                    f"key: {key}."
+                )
             setattr(self, key, value)
-
 
     def get_lddmm_dict(self):
         """
@@ -93,7 +95,6 @@ class Transform:
             # Debuggers.
             lddmm=self.lddmm,
         )
-
 
     def register(
         self,
@@ -253,23 +254,24 @@ class Transform:
             for registration_parameter in preset_registration_parameters.keys():
                 # Override a registration_parameter with a preset value only if that parameter was not specified in this call (i.e. is None).
                 if registration_parameters[registration_parameter] is None:
-                    registration_parameters[registration_parameter] = preset_registration_parameters[registration_parameter]
+                    registration_parameters[
+                        registration_parameter
+                    ] = preset_registration_parameters[registration_parameter]
 
         # Perform registration.
         lddmm_dict = lddmm_register(**registration_parameters)
 
         # Save registration parameters for the continue_registration method, with the initial_affine, initial_velocity_fields, and initial_contrast_coefficients updated.
         registration_parameters.update(
-            initial_affine=lddmm_dict['affine'],
-            initial_contrast_coefficients=lddmm_dict['contrast_coefficients'],
-            initial_velocity_fields=lddmm_dict['velocity_fields'],
+            initial_affine=lddmm_dict["affine"],
+            initial_contrast_coefficients=lddmm_dict["contrast_coefficients"],
+            initial_velocity_fields=lddmm_dict["velocity_fields"],
         )
         self._registration_parameters = registration_parameters
 
         # Update attributes.
         self._update_lddmm_attributes(lddmm_dict)
 
-    
     def continue_registration(self, **registration_parameter_updates):
         """
         Continue registering with all the same registration parameters from the previous call to the register method, 
@@ -285,7 +287,9 @@ class Transform:
         """
 
         if self._registration_parameters is None:
-            raise RuntimeError(f"The continue_registration method cannot be called from an object that has not performed the register method first.")
+            raise RuntimeError(
+                f"The continue_registration method cannot be called from an object that has not performed the register method first."
+            )
 
         # Update most recently saved registration parameters with user-provided kwargs.
         self._registration_parameters.update(registration_parameter_updates)
@@ -293,8 +297,16 @@ class Transform:
         # Continue the registration.
         self.register(**self._registration_parameters)
 
-
-    def transform_image(self, subject, subject_resolution=1, output_resolution=None, output_shape=None, deform_to="template", extrapolation_fill_value=None, save_path=None):
+    def transform_image(
+        self,
+        subject,
+        subject_resolution=1,
+        output_resolution=None,
+        output_shape=None,
+        deform_to="template",
+        extrapolation_fill_value=None,
+        save_path=None,
+    ):
         """
         Apply the transformation--computed by the last call to self.register--to subject, 
         deforming it into the space of deform_to.
@@ -325,12 +337,11 @@ class Transform:
             extrapolation_fill_value=extrapolation_fill_value,
             **self.get_lddmm_dict(),
         )
-        
+
         if save_path is not None:
             file_io.save(transformed_subject, save_path)
 
         return transformed_subject
-
 
     def transform_points(self, points, deform_to="template", save_path=None):
         """
@@ -354,13 +365,12 @@ class Transform:
             template_resolution=self.template_resolution,
             target_resolution=self.target_resolution,
         )
-        
+
         if save_path is not None:
             file_io.save(transformed_points, save_path)
 
         return transformed_points
 
-    
     def save(self, file_path):
         """
         Save the entire instance of this Transform object (self) to file.
@@ -370,7 +380,6 @@ class Transform:
         """
 
         file_io.save_pickled(self, file_path)
-
 
     def load(self, file_path):
         """

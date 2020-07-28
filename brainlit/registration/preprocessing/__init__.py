@@ -13,17 +13,17 @@ from .initialization import locally_translate_velocity_fields
 # TODO: update preprocessing_functions, include resample.
 preprocessing_functions = [
     # from .normalization:
-    'cast_to_typed_array',
-    'normalize_by_MAD',
-    'center_to_mean',
-    'pad',
+    "cast_to_typed_array",
+    "normalize_by_MAD",
+    "center_to_mean",
+    "pad",
     # from .bias_and_artifact_correction:
-    'correct_bias_field',
-    'remove_grid_artifact',
+    "correct_bias_field",
+    "remove_grid_artifact",
     # from .initialization:
-    'locally_rotate_velocity_fields',
-    'locally_translate_velocity_fields',
-    ]
+    "locally_rotate_velocity_fields",
+    "locally_translate_velocity_fields",
+]
 
 """
 Preprocessing Pipeline
@@ -34,6 +34,7 @@ from collections.abc import Iterable
 import numpy as np
 
 from ..lddmm._lddmm_utilities import _validate_ndarray
+
 
 def preprocess(data, processes):
     """
@@ -67,14 +68,16 @@ def preprocess(data, processes):
     # Verify data.
     if isinstance(data, list):
         if not all(isinstance(datum, np.ndarray) for datum in data):
-            raise TypeError(f"If data is a list, all elements must be np.ndarrays.\n"
-                f"type(data[0]): {type(data[0])}.")
+            raise TypeError(
+                f"If data is a list, all elements must be np.ndarrays.\n"
+                f"type(data[0]): {type(data[0])}."
+            )
     elif isinstance(data, np.ndarray):
         data = [data]
     else:
         # data is neither a list nor a np.ndarray.
         raise TypeError(f"data must be a np.ndarray or a list of np.ndarrays.")
-    
+
     # Validate processes.
     processes = _validate_ndarray(processes, required_ndim=1)
     for process_index, process in enumerate(processes):
@@ -84,31 +87,41 @@ def preprocess(data, processes):
         # This process is not a single string.
         # Check whether it is an Iterable.
         if not isinstance(process, Iterable):
-            raise TypeError(f"If an element of processes is not a single string then it must be an iterable.\n"
-                            f"type(processes[{process_index}]: {type(process)}.")
+            raise TypeError(
+                f"If an element of processes is not a single string then it must be an iterable.\n"
+                f"type(processes[{process_index}]: {type(process)}."
+            )
         # This process is an Iterable.
         # Check whether this process has length 2.
         if len(process) != 2:
-            raise ValueError(f"If an element of processes is not a single string then it must be a 2-element iterable.\n"
-                             f"type(processes[{process_index}]): {type(process)}.\n"
-                             f"len(processes[{process_index}]): {len(process)}.")
+            raise ValueError(
+                f"If an element of processes is not a single string then it must be a 2-element iterable.\n"
+                f"type(processes[{process_index}]): {type(process)}.\n"
+                f"len(processes[{process_index}]): {len(process)}."
+            )
         # This process is an Iteraable of length 2.
         # Check whether the first element of this process is a string.
         if not isinstance(process[0], str):
-            raise ValueError(f"If an element of processes is a 2-element iterable, the first element must be of type str.\n"
-                             f"type(processes[{process_index}][0]: {type(process[0])}.")
+            raise ValueError(
+                f"If an element of processes is a 2-element iterable, the first element must be of type str.\n"
+                f"type(processes[{process_index}][0]: {type(process[0])}."
+            )
         # Check whether the second element of this process is a dict.
         if not isinstance(process[1], dict):
-            raise ValueError(f"If an element of processes is a 2-element iterable, the second element must be of type dict.\n"
-                                f"type(processes[{process_index}][1]: {type(process[1])}.")
+            raise ValueError(
+                f"If an element of processes is a 2-element iterable, the second element must be of type dict.\n"
+                f"type(processes[{process_index}][1]: {type(process[1])}."
+            )
         # Check whether all keys of the process[1] dictionary are strings.
         for key_index, key in enumerate(process[1].keys()):
             if not isinstance(key, str):
-                raise TypeError(f"Each dictionary of kwargs must all keys be of type str.\n"
-                                f"type(processes[{process_index}][1].keys()[{key_index}]): {type(key)}.")
+                raise TypeError(
+                    f"Each dictionary of kwargs must all keys be of type str.\n"
+                    f"type(processes[{process_index}][1].keys()[{key_index}]): {type(key)}."
+                )
 
     # Process each np.ndarray.
-    # If data was passed in as a single np.ndarray, 
+    # If data was passed in as a single np.ndarray,
     # then data is now a 1-element list containing that np.ndarray: [data].
     for data_index, datum in enumerate(data):
         for process_index, process in enumerate(processes):
@@ -121,10 +134,12 @@ def preprocess(data, processes):
             if process in preprocessing_functions:
                 datum = eval(f"{process}(datum, **process_kwargs)")
             else:
-                raise ValueError(f"Process {process} not recognized.\n"
-                    f"Recognized processes: {preprocessing_functions}.")
+                raise ValueError(
+                    f"Process {process} not recognized.\n"
+                    f"Recognized processes: {preprocessing_functions}."
+                )
         data[data_index] = datum
 
-    # Return in a form appropriate to what was passed in, 
+    # Return in a form appropriate to what was passed in,
     # i.e. list in, list out, np.ndarray in, np.ndarray out.
     return data if data_given_as_list else data[0]
