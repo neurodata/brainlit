@@ -1,5 +1,7 @@
 docs/notebooks/utils/upload/
 docs/notebooks/utils/upload/*
+tests/upload/
+tests/upload/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
