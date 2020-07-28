@@ -5,7 +5,33 @@ import numpy as np
 from cloudvolume import CloudVolume, Skeleton, storage
 from pathlib import Path
 import tifffile as tf
+import contextlib
+import joblib
 from joblib import Parallel, delayed, cpu_count
+
+
+@contextlib.contextmanager
+def tqdm_joblib(tqdm_object):
+    """
+    Context manager to patch joblib to report into tqdm progress bar given as argument
+    """
+
+    class TqdmBatchCompletionCallback(joblib.parallel.BatchCompletionCallBack):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+        def __call__(self, *args, **kwargs):
+            tqdm_object.update(n=self.batch_size)
+            return super().__call__(*args, **kwargs)
+
+    old_batch_callback = joblib.parallel.BatchCompletionCallBack
+    joblib.parallel.BatchCompletionCallBack = TqdmBatchCompletionCallback
+    try:
+        yield tqdm_object
+    finally:
+        joblib.parallel.BatchCompletionCallBack = old_batch_callback
+        tqdm_object.close()
+
 
 # chunk data for parallel work
 def chunks(l, n):
@@ -38,12 +64,14 @@ def create_image_layer(s3_bucket, tif_dimensions, voxel_size, num_resolutions):
         volume_size=[i * 2 ** (num_resolutions - 1) for i in tif_dimensions],
     )
     # get cloudvolume info
-    vol = CloudVolume(s3_bucket, info=info, parallel=True, compress=False)
+    vol = CloudVolume(s3_bucket, info=info, parallel=False)  # compress = False
     # scales resolution up, volume size down
-    [vol.add_scale((2 ** i, 2 ** i, 2 ** i)) for i in range(num_resolutions)]
+    [
+        vol.add_scale((2 ** i, 2 ** i, 2 ** i)) for i in range(num_resolutions)
+    ]  # ignore chunk size
     vol.commit_info()
     vols = [
-        CloudVolume(s3_bucket, mip=i, parallel=True, compress=False)
+        CloudVolume(s3_bucket, mip=i, parallel=False)  # parallel False, compress
         for i in range(num_resolutions - 1, -1, -1)
     ]
     return vols
@@ -100,19 +128,21 @@ def parallel_upload_chunks(vol, files, bin_paths, chunk_size, num_workers):
         num_workers {int} -- max number of concurrently running jobs
     """
     tiff_jobs = int(num_workers / 2) if num_workers == cpu_count() else num_workers
-
-    tiffs = Parallel(tiff_jobs, backend="loky", verbose=50)(
-        delayed(tf.imread)("/".join(i)) for i in files
-    )
-    ranges = Parallel(tiff_jobs)(
-        delayed(get_data_ranges)(i, chunk_size) for i in bin_paths
-    )
+    with tqdm_joblib(tqdm(desc="Load tiffs", total=len(files))) as progress_bar:
+        tiffs = Parallel(
+            tiff_jobs, timeout=1800, backend="multiprocessing", verbose=50
+        )(delayed(tf.imread)(i) for i in files)
+    with tqdm_joblib(tqdm(desc="Load ranges", total=len(bin_paths))) as progress_bar:
+        ranges = Parallel(
+            tiff_jobs, timeout=1800, backend="multiprocessing", verbose=50
+        )(delayed(get_data_ranges)(i, chunk_size) for i in bin_paths)
     print("loaded tiffs and bin paths")
     vol_ = CloudVolume(vol.layer_cloudpath, parallel=False, mip=vol.mip)
 
-    Parallel(tiff_jobs, verbose=50)(
-        delayed(upload_chunk)(vol_, r, i) for r, i in zip(ranges, tiffs)
-    )
+    with tqdm_joblib(tqdm(desc="Upload chunks", total=len(ranges))) as progress_bar:
+        Parallel(tiff_jobs, timeout=1800, backend="multiprocessing", verbose=50)(
+            delayed(upload_chunk)(vol_, r, i) for r, i in zip(ranges, tiffs)
+        )
 
 
 def upload_chunks(vol, files, bin_paths, parallel=True):
@@ -139,11 +169,11 @@ def upload_chunks(vol, files, bin_paths, parallel=True):
         print("Not paralleling")
         for f, bin_path in zip(files, bin_paths):
             if vol.mip == len(vol.info["scales"]) - 1:
-                img = np.squeeze(tf.imread("/".join(f)))
+                img = np.squeeze(tf.imread(f))
                 vol[:, :, :] = img.T
             else:
                 ranges = get_data_ranges(bin_path, chunk_size)
-                img = np.squeeze(tf.imread("/".join(f)))
+                img = np.squeeze(tf.imread(f))
                 upload_chunk(vol, ranges, img)
 
 
@@ -160,19 +190,32 @@ def get_volume_info(image_dir, num_resolutions, channel=0):
         vox_size {list} -- list of highest resolution voxel sizes (nm)
         tiff_dims {3-tuple} -- (x,y,z) voxel dimensions for a single tiff image
     """
-    files = [str(i).split("/") for i in Path(image_dir).rglob(f"*.{channel}.tif")]
-    parent_dirs = len(image_dir.split("/"))
+
+    def RepresentsInt(s):
+        try:
+            int(s)
+            return True
+        except ValueError:
+            return False
+
+    p = Path(image_dir)
+    files = [i.parts for i in p.rglob(f"*.{channel}.tif")]
+    parent_dirs = len(p.parts)
 
     files_ordered = [
-        [i for i in files if len(i) == j + parent_dirs] for j in range(num_resolutions)
+        [i for i in files if len(i) == j + parent_dirs + 1]
+        for j in range(num_resolutions)
     ]
     paths_bin = [
-        [[f"{int(j)-1:03b}" for j in k if len(j) == 1] for k in i]
+        [[f"{int(j)-1:03b}" for j in k if len(j) == 1 and RepresentsInt(j)] for k in i]
         for i in files_ordered
     ]
+    for i, resolution in enumerate(files_ordered):
+        for j, filepath in enumerate(resolution):
+            files_ordered[i][j] = str(Path(*filepath))
     print(f"got files and binary representations of paths.")
-    tiff_dims = np.squeeze(tf.imread(image_dir + "/default.0.tif")).T.shape
-    transform = open(image_dir + "/transform.txt", "r")
+    tiff_dims = np.squeeze(tf.imread(str(p / "default.0.tif"))).T.shape
+    transform = open(str(p / "transform.txt"), "r")
     vox_size = [
         float(s[4:].rstrip("\n")) * (0.5 ** (num_resolutions - 1))
         for s in transform.readlines()

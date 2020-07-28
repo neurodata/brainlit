@@ -4,6 +4,7 @@ import argparse
 import numpy as np
 from cloudvolume import CloudVolume, Skeleton, storage
 import pandas as pd
+from pathlib import Path
 import tifffile as tf
 
 
@@ -43,7 +44,8 @@ def swc2skeleton(swc_file, origin=None):
     # add offset to vertices
     # and shift by origin
     skel.vertices += offset
-    skel.vertices -= origin
+    if origin is not None:
+        skel.vertices -= origin
     # convert from microns to nanometers
     skel.vertices *= 1000
     skel.vertex_color = np.zeros((skel.vertices.shape[0], 4), dtype="float32")
@@ -93,11 +95,11 @@ def create_skeleton_layer(s3_bucket, skel_res, img_dims, num_res=7):
     # get cloudvolume info
     vol = CloudVolume(s3_bucket, info=info, parallel=True)
     [vol.add_scale((2 ** i, 2 ** i, 2 ** i)) for i in range(num_res - 1)]
-    vol.commit_info()
+    # vol.commit_info() COMMENT OUT IF LOCAL DIRECTORY
 
     # upload skeleton info to /skeletons/ dir
     with storage.SimpleStorage(vol.cloudpath) as stor:
-        stor.put_json("skeletons/info", skel_info)
+        stor.put_json(str(Path("skeletons") / "info"), skel_info)
 
     return vol
 
@@ -114,8 +116,8 @@ def get_volume_info(brain_dir, num_resolutions=7):
         vox_size {list} -- x,y,z resoltions of highest res brain images
         tiff_dims {list} --  x,y,z size of tiff images
     """
-    tiff_dims = np.squeeze(tf.imread(brain_dir + "/default.0.tif")).T.shape
-    transform = open(brain_dir + "/transform.txt", "r")
+    tiff_dims = np.squeeze(tf.imread(str(Path(brain_dir) / "default.0.tif"))).T.shape
+    transform = open(str(Path(brain_dir) / "transform.txt"), "r")
     vox_size = [
         float(s[4:].rstrip("\n")) * (0.5 ** (num_resolutions - 1))
         for s in transform.readlines()
@@ -139,7 +141,8 @@ def create_skel_segids(swc_dir, origin):
         segids {list} --  list of ints for each swc's label
     """
     # if colors is None:
-    files = glob(f"{swc_dir}/*.swc")
+    p = Path(swc_dir)
+    files = [str(i) for i in p.rglob(f"*.swc")]
     skeletons = []
     segids = []
     for i in tqdm(files, desc="converting swcs to neuroglancer format..."):
