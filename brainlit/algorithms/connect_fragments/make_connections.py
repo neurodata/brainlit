@@ -14,7 +14,8 @@ import networkx as nx
 from joblib import Parallel, delayed
 import warnings
 from itertools import product
-import quadprog
+
+# import quadprog
 import pickle
 import warnings
 

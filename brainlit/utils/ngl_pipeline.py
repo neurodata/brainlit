@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import SimpleITK as sitk
 from cloudvolume import CloudVolume, view
 from cloudvolume.lib import Bbox
+from pathlib import Path
+import napari
 
 
 class NeuroglancerSession:
@@ -37,17 +39,25 @@ class NeuroglancerSession:
         The resolution of the volume at the specified mip, given as [x, y, z].
     """
 
-    def __init__(self, url="s3://mouse-light-viz/precomputed_volumes/brain1", mip=1):
+    def __init__(
+        self,
+        url="s3://mouse-light-viz/precomputed_volumes/brain1",
+        mip=1,
+        segment_url=None,
+    ):
         self.url = url
         self.cv = CloudVolume(self.url, parallel=True)
         self.mip = mip
         self.chunk_size = self.cv.info["scales"][self.mip]["chunk_sizes"][0]
         self.scales = self.cv.scales[self.mip]["resolution"]
+        self.segment_url = segment_url
 
     def _get_voxel(self, seg_id, v_id):
-        skeleton_url = self.url + "_segments"
-        cv_skel = CloudVolume(skeleton_url, mip=self.mip)
-        skel = cv_skel.skeleton.get(seg_id)
+        if self.segment_url is None:
+            skel = self.cv.skeleton.get(seg_id)
+        else:
+            cv_skel = CloudVolume(self.segment_url)
+            skel = cv_skel.skeleton.get(seg_id)
         vertex = skel.vertices[v_id]
         voxel = np.round(np.divide(vertex, self.scales)).astype(int)
         return voxel
@@ -227,3 +237,9 @@ class NeuroglancerSession:
             Tuple containing (x0, y0, z0, x1, y1, z1) bounds
         """
         self.cv[bounds] = img.astype("uint64")
+
+    def napari_viewer(self, img, labels=None, label_name="Segmentation"):
+        viewer = napari.view_image(np.squeeze(np.array(img)))
+        if labels is not None:
+            viewer.add_labels(labels, name=label_name)
+        return viewer

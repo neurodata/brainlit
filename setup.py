@@ -14,6 +14,7 @@ AUTHOR_EMAIL = "bvarjav1@jhu.edu"
 URL = "https://github.com/neurodata/brainlit"
 MINIMUM_PYTHON_VERSION = 3, 5  # Minimum of Python 3.5
 REQUIRED_PACKAGES = [
+    "napari>=0.2.11",
     "networkx>=2.1",
     "numpy>=1.8.1",
     "scikit-learn>=0.19.1",
@@ -22,7 +23,7 @@ REQUIRED_PACKAGES = [
     "seaborn>=0.9.0",
     "simpleitk>=1.2.4",
     "cloud-volume>=1.6.0",
-    "tensorflow>=1.15",
+    "tifffile>=2020.7.17",
     "statsmodels>=0.11.1",
 ]
 
