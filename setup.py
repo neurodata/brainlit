@@ -22,6 +22,7 @@ REQUIRED_PACKAGES = [
     "scipy>=1.1.0",
     "seaborn>=0.9.0",
     "simpleitk>=1.2.4",
+    # "cloud-volume @ git+https://github.com/neurodata/cloud-volume/",
     "cloud-volume>=1.6.0",
     "tifffile>=2020.7.17",
     "statsmodels>=0.11.1",

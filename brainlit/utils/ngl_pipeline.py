@@ -21,6 +21,9 @@ class NeuroglancerSession:
     mip : int, optional (default=0)
         Resolution level to pull and push at. 0 is the highest resolution.
 
+    url_segments : string, optional (Default=None)
+        URL of the s3 bucket to pull from and push to.
+
     Attributes
     ----------
     url : string
@@ -43,23 +46,30 @@ class NeuroglancerSession:
         self,
         url="s3://mouse-light-viz/precomputed_volumes/brain1",
         mip=1,
-        segment_url=None,
+        url_segments=None,
     ):
         self.url = url
-        self.cv = CloudVolume(self.url, parallel=True)
+        self.cv = CloudVolume(self.url, parallel=False)
         self.mip = mip
         self.chunk_size = self.cv.info["scales"][self.mip]["chunk_sizes"][0]
         self.scales = self.cv.scales[self.mip]["resolution"]
-        self.segment_url = segment_url
+
+        self.url_segments = url_segments
+        self.cv_segments = None
+        if self.url_segments is not None:
+            self.cv_segments = CloudVolume(self.url_segments, parallel=False)
 
     def _get_voxel(self, seg_id, v_id):
-        if self.segment_url is None:
+        if self.cv_segments is None:
             skel = self.cv.skeleton.get(seg_id)
+            vertex = skel.vertices[v_id]
+            voxel = np.round(np.divide(vertex, self.scales)).astype(int)
         else:
-            cv_skel = CloudVolume(self.segment_url)
-            skel = cv_skel.skeleton.get(seg_id)
-        vertex = skel.vertices[v_id]
-        voxel = np.round(np.divide(vertex, self.scales)).astype(int)
+            skel = self.cv_segments.skeleton.get(seg_id)
+            vertex = skel.vertices[v_id]
+            voxel = np.round(
+                np.divide(vertex, self.cv_segments.scales[self.mip]["resolution"])
+            ).astype(int)
         return voxel
 
     def pull_voxel(self, seg_id, v_id, nx=1, ny=1, nz=1):

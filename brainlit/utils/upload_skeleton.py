@@ -79,7 +79,8 @@ def create_skeleton_layer(s3_bucket, skel_res, img_dims, num_res=7):
         voxel_offset=[0, 0, 0],  # x,y,z offset in voxels from the origin
         # Pick a convenient size for your underlying chunk representation
         # Powers of two are recommended, doesn't need to cover image exactly
-        chunk_size=[128, 128, 64],  # units are voxels
+        chunk_size=[int(i / 4) for i in img_dims],
+        # chunk_size=[128, 128, 64],  # units are voxels
         volume_size=[i * 2 ** (num_res - 1) for i in img_dims],  # units are voxels
         skeletons="skeletons",
     )
@@ -94,8 +95,8 @@ def create_skeleton_layer(s3_bucket, skel_res, img_dims, num_res=7):
     }
     # get cloudvolume info
     vol = CloudVolume(s3_bucket, info=info, parallel=True)
-    [vol.add_scale((2 ** i, 2 ** i, 2 ** i)) for i in range(num_res - 1)]
-    # vol.commit_info() COMMENT OUT IF LOCAL DIRECTORY
+    [vol.add_scale((2 ** i, 2 ** i, 2 ** i)) for i in range(num_res)]  # num_res - 1
+    vol.commit_info()
 
     # upload skeleton info to /skeletons/ dir
     with storage.SimpleStorage(vol.cloudpath) as stor:

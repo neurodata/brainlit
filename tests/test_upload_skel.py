@@ -25,6 +25,7 @@ def test_get_volume_info(volume_info):
     origin, vox_size, tiff_dims = volume_info
 
     assert len(origin) == 3
+    print(vox_size)
     test_vox_size = [6173, 6173, 6173]
     assert vox_size == test_vox_size
     top_level = Path(__file__).parents[0]
@@ -35,8 +36,10 @@ def test_get_volume_info(volume_info):
 
 def test_create_skeleton_layer(volume_info, num_res=2):
     origin, vox_size, tiff_dims = volume_info
-    dir = str(Path(__file__).parents[0] / "upload")
-    vol = upload_skeleton.create_skeleton_layer("file://" + dir, vox_size, tiff_dims, 2)
+    dir = str(Path(__file__).parents[0] / "upload_segments")
+    vol = upload_skeleton.create_skeleton_layer(
+        "file://" + dir, vox_size, tiff_dims, num_res=num_res
+    )
     assert vol.mip == 0
     assert vol.info["scales"][0]["size"] == [i * 2 for i in tiff_dims]
 
@@ -50,8 +53,10 @@ def test_create_skel_segids(volume_info, num_res=2):
 
 def test_upload_skeletons(volume_info, num_res=2):
     origin, vox_size, tiff_dims = volume_info
-    dir = str(Path(__file__).parents[0] / "upload")
-    vol = upload_skeleton.create_skeleton_layer("file://" + dir, vox_size, tiff_dims)
+    dir = str(Path(__file__).parents[0] / "upload_segments")
+    vol = upload_skeleton.create_skeleton_layer(
+        "file://" + dir, vox_size, tiff_dims, num_res=num_res
+    )
     top_level_swc = str(Path(__file__).parents[0] / "data_swcs")
     skeletons, segids = upload_skeleton.create_skel_segids(top_level_swc, origin)
     for skel in skeletons:
