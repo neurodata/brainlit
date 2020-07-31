@@ -12,6 +12,7 @@ def read_swc(path):
 
     Arguments:
         path {string} -- path to file
+        raw {bool} -- whether you are passing the file directly
 
     Returns:
         df {pandas dataframe} -- indices, coordinates, and parents of each node
@@ -246,54 +247,6 @@ def generate_df_subset(swc_df, vox_in_img_list):
     )
 
     return df_new
-
-
-# def read_swc(swc_path):
-#     """Read a swc file into a pandas dataframe.
-#
-#     Parameters
-#     ----------
-#     swc_path : str
-#         String representing the path to the swc file
-#     Returns
-#     -------
-#     df : :class:`pandas.DataFrame`
-#         Indicies, coordinates, and parents of each node in the swc.
-#         Coordinates are in spatial units.
-#     """
-#
-#     # check input
-#     file = open(swc_path, "r")
-#     in_header = True
-#     offset_found = False
-#     header_length = -1
-#     offset = np.array([0, 0, 0])
-#     while in_header:
-#         line = file.readline().split()
-#         if "OFFSET" in line:
-#             offset_found = True
-#             idx = line.index("OFFSET") + 1
-#             offset = [float(line[i]) for i in np.arange(idx, idx + 3)]
-#         elif line[0] != "#":
-#             in_header = False
-#         header_length += 1
-#
-#     if not offset_found:
-#         raise IOError("No offset information found in: " + swc_path)
-#     # read coordinates
-#     df = pd.read_table(
-#         swc_path,
-#         names=["sample", "structure", "x", "y", "z", "r", "parent"],
-#         skiprows=header_length,
-#         delim_whitespace=True,
-#     )
-#
-#     # adjust coordinates by offset
-#     df["x"] = df["x"] + offset[0]
-#     df["y"] = df["y"] + offset[1]
-#     df["z"] = df["z"] + offset[2]
-#
-#     return df
 
 
 def space_to_voxel(spatial_coord, spacing, origin=np.array([0, 0, 0])):

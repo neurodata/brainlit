@@ -6,6 +6,7 @@ import SimpleITK as sitk
 from cloudvolume import CloudVolume, view
 from cloudvolume.lib import Bbox
 from pathlib import Path
+from .swc import read_s3, df_to_graph, get_sub_neuron
 import napari
 
 
@@ -71,6 +72,27 @@ class NeuroglancerSession:
                 np.divide(vertex, self.cv_segments.scales[self.mip]["resolution"])
             ).astype(int)
         return voxel
+
+    def get_segments(self, seg_id, bbox):
+        """
+        Get a graph of points within a bounding box.
+
+        Parameters
+        ----------
+        seg_id : int
+            The segement number to pull
+        bbox : :object: Bounding box
+            The bounding box object
+
+        Returns
+        -------
+        G : :class:`networkx.Graph`
+        """
+        df = read_s3(self.url_segments, seg_id, self.mip)
+        G = df_to_graph(df)
+        box = bbox.to_list()
+        G_sub = get_sub_neuron(G, [box[:3], box[3:]])
+        return G_sub
 
     def pull_voxel(self, seg_id, v_id, nx=1, ny=1, nz=1):
         """

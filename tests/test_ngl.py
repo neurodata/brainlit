@@ -40,7 +40,7 @@ def test_pull_label():
         labels = sitk.GetArrayFromImage(seg_clean)
         return labels
 
-    url = "s3://mouse-light-viz/precomputed_volumes/brain1"
+    url = "s3://mouse-light-viz/precomputed_volumes/brain1_lowres"
     ngl = NeuroglancerSession(url, mip=1, url_segments=url + "_segments")
     # ngl_seg = NeuroglancerSession(url, mip=1, url_segments=url + "_segments")
     img, bounds, voxel = ngl.pull_chunk(2, 300)
