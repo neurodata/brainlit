@@ -1,6 +1,7 @@
 # Brainlit
 [![Python](https://img.shields.io/badge/python-3.7-blue.svg)]()
 [![Build Status](https://travis-ci.com/neurodata/brainlit.svg?branch=master)](https://travis-ci.com/neurodata/brainlit)
+[![PyPI version](https://badge.fury.io/py/brainlit.svg)](https://badge.fury.io/py/brainlit)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![codecov](https://codecov.io/gh/neurodata/brainlit/branch/master/graph/badge.svg)](https://codecov.io/gh/neurodata/brainlit)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)  
@@ -10,6 +11,9 @@ This repository is a container of methods that Neurodata usees to expose their o
 
 - [Motivation](#motivation)
 - [Installation](#installation)
+  * [Environment](#environment)
+  * [Install from pypi](#install-from-pypi)
+  * [Install from source](#install-from-source)
 - [How to Use Brainlit](#how-to-use-brainlit)
   * [Data Setup](#data-setup)
   * [Create a Session](#create-a-session)
@@ -31,20 +35,25 @@ The repository originated as the project of a team in Joshua Vogelstein's class 
 The repository can now be considered a "holding bay" for code developed by Neurodata for collaborators and researchers to use.
 
 ## Installation
-Can be done in a variety of ways. Below I describe how to install brainlit via conda.
 ### Environment
  - [get conda](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html)
  - create a virtual environment with `python>=3.7` via `conda create --name brainlit python=3.7`
-### Install
  - activate the environment via `conda activate brainlit`
+ 
+### Install from pypi
+ - install brainlit via `pip install brainlit`
+ 
+### Install from source
  - clone the repo via `git clone https://github.com/neurodata/brainlit.git`
  - cd into the repo via `cd brainlit`
- - intstall brainlit via `pip install -e .`
+ - install brainlit via `pip install -e .`
 
 ## How to use Brainlit
+
 ### Data setup
 First, decide for your team how you'd like to store the data - whether it will be on a local machine or on the cloud. If on the cloud,
 each collaborator will need to create a file at `~/.cloudvolume/secrets/x-secret.json`, where `x` is one of `[aws, gc, azure]` which contains your id and secret key for your cloud platform. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/archive/uploading_brains.ipynb).
+
 ### Create a session
 Each user will start their scripts with approximately the same lines:
 ```
