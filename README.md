@@ -31,13 +31,15 @@ The repository originated as the project of a team in Joshua Vogelstein's class 
 The repository can now be considered a "holding bay" for code developed by Neurodata for collaborators and researchers to use.
 
 ## Installation
-(pypi release badge)
-Simply create and activate a python3.7 or greater virtual environment via conda or virtualenv, and either `pip install brainlit` (outdated currenty), or
-```
-git clone https://github.com/neurodata/brainlit.git
-cd brainlit
-pip install -e .
-```
+Can be done in a variety of ways. Below I describe how to install brainlit via conda.
+### Environment
+ - [get conda](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html)
+ - create a virtual environment with `python>=3.7` via `conda create --name brainlit python=3.7`
+### Install
+ - activate the environment via `conda activate brainlit`
+ - clone the repo via `git clone https://github.com/neurodata/brainlit.git`
+ - cd into the repo via `cd brainlit`
+ - intstall brainlit via `pip install -e .`
 
 ## How to use Brainlit
 ### Data setup
