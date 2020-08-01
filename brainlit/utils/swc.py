@@ -333,6 +333,9 @@ def df_to_graph(df_voxel):
         G.nodes[id]["x"] = int(row["x"])
         G.nodes[id]["y"] = int(row["y"])
         G.nodes[id]["z"] = int(row["z"])
+        G.nodes[id]["r"] = int(row["r"])
+        G.nodes[id]["parent"] = int(row["parent"])
+        G.nodes[id]["structure"] = int(row["structure"])
 
     # add edges
     for index, row in df_voxel.iterrows():

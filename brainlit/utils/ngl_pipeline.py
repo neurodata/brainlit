@@ -73,15 +73,16 @@ class NeuroglancerSession:
             ).astype(int)
         return voxel
 
-    def get_segments(self, seg_id, bbox):
+    def get_segments(self, seg_id, bbox=None):
         """
         Get a graph of points within a bounding box.
+        If no bounding box given, returns the entire swc as a graph.
 
         Parameters
         ----------
         seg_id : int
             The segement number to pull
-        bbox : :object: Bounding box
+        bbox : :object: Bounding box, optional (default=None)
             The bounding box object
 
         Returns
@@ -90,9 +91,10 @@ class NeuroglancerSession:
         """
         df = read_s3(self.url_segments, seg_id, self.mip)
         G = df_to_graph(df)
-        box = bbox.to_list()
-        G_sub = get_sub_neuron(G, [box[:3], box[3:]])
-        return G_sub
+        if bbox is not None:
+            box = bbox.to_list()
+            G = get_sub_neuron(G, [box[:3], box[3:]])
+        return G
 
     def pull_voxel(self, seg_id, v_id, nx=1, ny=1, nz=1):
         """
