@@ -1,14 +1,15 @@
 import math
-from cloudvolume import CloudVolume, Skeleton, storage
+from cloudvolume import CloudVolume, storage
 import numpy as np
 import joblib
 from joblib import Parallel, delayed
 from glob import glob
 import argparse
 from psutil import virtual_memory
-from tqdm import tqdm
+from tqdm.auto import tqdm
 import tifffile as tf
 from pathlib import Path
+from .swc import swc2skeleton
 import contextlib
 
 from concurrent.futures.process import ProcessPoolExecutor
@@ -167,40 +168,6 @@ def get_volume_info(image_dir, num_resolutions, channel=0, extension="tif"):
     return files_ordered, paths_bin, vox_size, img_size, origin
 
 
-def get_create_volume(
-    input_path,
-    precomputed_path,
-    num_resolutions,
-    channel=0,
-    extension="tif",
-    chunk_size=None,
-    parallel=False,
-    layer_type="image",
-    dtype=None,
-):
-    """Combines get_volume_info and create_cloud_volume into a single method
-
-    Yay!
-    """
-
-    (files_ordered, paths_bin, vox_size, img_size, origin) = get_volume_info(
-        input_path, num_resolutions, channel=channel, extension=extension
-    )
-
-    vols = create_cloud_volume(
-        precomputed_path,
-        img_size,
-        np.multiply(vox_size, 1),  # 1000
-        num_resolutions=num_resolutions,
-        chunk_size=chunk_size,
-        parallel=parallel,
-        layer_type=layer_type,
-        dtype=dtype,
-    )
-
-    return files_ordered, paths_bin, origin, vols
-
-
 def get_data_ranges(bin_path, chunk_size):
     """Get ranges (x,y,z) for chunks to be stitched together in volume
 
@@ -238,14 +205,22 @@ def process(file_path, bin_path, vol):
 
 
 def upload_volumes(input_path, precomputed_path, num_mips, parallel=False, chosen=-1):
-    (files_ordered, paths_bin, _, vols) = get_create_volume(
-        input_path, precomputed_path, num_mips, parallel=parallel, layer_type="image"
+    (files_ordered, paths_bin, vox_size, img_size, _) = get_volume_info(
+        input_path, num_mips,
     )
-    img = tf.imread(files_ordered[0][-1])
-    # num procs to use based on available memory
+
+    vols = create_cloud_volume(
+        precomputed_path,
+        img_size,
+        vox_size,
+        num_mips,
+        parallel=parallel,
+        layer_type="image",
+    )
+
     num_procs = min(
         math.floor(
-            virtual_memory().total / (img.shape[0] * img.shape[1] * img.shape[2] * 8)
+            virtual_memory().total / (img_size[0] * img_size[1] * img_size[2] * 8)
         ),
         joblib.cpu_count(),
     )
@@ -283,52 +258,6 @@ def upload_volumes(input_path, precomputed_path, num_mips, parallel=False, chose
             print("timed out on a slice. moving on to the next step of pipeline")
 
 
-def swc2skeleton(swc_file, origin=None):
-    """Converts swc file into Skeleton object
-
-    Arguments:
-        swc_file {str} -- path to SWC file
-    Keyword Arguments:
-        origin {numpy array with shape (3,1)} -- origin of coordinate frame in microns, (default: None assumes (0,0,0) origin)
-    Returns:
-        skel {cloudvolume.Skeleton} -- Skeleton object of given SWC file
-    """
-    with open(swc_file, "r") as f:
-        contents = f.read()
-    # get every line that starts with a hashtag
-    comments = [i.split(" ") for i in contents.split("\n") if i.startswith("#")]
-    offset = np.array([float(j) for i in comments for j in i[2:] if "OFFSET" in i])
-    color = [float(j) for i in comments for j in i[2].split(",") if "COLOR" in i]
-    # set alpha to 0.0 so skeleton  is opaque
-    color.append(0.0)
-    color = np.array(color, dtype="float32")
-    skel = Skeleton.from_swc(contents)
-    # physical units
-    # space can be 'physical' or 'voxel'
-    skel.space = "physical"
-    # hard coding parsing the id from the filename
-    idx = swc_file.find("G")
-
-    skel.id = int(swc_file[idx + 2 : idx + 5])
-
-    # hard coding changing  data type of vertex_types
-    skel.extra_attributes[-1]["data_type"] = "float32"
-    skel.extra_attributes.append(
-        {"id": "vertex_color", "data_type": "float32", "num_components": 4}
-    )
-    # add offset to vertices
-    # and shift by origin
-    skel.vertices += offset
-    if origin is not None:
-        skel.vertices -= origin
-    # convert from microns to nanometers
-    skel.vertices *= 1000
-    skel.vertex_color = np.zeros((skel.vertices.shape[0], 4), dtype="float32")
-    skel.vertex_color[:, :] = color
-
-    return skel
-
-
 def create_skel_segids(swc_dir, origin):
     """ Create skeletons to be uploaded as precomputed format
 
@@ -351,14 +280,12 @@ def create_skel_segids(swc_dir, origin):
 
 
 def upload_segments(input_path, precomputed_path, num_mips):
-    (files_ordered, paths_bin, origin, vols) = get_create_volume(
-        input_path, precomputed_path, num_mips, layer_type="segmentation"
+    (_, _, vox_size, img_size, origin) = get_volume_info(input_path, num_mips,)
+    vols = create_cloud_volume(
+        precomputed_path, img_size, vox_size, num_mips, layer_type="segmentation",
     )
-    # get swc input directory
     swc_dir = glob(f"{input_path}/*consensus-swcs")[0]
-    # create segments
     segments, segids = create_skel_segids(swc_dir, origin)
-    # upload segments
     for skel in tqdm(segments, desc="uploading segments to S3.."):
         vols[0].skeleton.upload(skel)
 

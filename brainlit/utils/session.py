@@ -62,12 +62,10 @@ class NeuroglancerSession:
 
     def _get_voxel(self, seg_id, v_id):
         if self.cv_segments is None:
-            print("hi!")
             skel = self.cv.skeleton.get(seg_id)
             vertex = skel.vertices[v_id]
             voxel = np.round(np.divide(vertex, self.scales)).astype(int)
         else:
-            print("you want this")
             skel = self.cv_segments.skeleton.get(seg_id)
             vertex = skel.vertices[v_id]
             voxel = np.round(
