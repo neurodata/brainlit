@@ -10,6 +10,7 @@ from tqdm.auto import tqdm
 import tifffile as tf
 from pathlib import Path
 from .swc import swc2skeleton
+import time
 import contextlib
 
 from concurrent.futures.process import ProcessPoolExecutor
@@ -242,6 +243,7 @@ def upload_volumes(input_path, precomputed_path, num_mips, parallel=False, chose
                 print(e)
                 print("timed out on a slice. moving on to the next step of pipeline")
             print(f"Finished mip {mip}")
+            print(time.time())
     else:
         try:
             with tqdm_joblib(
@@ -328,7 +330,8 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-
+    start = time.time()
+    print(time.time())
     if args.layer_type == "image":
         upload_volumes(
             args.input_path,
@@ -340,3 +343,16 @@ if __name__ == "__main__":
         upload_segments(
             args.input_path, args.precomputed_path, args.num_resolutions,
         )
+    else:
+        upload_segments(
+            args.input_path, args.precomputed_path + "_segments", args.num_resolutions,
+        )
+        upload_volumes(
+            args.input_path,
+            args.precomputed_path,
+            args.num_resolutions,
+            chosen=args.chosen_res,
+        )
+
+    print(time.time())
+    print(f"total time taken: {int(time.time()-start)} seconds")
