@@ -9,7 +9,7 @@ from joblib import Parallel, delayed, cpu_count
 from cloudvolume.lib import mkdir, touch
 import warnings
 import os
-from brainlit.utils.upload_to_neuroglancer import (
+from brainlit.utils.session import (
     chunks,
     create_image_layer,
     get_data_ranges,

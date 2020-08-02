@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from sklearn.base import BaseEstimator
-from brainlit.utils.ngl_pipeline import NeuroglancerSession
+from brainlit.utils.session import NeuroglancerSession
 import numpy as np
 import pandas as pd
 import time
