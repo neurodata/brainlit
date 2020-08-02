@@ -49,15 +49,20 @@ The repository can now be considered a "holding bay" for code developed by Neuro
  - install brainlit via `pip install -e .`
 
 ## How to use Brainlit
-First, run the following commands to pull and push from s3:
-```
-cd brainlit
-chmod +x .aws.sh
-source .aws.sh
-```
 ### Data setup
-First, decide for your team how you'd like to store the data - whether it will be on a local machine or on the cloud. If on the cloud,
-each collaborator will need to create a file at `~/.cloudvolume/secrets/x-secret.json`, where `x` is one of `[aws, gc, azure]` which contains your id and secret key for your cloud platform. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/archive/uploading_brains.ipynb).
+The `source` data directory should look something like an octree data structure with optional swc folder
+
+data/  
+ - default.0.tif
+ - 1/  
+  * default.0.tif 
+  * 1/ ... 8/
+ - 2/ ... 8/
+ - transform.txt
+ - consensus-swcs (optional, for .swc files)
+    
+First, decide for your team where you'd like to store the data - whether it will be on a local machine or on the cloud. If on the cloud,
+each collaborator will need to create a file at `~/.cloudvolume/secrets/x-secret.json`, where `x` is one of `[aws, gc, azure]` which contains your id and secret key for your cloud platform.
 
 ### Create a session
 Each user will start their scripts with approximately the same lines:
