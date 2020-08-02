@@ -1,5 +1,5 @@
 import pytest
-from brainlit.utils.ngl_pipeline import NeuroglancerSession
+from brainlit.utils.session import NeuroglancerSession
 import SimpleITK as sitk
 import scipy.ndimage
 import numpy as np

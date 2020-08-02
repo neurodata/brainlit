@@ -1,5 +1,8 @@
+**/.DS_Store
 tests/upload/
 tests/upload/*
+tests/test_upload/
+tests/test_upload_segments/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

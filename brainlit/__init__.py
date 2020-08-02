@@ -1,6 +1,6 @@
 import warnings
 
-import brainlit.algorithms
+# import brainlit.algorithms
 import brainlit.preprocessing
 import brainlit.registration
 import brainlit.utils
