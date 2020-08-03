@@ -100,7 +100,7 @@ def test_draw_tube_spheres():
         np.random.randint(shape[2]),
     ]
     radius = np.random.randint(1, 4)
-    labels = tube_seg.tubes_seg(img, vertex0, vertex1, radius, spheres=True)
+    labels = tube_seg.draw_tube_from_spheres(img, vertex0, vertex1, radius)
     line = draw.line_nd(vertex0, vertex1, endpoint=True)
     coords = np.where(labels < 1)
     d_bg = max(shape)
@@ -152,7 +152,7 @@ def test_draw_tube_edt():
         np.random.randint(shape[2]),
     ]
     radius = np.random.randint(1, 4)
-    labels = tube_seg.tubes_seg(img, vertex0, vertex1, radius, spheres=False)
+    labels = tube_seg.draw_tube_from_edt(img, vertex0, vertex1, radius)
     line = draw.line_nd(vertex0, vertex1, endpoint=True)
     coords = np.where(labels < 1)
     d_bg = max(shape)
