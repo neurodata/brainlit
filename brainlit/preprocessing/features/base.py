@@ -1,10 +1,12 @@
 from abc import abstractmethod
 from sklearn.base import BaseEstimator
-from brainlit.utils.ngl_pipeline import NeuroglancerSession
+from brainlit.utils.session import NeuroglancerSession
 import numpy as np
 import pandas as pd
 import time
+from cloudvolume import CloudVolume
 import feather
+from joblib import Parallel, delayed
 
 
 class BaseFeatures(BaseEstimator):
@@ -12,7 +14,7 @@ class BaseFeatures(BaseEstimator):
     Base class for generating features from precomputed volumes.    
     """
 
-    def __init__(self, url, size=[1, 1, 1], offset=[15, 15, 15]):
+    def __init__(self, url, size=[1, 1, 1], offset=[15, 15, 15], segment_url=None):
         if type(url) is not str:
             raise TypeError("URL must be str")
         self.url = url
@@ -21,6 +23,7 @@ class BaseFeatures(BaseEstimator):
         self.download_time = 0
         self.conversion_time = 0
         self.write_time = 0
+        self.segment_url = segment_url
 
     @abstractmethod
     def _convert_to_features(self, img):
@@ -47,6 +50,7 @@ class BaseFeatures(BaseEstimator):
         start_seg=None,
         start_vert=0,
         include_neighborhood=False,
+        n_jobs=1,
     ):
         """
         Pulls image and background.
@@ -77,6 +81,9 @@ class BaseFeatures(BaseEstimator):
         include_neighborhood : boolean
             If extracting linear features, specifies if the general
             neighborhood should be extracted as well.
+        
+        n_jobs : int
+            Number of cores to use. -1 to use all available cores.
 
         Returns
         -------
@@ -86,16 +93,70 @@ class BaseFeatures(BaseEstimator):
         voxel_dict = {}
         counter = 0
         batch_id = 0
-        ngl = NeuroglancerSession(self.url)
-        ngl_skel = NeuroglancerSession(self.url + "_segments")
-
-
+        ngl = NeuroglancerSession(self.url, segment_url=self.segment_url)
+        # if self.segment_url is None:
+        #     ngl_skel = NeuroglancerSession(self.url)
+        # else:
+        #     ngl_skel = NeuroglancerSession(self.url, self.segment_url)
 
         if start_seg is not None:
             seg_ids = seg_ids[seg_ids.index(start_seg) :]
 
+        if file_path is None:
+            return self._serial_processing(
+                seg_ids, ngl, num_verts, start_vert, include_neighborhood
+            )
+        else:
+            if n_jobs == 1:
+                self._serial_processing(
+                    seg_ids,
+                    ngl,
+                    num_verts,
+                    start_vert,
+                    include_neighborhood,
+                    True,
+                    batch_size,
+                    file_path,
+                )
+            else:
+                start_vertices = [0] * len(seg_ids)
+                start_vertices[0] = start_vert
+                par = Parallel(n_jobs=n_jobs)
+                par(
+                    delayed(self._parallel_processing)(
+                        seg_id,
+                        ngl,
+                        ngl_skel,
+                        num_verts,
+                        start_vertices[i],
+                        include_neighborhood,
+                        batch_size,
+                        file_path,
+                    )
+                    for i, seg_id in enumerate(seg_ids)
+                )
+
+    def _serial_processing(
+        self,
+        seg_ids,
+        ngl,
+        num_verts,
+        start_vert,
+        include_neighborhood,
+        write=False,
+        batch_size=None,
+        file_path=None,
+    ):
+        voxel_dict = {}
+        counter = 0
+        batch_id = 0
+
         for seg_id in seg_ids:
-            segment = ngl_skel.cv.skeleton.get(seg_id)
+            if self.segment_url is None:
+                segment = ngl.cv.skeleton.get(seg_id)
+            else:
+                cv_skel = CloudVolume(self.segment_url)
+                segment = cv_skel.skeleton.get(seg_id)
             if num_verts is not None:
                 verts = segment.vertices[start_vert:num_verts]
             else:
@@ -111,7 +172,7 @@ class BaseFeatures(BaseEstimator):
                 img_off = ngl.pull_bounds_img(bounds + self.offset)
 
                 end = time.time()
-                self.download_time += (end-start)
+                self.download_time += end - start
 
                 start = time.time()
 
@@ -119,10 +180,10 @@ class BaseFeatures(BaseEstimator):
                 features_off = self._convert_to_features(img_off, include_neighborhood)
 
                 end = time.time()
-                self.conversion_time += (end-start)
+                self.conversion_time += end - start
 
                 voxel_dict[counter] = {
-                    **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 0},
+                    **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 1},
                     **features,
                 }
                 counter += 1
@@ -131,8 +192,8 @@ class BaseFeatures(BaseEstimator):
                     **features_off,
                 }
                 counter += 1
-                if file_path is not None:
-                    if counter % batch_size == 0 or counter + 1 % batch_size == 0:
+                if write:
+                    if counter % batch_size == 0 or (counter + 1) % batch_size == 0:
                         df = pd.DataFrame.from_dict(voxel_dict, "index")
                         path = (
                             file_path
@@ -151,24 +212,77 @@ class BaseFeatures(BaseEstimator):
                         feather.write_dataframe(df, path)
 
                         end = time.time()
-                        self.write_time += (end-start)
+                        self.write_time += end - start
 
                         voxel_dict = {}
                         batch_id += 1
 
-
-
         if file_path is None:
-            df = pd.DataFrame.from_dict(voxel_dict, "index")
+            if write:
+                if not (counter % batch_size == 0 or (counter + 1) % batch_size == 0):
+                    df = pd.DataFrame.from_dict(voxel_dict, "index")
+                    path = (
+                        file_path
+                        + str(batch_id * batch_size)
+                        + "_"
+                        + str(counter)
+                        + "_"
+                        + str(seg_id)
+                        + "_"
+                        + str(v_id)
+                        + ".feather"
+                    )
+                    feather.write_dataframe(df, path)
+            else:
+                df = pd.DataFrame.from_dict(voxel_dict, "index")
             return df
+
+    def _parallel_processing(
+        self,
+        seg_id,
+        ngl,
+        num_verts,
+        start_vert,
+        include_neighborhood,
+        batch_size=None,
+        file_path=None,
+    ):
+        voxel_dict = {}
+        counter = 0
+        batch_id = 0
+        if self.segment_url is None:
+            segment = ngl.cv.skeleton.get(seg_id)
         else:
-            if not (counter % batch_size == 0 or counter + 1 % batch_size == 0):
+            cv_skel = CloudVolume(self.segment_url)
+            segment = cv_skel.skeleton.get(seg_id)
+        if num_verts is not None:
+            verts = segment.vertices[start_vert:num_verts]
+        else:
+            verts = segment.vertices[start_vert:]
+        for v_id, vertex in enumerate(verts):
+            img, bounds, voxel = ngl.pull_voxel(
+                seg_id, v_id, self.size[0], self.size[1], self.size[2]
+            )
+            img_off = ngl.pull_bounds_img(bounds + self.offset)
+            features = self._convert_to_features(img, include_neighborhood)
+            features_off = self._convert_to_features(img_off, include_neighborhood)
+            voxel_dict[counter] = {
+                **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 1},
+                **features,
+            }
+            counter += 1
+            voxel_dict[counter] = {
+                **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 0},
+                **features_off,
+            }
+            counter += 1
+            if counter % batch_size == 0 or (counter + 1) % batch_size == 0:
                 df = pd.DataFrame.from_dict(voxel_dict, "index")
                 path = (
                     file_path
                     + str(batch_id * batch_size)
                     + "_"
-                    + str(counter)
+                    + str((batch_id + 1) * batch_size)
                     + "_"
                     + str(seg_id)
                     + "_"
@@ -181,7 +295,5 @@ class BaseFeatures(BaseEstimator):
                 feather.write_dataframe(df, path)
 
                 end = time.time()
-                self.write_time += (end-start)
-    
-    def time(self):
+                self.write_time += end - start
         return self.download_time, self.conversion_time, self.write_time
