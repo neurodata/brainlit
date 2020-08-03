@@ -223,4 +223,3 @@ def test_tubes_seg():
     assert np.unique(labels).all() in [0, 1]
     assert d_bg > radius ** 2
     assert d_tube <= radius ** 2
-
