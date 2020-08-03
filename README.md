@@ -4,6 +4,8 @@
 [![PyPI version](https://badge.fury.io/py/brainlit.svg)](https://badge.fury.io/py/brainlit)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![codecov](https://codecov.io/gh/neurodata/brainlit/branch/master/graph/badge.svg)](https://codecov.io/gh/neurodata/brainlit)
+![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/bvarjavand/brainlit)
+![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/bvarjavand/brainlit)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)  
 This repository is a container of methods that Neurodata usees to expose their open-source code while it is in the process of being merged with larger scientific libraries such as scipy, scikit-image, or scikit-learn. Additioanlly, methods for computational neuroscience on brains too specific for a general scientific library can be found here, such as image registration software tuned specifically for large brain volumes.
 
@@ -49,10 +51,20 @@ The repository can now be considered a "holding bay" for code developed by Neuro
  - install brainlit via `pip install -e .`
 
 ## How to use Brainlit
-
 ### Data setup
-First, decide for your team how you'd like to store the data - whether it will be on a local machine or on the cloud. If on the cloud,
-each collaborator will need to create a file at `~/.cloudvolume/secrets/x-secret.json`, where `x` is one of `[aws, gc, azure]` which contains your id and secret key for your cloud platform. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/archive/uploading_brains.ipynb).
+The `source` data directory should look something like an octree data structure with optional swc folder
+
+data/  
+ - default.0.tif
+ - 1/  
+  * default.0.tif 
+  * 1/ ... 8/
+ - 2/ ... 8/
+ - transform.txt
+ - consensus-swcs (optional, for .swc files)
+    
+First, decide for your team where you'd like to store the data - whether it will be on a local machine or on the cloud. If on the cloud,
+each collaborator will need to create a file at `~/.cloudvolume/secrets/x-secret.json`, where `x` is one of `[aws, gc, azure]` which contains your id and secret key for your cloud platform.
 
 ### Create a session
 Each user will start their scripts with approximately the same lines:

@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 import pandas as pd
 import networkx as nx
-from cloudvolume import CloudVolume
+from cloudvolume import CloudVolume, Skeleton
 from io import StringIO
 
 
@@ -472,3 +472,49 @@ def get_bfs_subgraph(G, node_id, depth, df=None):
     tree = nx.bfs_tree(G_undir, node_id, depth_limit=depth)  # forward BFS
     G_sub = nx.subgraph(G, list(tree.nodes))
     return G_sub, tree
+
+
+def swc2skeleton(swc_file, origin=None):
+    """Converts swc file into Skeleton object
+
+    Arguments:
+        swc_file {str} -- path to SWC file
+    Keyword Arguments:
+        origin {numpy array with shape (3,1)} -- origin of coordinate frame in microns, (default: None assumes (0,0,0) origin)
+    Returns:
+        skel {cloudvolume.Skeleton} -- Skeleton object of given SWC file
+    """
+    with open(swc_file, "r") as f:
+        contents = f.read()
+    # get every line that starts with a hashtag
+    comments = [i.split(" ") for i in contents.split("\n") if i.startswith("#")]
+    offset = np.array([float(j) for i in comments for j in i[2:] if "OFFSET" in i])
+    color = [float(j) for i in comments for j in i[2].split(",") if "COLOR" in i]
+    # set alpha to 0.0 so skeleton  is opaque
+    color.append(0.0)
+    color = np.array(color, dtype="float32")
+    skel = Skeleton.from_swc(contents)
+    # physical units
+    # space can be 'physical' or 'voxel'
+    skel.space = "physical"
+    # hard coding parsing the id from the filename
+    idx = swc_file.find("G")
+
+    skel.id = int(swc_file[idx + 2 : idx + 5])
+
+    # hard coding changing  data type of vertex_types
+    skel.extra_attributes[-1]["data_type"] = "float32"
+    skel.extra_attributes.append(
+        {"id": "vertex_color", "data_type": "float32", "num_components": 4}
+    )
+    # add offset to vertices
+    # and shift by origin
+    skel.vertices += offset
+    if origin is not None:
+        skel.vertices -= origin
+    # convert from microns to nanometers
+    skel.vertices *= 1000
+    skel.vertex_color = np.zeros((skel.vertices.shape[0], 4), dtype="float32")
+    skel.vertex_color[:, :] = color
+
+    return skel
