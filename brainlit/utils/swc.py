@@ -518,3 +518,49 @@ def swc2skeleton(swc_file, origin=None):
     skel.vertex_color[:, :] = color
 
     return skel
+def graph_to_swc(G, resolution, fpath="demo.swc"):
+    """
+    Generates a *.swc file from a networkx graph.
+    Parameters
+    ----------
+    G : :object: networkx graph object
+    resolution : list
+        Of the format [x_res, y_res, z_res]
+    bbox : :object: Bounding box, optional (default=None)
+    fpath : str, optional (default="demo.swc")
+    """
+    res = ngl_sess.cv_segments.scales[0]["resolution"]
+    
+    f = open("demo.swc", "w")
+    f.write("# ORIGINAL_SOURCE Janelia Workstation Large Volume Viewer")
+    f.write("\n# OFFSET 74327.335761 16941.164970 35578.765018")
+    f.write("\n# COLOR 0.000000,0.000000,1.000000")
+    for node in G.nodes:
+        values = [node,
+            G.nodes[node]["structure"],
+            *[G.nodes[node][i] for i in ["x","y","z"]],
+            #*np.multiply([G.nodes[node][i] for i in ["x","y","z"]],res),
+            G.nodes[node]["r"],
+            G.nodes[node]["parent"]]
+
+        values = [str(i) for i in values]
+        f.write("\n" + " ".join(values))
+    f.close()
+    
+def ngl_sess_to_swc(ngl_sess, seg_id=2, bbox=None, fpath="demo.swc"):
+    """
+    Generates a *.swc file from a neuroglancer session object.
+    Parameters
+    ----------
+    ngl_sess : :object: NeuroglancerSession object
+    seg_id : int, optional (default=2)
+    bbox : :object: Bounding box, optional (default=None)
+    fpath : str, optional (default="demo.swc")
+    """
+    G = ngl_sess.get_segments(seg_id, bbox)
+    resolution = ngl_sess.cv_segments.scales[0]["resolution"]
+    graph_to_swc(G, resolution, fpath)
+    
+    
+    
+    
