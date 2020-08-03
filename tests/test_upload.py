@@ -1,45 +1,72 @@
-import numpy as np
+import pytest
+from brainlit.utils import upload
 import tifffile as tf
-from brainlit.utils import upload_to_neuroglancer
-import os
-
-dir = os.path.dirname(os.path.abspath(__file__))
-top_level = os.path.join(dir, "data/")
-low_res = tf.imread(top_level + "default.0.tif")
-
-num_res = 2
-test_vox_size = [10.5, 9.78, 8.99]
-volume_size = [528, 400, 208]
-
-# Test volume before uploading chunks
-def test_create_image_layer():
-    vols = upload_to_neuroglancer.create_image_layer("file://", test_vox_size, num_res)
-
-    assert len(vols) == num_res
-    assert vols[0].mip == 1
-    assert vols[1].mip == 0
-    assert vols[0].info["scales"][0]["size"] == [2 * i for i in volume_size]
-    assert vols[1].info["scales"][1]["size"] == volume_size
-    # assert vols[r].info['scales'][r]['resolution'] == [res*2**r for res in test_vox_size]
+from pathlib import Path
+import numpy as np
+from glob import glob
 
 
-def test_get_file_paths():
-    ordered_files, bin_paths = upload_to_neuroglancer.get_file_paths(
-        top_level, num_res, 0
+@pytest.fixture
+def volume_info(num_res=1, channel=0):
+    top_level = Path(__file__).parents[1] / "data"
+    (ordered_files, bin_paths, vox_size, tiff_dims, origin,) = upload.get_volume_info(
+        str(top_level / "data_octree"), num_res, channel
     )
-    assert len(ordered_files) == num_res
-    assert len(bin_paths) == num_res
-    assert len(ordered_files[0]) == 1 and len(ordered_files[1]) == 8
+    return (
+        ordered_files,
+        bin_paths,
+        vox_size,
+        tiff_dims,
+        origin,
+        top_level,
+    )
 
 
-# Test stitching ability,
-def test_get_data_ranges():
-    bin_paths = upload_to_neuroglancer.get_file_paths(top_level, num_res, 0)[1]
+def test_get_volume_info(volume_info):
+    ordered_files, bin_paths, vox_size, tiff_dims, origin, top_level = volume_info
+    assert len(ordered_files[0]) == 1  # and len(ordered_files[1]) == 8
+    low_res = tf.imread(str(top_level / "data_octree" / "default.0.tif"))
+    image_size = low_res.shape[::-1]
+    assert tiff_dims == image_size
+
+
+def test_create_image_layer(volume_info):
+    _, b, vox_size, tiff_dims, _, top_level = volume_info
+    vols = upload.create_cloud_volume(
+        "file://" + str(top_level / "test_upload"),
+        tiff_dims,
+        vox_size,
+        num_resolutions=len(b),
+        layer_type="image",
+    )
+
+    assert len(vols) == len(b)
+    for i, vol in enumerate(vols):
+        assert vol.info["scales"][0]["size"] == [(2 ** i) * j for j in tiff_dims]
+
+
+def test_create_segmentation_layer(volume_info):
+    _, b, vox_size, tiff_dims, _, top_level = volume_info
+    vols = upload.create_cloud_volume(
+        "file://" + str(top_level / "test_upload_segments"),
+        tiff_dims,
+        vox_size,
+        num_resolutions=len(b),
+        layer_type="segmentation",
+    )
+
+    assert len(vols) == 1
+    for i, vol in enumerate(vols):
+        assert vol.info["scales"][0]["size"] == [(2 ** i) * j for j in tiff_dims]
+
+
+def test_get_data_ranges(volume_info):
+    _, bin_paths, _, tiff_dims, _, _ = volume_info
     for res_bins in bin_paths:
         for bin in res_bins:
             x_curr, y_curr, z_curr = 0, 0, 0
             tree_level = len(bin)
-            ranges = upload_to_neuroglancer.get_data_ranges(bin, volume_size)
+            ranges = upload.get_data_ranges(bin, tiff_dims)
             if tree_level == 0:
                 assert ranges == ([0, 528], [0, 400], [0, 208])
             else:
@@ -53,43 +80,36 @@ def test_get_data_ranges():
                 assert ranges[2] == [z_curr, z_curr + 208]
 
 
-# Test cloudvolume attributes (info, shape) for both parallel and non-parallel
-def test_upload_chunks():
-    ordered_files, bin_paths = upload_to_neuroglancer.get_file_paths(
-        top_level, num_res, 0
-    )
+def test_upload_chunks_serial(num_res=1):
+    top_level = Path(__file__).parents[1] / "data"
+    input = str(top_level / "data_octree")
+    dir = "file://" + str(top_level / "test_upload" / "serial")
+    upload.upload_volumes(input, dir, num_mips=num_res)
 
-    par_vols = upload_to_neuroglancer.create_image_layer(
-        "file://" + dir + "/test_precomputed1/", test_vox_size, num_res
-    )
-    vols = upload_to_neuroglancer.create_image_layer(
-        "file://" + dir + "/test_precomputed2/", test_vox_size, num_res
-    )
-    upload_to_neuroglancer.upload_chunks(
-        par_vols[0], ordered_files[0], bin_paths[0], parallel=True
-    )
 
-    for i in range(num_res):
-        upload_to_neuroglancer.upload_chunks(
-            vols[i], ordered_files[i], bin_paths[i], parallel=False
-        )
-    assert (np.squeeze(par_vols[0][:, :, :]) == low_res.T).all()
-    assert np.squeeze(par_vols[0][:, :, :]).shape == (528, 400, 208)
-    # assert np.squeeze(par_vols[1][:, :, :]).shape == (528 * 2, 400 * 2, 208 * 2)
+def test_upload_chunks_parallel(num_res=1):
+    top_level = Path(__file__).parents[1] / "data"
+    input = str(top_level / "data_octree")
+    dir = "file://" + str(Path(top_level) / "test_upload" / "parallel")
+    upload.upload_volumes(input, dir, num_mips=num_res, parallel=True)
 
-    assert (np.squeeze(vols[0][:, :, :]) == low_res.T).all()
-    assert np.squeeze(vols[0][:, :, :]).shape == (528, 400, 208)
-    assert np.squeeze(vols[1][:, :, :]).shape == (528 * 2, 400 * 2, 208 * 2)
 
-    for bin in bin_paths[1]:
-        ranges = upload_to_neuroglancer.get_data_ranges(bin, volume_size)
-        assert (
-            np.squeeze(
-                vols[1][
-                    ranges[0][0] : ranges[0][1],
-                    ranges[1][0] : ranges[1][1],
-                    ranges[2][0] : ranges[2][1],
-                ]
-            )
-            == low_res.T
-        ).all()
+### segmentation ###
+
+
+def test_create_skel_segids(volume_info):
+    _, _, _, _, origin, top_level = volume_info
+    input = str(top_level / "data_octree")
+    swc_dir = glob(f"{input}/*consensus-swcs")[0]
+    skels, segids = upload.create_skel_segids(swc_dir, origin)
+    assert segids[0] == 2
+    assert len(skels[0].vertices) > 0
+
+
+def test_upload_segments(volume_info, num_res=1):
+    top_level = Path(__file__).parents[1] / "data"
+    input = str(top_level / "data_octree")
+    dir = "file://" + str(top_level / "test_upload_segments" / "serial")
+    upload.upload_segments(input, dir, num_mips=num_res)
+    # unsure how to verify via tests
+    assert True

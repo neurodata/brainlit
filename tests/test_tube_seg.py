@@ -2,12 +2,12 @@ import pytest
 import brainlit
 from brainlit.algorithms.generate_fragments import tube_seg
 import numpy as np
-from brainlit.utils.ngl_pipeline import NeuroglancerSession
+from brainlit.utils.session import NeuroglancerSession
 from skimage import draw
 
 
 def test_pairwise():
-    
+
     """
     For a given iterable array [A1,A2,...,An], test if the function can return a zipped list [(A1,A2),(A2,A3),...,(An-1,An)]
     
@@ -17,10 +17,10 @@ def test_pairwise():
     
     The second element of all the tubles are [A2,A3,...,An]
     """
-    n = np.random.randint(4,9)
-    iterable = np.random.randint(10,size = (n,3))
+    n = np.random.randint(4, 9)
+    iterable = np.random.randint(10, size=(n, 3))
     pair = list(tube_seg.pairwise(iterable))
-    
+
     """
     Verify:
    
@@ -28,13 +28,13 @@ def test_pairwise():
     II. the first element of each pair
     III. the second elemnt of each pair
     """
-    assert len(pair) == n-1
-    assert (iterable[:-1,:] == [a[0] for a in pair]).all()
-    assert (iterable[1:,:] == [b[1] for b in pair]).all()
-    
-    
+    assert len(pair) == n - 1
+    assert (iterable[:-1, :] == [a[0] for a in pair]).all()
+    assert (iterable[1:, :] == [b[1] for b in pair]).all()
+
+
 def test_draw_sphere():
-    
+
     """
     Test if the function maps all the points located within the given radius of the given center to 1, otherwise 0
     
@@ -45,16 +45,20 @@ def test_draw_sphere():
              >  radius (if the point has value 0)
     """
     ngl_session = NeuroglancerSession()
-    img, _, _ = ngl_session.pull_vertex_list(13, [4], expand = True)
+    img, _, _ = ngl_session.pull_vertex_list(13, [4], expand=True)
     shape = img.shape
-    center = [np.random.randint(shape[0]),np.random.randint(shape[1]),np.random.randint(shape[2])]
-    radius = np.random.randint(1,4)
-    sphere = tube_seg.draw_sphere(shape,center,radius)
+    center = [
+        np.random.randint(shape[0]),
+        np.random.randint(shape[1]),
+        np.random.randint(shape[2]),
+    ]
+    radius = np.random.randint(1, 4)
+    sphere = tube_seg.draw_sphere(shape, center, radius)
     coords = np.where(sphere < 1)
-    d_bg = min(np.sum((np.array(coords).T-center)**2, axis = 1))
+    d_bg = min(np.sum((np.array(coords).T - center) ** 2, axis=1))
     coords = np.where(sphere > 0)
-    d_s = max(np.sum((np.array(coords).T-center)**2, axis = 1))
-    
+    d_s = max(np.sum((np.array(coords).T - center) ** 2, axis=1))
+
     """
     Verify:
     
@@ -64,13 +68,13 @@ def test_draw_sphere():
     IV. maximum distance between 1-valued points and the center is less than or equal to radius
     """
     assert sphere.shape == shape
-    assert np.unique(sphere).all() in [0,1]
-    assert d_bg > radius**2
-    assert d_s <= radius**2
+    assert np.unique(sphere).all() in [0, 1]
+    assert d_bg > radius ** 2
+    assert d_s <= radius ** 2
 
 
 def test_draw_tube():
-    
+
     """
     Test if the function maps all the points within the radius of a segment line (defined by 2 given points) to 1, otherwise 0
     
@@ -81,24 +85,32 @@ def test_draw_tube():
              >  radius (if the point has value 0)        
     """
     ngl_session = NeuroglancerSession()
-    img, _, _ = ngl_session.pull_vertex_list(13, [4], expand = True)
+    img, _, _ = ngl_session.pull_vertex_list(13, [4], expand=True)
     shape = img.shape
-    vertex0 = [np.random.randint(shape[0]/2),np.random.randint(shape[1]),np.random.randint(shape[2])]
-    vertex1 = [np.random.randint(shape[0]/2,shape[0]),np.random.randint(shape[1]),np.random.randint(shape[2])]
-    radius = np.random.randint(1,4)
-    labels = tube_seg.draw_tube(img,vertex0,vertex1,radius)
+    vertex0 = [
+        np.random.randint(shape[0] / 2),
+        np.random.randint(shape[1]),
+        np.random.randint(shape[2]),
+    ]
+    vertex1 = [
+        np.random.randint(shape[0] / 2, shape[0]),
+        np.random.randint(shape[1]),
+        np.random.randint(shape[2]),
+    ]
+    radius = np.random.randint(1, 4)
+    labels = tube_seg.draw_tube(img, vertex0, vertex1, radius)
     line = draw.line_nd(vertex0, vertex1, endpoint=True)
     coords = np.where(labels < 1)
     d_bg = max(shape)
     for pt in np.array(coords).T:
-        distance_min = min(np.sum((np.array(line).T-pt)**2,axis = 1))
-        d_bg = min(distance_min,d_bg)
+        distance_min = min(np.sum((np.array(line).T - pt) ** 2, axis=1))
+        d_bg = min(distance_min, d_bg)
     coords = np.where(labels > 0)
     d_tube = 0
     for pt in np.array(coords).T:
-        distance_min = min(np.sum((np.array(line).T-pt)**2,axis = 1))
-        d_tube = max(distance_min,d_tube)
-    
+        distance_min = min(np.sum((np.array(line).T - pt) ** 2, axis=1))
+        d_tube = max(distance_min, d_tube)
+
     """
     Verify:
     
@@ -108,13 +120,13 @@ def test_draw_tube():
     IV. maximum distance between 1-valued points and the segment line is less than or equal to radius
     """
     assert labels.shape == shape
-    assert np.unique(labels).all() in [0,1]
-    assert d_bg > radius**2
-    assert d_tube <= radius**2
+    assert np.unique(labels).all() in [0, 1]
+    assert d_bg > radius ** 2
+    assert d_tube <= radius ** 2
 
 
 def test_tubes_seg():
-    
+
     """
     Test if the function maps all the points within the radius of polyline (defined by given vertices) to 1, otherwise 0
     
@@ -125,27 +137,26 @@ def test_tubes_seg():
              >  radius (if the point has value 0)
     """
     ngl_session = NeuroglancerSession()
-    img, _, _ = ngl_session.pull_vertex_list(13, [4], expand = True)
+    img, _, _ = ngl_session.pull_vertex_list(13, [4], expand=True)
     shape = img.shape
-    vertices = np.random.randint(min(shape),size = (4,3))
-    radius = np.random.randint(1,4)
-    labels = tube_seg.tubes_seg(img,vertices,radius)
-    point = np.empty((3,0),dtype = int)
+    vertices = np.random.randint(min(shape), size=(4, 3))
+    radius = np.random.randint(1, 4)
+    labels = tube_seg.tubes_seg(img, vertices, radius)
+    point = np.empty((3, 0), dtype=int)
     for i in range(3):
-        lines = draw.line_nd(vertices[i], vertices[i+1], endpoint=True)
-        point = np.concatenate((point,np.array(lines)),axis = 1) 
+        lines = draw.line_nd(vertices[i], vertices[i + 1], endpoint=True)
+        point = np.concatenate((point, np.array(lines)), axis=1)
     coords = np.where(labels < 1)
     d_bg = max(shape)
     for pt in np.array(coords).T:
-        distance_min = min(np.sum((point.T-pt)**2,axis = 1))
-        d_bg = min(distance_min,d_bg)
+        distance_min = min(np.sum((point.T - pt) ** 2, axis=1))
+        d_bg = min(distance_min, d_bg)
     coords = np.where(labels > 0)
     d_tube = 0
     for pt in np.array(coords).T:
-        distance_min = min(np.sum((point.T-pt)**2,axis = 1))
-        d_tube = max(distance_min,d_tube)
-    
-    
+        distance_min = min(np.sum((point.T - pt) ** 2, axis=1))
+        d_tube = max(distance_min, d_tube)
+
     """
     Verify:
     
@@ -153,10 +164,9 @@ def test_tubes_seg():
     II. if the output is binary-valued
     III. minimum distance between 0-valued points and the polyline is greater than radius
     IV. maximum distance between 1-valued points and the polyline is less than or equal to radius
-    """       
+    """
     assert labels.shape == shape
-    assert np.unique(labels).all() in [0,1]
-    assert d_bg > radius**2
-    assert d_tube <= radius**2
-
+    assert np.unique(labels).all() in [0, 1]
+    assert d_bg > radius ** 2
+    assert d_tube <= radius ** 2
 
