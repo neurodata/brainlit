@@ -5,6 +5,8 @@ import numpy as np
 from brainlit.utils.session import NeuroglancerSession
 from skimage import draw
 
+URL = "s3://mouse-light-viz/precomputed_volumes/brain1_2"
+
 
 def test_pairwise():
 
@@ -44,7 +46,7 @@ def test_draw_sphere():
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)
     """
-    ngl_session = NeuroglancerSession()
+    ngl_session = NeuroglancerSession(url=URL, url_segments=URL + "_segments")
     img, _, _ = ngl_session.pull_vertex_list(13, [4], expand=True)
     shape = img.shape
     center = [
@@ -73,7 +75,7 @@ def test_draw_sphere():
     assert d_s <= radius ** 2
 
 
-def test_draw_tube():
+def test_draw_tube_spheres():
 
     """
     Test if the function maps all the points within the radius of a segment line (defined by 2 given points) to 1, otherwise 0
@@ -84,7 +86,7 @@ def test_draw_tube():
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)        
     """
-    ngl_session = NeuroglancerSession()
+    ngl_session = NeuroglancerSession(url=URL, url_segments=URL + "_segments")
     img, _, _ = ngl_session.pull_vertex_list(13, [4], expand=True)
     shape = img.shape
     vertex0 = [
@@ -98,7 +100,59 @@ def test_draw_tube():
         np.random.randint(shape[2]),
     ]
     radius = np.random.randint(1, 4)
-    labels = tube_seg.draw_tube(img, vertex0, vertex1, radius)
+    labels = tube_seg.tubes_seg(img, vertex0, vertex1, radius, spheres=True)
+    line = draw.line_nd(vertex0, vertex1, endpoint=True)
+    coords = np.where(labels < 1)
+    d_bg = max(shape)
+    for pt in np.array(coords).T:
+        distance_min = min(np.sum((np.array(line).T - pt) ** 2, axis=1))
+        d_bg = min(distance_min, d_bg)
+    coords = np.where(labels > 0)
+    d_tube = 0
+    for pt in np.array(coords).T:
+        distance_min = min(np.sum((np.array(line).T - pt) ** 2, axis=1))
+        d_tube = max(distance_min, d_tube)
+
+    """
+    Verify:
+    
+    I. the size of output array
+    II. if the output is binary-valued
+    III. minimum distance between 0-valued points and the segment line is greater than radius
+    IV. maximum distance between 1-valued points and the segment line is less than or equal to radius
+    """
+    assert labels.shape == shape
+    assert np.unique(labels).all() in [0, 1]
+    assert d_bg > radius ** 2
+    assert d_tube <= radius ** 2
+
+
+def test_draw_tube_edt():
+
+    """
+    Test if the function maps all the points within the radius of a segment line (defined by 2 given points) to 1, otherwise 0
+    
+    The output array should have the same size of input image and binary values
+    
+    Distance between a point and the segment line:
+             <= radius (if the point has value 1)
+             >  radius (if the point has value 0)        
+    """
+    ngl_session = NeuroglancerSession(url=URL, url_segments=URL + "_segments")
+    img, _, _ = ngl_session.pull_vertex_list(13, [4], expand=True)
+    shape = img.shape
+    vertex0 = [
+        np.random.randint(shape[0] / 2),
+        np.random.randint(shape[1]),
+        np.random.randint(shape[2]),
+    ]
+    vertex1 = [
+        np.random.randint(shape[0] / 2, shape[0]),
+        np.random.randint(shape[1]),
+        np.random.randint(shape[2]),
+    ]
+    radius = np.random.randint(1, 4)
+    labels = tube_seg.tubes_seg(img, vertex0, vertex1, radius, spheres=False)
     line = draw.line_nd(vertex0, vertex1, endpoint=True)
     coords = np.where(labels < 1)
     d_bg = max(shape)
@@ -136,7 +190,7 @@ def test_tubes_seg():
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)
     """
-    ngl_session = NeuroglancerSession()
+    ngl_session = NeuroglancerSession(url=URL, url_segments=URL + "_segments")
     img, _, _ = ngl_session.pull_vertex_list(13, [4], expand=True)
     shape = img.shape
     vertices = np.random.randint(min(shape), size=(4, 3))
