@@ -20,6 +20,9 @@ class BaseFeatures(BaseEstimator):
         self.url = url
         self.size = size
         self.offset = offset
+        self.download_time = 0
+        self.conversion_time = 0
+        self.write_time = 0
         self.segment_url = segment_url
 
     @abstractmethod
@@ -160,12 +163,25 @@ class BaseFeatures(BaseEstimator):
                 verts = segment.vertices[start_vert:]
             start_vert = 0
             for v_id, vertex in enumerate(verts):
+
+                start = time.time()
+
                 img, bounds, voxel = ngl.pull_voxel(
                     seg_id, v_id, self.size[0], self.size[1], self.size[2]
                 )
                 img_off = ngl.pull_bounds_img(bounds + self.offset)
+
+                end = time.time()
+                self.download_time += end - start
+
+                start = time.time()
+
                 features = self._convert_to_features(img, include_neighborhood)
                 features_off = self._convert_to_features(img_off, include_neighborhood)
+
+                end = time.time()
+                self.conversion_time += end - start
+
                 voxel_dict[counter] = {
                     **{"Segment": int(seg_id), "Vertex": int(v_id), "Label": 1},
                     **features,
@@ -190,26 +206,35 @@ class BaseFeatures(BaseEstimator):
                             + str(v_id)
                             + ".feather"
                         )
+
+                        start = time.time()
+
                         feather.write_dataframe(df, path)
+
+                        end = time.time()
+                        self.write_time += end - start
+
                         voxel_dict = {}
                         batch_id += 1
-        if write:
-            if not (counter % batch_size == 0 or (counter + 1) % batch_size == 0):
+
+        if file_path is None:
+            if write:
+                if not (counter % batch_size == 0 or (counter + 1) % batch_size == 0):
+                    df = pd.DataFrame.from_dict(voxel_dict, "index")
+                    path = (
+                        file_path
+                        + str(batch_id * batch_size)
+                        + "_"
+                        + str(counter)
+                        + "_"
+                        + str(seg_id)
+                        + "_"
+                        + str(v_id)
+                        + ".feather"
+                    )
+                    feather.write_dataframe(df, path)
+            else:
                 df = pd.DataFrame.from_dict(voxel_dict, "index")
-                path = (
-                    file_path
-                    + str(batch_id * batch_size)
-                    + "_"
-                    + str(counter)
-                    + "_"
-                    + str(seg_id)
-                    + "_"
-                    + str(v_id)
-                    + ".feather"
-                )
-                feather.write_dataframe(df, path)
-        else:
-            df = pd.DataFrame.from_dict(voxel_dict, "index")
             return df
 
     def _parallel_processing(
@@ -264,20 +289,11 @@ class BaseFeatures(BaseEstimator):
                     + str(v_id)
                     + ".feather"
                 )
+
+                start = time.time()
+
                 feather.write_dataframe(df, path)
-                voxel_dict = {}
-                batch_id += 1
-        if not (counter % batch_size == 0 or (counter + 1) % batch_size == 0):
-            df = pd.DataFrame.from_dict(voxel_dict, "index")
-            path = (
-                file_path
-                + str(batch_id * batch_size)
-                + "_"
-                + str(counter)
-                + "_"
-                + str(seg_id)
-                + "_"
-                + str(v_id)
-                + ".feather"
-            )
-            feather.write_dataframe(df, path)
+
+                end = time.time()
+                self.write_time += end - start
+        return self.download_time, self.conversion_time, self.write_time
