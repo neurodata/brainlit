@@ -187,7 +187,7 @@ def create_cloud_volume(
 
 
 def get_data_ranges(
-    bin_path: List, chunk_size: Sequence[int]
+    bin_path: List[List], chunk_size: Sequence[int]
 ) -> Tuple[List[int], List[int], List[int]]:
     """Get ranges (x,y,z) for chunks to be stitched together in volume
 

@@ -6,7 +6,7 @@ import numpy as np
 
 
 @pytest.fixture
-def volume_info(num_res=1, channel=0):
+def volume_info(num_res=2, channel=0):
     top_level = Path(__file__).parents[1] / "data"
     (ordered_files, bin_paths, vox_size, tiff_dims, origin,) = upload.get_volume_info(
         str(top_level / "data_octree"), num_res, channel
@@ -93,10 +93,11 @@ def test_create_cloud_volume_bad_inputs(volume_info):
         upload.create_cloud_volume(p, i, v, n, c, par, l, "uint8")
 
 
-# def test_get_data_ranges_bad_inputs(volume_info):
-#     _, bin_paths, _, tiff_dims, _, _ = volume_info
-#     with pytest.raises(TypeError):
-#         upload.get_data_ranges(bin, tiff_dims)
+def test_get_data_ranges_bad_inputs(volume_info):
+    _, bin_paths, _, tiff_dims, _, _ = volume_info
+    print(upload.get_data_ranges(bin_paths, tiff_dims))
+    with pytest.raises(TypeError):
+        upload.get_data_ranges(0, tiff_dims)
 
 
 ### image ###
