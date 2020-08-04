@@ -24,8 +24,8 @@ def volume_info(num_res=1, channel=0):
 ### inputs ###
 
 
-def test_get_volume_info_inputs():
-    p = str(Path(__file__).parents[1] / "data" / "data_octree")
+def test_get_volume_info_bad_inputs():
+    p = str(Path(__file__).parents[1] / "data")
     n = 1
     c = 0
     e = "tif"
@@ -47,12 +47,11 @@ def test_get_volume_info_inputs():
         upload.get_volume_info(p, n, c, "fff")
 
 
-def test_create_cloud_volume_inputs():
-    p = str(Path(__file__).parents[1] / "data" / "data_octree")
-    i = [0, 0, 0]
-    v = [0, 0, 0]
+def test_create_cloud_volume_bad_inputs(volume_info):
+    (_, _, v, i, _, top_level,) = volume_info
+    p = "file://" + str(top_level)
     n = 1
-    c = [0, 0, 0]
+    c = i
     par = False
     l = "image"
     d = "uint16"
@@ -62,8 +61,42 @@ def test_create_cloud_volume_inputs():
         upload.create_cloud_volume("asdf", i, v, n, c, par, l, d)
     with pytest.raises(TypeError):
         upload.create_cloud_volume(p, 0, v, n, c, par, l, d)
+    with pytest.raises(ValueError):
+        upload.create_cloud_volume(p, [0], v, n, c, par, l, d)
     with pytest.raises(TypeError):
-        upload.create_cloud_volume(p, ["a", "b"], v, n, c, par, l, d)
+        upload.create_cloud_volume(p, ["a", "b", "c"], v, n, c, par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, 0, n, c, par, l, d)
+    with pytest.raises(ValueError):
+        upload.create_cloud_volume(p, i, [0], n, c, par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, ["a", "b", "c"], n, c, par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, v, 0.0, c, par, l, d)
+    with pytest.raises(ValueError):
+        upload.create_cloud_volume(p, i, v, 0, c, par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, v, n, 0, par, l, d)
+    with pytest.raises(ValueError):
+        upload.create_cloud_volume(p, i, v, n, [0], par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, v, n, ["a", "b", "c"], par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, v, n, c, 0, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, v, n, c, par, 0, d)
+    with pytest.raises(ValueError):
+        upload.create_cloud_volume(p, i, v, n, c, par, "seg", d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, v, n, c, par, l, 0)
+    with pytest.raises(ValueError):
+        upload.create_cloud_volume(p, i, v, n, c, par, l, "uint8")
+
+
+# def test_get_data_ranges_bad_inputs(volume_info):
+#     _, bin_paths, _, tiff_dims, _, _ = volume_info
+#     with pytest.raises(TypeError):
+#         upload.get_data_ranges(bin, tiff_dims)
 
 
 ### image ###
@@ -146,8 +179,7 @@ def test_create_segmentation_layer(volume_info):
 
 def test_create_skel_segids(volume_info):
     _, _, _, _, origin, top_level = volume_info
-    input = top_level / "data_octree" / "consensus-swcs"
-    swc_dir = str(input.glob("*.swc")[0])
+    swc_dir = str(top_level / "data_octree" / "consensus-swcs")
     skels, segids = upload.create_skel_segids(swc_dir, origin)
     assert segids[0] == 2
     assert len(skels[0].vertices) > 0

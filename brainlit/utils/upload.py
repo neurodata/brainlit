@@ -43,10 +43,10 @@ def get_volume_info(
         vox_size: List of highest resolution voxel sizes (nm).
         tiff_dims: (x,y,z) voxel dimensions for a single tiff image.
     """
-    # check_type(image_dir, str)
-    # check_type(num_resolutions, int)
-    # check_type(channel, int)
-    # check_type(extension, str)
+    check_type(image_dir, str)
+    check_type(num_resolutions, int)
+    check_type(channel, int)
+    check_type(extension, str)
     if num_resolutions < 1:
         raise ValueError(f"Number of resolutions should be > 0, not {num_resolutions}")
     check_type(channel, int)
@@ -98,7 +98,7 @@ def create_cloud_volume(
     num_resolutions: int,
     chunk_size: Optional[Sequence[int]] = None,
     parallel: Optional[bool] = False,
-    layer_type: Optional[Literal["image", "segmentaion", "both"]] = "image",
+    layer_type: Optional[Literal["image", "segmentaion"]] = "image",
     dtype: Optional[Literal["uint16", "uint64"]] = None,
 ) -> CloudVolume:
     """Create CloudVolume object and info file.
