@@ -3,7 +3,6 @@ from brainlit.utils import upload
 import tifffile as tf
 from pathlib import Path
 import numpy as np
-from glob import glob
 
 
 @pytest.fixture
@@ -20,6 +19,54 @@ def volume_info(num_res=1, channel=0):
         origin,
         top_level,
     )
+
+
+### inputs ###
+
+
+def test_get_volume_info_inputs():
+    p = str(Path(__file__).parents[1] / "data" / "data_octree")
+    n = 1
+    c = 0
+    e = "tif"
+    with pytest.raises(TypeError):
+        upload.get_volume_info(0, n, c, e)
+    with pytest.raises(FileNotFoundError):
+        upload.get_volume_info("asdf", n, c, e)
+    with pytest.raises(TypeError):
+        upload.get_volume_info(p, 0.0, c, e)
+    with pytest.raises(ValueError):
+        upload.get_volume_info(p, 0, c, e)
+    with pytest.raises(TypeError):
+        upload.get_volume_info(p, n, 0.0, e)
+    with pytest.raises(ValueError):
+        upload.get_volume_info(p, n, -1, e)
+    with pytest.raises(TypeError):
+        upload.get_volume_info(p, n, c, 1)
+    with pytest.raises(ValueError):
+        upload.get_volume_info(p, n, c, "fff")
+
+
+def test_create_cloud_volume_inputs():
+    p = str(Path(__file__).parents[1] / "data" / "data_octree")
+    i = [0, 0, 0]
+    v = [0, 0, 0]
+    n = 1
+    c = [0, 0, 0]
+    par = False
+    l = "image"
+    d = "uint16"
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(0, i, v, n, c, par, l, d)
+    with pytest.raises(NotImplementedError):
+        upload.create_cloud_volume("asdf", i, v, n, c, par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, 0, v, n, c, par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, ["a", "b"], v, n, c, par, l, d)
+
+
+### image ###
 
 
 def test_get_volume_info(volume_info):
@@ -41,21 +88,6 @@ def test_create_image_layer(volume_info):
     )
 
     assert len(vols) == len(b)
-    for i, vol in enumerate(vols):
-        assert vol.info["scales"][0]["size"] == [(2 ** i) * j for j in tiff_dims]
-
-
-def test_create_segmentation_layer(volume_info):
-    _, b, vox_size, tiff_dims, _, top_level = volume_info
-    vols = upload.create_cloud_volume(
-        "file://" + str(top_level / "test_upload_segments"),
-        tiff_dims,
-        vox_size,
-        num_resolutions=len(b),
-        layer_type="segmentation",
-    )
-
-    assert len(vols) == 1
     for i, vol in enumerate(vols):
         assert vol.info["scales"][0]["size"] == [(2 ** i) * j for j in tiff_dims]
 
@@ -97,10 +129,25 @@ def test_upload_chunks_parallel(num_res=1):
 ### segmentation ###
 
 
+def test_create_segmentation_layer(volume_info):
+    _, b, vox_size, tiff_dims, _, top_level = volume_info
+    vols = upload.create_cloud_volume(
+        "file://" + str(top_level / "test_upload_segments"),
+        tiff_dims,
+        vox_size,
+        num_resolutions=len(b),
+        layer_type="segmentation",
+    )
+
+    assert len(vols) == 1
+    for i, vol in enumerate(vols):
+        assert vol.info["scales"][0]["size"] == [(2 ** i) * j for j in tiff_dims]
+
+
 def test_create_skel_segids(volume_info):
     _, _, _, _, origin, top_level = volume_info
-    input = str(top_level / "data_octree")
-    swc_dir = glob(f"{input}/*consensus-swcs")[0]
+    input = top_level / "data_octree" / "consensus-swcs"
+    swc_dir = str(input.glob("*.swc")[0])
     skels, segids = upload.create_skel_segids(swc_dir, origin)
     assert segids[0] == 2
     assert len(skels[0].vertices) > 0

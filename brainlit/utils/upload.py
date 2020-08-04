@@ -2,11 +2,13 @@ import math
 from cloudvolume import CloudVolume, storage
 import numpy as np
 import joblib
-from joblib import Parallel, delayed
+from joblib import Parallel, delayed, cpu_count
+import joblib
 from glob import glob
 import argparse
 from psutil import virtual_memory
 from typing import Optional, Sequence, Union, Literal, Tuple, List
+import contextlib
 
 import tifffile as tf
 from pathlib import Path
@@ -20,6 +22,73 @@ from .util import (
     check_size,
     check_precomputed,
 )
+
+
+def get_volume_info(
+    image_dir: str,
+    num_resolutions: int,
+    channel: Optional[int] = 0,
+    extension: Optional[Literal["tif"]] = "tif",
+) -> Tuple[List, List, List, Tuple, List]:
+    """Get filepaths along the octree-format image directory
+
+    Arguments:
+        image_dir: Filepath to HIGHEST LEVEL(lowest res) of octree dir.
+        num_resolutions: Number of resolutions for which downsampling has been done.
+        channel: Channel number to upload.
+        extension: File extension of image files.
+    Returns:
+        files_ordered: List of file paths, 1st dim contains list for each res.
+        paths_bin: List of binary paths, 1st dim contains lists for each res.
+        vox_size: List of highest resolution voxel sizes (nm).
+        tiff_dims: (x,y,z) voxel dimensions for a single tiff image.
+    """
+    # check_type(image_dir, str)
+    # check_type(num_resolutions, int)
+    # check_type(channel, int)
+    # check_type(extension, str)
+    if num_resolutions < 1:
+        raise ValueError(f"Number of resolutions should be > 0, not {num_resolutions}")
+    check_type(channel, int)
+    if channel < 0:
+        raise ValueError(f"Channel should be >= 0, not {channel}")
+    check_type(extension, str)
+    if extension not in ["tif"]:
+        raise ValueError(f"{extension} should be 'tif'")
+
+    def RepresentsInt(s):
+        try:
+            int(s)
+            return True
+        except ValueError:
+            return False
+
+    p = Path(image_dir)
+    files = [i.parts for i in p.rglob(f"*.{channel}.{extension}")]
+    parent_dirs = len(p.parts)
+
+    files_ordered = [
+        [i for i in files if len(i) == j + parent_dirs + 1]
+        for j in range(num_resolutions)
+    ]
+    paths_bin = [
+        [[f"{int(j)-1:03b}" for j in k if len(j) == 1 and RepresentsInt(j)] for k in i]
+        for i in files_ordered
+    ]
+    for i, resolution in enumerate(files_ordered):
+        for j, filepath in enumerate(resolution):
+            files_ordered[i][j] = str(Path(*filepath))
+
+    img_size = np.squeeze(tf.imread(str(p / "default.0.tif"))).T.shape
+    transform = open(str(p / "transform.txt"), "r")
+    vox_size = [
+        float(s[4:].rstrip("\n")) * (0.5 ** (num_resolutions - 1))
+        for s in transform.readlines()
+        if "s" in s
+    ]
+    transform = open(str(p / "transform.txt"), "r")
+    origin = [int(o[4:].rstrip("\n")) / 1000 for o in transform.readlines() if "o" in o]
+    return files_ordered, paths_bin, vox_size, img_size, origin
 
 
 def create_cloud_volume(
@@ -67,14 +136,14 @@ def create_cloud_volume(
     check_size(img_size, allow_float=False)
     check_size(voxel_size)
     check_type(num_resolutions, int)
-    if num_resolutions < 0:
+    if num_resolutions < 1:
         raise ValueError(f"Number of resolutions should be > 0, not {num_resolutions}")
     check_size(chunk_size)
     check_type(parallel, bool)
     check_type(layer_type, str)
     if layer_type not in ["image", "segmentation"]:
         raise ValueError(f"{layer_type} should be 'image' or 'segmentation'")
-    check_type(dtye, str)
+    check_type(dtype, str)
     if dtype not in ["uint16", "uint64"]:
         raise ValueError(f"{dtype} should be 'uint16' or 'uint64'")
 
@@ -115,68 +184,6 @@ def create_cloud_volume(
             stor.put_json(str(Path("skeletons") / "info"), skel_info)
         vols = [vol]
     return vols
-
-
-def get_volume_info(
-    image_dir: str,
-    num_resolutions: int,
-    channel: Optional[int] = 0,
-    extension: Optional[Literal["tif"]] = "tif",
-) -> Tuple[List, List, List, Tuple]:
-    """Get filepaths along the octree-format image directory
-
-    Arguments:
-        image_dir: Filepath to HIGHEST LEVEL(lowest res) of octree dir.
-        num_resolutions: Number of resolutions for which downsampling has been done.
-        channel: Channel number to upload.
-        extension: File extension of image files.
-    Returns:
-        files_ordered: List of file paths, 1st dim contains list for each res.
-        paths_bin: List of binary paths, 1st dim contains lists for each res.
-        vox_size: List of highest resolution voxel sizes (nm).
-        tiff_dims: (x,y,z) voxel dimensions for a single tiff image.
-    """
-    check_type(image_dir, str)
-    check_type(num_resolutions, int)
-    if not isinstance(image_dir, str):
-        raise TypeError((f"{image_dir} must be int, not {type(image_dir)}"))
-    if not isinstance(num_resolutions, int):
-        raise TypeError((f"{num_resolutions} must be int, not {type(num_resolutions)}"))
-
-    def RepresentsInt(s):
-        try:
-            int(s)
-            return True
-        except ValueError:
-            return False
-
-    p = Path(image_dir)
-    files = [i.parts for i in p.rglob(f"*.{channel}.{extension}")]
-    parent_dirs = len(p.parts)
-
-    files_ordered = [
-        [i for i in files if len(i) == j + parent_dirs + 1]
-        for j in range(num_resolutions)
-    ]
-    paths_bin = [
-        [[f"{int(j)-1:03b}" for j in k if len(j) == 1 and RepresentsInt(j)] for k in i]
-        for i in files_ordered
-    ]
-    for i, resolution in enumerate(files_ordered):
-        for j, filepath in enumerate(resolution):
-            files_ordered[i][j] = str(Path(*filepath))
-    print(f"got files and binary representations of paths.")
-
-    img_size = np.squeeze(tf.imread(str(p / "default.0.tif"))).T.shape
-    transform = open(str(p / "transform.txt"), "r")
-    vox_size = [
-        float(s[4:].rstrip("\n")) * (0.5 ** (num_resolutions - 1))
-        for s in transform.readlines()
-        if "s" in s
-    ]
-    transform = open(str(p / "transform.txt"), "r")
-    origin = [int(o[4:].rstrip("\n")) / 1000 for o in transform.readlines() if "o" in o]
-    return files_ordered, paths_bin, vox_size, img_size, origin
 
 
 def get_data_ranges(
@@ -235,11 +242,11 @@ def upload_volumes(input_path, precomputed_path, num_mips, parallel=False, chose
         math.floor(
             virtual_memory().total / (img_size[0] * img_size[1] * img_size[2] * 8)
         ),
-        joblib.cpu_count(),
+        cpu_count(),
     )
+    start = time.time()
     if chosen == -1:
         for mip, vol in enumerate(vols):
-            print(f"Started mip {mip}")
             try:
                 with tqdm_joblib(
                     tqdm(
@@ -247,15 +254,15 @@ def upload_volumes(input_path, precomputed_path, num_mips, parallel=False, chose
                         total=len(files_ordered[mip]),
                     )
                 ) as progress_bar:
-                    Parallel(num_procs, timeout=1800, verbose=10)(
+                    Parallel(num_procs, timeout=1800)(
                         delayed(process)(f, b, vols[mip],)
                         for f, b in zip(files_ordered[mip], paths_bin[mip])
                     )
+                print(f"\nFinished mip {mip}, took {time.time()-start} seconds")
+                start = time.time()
             except Exception as e:
                 print(e)
                 print("timed out on a slice. moving on to the next step of pipeline")
-            print(f"Finished mip {mip}")
-            print(time.time())
     else:
         try:
             with tqdm_joblib(
@@ -263,10 +270,11 @@ def upload_volumes(input_path, precomputed_path, num_mips, parallel=False, chose
                     desc="Creating precomputed volume", total=len(files_ordered[chosen])
                 )
             ) as progress_bar:
-                Parallel(num_procs, timeout=1800, verbose=10)(
+                Parallel(num_procs, timeout=1800)(
                     delayed(process)(f, b, vols[chosen],)
                     for f, b in zip(files_ordered[chosen], paths_bin[chosen])
                 )
+            print(f"\nFinished mip {chosen}, took {time.time()-start} seconds")
         except Exception as e:
             print(e)
             print("timed out on a slice. moving on to the next step of pipeline")
@@ -300,7 +308,7 @@ def upload_segments(input_path, precomputed_path, num_mips):
     )
     swc_dir = Path(input_path) / "consensus-swcs"
     segments, segids = create_skel_segids(str(swc_dir), origin)
-    for skel in tqdm(segments, desc="uploading segments to S3.."):
+    for skel in segments:
         vols[0].skeleton.upload(skel)
 
 
@@ -342,8 +350,6 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    start = time.time()
-    print(time.time())
     if args.layer_type == "image":
         upload_volumes(
             args.input_path,
@@ -365,6 +371,3 @@ if __name__ == "__main__":
             args.num_resolutions,
             chosen=args.chosen_res,
         )
-
-    print(time.time())
-    print(f"total time taken: {int(time.time()-start)} seconds")

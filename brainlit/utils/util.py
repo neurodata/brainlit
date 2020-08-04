@@ -1,6 +1,6 @@
 import contextlib
+import joblib
 from pathlib import Path
-from joblib.parallel import BatchCompletionCallBack
 
 
 @contextlib.contextmanager
@@ -9,7 +9,7 @@ def tqdm_joblib(tqdm_object):
     Context manager to patch joblib to report into tqdm progress bar given as argument
     """
 
-    class TqdmBatchCompletionCallback(BatchCompletionCallBack):
+    class TqdmBatchCompletionCallback(joblib.parallel.BatchCompletionCallBack):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
 
@@ -18,11 +18,11 @@ def tqdm_joblib(tqdm_object):
             return super().__call__(*args, **kwargs)
 
     old_batch_callback = joblib.parallel.BatchCompletionCallBack
-    BatchCompletionCallBack = TqdmBatchCompletionCallback
+    joblib.parallel.BatchCompletionCallBack = TqdmBatchCompletionCallback
     try:
         yield tqdm_object
     finally:
-        BatchCompletionCallBack = old_batch_callback
+        joblib.parallel.BatchCompletionCallBack = old_batch_callback
         tqdm_object.close()
 
 
@@ -34,6 +34,11 @@ def check_type(input, types):
 def check_iterable_type(input, types):
     if not all(isinstance(i, types) for i in input):
         raise TypeError((f"{input} elements should be {types}."))
+
+
+def check_iterable_positive(input):
+    if not all(i > 0 for i in input):
+        raise ValueError((f"{input} elements should be positive."))
 
 
 def check_size(input, allow_float=True):
@@ -51,6 +56,3 @@ def check_precomputed(input):
     prefix = input.split(":")[0]
     if prefix not in ["file", "s3", "gc"]:
         raise NotImplementedError("only file, s3, and gc prefixes supported")
-    if prefix == "file":
-        if not Path(input.split(":")[1][2:]).is_dir():
-            raise ValueError(f"{input} is not a directory.")
