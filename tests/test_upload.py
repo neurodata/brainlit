@@ -4,9 +4,11 @@ import tifffile as tf
 from pathlib import Path
 import numpy as np
 
+NUM_RES = 1
+
 
 @pytest.fixture
-def volume_info(num_res=2, channel=0):
+def volume_info(num_res=NUM_RES, channel=0):
     top_level = Path(__file__).parents[1] / "data"
     (ordered_files, bin_paths, vox_size, tiff_dims, origin,) = upload.get_volume_info(
         str(top_level / "data_octree"), num_res, channel
@@ -91,13 +93,18 @@ def test_create_cloud_volume_bad_inputs(volume_info):
         upload.create_cloud_volume(p, i, v, n, c, par, l, 0)
     with pytest.raises(ValueError):
         upload.create_cloud_volume(p, i, v, n, c, par, l, "uint8")
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, v, n, c, par, l, d, 0)
 
 
 def test_get_data_ranges_bad_inputs(volume_info):
     _, bin_paths, _, tiff_dims, _, _ = volume_info
-    print(upload.get_data_ranges(bin_paths, tiff_dims))
     with pytest.raises(TypeError):
         upload.get_data_ranges(0, tiff_dims)
+    with pytest.raises(TypeError):
+        upload.get_data_ranges(0, tiff_dims)
+    with pytest.raises(TypeError):
+        upload.get_data_ranges(bin_paths[0], 0)
 
 
 ### image ###
@@ -123,7 +130,7 @@ def test_create_image_layer(volume_info):
 
     assert len(vols) == len(b)
     for i, vol in enumerate(vols):
-        assert vol.info["scales"][0]["size"] == [(2 ** i) * j for j in tiff_dims]
+        assert vol.scales[-1 - i]["size"] == [(2 ** i) * j for j in tiff_dims]
 
 
 def test_get_data_ranges(volume_info):
@@ -153,7 +160,7 @@ def test_upload_chunks_serial(num_res=1):
     upload.upload_volumes(input, dir, num_mips=num_res)
 
 
-def test_upload_chunks_parallel(num_res=1):
+def test_upload_chunks_parallel(num_res=NUM_RES):
     top_level = Path(__file__).parents[1] / "data"
     input = str(top_level / "data_octree")
     dir = "file://" + str(Path(top_level) / "test_upload" / "parallel")
@@ -175,7 +182,7 @@ def test_create_segmentation_layer(volume_info):
 
     assert len(vols) == 1
     for i, vol in enumerate(vols):
-        assert vol.info["scales"][0]["size"] == [(2 ** i) * j for j in tiff_dims]
+        assert vol.scales[-1 - i]["size"] == [(2 ** i) * j for j in tiff_dims]
 
 
 def test_create_skel_segids(volume_info):
@@ -186,7 +193,7 @@ def test_create_skel_segids(volume_info):
     assert len(skels[0].vertices) > 0
 
 
-def test_upload_segments(volume_info, num_res=1):
+def test_upload_segments(volume_info, num_res=NUM_RES):
     top_level = Path(__file__).parents[1] / "data"
     input = str(top_level / "data_octree")
     dir = "file://" + str(top_level / "test_upload_segments" / "serial")

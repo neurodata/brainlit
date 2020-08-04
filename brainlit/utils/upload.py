@@ -100,6 +100,7 @@ def create_cloud_volume(
     parallel: Optional[bool] = False,
     layer_type: Optional[Literal["image", "segmentaion"]] = "image",
     dtype: Optional[Literal["uint16", "uint64"]] = None,
+    commit_info: Optional[bool] = True,
 ) -> CloudVolume:
     """Create CloudVolume object and info file.
 
@@ -114,13 +115,14 @@ def create_cloud_volume(
         parallel: Whether to upload chunks in parallel.
         layer_type: The type of cloudvolume object to create.
         dtype: The data type of the volume. If None, uses default for layer type.
+        commit_info: Whether to create an info file at the path, defaults to True.
 
     Returns:
         vol: Volume designated for upload.
     """
     # defaults
     if chunk_size is None:
-        chunk_size = [int(i / 2) for i in img_size]
+        chunk_size = [int(i / 4) for i in img_size]  # /2 took 42 hrs
     if dtype is None:
         if layer_type == "image":
             dtype = "uint16"
@@ -146,6 +148,7 @@ def create_cloud_volume(
     check_type(dtype, str)
     if dtype not in ["uint16", "uint64"]:
         raise ValueError(f"{dtype} should be 'uint16' or 'uint64'")
+    check_type(commit_info, bool)
 
     info = CloudVolume.create_new_info(
         num_channels=1,
@@ -162,7 +165,8 @@ def create_cloud_volume(
         vol.add_scale((2 ** i, 2 ** i, 2 ** i), chunk_size=chunk_size)
         for i in range(num_resolutions)
     ]
-    vol.commit_info()
+    if commit_info:
+        vol.commit_info()
     if layer_type == "image":
         vols = [
             CloudVolume(precomputed_path, mip=i, parallel=parallel)
@@ -187,7 +191,7 @@ def create_cloud_volume(
 
 
 def get_data_ranges(
-    bin_path: List[List], chunk_size: Sequence[int]
+    bin_path: List[List[str]], chunk_size: Tuple[int, int, int]
 ) -> Tuple[List[int], List[int], List[int]]:
     """Get ranges (x,y,z) for chunks to be stitched together in volume
 
@@ -199,9 +203,14 @@ def get_data_ranges(
         y_range: y-coord int bounds.
         z_range: z-coord int bounds.
     """
+    check_type(bin_path, List)
+    check_size(chunk_size)
+
     x_curr, y_curr, z_curr = 0, 0, 0
     tree_level = len(bin_path)
+    print(bin_path)
     for idx, i in enumerate(bin_path):
+        print(i)
         scale_factor = 2 ** (tree_level - idx - 1)
         x_curr += int(i[2]) * chunk_size[0] * scale_factor
         y_curr += int(i[1]) * chunk_size[1] * scale_factor
@@ -228,7 +237,10 @@ def upload_volumes(input_path, precomputed_path, num_mips, parallel=False, chose
     (files_ordered, paths_bin, vox_size, img_size, _) = get_volume_info(
         input_path, num_mips,
     )
-
+    if chosen != -1:
+        commit_info = False
+    else:
+        commit_info = True
     vols = create_cloud_volume(
         precomputed_path,
         img_size,
@@ -236,6 +248,7 @@ def upload_volumes(input_path, precomputed_path, num_mips, parallel=False, chose
         num_mips,
         parallel=parallel,
         layer_type="image",
+        commit_info=commit_info,
     )
 
     num_procs = min(
