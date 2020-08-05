@@ -107,6 +107,75 @@ def test_get_data_ranges_bad_inputs(volume_info):
         upload.get_data_ranges(bin_paths[0], 0)
 
 
+def test_process_bad_inputs(volume_info):
+    fpaths, bin_paths, v, i, o, top = volume_info
+    dest = "file://" + str(top / "upload")
+    vols = upload.create_cloud_volume(dest, i, v, NUM_RES)
+    with pytest.raises(TypeError):
+        upload.process(0, bin_paths[0], vols[0])
+    with pytest.raises(FileNotFoundError):
+        upload.process(["asdf"], bin_paths[0], vols[0])
+    with pytest.raises(TypeError):
+        upload.process(fpaths[0], 0, vols[0])
+    with pytest.raises(ValueError):
+        upload.process(fpaths[0], [["asdf"]], vols[0])
+    with pytest.raises(TypeError):
+        upload.process(fpaths[0], bin_paths[0], 0)
+
+
+def test_upload_volumes_bad_inputs(volume_info):
+    fpaths, bin_paths, v, i, o, top = volume_info
+    n = NUM_RES
+    p = False
+    c = -1
+    root = str(top / "data_octree")
+    dest = "file://" + str(top / "upload")
+    with pytest.raises(TypeError):
+        upload.upload_volumes(0, dest, n, p, c)
+    with pytest.raises(TypeError):
+        upload.upload_volumes(root, 0, n, p, c)
+    with pytest.raises(NotImplementedError):
+        upload.upload_volumes(root, "asdf", n, p, c)
+    with pytest.raises(TypeError):
+        upload.upload_volumes(root, dest, 0.0, p, c)
+    with pytest.raises(ValueError):
+        upload.upload_volumes(root, dest, 0, p, c)
+    with pytest.raises(TypeError):
+        upload.upload_volumes(root, dest, n, 0, c)
+    with pytest.raises(TypeError):
+        upload.upload_volumes(root, dest, n, p, 0.0)
+    with pytest.raises(ValueError):
+        upload.upload_volumes(root, dest, n, p, NUM_RES)
+
+
+def test_create_skel_segids_bad_inputs(volume_info):
+    fpaths, bin_paths, v, i, o, top = volume_info
+    swcpath = str(top / "data_octree" / "consensus_swcs")
+    with pytest.raises(TypeError):
+        upload.create_skel_segids(0, o)
+    with pytest.raises(FileNotFoundError):
+        upload.create_skel_segids("", o)
+    with pytest.raises(TypeError):
+        upload.create_skel_segids(swcpath, 0)
+    with pytest.raises(ValueError):
+        upload.create_skel_segids(swcpath, (0, 0))
+
+
+def test_upload_segments_bad_inputs(volume_info):
+    fpaths, bin_paths, v, i, o, top = volume_info
+    n = NUM_RES
+    root = str(top / "data_octree")
+    dest = "file://" + str(top / "upload_segments")
+    with pytest.raises(TypeError):
+        upload.upload_volumes(0, dest, n)
+    with pytest.raises(TypeError):
+        upload.upload_volumes(root, 0, n)
+    with pytest.raises(NotImplementedError):
+        upload.upload_volumes(root, "asdf", n)
+    with pytest.raises(TypeError):
+        upload.upload_volumes(root, dest, 0.0)
+
+
 ### image ###
 
 

@@ -56,3 +56,12 @@ def check_precomputed(input):
     prefix = input.split(":")[0]
     if prefix not in ["file", "s3", "gc"]:
         raise NotImplementedError("only file, s3, and gc prefixes supported")
+
+
+def check_binary_path(input):
+    check_type(input, list)
+    for bin in input:
+        check_iterable_type(bin, str)  # ensure list of list of str
+        for bcode in bin:
+            if not all(c in "01" for c in bcode):
+                raise ValueError(f"Binary paths are made of 0s and 1s, not like {bin}")

@@ -1,5 +1,6 @@
 import math
-from cloudvolume import CloudVolume, storage
+from cloudvolume import CloudVolume, Skeleton, storage
+from cloudvolume.frontends.precomputed import CloudVolumePrecomputed
 import numpy as np
 import joblib
 from joblib import Parallel, delayed, cpu_count
@@ -21,6 +22,7 @@ from .util import (
     check_iterable_type,
     check_size,
     check_precomputed,
+    check_binary_path,
 )
 
 
@@ -101,12 +103,12 @@ def create_cloud_volume(
     layer_type: Optional[Literal["image", "segmentaion"]] = "image",
     dtype: Optional[Literal["uint16", "uint64"]] = None,
     commit_info: Optional[bool] = True,
-) -> CloudVolume:
+) -> CloudVolumePrecomputed:
     """Create CloudVolume object and info file.
 
     Handles both image volumes and segmentation volumes from octree structure.
 
-    Args:
+    Arguments:
         precomputed_path: cloudvolume path
         img_size: x, y, z voxel dimensions of tiff images.
         voxel_size: x, y, z dimensions of highest res voxel size (nm).
@@ -116,7 +118,6 @@ def create_cloud_volume(
         layer_type: The type of cloudvolume object to create.
         dtype: The data type of the volume. If None, uses default for layer type.
         commit_info: Whether to create an info file at the path, defaults to True.
-
     Returns:
         vol: Volume designated for upload.
     """
@@ -203,7 +204,7 @@ def get_data_ranges(
         y_range: y-coord int bounds.
         z_range: z-coord int bounds.
     """
-    check_type(bin_path, List)
+    check_binary_path(bin_path)
     check_size(chunk_size)
 
     x_curr, y_curr, z_curr = 0, 0, 0
@@ -222,7 +223,22 @@ def get_data_ranges(
     return x_range, y_range, z_range
 
 
-def process(file_path, bin_path, vol):
+def process(
+    file_path: List[str], bin_path: List[List[str]], vol: CloudVolumePrecomputed
+):
+    """The parallelizable method to upload data.
+
+    Loads the image into memory, and pushes it to specific ranges in the CloudVolume.
+
+    Arguments:
+        file_path: Path to the image file.
+        bin_path: Binary path to the image file.
+        vol: CloudVolume object to upload.
+    """
+    check_type(file_path, list)
+    check_binary_path(bin_path)
+    check_type(vol, CloudVolumePrecomputed)
+
     array = tf.imread(file_path).T[..., None]
     ranges = get_data_ranges(bin_path, vol.scales[-1]["size"])
     vol[
@@ -233,7 +249,34 @@ def process(file_path, bin_path, vol):
     return
 
 
-def upload_volumes(input_path, precomputed_path, num_mips, parallel=False, chosen=-1):
+def upload_volumes(
+    input_path: str,
+    precomputed_path: str,
+    num_mips: int,
+    parallel: bool = False,
+    chosen: int = -1,
+):
+    """Uploads image data from local to a precomputed path.
+
+    Specify num_mips for additional resolutions. If `chosen` is used, an info file will not be generated.
+
+    Arguments:
+        input_path: The filepath to the root directory of the octree image data.
+        precomputed_path: CloudVolume precomputed path or url.
+        num_mips: The number of resolutions to upload.
+        parallel: Whether to upload in parallel. Default is False.
+        chosen: If not -1, uploads only that specific mip. Default is -1.
+    """
+    check_type(input_path, str)
+    check_precomputed(precomputed_path)
+    check_type(num_mips, int)
+    if num_mips < 1:
+        raise ValueError(f"Number of resolutions should be > 0, not {num_mips}")
+    check_type(parallel, bool)
+    check_type(chosen, int)
+    if chosen < -1 or chosen >= num_mips:
+        raise ValueError(f"{chosen} should be -1, or between 0 and {num_mips-1}")
+
     (files_ordered, paths_bin, vox_size, img_size, _) = get_volume_info(
         input_path, num_mips,
     )
@@ -293,19 +336,26 @@ def upload_volumes(input_path, precomputed_path, num_mips, parallel=False, chose
             print("timed out on a slice. moving on to the next step of pipeline")
 
 
-def create_skel_segids(swc_dir, origin):
+def create_skel_segids(
+    swc_dir: str, origin: Sequence[Union[int, float]]
+) -> Tuple[Skeleton, List[int]]:
     """ Create skeletons to be uploaded as precomputed format
 
     Arguments:
-        swc_dir {str} -- path to consensus swc files
-        origin {list} -- x,y,z coordinate of coordinate frame in space in mircons
+        swc_dir: Path to consensus swc files.
+        origin: x,y,z coordinate of coordinate frame in space in mircons.
 
     Returns:
-        skeletons {list} -- swc skeletons to be pushed to bucket
-        segids {list} --  list of ints for each swc's label
+        skeletons: .swc skeletons to be pushed to bucket.
+        segids: List of ints for each swc's label.
     """
+    check_type(swc_dir, str)
+    check_size(origin)
+
     p = Path(swc_dir)
     files = [str(i) for i in p.glob("*.swc")]
+    if len(files) == 0:
+        raise FileNotFoundError(f"No .swc files found in {swc_dir}.")
     skeletons = []
     segids = []
     for i in tqdm(files, desc="converting swcs to neuroglancer format..."):
@@ -315,6 +365,19 @@ def create_skel_segids(swc_dir, origin):
 
 
 def upload_segments(input_path, precomputed_path, num_mips):
+    """Uploads segmentation data from local to precomputed path.
+
+    Arguments:
+        input_path: The filepath to the root directory of the octree data with consensus-swcs folder.
+        precomputed_path: CloudVolume precomputed path or url.
+        num_mips: The number of resolutions to upload (for info file).
+    """
+    check_type(input_path, str)
+    check_precomputed(precomputed_path)
+    check_type(num_mips, int)
+    if num_mips < 1:
+        raise ValueError(f"Number of resolutions should be > 0, not {num_mips}")
+
     (_, _, vox_size, img_size, origin) = get_volume_info(input_path, num_mips,)
     vols = create_cloud_volume(
         precomputed_path, img_size, vox_size, num_mips, layer_type="segmentation",
