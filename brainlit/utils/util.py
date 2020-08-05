@@ -59,9 +59,7 @@ def check_precomputed(input):
 
 
 def check_binary_path(input):
-    check_type(input, list)
-    for bin in input:
-        check_iterable_type(bin, str)  # ensure list of list of str
-        for bcode in bin:
-            if not all(c in "01" for c in bcode):
-                raise ValueError(f"Binary paths are made of 0s and 1s, not like {bin}")
+    check_iterable_type(input, str)  # ensure list of str
+    for bcode in input:
+        if not all(c in "01" for c in bcode):
+            raise ValueError(f"Binary paths are made of 0s and 1s, not like {bin}")

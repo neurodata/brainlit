@@ -6,7 +6,7 @@ from pathlib import Path
 import tifffile as tf
 from cloudvolume.lib import Bbox
 
-NUM_RES = 1
+NUM_RES = 2
 
 
 @pytest.fixture
@@ -32,9 +32,8 @@ def paths():
     """Gets common paths for tests running uploads
     """
     top_level = Path(__file__).parents[1] / "data"
-    input = str(top_level / "data_octree")
-    dir_segments = "file://" + str(top_level / "test_upload_segments")
-    return top_level, input, dir_segments
+    input = top_level / "data_octree"
+    return top_level, input
 
 
 ####################
@@ -133,18 +132,18 @@ def test_process_bad_inputs(volume_info):
     """Tests that errors are raised when bad inputs are given to upload.process.
     """
     fpaths, bin_paths, v, i, o, top = volume_info
-    dest = "file://" + str(top / "upload")
+    dest = "file://" + str(top / "test_upload")
     vols = upload.create_cloud_volume(dest, i, v, NUM_RES)
     with pytest.raises(TypeError):
-        upload.process(0, bin_paths[0], vols[0])
+        upload.process(0, bin_paths[0][0], vols[0])
     with pytest.raises(FileNotFoundError):
-        upload.process(["asdf"], bin_paths[0], vols[0])
+        upload.process("asdf", bin_paths[0][0], vols[0])
     with pytest.raises(TypeError):
-        upload.process(fpaths[0], 0, vols[0])
+        upload.process(fpaths[0][0], 0, vols[0])
     with pytest.raises(ValueError):
-        upload.process(fpaths[0], [["asdf"]], vols[0])
+        upload.process(fpaths[0][0], ["asdf"], vols[0])
     with pytest.raises(TypeError):
-        upload.process(fpaths[0], bin_paths[0], 0)
+        upload.process(fpaths[0][0], bin_paths[0][0], 0)
 
 
 def test_upload_volumes_bad_inputs(volume_info):
@@ -155,7 +154,7 @@ def test_upload_volumes_bad_inputs(volume_info):
     p = False
     c = -1
     root = str(top / "data_octree")
-    dest = "file://" + str(top / "upload")
+    dest = "file://" + str(top / "test_upload")
     with pytest.raises(TypeError):
         upload.upload_volumes(0, dest, n, p, c)
     with pytest.raises(TypeError):
@@ -195,7 +194,7 @@ def test_upload_segments_bad_inputs(volume_info):
     fpaths, bin_paths, v, i, o, top = volume_info
     n = NUM_RES
     root = str(top / "data_octree")
-    dest = "file://" + str(top / "upload_segments")
+    dest = "file://" + str(top / "test_upload_segments")
     with pytest.raises(TypeError):
         upload.upload_volumes(0, dest, n)
     with pytest.raises(TypeError):
@@ -230,25 +229,24 @@ def test_create_image_layer(volume_info):
     """Tests that create_image_layer returns valid CloudVolumePrecomputed object for image data.
     """
     _, b, vox_size, tiff_dims, _, top_level = volume_info
+    dir = top_level / "test_upload"
     vols = upload.create_cloud_volume(
-        "file://" + str(top_level / "test_upload"),
-        tiff_dims,
-        vox_size,
-        num_resolutions=len(b),
-        layer_type="image",
+        dir.as_uri(), tiff_dims, vox_size, num_resolutions=len(b), layer_type="image",
     )
 
     assert len(vols) == NUM_RES  # one vol for each resolution
     for i, vol in enumerate(vols):
         assert vol.scales[-1 - i]["size"] == [(2 ** i) * j for j in tiff_dims]
+    assert (dir / "info").is_file()  # contains info file
 
 
 def test_create_segmentation_layer(volume_info):
     """Tests that create_cloud_volume returns valid CloudVolumePrecomputed object for segmentation data.
     """
     _, b, vox_size, tiff_dims, _, top_level = volume_info
+    dir_segments = top_level / "test_upload_segments"
     vols = upload.create_cloud_volume(
-        "file://" + str(top_level / "test_upload_segments"),
+        dir_segments.as_uri(),
         tiff_dims,
         vox_size,
         num_resolutions=NUM_RES,
@@ -258,6 +256,7 @@ def test_create_segmentation_layer(volume_info):
     assert len(vols) == 1  # always 1 for segementation
     for i, vol in enumerate(vols):
         assert vol.scales[-1 - i]["size"] == [(2 ** i) * j for j in tiff_dims]
+    assert (dir_segments / "info").is_file()  # contains info file
 
 
 def test_get_data_ranges(volume_info):
@@ -286,8 +285,8 @@ def test_create_skel_segids(volume_info):
     """Tests that create_skel_segids generates valid skeleton objects.
     """
     _, _, _, _, origin, top_level = volume_info
-    swc_dir = str(top_level / "data_octree" / "consensus-swcs")
-    skels, segids = upload.create_skel_segids(swc_dir, origin)
+    swc_dir = top_level / "data_octree" / "consensus-swcs"
+    skels, segids = upload.create_skel_segids(swc_dir.as_posix(), origin)
     assert segids[0] == 2  # we use segment 2 for testing
     assert len(skels[0].vertices) > 0  # should have a positive number of vertices
 
@@ -300,24 +299,34 @@ def test_create_skel_segids(volume_info):
 def test_upload_segmentation(paths):
     """Ensures that upload_segmentation runs without errors.
     """
-    top_level, input, dir_segments = paths
-    upload.upload_segments(input, dir_segments, NUM_RES)
+    top_level, input = paths
+    dir_segments = top_level / "test_upload_segments"
+    upload.upload_segments(input.as_posix(), dir_segments.as_uri(), NUM_RES)
+    dir_skel = dir_segments / "skeletons"
+    assert (dir_segments / "info").is_file()  # contains info file
+    assert (dir_skel / "info").is_file()  # contains skeleton info file
+    assert len(sorted(dir_skel.glob("*.gz"))) > 0  # contains uploaded data
 
 
 def test_upload_volumes_serial(paths):
     """Ensures that upload_volumes runs without errors when `parallel` is False.
     """
-    top_level, input, dir_segments = paths
-    dir = "file://" + str(top_level / "test_upload" / "serial")
-    upload.upload_volumes(input, dir, NUM_RES)  # defaults to parallel=False
+    top_level, input = paths
+    dir = top_level / "test_upload" / "serial"
+    upload.upload_volumes(input.as_posix(), dir.as_uri(), NUM_RES)
+    assert (dir / "info").is_file()  # contains info file
+    assert len(sorted(dir.glob("*_*"))) > 0  # contains uploaded data
 
 
 def test_upload_volumes_parallel(paths):
     """Ensures that upload_volumes runs without errors when `parallel` is True.
+    Currently very buggy for NUM_RES > 1.
     """
-    top_level, input, dir_segments = paths
-    dir = "file://" + str(Path(top_level) / "test_upload" / "parallel")
-    upload.upload_volumes(input, dir, NUM_RES, parallel=True)
+    top_level, input = paths
+    dir = Path(top_level) / "test_upload" / "parallel"
+    upload.upload_volumes(input.as_posix(), dir.as_uri(), 1, parallel=True)
+    assert (dir / "info").is_file()  # contains info file
+    assert len(sorted(dir.glob("*_*"))) > 0  # contains uploaded data
 
 
 ##################
@@ -328,12 +337,13 @@ def test_upload_volumes_parallel(paths):
 def test_serial_download(paths):
     """Tests that downloaded (uploaded serially) data matches original data.
     """
-    top_level, input, dir_segments = paths
-    dir = "file://" + str(top_level / "test_upload" / "serial")
+    top_level, input = paths
+    dir = top_level / "test_upload" / "serial"
+    dir_segments = top_level / "test_upload_segments"
     ngl_sess = session.NeuroglancerSession(
-        mip=NUM_RES - 1, url=dir, url_segments=dir_segments,
+        url=dir.as_uri(), url_segments=dir_segments.as_uri(), mip=NUM_RES - 1
     )
-    orig_img = tf.imread(str(top_level / "data_octree" / "default.0.tif"))
+    orig_img = tf.imread((top_level / "data_octree" / "default.0.tif").as_posix())
     downloaded_img = ngl_sess.pull_bounds_img(Bbox((0, 0, 0), orig_img.shape[::-1]))
     assert downloaded_img.shape == orig_img.shape[::-1]  # same shape
     assert (downloaded_img > 0).any()  # nonzero download
@@ -343,12 +353,13 @@ def test_serial_download(paths):
 def test_parallel_download(paths):
     """Tests that downloaded (uploaded in parallel) data matches original data.
     """
-    top_level, input, dir_segments = paths
-    dir = "file://" + str(top_level / "test_upload" / "parallel")
+    top_level, input = paths
+    dir = top_level / "test_upload" / "parallel"
+    dir_segments = top_level / "test_upload_segments"
     ngl_sess = session.NeuroglancerSession(
-        url=dir, url_segments=dir_segments, mip=NUM_RES - 1
+        url=dir.as_uri(), url_segments=dir_segments.as_uri(), mip=0
     )
-    orig_img = tf.imread(str(top_level / "data_octree" / "default.0.tif"))
+    orig_img = tf.imread((top_level / "data_octree" / "default.0.tif").as_posix())
     downloaded_img = ngl_sess.pull_bounds_img(Bbox((0, 0, 0), orig_img.shape[::-1]))
     assert downloaded_img.shape == orig_img.shape[::-1]  # same shape
     assert (downloaded_img > 0).any()  # nonzero download
