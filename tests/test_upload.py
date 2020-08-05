@@ -6,7 +6,7 @@ from pathlib import Path
 import tifffile as tf
 from cloudvolume.lib import Bbox
 
-NUM_RES = 2
+NUM_RES = 1
 
 
 @pytest.fixture
