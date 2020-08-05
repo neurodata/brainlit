@@ -3,11 +3,12 @@ from brainlit.utils import upload
 import tifffile as tf
 from pathlib import Path
 import numpy as np
-from glob import glob
+
+NUM_RES = 1
 
 
 @pytest.fixture
-def volume_info(num_res=1, channel=0):
+def volume_info(num_res=NUM_RES, channel=0):
     top_level = Path(__file__).parents[1] / "data"
     (ordered_files, bin_paths, vox_size, tiff_dims, origin,) = upload.get_volume_info(
         str(top_level / "data_octree"), num_res, channel
@@ -20,6 +21,162 @@ def volume_info(num_res=1, channel=0):
         origin,
         top_level,
     )
+
+
+### inputs ###
+
+
+def test_get_volume_info_bad_inputs():
+    p = str(Path(__file__).parents[1] / "data")
+    n = 1
+    c = 0
+    e = "tif"
+    with pytest.raises(TypeError):
+        upload.get_volume_info(0, n, c, e)
+    with pytest.raises(FileNotFoundError):
+        upload.get_volume_info("asdf", n, c, e)
+    with pytest.raises(TypeError):
+        upload.get_volume_info(p, 0.0, c, e)
+    with pytest.raises(ValueError):
+        upload.get_volume_info(p, 0, c, e)
+    with pytest.raises(TypeError):
+        upload.get_volume_info(p, n, 0.0, e)
+    with pytest.raises(ValueError):
+        upload.get_volume_info(p, n, -1, e)
+    with pytest.raises(TypeError):
+        upload.get_volume_info(p, n, c, 1)
+    with pytest.raises(ValueError):
+        upload.get_volume_info(p, n, c, "fff")
+
+
+def test_create_cloud_volume_bad_inputs(volume_info):
+    (_, _, v, i, _, top_level,) = volume_info
+    p = "file://" + str(top_level)
+    n = 1
+    c = i
+    par = False
+    l = "image"
+    d = "uint16"
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(0, i, v, n, c, par, l, d)
+    with pytest.raises(NotImplementedError):
+        upload.create_cloud_volume("asdf", i, v, n, c, par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, 0, v, n, c, par, l, d)
+    with pytest.raises(ValueError):
+        upload.create_cloud_volume(p, [0], v, n, c, par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, ["a", "b", "c"], v, n, c, par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, 0, n, c, par, l, d)
+    with pytest.raises(ValueError):
+        upload.create_cloud_volume(p, i, [0], n, c, par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, ["a", "b", "c"], n, c, par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, v, 0.0, c, par, l, d)
+    with pytest.raises(ValueError):
+        upload.create_cloud_volume(p, i, v, 0, c, par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, v, n, 0, par, l, d)
+    with pytest.raises(ValueError):
+        upload.create_cloud_volume(p, i, v, n, [0], par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, v, n, ["a", "b", "c"], par, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, v, n, c, 0, l, d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, v, n, c, par, 0, d)
+    with pytest.raises(ValueError):
+        upload.create_cloud_volume(p, i, v, n, c, par, "seg", d)
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, v, n, c, par, l, 0)
+    with pytest.raises(ValueError):
+        upload.create_cloud_volume(p, i, v, n, c, par, l, "uint8")
+    with pytest.raises(TypeError):
+        upload.create_cloud_volume(p, i, v, n, c, par, l, d, 0)
+
+
+def test_get_data_ranges_bad_inputs(volume_info):
+    _, bin_paths, _, tiff_dims, _, _ = volume_info
+    with pytest.raises(TypeError):
+        upload.get_data_ranges(0, tiff_dims)
+    with pytest.raises(TypeError):
+        upload.get_data_ranges(0, tiff_dims)
+    with pytest.raises(TypeError):
+        upload.get_data_ranges(bin_paths[0], 0)
+
+
+def test_process_bad_inputs(volume_info):
+    fpaths, bin_paths, v, i, o, top = volume_info
+    dest = "file://" + str(top / "upload")
+    vols = upload.create_cloud_volume(dest, i, v, NUM_RES)
+    with pytest.raises(TypeError):
+        upload.process(0, bin_paths[0], vols[0])
+    with pytest.raises(FileNotFoundError):
+        upload.process(["asdf"], bin_paths[0], vols[0])
+    with pytest.raises(TypeError):
+        upload.process(fpaths[0], 0, vols[0])
+    with pytest.raises(ValueError):
+        upload.process(fpaths[0], [["asdf"]], vols[0])
+    with pytest.raises(TypeError):
+        upload.process(fpaths[0], bin_paths[0], 0)
+
+
+def test_upload_volumes_bad_inputs(volume_info):
+    fpaths, bin_paths, v, i, o, top = volume_info
+    n = NUM_RES
+    p = False
+    c = -1
+    root = str(top / "data_octree")
+    dest = "file://" + str(top / "upload")
+    with pytest.raises(TypeError):
+        upload.upload_volumes(0, dest, n, p, c)
+    with pytest.raises(TypeError):
+        upload.upload_volumes(root, 0, n, p, c)
+    with pytest.raises(NotImplementedError):
+        upload.upload_volumes(root, "asdf", n, p, c)
+    with pytest.raises(TypeError):
+        upload.upload_volumes(root, dest, 0.0, p, c)
+    with pytest.raises(ValueError):
+        upload.upload_volumes(root, dest, 0, p, c)
+    with pytest.raises(TypeError):
+        upload.upload_volumes(root, dest, n, 0, c)
+    with pytest.raises(TypeError):
+        upload.upload_volumes(root, dest, n, p, 0.0)
+    with pytest.raises(ValueError):
+        upload.upload_volumes(root, dest, n, p, NUM_RES)
+
+
+def test_create_skel_segids_bad_inputs(volume_info):
+    fpaths, bin_paths, v, i, o, top = volume_info
+    swcpath = str(top / "data_octree" / "consensus_swcs")
+    with pytest.raises(TypeError):
+        upload.create_skel_segids(0, o)
+    with pytest.raises(FileNotFoundError):
+        upload.create_skel_segids("", o)
+    with pytest.raises(TypeError):
+        upload.create_skel_segids(swcpath, 0)
+    with pytest.raises(ValueError):
+        upload.create_skel_segids(swcpath, (0, 0))
+
+
+def test_upload_segments_bad_inputs(volume_info):
+    fpaths, bin_paths, v, i, o, top = volume_info
+    n = NUM_RES
+    root = str(top / "data_octree")
+    dest = "file://" + str(top / "upload_segments")
+    with pytest.raises(TypeError):
+        upload.upload_volumes(0, dest, n)
+    with pytest.raises(TypeError):
+        upload.upload_volumes(root, 0, n)
+    with pytest.raises(NotImplementedError):
+        upload.upload_volumes(root, "asdf", n)
+    with pytest.raises(TypeError):
+        upload.upload_volumes(root, dest, 0.0)
+
+
+### image ###
 
 
 def test_get_volume_info(volume_info):
@@ -42,22 +199,7 @@ def test_create_image_layer(volume_info):
 
     assert len(vols) == len(b)
     for i, vol in enumerate(vols):
-        assert vol.info["scales"][0]["size"] == [(2 ** i) * j for j in tiff_dims]
-
-
-def test_create_segmentation_layer(volume_info):
-    _, b, vox_size, tiff_dims, _, top_level = volume_info
-    vols = upload.create_cloud_volume(
-        "file://" + str(top_level / "test_upload_segments"),
-        tiff_dims,
-        vox_size,
-        num_resolutions=len(b),
-        layer_type="segmentation",
-    )
-
-    assert len(vols) == 1
-    for i, vol in enumerate(vols):
-        assert vol.info["scales"][0]["size"] == [(2 ** i) * j for j in tiff_dims]
+        assert vol.scales[-1 - i]["size"] == [(2 ** i) * j for j in tiff_dims]
 
 
 def test_get_data_ranges(volume_info):
@@ -87,7 +229,7 @@ def test_upload_chunks_serial(num_res=1):
     upload.upload_volumes(input, dir, num_mips=num_res)
 
 
-def test_upload_chunks_parallel(num_res=1):
+def test_upload_chunks_parallel(num_res=NUM_RES):
     top_level = Path(__file__).parents[1] / "data"
     input = str(top_level / "data_octree")
     dir = "file://" + str(Path(top_level) / "test_upload" / "parallel")
@@ -97,16 +239,30 @@ def test_upload_chunks_parallel(num_res=1):
 ### segmentation ###
 
 
+def test_create_segmentation_layer(volume_info):
+    _, b, vox_size, tiff_dims, _, top_level = volume_info
+    vols = upload.create_cloud_volume(
+        "file://" + str(top_level / "test_upload_segments"),
+        tiff_dims,
+        vox_size,
+        num_resolutions=len(b),
+        layer_type="segmentation",
+    )
+
+    assert len(vols) == 1
+    for i, vol in enumerate(vols):
+        assert vol.scales[-1 - i]["size"] == [(2 ** i) * j for j in tiff_dims]
+
+
 def test_create_skel_segids(volume_info):
     _, _, _, _, origin, top_level = volume_info
-    input = str(top_level / "data_octree")
-    swc_dir = glob(f"{input}/*consensus-swcs")[0]
+    swc_dir = str(top_level / "data_octree" / "consensus-swcs")
     skels, segids = upload.create_skel_segids(swc_dir, origin)
     assert segids[0] == 2
     assert len(skels[0].vertices) > 0
 
 
-def test_upload_segments(volume_info, num_res=1):
+def test_upload_segments(volume_info, num_res=NUM_RES):
     top_level = Path(__file__).parents[1] / "data"
     input = str(top_level / "data_octree")
     dir = "file://" + str(top_level / "test_upload_segments" / "serial")

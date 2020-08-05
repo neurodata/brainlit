@@ -125,7 +125,6 @@ def tubes_seg(img, vertices, radius, spheres=False):
     
     radius : float
         The radius of the cylinder.
-
     spheres : bool
         True if sphere-based segmentation should be used; False for EDT-based segmentation.
     

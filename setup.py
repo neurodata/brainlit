@@ -14,10 +14,11 @@ AUTHOR_EMAIL = "bvarjav1@jhu.edu"
 URL = "https://github.com/neurodata/brainlit"
 MINIMUM_PYTHON_VERSION = 3, 7  # Minimum of Python 3.7
 REQUIRED_PACKAGES = [
-    "napari>=0.2.11",
+    "napari[pyqt5]>=0.2.11",
     "networkx>=2.1",
     "numpy>=1.8.1",
     "scikit-learn>=0.19.1",
+    "scikit-image>=0.16.2",
     "opencv-python==4.2.0.32",
     "scipy>=1.1.0",
     "seaborn>=0.9.0",
