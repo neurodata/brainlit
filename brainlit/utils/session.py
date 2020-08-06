@@ -8,6 +8,7 @@ from cloudvolume.lib import Bbox
 from pathlib import Path
 from .swc import read_s3, df_to_graph, get_sub_neuron
 import napari
+from typing import Optional
 
 
 class NeuroglancerSession:
