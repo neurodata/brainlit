@@ -14,16 +14,10 @@ class NeuroglancerSession:
     """
     Utility class which pulls and pushes data.
 
-    Parameters
-    ----------
-    url : string
-        URL of the s3 bucket to pull from and push to.
-
-    mip : int, optional (default=0)
-        Resolution level to pull and push at. 0 is the highest resolution.
-
-    url_segments : string, optional (Default=None)
-        URL of the s3 bucket to pull from and push to.
+    Arguments:
+        url : Precompued path either to a file URI or url URI. Defaults to mouselight brain 1.
+        mip : Resolution level to pull and push data at. 0 is the highest resolution.
+        url_segments : Precomputed path to segmentation data.
 
     Attributes
     ----------
@@ -45,9 +39,9 @@ class NeuroglancerSession:
 
     def __init__(
         self,
-        url="s3://mouse-light-viz/precomputed_volumes/brain1",
-        mip=1,
-        url_segments=None,
+        url : str = "s3://mouse-light-viz/precomputed_volumes/brain1",
+        mip : int = 1,
+        url_segments : Optional[str] = None,
     ):
         self.url = url
         self.cv = CloudVolume(self.url, parallel=False)
@@ -55,23 +49,30 @@ class NeuroglancerSession:
         self.chunk_size = self.cv.info["scales"][self.mip]["chunk_sizes"][0]
         self.scales = self.cv.scales[self.mip]["resolution"]
 
-        self.url_segments = url_segments
-        self.cv_segments = None
-        if self.url_segments is not None:
-            self.cv_segments = CloudVolume(self.url_segments, parallel=False)
+        if url_segments=None:
+            try:  # default is to add _segments
+                self.cv_segments = CloudVolume(self.url+"_segments", parallel=False)
+            except Error as e:
+                print(e)
+                self.cv_segments = None
+        else:
+            self.cv_segments = None
 
     def _get_voxel(self, seg_id, v_id):
         if self.cv_segments is None:
-            skel = self.cv.skeleton.get(seg_id)
-            vertex = skel.vertices[v_id]
-            voxel = np.round(np.divide(vertex, self.scales)).astype(int)
+            raise ValueError("Cannot get voxel without segmentation data")
         else:
-            skel = self.cv_segments.skeleton.get(seg_id)
-            vertex = skel.vertices[v_id]
+            vertex = self.cv_segments.skeleton.get(seg_id).vertices[v_id]
             voxel = np.round(
                 np.divide(vertex, self.cv_segments.scales[self.mip]["resolution"])
             ).astype(int)
         return voxel
+    
+    def set_url_segment(self, seg_url):
+        """Sets the url_segments and cv_segments attributes.
+        """
+        self.url_segments = seg_url
+        self.cv_segments = CloudVolume(self.url_segments, parallel=False)
 
     def get_segments(self, seg_id, bbox):
         """
