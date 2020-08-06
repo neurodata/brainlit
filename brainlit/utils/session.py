@@ -39,9 +39,9 @@ class NeuroglancerSession:
 
     def __init__(
         self,
-        url : str = "s3://mouse-light-viz/precomputed_volumes/brain1",
-        mip : int = 1,
-        url_segments : Optional[str] = None,
+        url: str = "s3://mouse-light-viz/precomputed_volumes/brain1",
+        mip: int = 1,
+        url_segments: Optional[str] = None,
     ):
         self.url = url
         self.cv = CloudVolume(self.url, parallel=False)
@@ -49,9 +49,9 @@ class NeuroglancerSession:
         self.chunk_size = self.cv.info["scales"][self.mip]["chunk_sizes"][0]
         self.scales = self.cv.scales[self.mip]["resolution"]
 
-        if url_segments=None:
+        if url_segments == None:
             try:  # default is to add _segments
-                self.cv_segments = CloudVolume(self.url+"_segments", parallel=False)
+                self.cv_segments = CloudVolume(self.url + "_segments", parallel=False)
             except Error as e:
                 print(e)
                 self.cv_segments = None
@@ -67,7 +67,7 @@ class NeuroglancerSession:
                 np.divide(vertex, self.cv_segments.scales[self.mip]["resolution"])
             ).astype(int)
         return voxel
-    
+
     def set_url_segment(self, seg_url):
         """Sets the url_segments and cv_segments attributes.
         """
