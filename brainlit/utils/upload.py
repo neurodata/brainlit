@@ -204,7 +204,8 @@ def get_data_ranges(
         y_range: y-coord int bounds.
         z_range: z-coord int bounds.
     """
-    check_binary_path(bin_path)
+    for b in bin_path:
+        check_binary_path(b)
     check_size(chunk_size)
 
     x_curr, y_curr, z_curr = 0, 0, 0
@@ -223,9 +224,7 @@ def get_data_ranges(
     return x_range, y_range, z_range
 
 
-def process(
-    file_path: List[str], bin_path: List[List[str]], vol: CloudVolumePrecomputed
-):
+def process(file_path: str, bin_path: List[str], vol: CloudVolumePrecomputed):
     """The parallelizable method to upload data.
 
     Loads the image into memory, and pushes it to specific ranges in the CloudVolume.
@@ -235,11 +234,11 @@ def process(
         bin_path: Binary path to the image file.
         vol: CloudVolume object to upload.
     """
-    check_type(file_path, list)
+    check_type(file_path, str)
     check_binary_path(bin_path)
     check_type(vol, CloudVolumePrecomputed)
 
-    array = tf.imread(file_path).T[..., None]
+    array = tf.imread(file_path).T
     ranges = get_data_ranges(bin_path, vol.scales[-1]["size"])
     vol[
         ranges[0][0] : ranges[0][1],

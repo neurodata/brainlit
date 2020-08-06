@@ -3,6 +3,7 @@ from brainlit.utils.session import NeuroglancerSession
 import SimpleITK as sitk
 import scipy.ndimage
 import numpy as np
+from pathlib import Path
 from cloudvolume import CloudVolume
 from cloudvolume.lib import Bbox
 
