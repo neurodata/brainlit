@@ -1,5 +1,6 @@
 import pytest
 from brainlit.utils import upload, session
+from brainlit.algorithms.generate_fragments import tube_seg
 from pathlib import Path
 
 # below inputs for validation
@@ -231,7 +232,7 @@ def test_create_image_layer(volume_info):
     _, b, vox_size, tiff_dims, _, top_level = volume_info
     dir = top_level / "test_upload"
     vols = upload.create_cloud_volume(
-        dir.as_uri(), tiff_dims, vox_size, num_resolutions=len(b), layer_type="image",
+        dir.as_uri(), tiff_dims, vox_size, num_resolutions=NUM_RES, layer_type="image",
     )
 
     assert len(vols) == NUM_RES  # one vol for each resolution
@@ -257,6 +258,25 @@ def test_create_segmentation_layer(volume_info):
     for i, vol in enumerate(vols):
         assert vol.scales[-1 - i]["size"] == [(2 ** i) * j for j in tiff_dims]
     assert (dir_segments / "info").is_file()  # contains info file
+
+
+def test_create_annotation_layer(volume_info):
+    """Tests that create_cloud_volume returns valid CloudVolumePrecomputed object for annotation data.
+    """
+    _, b, vox_size, tiff_dims, _, top_level = volume_info
+    dir_annotation = top_level / "test_upload_annotation"
+    vols = upload.create_cloud_volume(
+        dir_annotation.as_uri(),
+        tiff_dims,
+        vox_size,
+        num_resolutions=NUM_RES,
+        layer_type="annotation",
+    )
+
+    assert len(vols) == 1  # always 1 for segementation
+    for i, vol in enumerate(vols):
+        assert vol.scales[-1 - i]["size"] == [(2 ** i) * j for j in tiff_dims]
+    assert (dir_annotation / "info").is_file()  # contains info file
 
 
 def test_get_data_ranges(volume_info):
@@ -318,9 +338,28 @@ def test_upload_volumes_serial(paths):
     assert len(sorted(dir.glob("*_*"))) > 0  # contains uploaded data
 
 
+def test_upload_annotation(paths):
+    """Ensures that uploading annotations runs without errors.
+    """
+    top_level, input = paths
+    dir = top_level / "test_upload" / "serial"
+    dir_segments = top_level / "test_upload_segments"
+    dir_annotation = top_level / "test_upload_annotation"
+    sess = session.NeuroglancerSession(
+        url=dir.as_uri(),
+        url_segments=dir_segments.as_uri(),
+        url_annotation=dir_annotation.as_uri(),
+        mip=NUM_RES - 1,
+    )
+    img, bounds, vox_list = sess.pull_vertex_list(2, [0, 1], expand=True)
+    labels = tube_seg.tubes_seg(img, vox_list, radius=2)
+    sess.push(labels, bounds)
+    # assert (dir_annotation / "info").is_file()  # contains info file
+
+
 def test_upload_volumes_parallel(paths):
     """Ensures that upload_volumes runs without errors when `parallel` is True.
-    Currently very buggy for NUM_RES > 1.
+    Currently buggy for NUM_RES > 1.
     """
     top_level, input = paths
     dir = Path(top_level) / "test_upload" / "parallel"
