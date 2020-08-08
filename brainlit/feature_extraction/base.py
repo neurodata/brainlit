@@ -10,11 +10,25 @@ from joblib import Parallel, delayed
 
 
 class BaseFeatures(BaseEstimator):
-    """
-    Base class for generating features from precomputed volumes.    
+    """Base class for generating features from precomputed volumes.
+
+    Attributes:
+        url: 
+        size:
+        offset:
+        download_time:
+        conversion_time:
+        write_time:
+        segment_url:
     """
 
-    def __init__(self, url, size=[1, 1, 1], offset=[15, 15, 15], segment_url=None):
+    def __init__(
+        self,
+        url: str,
+        size: List[int] = [1, 1, 1],
+        offset: List[int] = [15, 15, 15],
+        segment_url: Optional[str] = None,
+    ):
         if type(url) is not str:
             raise TypeError("URL must be str")
         self.url = url
@@ -26,69 +40,45 @@ class BaseFeatures(BaseEstimator):
         self.segment_url = segment_url
 
     @abstractmethod
-    def _convert_to_features(self, img):
-        """
-        Computes features from image data.
+    def _convert_to_features(self, img: np.ndarray) -> np.ndarray:
+        """Computes features from image data.
 
-        Parameters
-        ----------
-        img : ndarray
-            Image data.
+        Arguments:
+            img: Image data.
 
-        Returns
-        -------
-        features : ndarray
-            Feature data.
+        Returns:
+            features: Feature data.
         """
 
     def fit(
         self,
-        seg_ids,
-        num_verts=None,
-        file_path=None,
-        batch_size=10000,
-        start_seg=None,
-        start_vert=0,
-        include_neighborhood=False,
-        n_jobs=1,
-    ):
-        """
-        Pulls image and background.
+        seg_ids: List[int],
+        num_verts: Optional[int] = None,
+        file_path: Optional[str] = None,
+        batch_size: int = 10000,
+        start_seg: Optional[int] = None,
+        start_vert: int = 0,
+        include_neighborhood: bool = False,
+        n_jobs: int = 1,
+    ) -> np.ndarray:
+        """Pulls image and background.
 
-        Parameters
-        ----------
-        seg_ids : list of ints
-            A list of segment indices.
+        Arguments:
+            seg_ids: A list of segment indices.
+            num_verts: If not None, only runs on a set number of vertices. Defaults to None.
+            file_path: If not None, then the extracted data will be written directly
+                into a feather binary file. The file_path specifies the prefix
+                of the file. Defaults to None.
+            batch_size: Size of each batch of data to be loaded/written. Only
+                used when file_path is not none. Default 10000.
+            start_seg: Specifies which segment in the seg_ids list to start at. Default 0.
+            start_vert: Specifies which vertex of the first seg_id to start at. Default 0.
+            include_neighborhood: If extracting linear features, specifies if the general
+                neighborhood should be extracted as well. Defaults to False.
+            n_jobs: Number of cores to use. -1 to use all available cores. Defaults to 1.
 
-        num_verts : int, optional (default=None)
-            If not none, only runs on a set number of vertices.
-        
-        file_path : str
-            If not none, then the extracted data will be written directly
-            into a feather binary file. The file_path specifies the prefix
-            of the file.
-
-        batch_size : int
-            Size of each batch of data to be loaded/written. Is only
-            used when file_path is not none.
-        
-        start_seg : int
-            Specifies which segment in the seg_ids list to start at.
-        
-        start_vert : int
-            Specifies which vertex of the first seg_id to start at
-        
-        include_neighborhood : boolean
-            If extracting linear features, specifies if the general
-            neighborhood should be extracted as well.
-        
-        n_jobs : int
-            Number of cores to use. -1 to use all available cores.
-
-        Returns
-        -------
-        df : ndarray
-            A dataframe of data.
+        Returns:
+            df: A dataframe of data.
         """
         voxel_dict = {}
         counter = 0
@@ -147,6 +137,8 @@ class BaseFeatures(BaseEstimator):
         batch_size=None,
         file_path=None,
     ):
+        """Core code which actually extracts features.
+        """
         voxel_dict = {}
         counter = 0
         batch_id = 0
