@@ -41,6 +41,11 @@ def check_iterable_positive(input):
         raise ValueError((f"{input} elements should be positive."))
 
 
+def check_iterable_nonnegative(input):
+    if not all(i >= 0 for i in input):
+        raise ValueError((f"{input} elements should be nonnegative."))
+
+
 def check_size(input, allow_float=True):
     check_type(input, (list, tuple))
     if len(input) != 3:
