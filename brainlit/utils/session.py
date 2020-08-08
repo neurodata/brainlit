@@ -160,14 +160,14 @@ class NeuroglancerSession:
         return np.squeeze(np.array(img)), bounds, vox_in_img
 
     def pull_vertex_list(
-        self, seg_id: int, v_id_list: List[int], buffer: int = 0, expand: bool = False,
+        self, seg_id: int, v_id_list: List[int], buffer: int = 1, expand: bool = False,
     ) -> Tuple[np.ndarray, Bbox, List[Tuple[int, int, int]]]:
         """Pull a region containing all listed vertices.
 
         Arguments:
             seg_id: ID of the segment to use, depends on data in s3.
             v_id_list: list of vertex IDs to use.
-            buffer: Buffer around the bounding box of seed vertices (on lower and higher bound).
+            buffer: Buffer around the bounding box (in voxels). Default 1, set to 0 if expand is True.
             expand: Flag whether to expand region to closest set of chunks.
 
         Returns:
@@ -181,17 +181,24 @@ class NeuroglancerSession:
         if buffer < 0:
             raise ValueError(f"Buffer {buffer} shouild not be negative.")
         check_type(expand, bool)
-
-        voxel_list = np.array([self._get_voxel(seg_id, i) for i in v_id_list])
+        if expand:
+            buffer = 0
         buffer = [buffer, buffer, buffer]
-        lower = list(np.min(voxel_list, axis=0) - buffer)
-        higher = list(np.max(voxel_list, axis=0) + buffer)
-        bounds = Bbox(lower, higher)
+
+        voxel_list = [self._get_voxel(seg_id, i) for i in v_id_list]
+        if len(voxel_list) == 1:  # edge case of 1 vertex
+            bounds = Bbox(voxel_list[0] - buffer, voxel_list[0] + buffer)
+        else:
+            voxel_list = np.array(voxel_list)
+            lower = list(np.min(voxel_list, axis=0) - buffer)
+            higher = list(np.max(voxel_list, axis=0) + buffer)
+            bounds = Bbox(lower, higher)
+
         if expand:
             bounds = bounds.expand_to_chunk_size(self.chunk_size)
-            lower = bounds.to_list()[:3]
+        lower = bounds.to_list()[:3]
         img = self.pull_bounds_img(bounds)
-        vox_in_img_list = voxel_list - lower
+        vox_in_img_list = np.array(voxel_list) - lower
         return img, bounds, vox_in_img_list
 
     def pull_chunk(
@@ -242,8 +249,7 @@ class NeuroglancerSession:
             bounds = bounds.to_list()
         check_iterable_type(bounds, (int, np.integer))
         check_iterable_nonnegative(bounds)
-
-        img = self.cv.download(bounds, mip=self.mip)
+        img = self.cv.download(Bbox(bounds[:3], bounds[3:]), mip=self.mip)
         return np.squeeze(np.array(img))
 
     def pull_bounds_seg(self, bounds: Bounds) -> np.ndarray:

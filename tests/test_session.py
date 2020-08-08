@@ -225,15 +225,16 @@ def test_pull_vertex_list(session):
         )
 
 
-def test_pull_vertex_list_voxel(session):
-    """Tests that pulling a vertex list of a single voxel is the same as pulling that voxel.
+def test_pull_vertex_list_chunk(session):
+    """Tests that pulling a vertex list of a single voxel is the same as pulling that chunk.
     """
     sess, seg_id, v_id = session
-    img, bounds, voxel = sess.pull_voxel(seg_id, v_id)
-    img2, bounds2, voxel2 = sess.pull_vertex_list(seg_id, [v_id])
-    assert (img == img2).all()
-    assert bounds == bounds2
+    img, bounds, voxel = sess.pull_chunk(seg_id, v_id)
+    img2, bounds2, voxel2 = sess.pull_vertex_list(seg_id, [v_id], expand=True)
+    assert img.shape == img2.shape
     assert voxel == voxel2
+    assert bounds == bounds2
+    assert img == img2
 
 
 def test_pull_chunk(session):
@@ -255,6 +256,7 @@ def test_pull_bounds_voxel(session):
     """
     sess, seg_id, v_id = session
     img, bounds, voxel = sess.pull_voxel(seg_id, v_id)
+    print(bounds)
     img2 = sess.pull_bounds_img(bounds)
     assert (img == img2).all()
 
