@@ -64,7 +64,7 @@ def read_swc(path):
         path,
         names=["sample", "structure", "x", "y", "z", "r", "parent"],
         skiprows=header_length,
-        delim_whitespace=True,
+        delimiter=" ",
     )
     return df, offset, color, cc, branch
 

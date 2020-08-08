@@ -155,7 +155,8 @@ class NeuroglancerSession:
         seed = bounds.to_list()
         shape = [radius] * 3
         bounds = Bbox(np.subtract(seed[:3], shape), np.add(np.add(seed[3:], shape), 1))
-        img = self.cv.download(bounds, mip=self.mip)
+        img = self.pull_bounds_img(bounds)
+        # img = self.cv.download(bounds, mip=self.mip)
         vox_in_img = voxel - np.array(bounds.to_list()[:3])
         return np.squeeze(np.array(img)), bounds, vox_in_img
 
@@ -183,15 +184,15 @@ class NeuroglancerSession:
         check_type(expand, bool)
         if expand:
             buffer = 0
-        buffer = [buffer, buffer, buffer]
+        buffer = [buffer] * 3
 
         voxel_list = [self._get_voxel(seg_id, i) for i in v_id_list]
         if len(voxel_list) == 1:  # edge case of 1 vertex
-            bounds = Bbox(voxel_list[0] - buffer, voxel_list[0] + buffer)
+            bounds = Bbox(voxel_list[0] - buffer, voxel_list[0] + buffer + 1)
         else:
             voxel_list = np.array(voxel_list)
             lower = list(np.min(voxel_list, axis=0) - buffer)
-            higher = list(np.max(voxel_list, axis=0) + buffer)
+            higher = list(np.max(voxel_list, axis=0) + buffer + 1)
             bounds = Bbox(lower, higher)
 
         if expand:
