@@ -256,7 +256,7 @@ def test_pull_chunk(session):
     img, bounds, voxel = sess.pull_chunk(seg_id, v_id)
     assert len(img.shape) == 3
     assert img.shape == tuple(bounds.size())
-    assert img.shape == sess.chunk_size
+    assert img.shape == tuple(sess.chunk_size)
     assert (
         voxel[0] <= img.shape[0]
         and voxel[1] <= img.shape[1]

@@ -82,7 +82,7 @@ class NeuroglancerSession:
             voxel: The voxel coordinates in (x, y, z) voxel space.
         """
         check_type(seg_id, int)
-        check_type(v_id, int)
+        check_type(v_id, (int, np.integer))
         if self.cv_segments is None:
             raise ValueError("Cannot get voxel without segmentation data")
         seg = self.cv_segments.skeleton.get(seg_id).vertices
