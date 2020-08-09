@@ -29,17 +29,17 @@ class NeuroglancerSession:
         url: Precompued path either to a file URI or url URI. Defaults to mouselight brain1_2.
         mip: Resolution level to pull and push data at. Defaults to 0, the highest resolution.
         url_segments: Precomputed path to segmentation data. Optional, default None.
-        url_annotation: Precomputed path to annotation data. Optonal, default None.
+        url_annotations: Precomputed path to annotation data. Optonal, default None.
 
     Attributes:
         url: CloudVolumePrecomputedPath to image data.
         url_segments: CloudVolumePrecomputedPath to segmentation data. Optional, default None.
             Automatically tries precomputed path url+"_segments" if None.
-        url_annotation: CloudVolumePrecomputedPath to annotation data. Optional, default None.
+        url_annotations: CloudVolumePrecomputedPath to annotation data. Optional, default None.
             Automatically tries precomputed path url+"_annotation" if None.
         cv (CloudVolumePrecomputed): CloudVolume object for image data.
         cv_segments (CloudVolumePrecomputed): CloudVolume object for segmentation data. Optional, default None.
-        cv_annotation (CloudVolumePrecomputed): CloudVolume object for segmentation data. Optional, default None.
+        cv_annotations (CloudVolumePrecomputed): CloudVolume object for segmentation data. Optional, default None.
         mip: Resolution level.
         chunk_size: The chunk size of the volume at the specified mip, given as (x, y, z).
         scales: The resolution of the volume at the specified mip, given as (x, y, z).
@@ -47,10 +47,10 @@ class NeuroglancerSession:
 
     def __init__(
         self,
-        url: str = "s3://mouse-light-viz/precomputed_volumes/brain1_2",
+        url: str,  #  = "s3://mouse-light-viz/precomputed_volumes/brain1"
         mip: int = 0,
         url_segments: Optional[str] = None,
-        url_annotation: Optional[str] = None,
+        url_annotations: Optional[str] = None,
     ):
         check_precomputed(url)
         check_type(mip, int)
@@ -67,30 +67,28 @@ class NeuroglancerSession:
             try:  # default is to add _segments
                 self.cv_segments = CloudVolume(url + "_segments", parallel=False)
                 self.url_segments = url + "_segments"
-            except InfoUnavailableError as e:
-                print(e)
-                # raise Warning(
-                #     f"Segmentation volume not found at {self.url_segments}, defaulting to None."
-                # )
+            except InfoUnavailableError:
+                raise Warning(
+                    f"Segmentation volume not found at {self.url_segments}, defaulting to None."
+                )
                 self.cv_segments = None
         else:
             check_precomputed(url_segments)
             self.cv_segments = CloudVolume(url_segments, parallel=False)
 
-        self.url_annotation = url_annotation
-        if url_annotation is None:
+        self.url_annotations = url_annotations
+        if url_annotations is None:
             try:  # default is to add _annotation
-                self.cv_annotation = CloudVolume(url + "_annotation", parallel=False)
-                self.url_annotation = url + "_annotation"
-            except InfoUnavailableError as e:
-                print(e)
-                # raise Warning(
-                #     f"Annotation volume not found at {self.url_annotation}, defaulting to None."
-                # )
-                self.cv_annotation = None
+                self.cv_annotations = CloudVolume(url + "_annotations", parallel=False)
+                self.url_annotations = url + "_annotations"
+            except InfoUnavailableError:
+                raise Warning(
+                    f"Annotation volume not found at {self.url_annotations}, defaulting to None."
+                )
+                self.cv_annotations = None
         else:
-            check_precomputed(url_annotation)
-            self.cv_annotation = CloudVolume(url_annotation, parallel=False)
+            check_precomputed(url_annotations)
+            self.cv_annotations = CloudVolume(url_annotations, parallel=False)
 
     def _get_voxel(self, seg_id: int, v_id: int) -> Tuple[int, int, int]:
         """Gets coordinates of segment vertex, in voxel space.
@@ -127,7 +125,7 @@ class NeuroglancerSession:
         self.url_segments = seg_url
         self.cv_segments = CloudVolume(self.url_segments, parallel=False)
 
-    def set_url_annotation(self, ann_url: str):
+    def set_url_annotations(self, ann_url: str):
         """Sets the url_annotation and cv_annotation attributes.
 
         Arguments:
@@ -135,8 +133,8 @@ class NeuroglancerSession:
         """
         check_precomputed(ann_url)
 
-        self.url_annotation = ann_url
-        self.cv_annotation = CloudVolume(self.url_annotation, parallel=False)
+        self.url_annotations = ann_url
+        self.cv_annotations = CloudVolume(self.url_annotations, parallel=False)
 
     def get_segments(self, seg_id: int, bbox: Optional[Bounds] = None) -> nx.Graph:
         """Get a graph of a segmentation annotation within a bounding box.
@@ -299,10 +297,10 @@ class NeuroglancerSession:
             bounds = bounds.to_list()
         check_iterable_type(bounds, int)
         check_iterable_nonnegative(bounds)
-        if self.cv_annotation is None:
+        if self.cv_annotations is None:
             raise ValueError("Cannot pull from undefined annotation layer.")
 
-        img = self.cv_annotation[bounds]
+        img = self.cv_annotations[bounds]
         return np.squeeze(np.array(img))
 
     def push(
@@ -322,6 +320,6 @@ class NeuroglancerSession:
             bounds = bounds.to_list()
         check_iterable_type(bounds, (int, np.integer))
         check_iterable_nonnegative(bounds)
-        if self.cv_annotation is None:
+        if self.cv_annotations is None:
             raise ValueError("Cannot pull from undefined annotation layer.")
-        self.cv_annotation[Bbox(bounds[:3], bounds[3:])] = img.astype("uint64")
+        self.cv_annotations[Bbox(bounds[:3], bounds[3:])] = img.astype("uint64")

@@ -266,7 +266,8 @@ def test_create_annotation_layer(volume_info):
     _, b, vox_size, tiff_dims, _, top_level = volume_info
     dir_annotation = top_level / "test_upload_annotation"
     vols = upload.create_cloud_volume(
-        dir_annotation.as_uri(),
+        # dir_annotation.as_uri(),
+        "s3://mouse-light-viz/precomputed_volumes/brain1_annotations",
         tiff_dims,
         vox_size,
         num_resolutions=NUM_RES,

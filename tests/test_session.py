@@ -1,5 +1,6 @@
 import pytest
 from brainlit.utils.session import NeuroglancerSession
+from brainlit.utils.upload import get_volume_info, create_cloud_volume
 import SimpleITK as sitk
 import scipy.ndimage
 import numpy as np
@@ -7,22 +8,26 @@ from pathlib import Path
 import networkx as nx
 from cloudvolume import CloudVolume
 from cloudvolume.lib import Bbox
+from cloudvolume.exceptions import InfoUnavailableError
 
 
 @pytest.fixture
 def vars():
-    url = "s3://mouse-light-viz/precomputed_volumes/brain1_2"  # remove _2 when data uploaded
+    url = "s3://mouse-light-viz/precomputed_volumes/brain1"
     url_segments = url + "_segments"
+    url_annotations = url + "_annotations"
     mip = 0
     seg_id = 2
     v_id = 300
-    return url, url_segments, mip, seg_id, v_id
+    return url, url_segments, url_annotations, mip, seg_id, v_id
 
 
 @pytest.fixture
 def session(vars):
-    url, url_seg, mip, seg_id, v_id = vars
-    sess = NeuroglancerSession(url=url, mip=mip, url_segments=url_seg)
+    url, url_seg, url_ann, mip, seg_id, v_id = vars
+    sess = NeuroglancerSession(
+        url=url, mip=mip, url_segments=url_seg, url_annotations=url_ann
+    )
     return sess, seg_id, v_id
 
 
@@ -31,10 +36,48 @@ def session(vars):
 ####################
 
 
+def test_session_no_urls(vars):
+    """Tests that initializing a NeuroglancerSession object without passing urls is valid.
+    """
+    url, url_segments, url_annotations, mip, seg_id, v_id = vars
+    NeuroglancerSession(url)
+    NeuroglancerSession(url, url_segments=url_segments)
+    NeuroglancerSession(url, url_annotations=url_annotations)
+    NeuroglancerSession(url, 0, url_segments, url_annotations)
+
+
+def test_session_incomplete_urls(vars):
+    """Tests that initializing a NeuroglancerSession on data without segmentation or annotation channels is valid and raises a warning.
+    """
+    top_level = Path(__file__).parents[1] / "data"
+    input = (top_level / "data_octree").as_posix()
+    path = (top_level / "test_img_only").as_uri()
+    # create img volume info file
+    (_, _, vox_size, img_size, _) = get_volume_info(input, 1,)
+    vols = create_cloud_volume(path, img_size, vox_size, 1, layer_type="image",)
+    with pytest.raises(Warning):
+        sess = NeuroglancerSession(path)
+
+
+def test_session_bad_urls(vars):
+    """Tests that initializing a NeuroglancerSession object by passing bad urls isn't valid.
+    """
+    url, url_segments, url_annotations, mip, seg_id, v_id = vars
+    url_bad = url + "0"  # bad url
+    url_segments_bad = url_segments + "0"  # bad url
+    url_annotations_bad = url_annotations + "0"
+    with pytest.raises(InfoUnavailableError):
+        sess = NeuroglancerSession(url_bad)
+    with pytest.raises(InfoUnavailableError):
+        sess = NeuroglancerSession(url, url_segments=url_segments_bad)
+    with pytest.raises(InfoUnavailableError):
+        sess = NeuroglancerSession(url, url_annotations=url_annotations_bad)
+
+
 def test_NeuroglancerSession_bad_inputs(vars):
     """Tests that errors are raised when bad inputs are given to initializing session.NeuroglancerSession.
     """
-    url, url_seg, mip, seg_id, v_id = vars
+    url, url_seg, url_ann, mip, seg_id, v_id = vars
     with pytest.raises(TypeError):
         NeuroglancerSession(url=0, mip=mip, url_segments=url_seg)
     with pytest.raises(NotImplementedError):
@@ -180,7 +223,7 @@ def test_push_bad_inputs(session):
 def test_set_url_segments(vars):
     """Tests setting a segmentation url .
     """
-    url, url_segments, mip, seg_id, v_id = vars
+    url, url_segments, url_annotations, mip, seg_id, v_id = vars
     sess = NeuroglancerSession(url=url, mip=mip)
     sess.set_url_segments(url_segments)
     assert sess.url_segments == url_segments
@@ -216,7 +259,7 @@ def test_pull_vertex_list(session):
     """Tests that pulling a vertex list returns valid regions.
     """
     sess, seg_id, v_id = session
-    img, bounds, voxel = sess.pull_vertex_list(seg_id, [0, 1, 2, 3])
+    img, bounds, voxel = sess.pull_vertex_list(seg_id, [100, 101, 102, 103])
     assert len(img.shape) == 3
     assert img.shape == tuple(bounds.size())
     for vox in voxel:
