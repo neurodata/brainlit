@@ -57,6 +57,11 @@ def test_session_incomplete_urls(vars):
     vols = create_cloud_volume(path, img_size, vox_size, 1, layer_type="image",)
     with pytest.raises(Warning):
         sess = NeuroglancerSession(path)
+    with pytest.raises(Warning):
+        sess = NeuroglancerSession(
+            path,
+            url_segments="s3://mouse-light-viz/precomputed_volumes/brain1_segments",
+        )
 
 
 def test_session_bad_urls(vars):
