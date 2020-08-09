@@ -11,7 +11,7 @@ from .swc import read_s3, df_to_graph, get_sub_neuron
 import napari
 import warnings
 import networkx as nx
-from typing import Optional, List, Union, Tuple
+from typing import Optional, List, Union, Tuple, Literal
 from .util import (
     check_type,
     check_size,
@@ -196,7 +196,12 @@ class NeuroglancerSession:
         return np.squeeze(np.array(img)), bounds, vox_in_img
 
     def pull_vertex_list(
-        self, seg_id: int, v_id_list: List[int], buffer: int = 1, expand: bool = False,
+        self,
+        seg_id: int,
+        v_id_list: List[int],
+        buffer: int = 1,
+        expand: bool = False,
+        source: Literal["image", "annotation"] = "image",
     ) -> Tuple[np.ndarray, Bbox, List[Tuple[int, int, int]]]:
         """Pull a region containing all listed vertices.
 
@@ -220,6 +225,8 @@ class NeuroglancerSession:
         if expand:
             buffer = 0
         buffer = [buffer] * 3
+        if source == "annotation" and self.cv_annotations is None:
+            raise ValueError("Cannot get annotation data without annotation source.")
 
         voxel_list = [self._get_voxel(seg_id, i) for i in v_id_list]
         if len(voxel_list) == 1:  # edge case of 1 vertex
@@ -233,12 +240,19 @@ class NeuroglancerSession:
         if expand:
             bounds = bounds.expand_to_chunk_size(self.chunk_size)
         lower = bounds.to_list()[:3]
-        img = self.pull_bounds_img(bounds)
+        if source == "image":
+            img = self.pull_bounds_img(bounds)
+        else:
+            img = self.pull_bounds_seg(bounds)
         vox_in_img_list = np.array(voxel_list) - lower
         return img, bounds, vox_in_img_list
 
     def pull_chunk(
-        self, seg_id: int, v_id: int, radius: int = 0
+        self,
+        seg_id: int,
+        v_id: int,
+        radius: int = 0,
+        source: Literal["image", "annotation"] = "image",
     ) -> Tuple[np.ndarray, Bbox, Tuple[int, int, int]]:
         """Pull a number of chunks around a specified skeleton vertex.
 
@@ -258,6 +272,8 @@ class NeuroglancerSession:
         check_type(radius, int)
         if radius < 0:
             raise ValueError(f"Radius of {radius} should be nonnegative.")
+        if source == "annotation" and self.cv_annotations is None:
+            raise ValueError("Cannot get annotation data without annotation source.")
 
         voxel = self._get_voxel(seg_id, v_id)
         bounds = Bbox(voxel, voxel).expand_to_chunk_size(self.chunk_size)
@@ -268,7 +284,10 @@ class NeuroglancerSession:
             self.chunk_size[2] * radius,
         ]
         bounds = Bbox(np.subtract(seed[:3], shape), np.add(seed[3:], shape))
-        img = self.cv.download(bounds, mip=self.mip)
+        if source == "image":
+            img = self.pull_bounds_img(bounds)
+        else:
+            img = self.pull_bounds_seg(bounds)
         vox_in_img = voxel - np.array(bounds.to_list()[:3])
         return np.squeeze(np.array(img)), bounds, vox_in_img
 
@@ -300,12 +319,12 @@ class NeuroglancerSession:
         """
         if isinstance(bounds, Bbox):
             bounds = bounds.to_list()
-        check_iterable_type(bounds, int)
+        check_iterable_type(bounds, (int, np.integer))
         check_iterable_nonnegative(bounds)
         if self.cv_annotations is None:
             raise ValueError("Cannot pull from undefined annotation layer.")
 
-        img = self.cv_annotations[bounds]
+        img = self.cv_annotations[Bbox(bounds[:3], bounds[3:])]
         return np.squeeze(np.array(img))
 
     def push(

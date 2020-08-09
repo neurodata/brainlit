@@ -10,6 +10,7 @@ import networkx as nx
 from cloudvolume import CloudVolume
 from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError
+from brainlit.algorithms.generate_fragments.tube_seg import tubes_seg
 
 
 @pytest.fixture
@@ -343,27 +344,36 @@ def test_pull_bounds_voxel(session):
     assert (img == img2).all()
 
 
-def test_pull_bounds_seg():
-    """Tests pulling annotation layers.
-    Currently we do not have annotation layers to test with.
-    """
-
-
 ###############
 ### pushing ###
 ###############
 
 
-def test_push(session):
-    """Tests pushing an annotation volume.
-    Currently we do not support annotation layers to push to.
+def test_push_pull_annotation(session):
+    """Tests pushing an annotation volume, then pulling it back, via pull_vertex_list.
     """
+    sess, seg_id, v_id = session
+    img, bounds, vox_list = sess.pull_vertex_list(
+        2, [v_id, v_id + 1], expand=True, source="image"
+    )
+    labels = tubes_seg(img, vox_list, radius=0.5)
+    assert (labels != 0).any()
+    sess.push(labels, bounds)
+    img2, bounds2, vox_list2 = sess.pull_vertex_list(
+        2, [v_id, v_id + 1], expand=True, source="annotation"
+    )
+    assert (img != 0).any()
+    assert (img2 != 0).any()
+    assert bounds == bounds2
+    assert (vox_list == vox_list2).all()
+    assert img.shape == img2.shape
+    assert (img == img2.astype("uint16")).all()  # hmmmmmmmm
 
 
 def test_pull_chunk_push_label(session):
     """Tests pulling a chunk of a volume, converting it to an annotation, and pushing the annotation.
-    Currently we do not support annotation layers to push to.
     """
+    sess, seg_id, v_id = session
 
     def _img_to_labels(img, voxel, low=None, up=255):
         """Test method that converts volume to pixel-wise annotations.
@@ -384,9 +394,15 @@ def test_pull_chunk_push_label(session):
         labels = sitk.GetArrayFromImage(seg_clean)
         return labels
 
-    sess, seg_id, v_id = session
-    img, bounds, voxel = sess.pull_chunk(2, 300)
-    label = _img_to_labels(img, voxel, low=11)
-    # sess.push(label, bounds)
-    # label2 = sess.pull_bounds_seg(bounds)
-    # assert (label == label2).all()
+    img, bounds, vox_list = sess.pull_chunk(2, v_id, source="image")
+    labels = _img_to_labels(img, vox_list)
+    assert (labels != 0).any()
+    sess.push(labels, bounds)
+    img2, bounds2, vox_list2 = sess.pull_chunk(2, v_id, source="annotation")
+    assert (img != 0).any()
+    assert (img2 != 0).any()
+    assert bounds == bounds2
+    assert (vox_list == vox_list2).all()
+    assert img.shape == img2.shape
+    assert (img == img2.astype("uint16")).all()  # hmmmmmmmm
+

@@ -352,7 +352,7 @@ def test_upload_annotation(paths):
         mip=NUM_RES - 1,
     )
     img, bounds, vox_list = sess.pull_vertex_list(2, [0, 1], expand=True)
-    labels = tube_seg.tubes_seg(img, vox_list, radius=2)
+    labels = tube_seg.tubes_seg(img, vox_list, radius=0.5)
     sess.push(labels, bounds)
     # assert (dir_annotation / "info").is_file()  # contains info file
 
