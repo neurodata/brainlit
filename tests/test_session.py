@@ -1,6 +1,6 @@
 import pytest
 from brainlit.utils.session import NeuroglancerSession
-from brainlit.utils.upload import get_volume_info, create_cloud_volume
+from brainlit.utils.upload import upload_volumes, upload_segments, upload_annotations
 import SimpleITK as sitk
 import scipy.ndimage
 import numpy as np
@@ -33,11 +33,11 @@ def vars_local():
     mip = 0
     seg_id = 2
     v_id = 300
-    return top_level, input, url, url_segments, url_annotations, mip, seg_id, v_id
+    return input, url, url_segments, url_annotations, mip, seg_id, v_id
 
 
 @pytest.fixture
-def session(vars):
+def session(vars):  # using local vars
     url, url_seg, url_ann, mip, seg_id, v_id = vars
     sess = NeuroglancerSession(
         url=url, mip=mip, url_segments=url_seg, url_annotations=url_ann
@@ -45,24 +45,19 @@ def session(vars):
     return sess, seg_id, v_id
 
 
-@pytest.fixture
-def session_local(vars_local):
-    top_level, input, url, url_seg, url_ann, mip, seg_id, v_id = vars_local
-    sess = NeuroglancerSession(
-        url=url, mip=mip, url_segments=url_seg, url_annotations=url_ann
-    )
-    return sess, seg_id, v_id
-
-
 def test_ensure_local_data(vars_local):
-    """Reruns uploads from test_upload to ensure data is available.
+    """Checks and reruns uploads from test_upload to ensure data is available.
     """
-    top_level, input, url, url_seg, url_ann, mip, seg_id, v_id = vars_local
-    dir = top_level / "test_upload" / "serial"
-    if not (dir / "info").is_file():
-        upload.upload_volumes(input.as_posix(), dir.as_uri(), NUM_RES)
-    assert   # contains info file
-
+    input, url, url_seg, url_ann, _, _, _ = vars_local
+    if not (Path(url[5:]) / "info").is_file():
+        upload.upload_volumes(input, url, 1)
+    if not (Path(url_seg[5:]) / "info").is_file():
+        upload.upload_segments(input, url_seg, 1)
+    if not (Path(url_ann[5:]) / "info").is_file():
+        upload.upload_annotations(input, url_ann, 1)
+    assert (Path(url[5:]) / "info").is_file()
+    assert (Path(url_seg[5:]) / "info").is_file()
+    assert (Path(url_ann[5:]) / "info").is_file()
 
 
 ####################
@@ -70,38 +65,33 @@ def test_ensure_local_data(vars_local):
 ####################
 
 
-def test_session_no_urls(vars):
+def test_session_no_urls(vars_local):
     """Tests that initializing a NeuroglancerSession object without passing urls is valid.
     """
-    url, url_segments, url_annotations, mip, seg_id, v_id = vars
+    _, url, url_seg, url_ann, mip, _, _ = vars_local
     NeuroglancerSession(url)
-    NeuroglancerSession(url, url_segments=url_segments)
-    NeuroglancerSession(url, url_annotations=url_annotations)
-    NeuroglancerSession(url, 0, url_segments, url_annotations)
+    NeuroglancerSession(url, url_segments=url_seg)
+    NeuroglancerSession(url, url_annotations=url_ann)
+    NeuroglancerSession(url, 0, url_segments=url_seg, url_annotations=url_ann)
 
 
-def test_session_incomplete_urls(vars):
+def test_session_incomplete_urls(vars_local):
     """Tests that initializing a NeuroglancerSession on data without segmentation or annotation channels is valid and raises a warning.
     """
-    top_level = Path(__file__).parents[1] / "data"
-    input = (top_level / "data_octree").as_posix()
-    path = (top_level / "test_img_only").as_uri()
-    # create img volume info file
-    (_, _, vox_size, img_size, _) = get_volume_info(input, 1,)
-    vols = create_cloud_volume(path, img_size, vox_size, 1, layer_type="image",)
+    input, url, url_seg, url_ann, mip, _, _ = vars_local
+    path = (
+        Path(__file__).parents[1] / "data" / "test_upload" / "serial"
+    ).as_uri()  # does not have segments or annotation
     with pytest.warns(UserWarning):
         sess = NeuroglancerSession(path)
     with pytest.warns(UserWarning):
-        sess = NeuroglancerSession(
-            path,
-            url_segments="s3://mouse-light-viz/precomputed_volumes/brain1_segments",
-        )
+        sess = NeuroglancerSession(path, url_segments=url_seg)
 
 
-def test_session_bad_urls(vars):
+def test_session_bad_urls(vars_local):
     """Tests that initializing a NeuroglancerSession object by passing bad urls isn't valid.
     """
-    url, url_segments, url_annotations, mip, seg_id, v_id = vars
+    _, url, url_segments, url_annotations, mip, seg_id, v_id = vars_local
     url_bad = url + "0"  # bad url
     url_segments_bad = url_segments + "0"  # bad url
     url_annotations_bad = url_annotations + "0"
@@ -113,24 +103,28 @@ def test_session_bad_urls(vars):
         sess = NeuroglancerSession(url, url_annotations=url_annotations_bad)
 
 
-def test_NeuroglancerSession_bad_inputs(vars):
+def test_NeuroglancerSession_bad_inputs(vars_local):
     """Tests that errors are raised when bad inputs are given to initializing session.NeuroglancerSession.
     """
-    url, url_seg, url_ann, mip, seg_id, v_id = vars
+    _, url, url_seg, url_ann, mip, seg_id, v_id = vars_local
     with pytest.raises(TypeError):
-        NeuroglancerSession(url=0, mip=mip, url_segments=url_seg)
+        NeuroglancerSession(url=0)
     with pytest.raises(NotImplementedError):
-        NeuroglancerSession(url="asdf", mip=mip, url_segments=url_seg)
+        NeuroglancerSession(url="asdf")
     with pytest.raises(TypeError):
-        NeuroglancerSession(url=url, mip=mip, url_segments=0)
+        NeuroglancerSession(url=url, mip=1.5)
+    with pytest.raises(ValueError):
+        NeuroglancerSession(url=url, mip=-1)
+    with pytest.raises(ValueError):
+        NeuroglancerSession(url=url, mip=100)
+    with pytest.raises(TypeError):
+        NeuroglancerSession(url, url_segments=0)
     with pytest.raises(NotImplementedError):
-        NeuroglancerSession(url=url, mip=mip, url_segments="asdf")
+        NeuroglancerSession(url, url_segments="asdf")
     with pytest.raises(TypeError):
-        NeuroglancerSession(url=url, mip=1.5, url_segments=url_seg)
-    with pytest.raises(ValueError):
-        NeuroglancerSession(url=url, mip=-1, url_segments=url_seg)
-    with pytest.raises(ValueError):
-        NeuroglancerSession(url=url, mip=100, url_segments=url_seg)
+        NeuroglancerSession(url, url_annotations=0)
+    with pytest.raises(NotImplementedError):
+        NeuroglancerSession(url, url_annotations="asdf")
 
 
 def test_set_url_segments_bad_inputs(session):
@@ -259,10 +253,10 @@ def test_push_bad_inputs(session):
 ###############
 
 
-def test_set_url_segments(vars):
+def test_set_url_segments(vars_local):
     """Tests setting a segmentation url .
     """
-    url, url_segments, url_annotations, mip, seg_id, v_id = vars
+    _, url, url_segments, url_annotations, mip, seg_id, v_id = vars_local
     sess = NeuroglancerSession(url=url, mip=mip)
     sess.set_url_segments(url_segments)
     assert sess.url_segments == url_segments

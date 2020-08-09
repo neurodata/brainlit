@@ -389,6 +389,15 @@ def upload_segments(input_path, precomputed_path, num_mips):
         vols[0].skeleton.upload(skel)
 
 
+def upload_annotations(input_path, precomputed_path, num_mips):
+    """Uploads empty annotation volume.
+    """
+    (_, _, vox_size, img_size, origin) = get_volume_info(input_path, num_mips,)
+    create_cloud_volume(
+        precomputed_path, img_size, vox_size, num_mips, layer_type="annotation",
+    )
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Convert local volume into precomputed volume on S3."
