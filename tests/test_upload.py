@@ -264,10 +264,9 @@ def test_create_annotation_layer(volume_info):
     """Tests that create_cloud_volume returns valid CloudVolumePrecomputed object for annotation data.
     """
     _, b, vox_size, tiff_dims, _, top_level = volume_info
-    dir_annotation = top_level / "test_upload_annotation"
+    dir_annotation = top_level / "test_upload_annotations"
     vols = upload.create_cloud_volume(
-        # dir_annotation.as_uri(),
-        "s3://mouse-light-viz/precomputed_volumes/brain1_annotations",
+        dir_annotation.as_uri(),
         tiff_dims,
         vox_size,
         num_resolutions=NUM_RES,
@@ -345,11 +344,11 @@ def test_upload_annotation(paths):
     top_level, input = paths
     dir = top_level / "test_upload" / "serial"
     dir_segments = top_level / "test_upload_segments"
-    dir_annotation = top_level / "test_upload_annotation"
+    dir_annotation = top_level / "test_upload_annotations"
     sess = session.NeuroglancerSession(
         url=dir.as_uri(),
         url_segments=dir_segments.as_uri(),
-        url_annotation=dir_annotation.as_uri(),
+        url_annotations=dir_annotation.as_uri(),
         mip=NUM_RES - 1,
     )
     img, bounds, vox_list = sess.pull_vertex_list(2, [0, 1], expand=True)

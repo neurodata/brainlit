@@ -4,6 +4,7 @@ from brainlit.utils.upload import get_volume_info, create_cloud_volume
 import SimpleITK as sitk
 import scipy.ndimage
 import numpy as np
+import warnings
 from pathlib import Path
 import networkx as nx
 from cloudvolume import CloudVolume
@@ -13,7 +14,7 @@ from cloudvolume.exceptions import InfoUnavailableError
 
 @pytest.fixture
 def vars():
-    url = "s3://mouse-light-viz/precomputed_volumes/brain1"
+    url = "s3://mouse-light-viz/precomputed_volumes/brain1_2"  # remove _2 when upload done.
     url_segments = url + "_segments"
     url_annotations = url + "_annotations"
     mip = 0
@@ -23,12 +24,45 @@ def vars():
 
 
 @pytest.fixture
+def vars_local():
+    top_level = Path(__file__).parents[1] / "data"
+    input = (top_level / "data_octree").as_posix()
+    url = (top_level / "test_upload").as_uri()
+    url_segments = url + "_segments"
+    url_annotations = url + "_annotations"
+    mip = 0
+    seg_id = 2
+    v_id = 300
+    return top_level, input, url, url_segments, url_annotations, mip, seg_id, v_id
+
+
+@pytest.fixture
 def session(vars):
     url, url_seg, url_ann, mip, seg_id, v_id = vars
     sess = NeuroglancerSession(
         url=url, mip=mip, url_segments=url_seg, url_annotations=url_ann
     )
     return sess, seg_id, v_id
+
+
+@pytest.fixture
+def session_local(vars_local):
+    top_level, input, url, url_seg, url_ann, mip, seg_id, v_id = vars_local
+    sess = NeuroglancerSession(
+        url=url, mip=mip, url_segments=url_seg, url_annotations=url_ann
+    )
+    return sess, seg_id, v_id
+
+
+def test_ensure_local_data(vars_local):
+    """Reruns uploads from test_upload to ensure data is available.
+    """
+    top_level, input, url, url_seg, url_ann, mip, seg_id, v_id = vars_local
+    dir = top_level / "test_upload" / "serial"
+    if not (dir / "info").is_file():
+        upload.upload_volumes(input.as_posix(), dir.as_uri(), NUM_RES)
+    assert   # contains info file
+
 
 
 ####################
@@ -55,9 +89,9 @@ def test_session_incomplete_urls(vars):
     # create img volume info file
     (_, _, vox_size, img_size, _) = get_volume_info(input, 1,)
     vols = create_cloud_volume(path, img_size, vox_size, 1, layer_type="image",)
-    with pytest.raises(Warning):
+    with pytest.warns(UserWarning):
         sess = NeuroglancerSession(path)
-    with pytest.raises(Warning):
+    with pytest.warns(UserWarning):
         sess = NeuroglancerSession(
             path,
             url_segments="s3://mouse-light-viz/precomputed_volumes/brain1_segments",

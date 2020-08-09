@@ -9,6 +9,7 @@ from cloudvolume.exceptions import InfoUnavailableError
 from pathlib import Path
 from .swc import read_s3, df_to_graph, get_sub_neuron
 import napari
+import warnings
 import networkx as nx
 from typing import Optional, List, Union, Tuple
 from .util import (
@@ -68,8 +69,10 @@ class NeuroglancerSession:
                 self.cv_segments = CloudVolume(url + "_segments", parallel=False)
                 self.url_segments = url + "_segments"
             except InfoUnavailableError:
-                raise Warning(
-                    f"Segmentation volume not found at {self.url_segments}, defaulting to None."
+                warnings.warn(
+                    UserWarning(
+                        f"Segmentation volume not found at {self.url_segments}, defaulting to None."
+                    )
                 )
                 self.cv_segments = None
         else:
@@ -82,8 +85,10 @@ class NeuroglancerSession:
                 self.cv_annotations = CloudVolume(url + "_annotations", parallel=False)
                 self.url_annotations = url + "_annotations"
             except InfoUnavailableError:
-                raise Warning(
-                    f"Annotation volume not found at {self.url_annotations}, defaulting to None."
+                warnings.warn(
+                    UserWarning(
+                        f"Annotation volume not found at {self.url_annotations}, defaulting to None."
+                    )
                 )
                 self.cv_annotations = None
         else:
