@@ -13,23 +13,13 @@ from cloudvolume.exceptions import InfoUnavailableError
 
 
 @pytest.fixture
-def vars():
-    url = "s3://mouse-light-viz/precomputed_volumes/brain1_2"  # remove _2 when upload done.
-    url_segments = url + "_segments"
-    url_annotations = url + "_annotations"
-    mip = 0
-    seg_id = 2
-    v_id = 300
-    return url, url_segments, url_annotations, mip, seg_id, v_id
-
-
-@pytest.fixture
 def vars_local():
     top_level = Path(__file__).parents[1] / "data"
     input = (top_level / "data_octree").as_posix()
     url = (top_level / "test_upload").as_uri()
     url_segments = url + "_segments"
     url_annotations = url + "_annotations"
+    url = url + "/serial"
     mip = 0
     seg_id = 2
     v_id = 300
@@ -37,8 +27,8 @@ def vars_local():
 
 
 @pytest.fixture
-def session(vars):  # using local vars
-    url, url_seg, url_ann, mip, seg_id, v_id = vars
+def session(vars_local):  # using local vars
+    _, url, url_seg, url_ann, mip, seg_id, v_id = vars_local
     sess = NeuroglancerSession(
         url=url, mip=mip, url_segments=url_seg, url_annotations=url_ann
     )
@@ -50,10 +40,13 @@ def test_ensure_local_data(vars_local):
     """
     input, url, url_seg, url_ann, _, _, _ = vars_local
     if not (Path(url[5:]) / "info").is_file():
+        print("Uploading data.")
         upload.upload_volumes(input, url, 1)
     if not (Path(url_seg[5:]) / "info").is_file():
+        print("Uploading segmentataion.")
         upload.upload_segments(input, url_seg, 1)
     if not (Path(url_ann[5:]) / "info").is_file():
+        print("Uploading annotation (empty).")
         upload.upload_annotations(input, url_ann, 1)
     assert (Path(url[5:]) / "info").is_file()
     assert (Path(url_seg[5:]) / "info").is_file()
