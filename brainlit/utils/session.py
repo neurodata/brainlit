@@ -157,7 +157,7 @@ class NeuroglancerSession:
         if bbox is not None:
             if isinstance(bbox, Bbox):
                 bbox = bbox.to_list()
-            check_iterable_type(bbox, int)
+            check_iterable_type(bbox, (int, np.integer))
             check_iterable_nonnegative(bbox)
             G = get_sub_neuron(G, [bbox[:3], bbox[3:]])
         return G
