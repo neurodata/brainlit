@@ -338,23 +338,23 @@ def test_upload_volumes_serial(paths):
     assert len(sorted(dir.glob("*_*"))) > 0  # contains uploaded data
 
 
-def test_upload_annotation(paths):
-    """Ensures that uploading annotations runs without errors.
-    """
-    top_level, input = paths
-    dir = top_level / "test_upload" / "serial"
-    dir_segments = top_level / "test_upload_segments"
-    dir_annotation = top_level / "test_upload_annotations"
-    sess = session.NeuroglancerSession(
-        url=dir.as_uri(),
-        url_segments=dir_segments.as_uri(),
-        url_annotations=dir_annotation.as_uri(),
-        mip=NUM_RES - 1,
-    )
-    img, bounds, vox_list = sess.pull_vertex_list(2, [0, 1], expand=True)
-    labels = tube_seg.tubes_seg(img, vox_list, radius=0.5)
-    sess.push(labels, bounds)
-    # assert (dir_annotation / "info").is_file()  # contains info file
+# def test_upload_annotation(paths):
+#     """Ensures that uploading annotations runs without errors.
+#     """
+#     top_level, input = paths
+#     dir = top_level / "test_upload" / "serial"
+#     dir_segments = top_level / "test_upload_segments"
+#     dir_annotation = top_level / "test_upload_annotations"
+#     sess = session.NeuroglancerSession(
+#         url=dir.as_uri(),
+#         url_segments=dir_segments.as_uri(),
+#         url_annotations=dir_annotation.as_uri(),
+#         mip=NUM_RES - 1,
+#     )
+#     img, bounds, vox_list = sess.pull_vertex_list(2, [0, 1], expand=True)
+#     labels = tube_seg.tubes_seg(img, vox_list, radius=0.5)
+#     sess.push(labels, bounds)
+# assert (dir_annotation / "info").is_file()  # contains info file
 
 
 def test_upload_volumes_parallel(paths):

@@ -19,39 +19,32 @@ def vars_local():
     input = (top_level / "data_octree").as_posix()
     url = (top_level / "test_upload").as_uri()
     url_segments = url + "_segments"
-    url_annotations = url + "_annotations"
     url = url + "/serial"
     mip = 0
     seg_id = 2
     v_id = 300
-    return input, url, url_segments, url_annotations, mip, seg_id, v_id
+    return input, url, url_segments, mip, seg_id, v_id
 
 
 @pytest.fixture
 def session(vars_local):  # using local vars
-    _, url, url_seg, url_ann, mip, seg_id, v_id = vars_local
-    sess = NeuroglancerSession(
-        url=url, mip=mip, url_segments=url_seg, url_annotations=url_ann
-    )
+    _, url, url_seg, mip, seg_id, v_id = vars_local
+    sess = NeuroglancerSession(url=url, mip=mip, url_segments=url_seg)
     return sess, seg_id, v_id
 
 
 def test_ensure_local_data(vars_local):
     """Checks and reruns uploads from test_upload to ensure data is available.
     """
-    input, url, url_seg, url_ann, _, _, _ = vars_local
+    input, url, url_seg, _, _, _ = vars_local
     if not (Path(url[5:]) / "info").is_file():
         print("Uploading data.")
         upload.upload_volumes(input, url, 1)
     if not (Path(url_seg[5:]) / "info").is_file():
         print("Uploading segmentataion.")
         upload.upload_segments(input, url_seg, 1)
-    if not (Path(url_ann[5:]) / "info").is_file():
-        print("Uploading annotation (empty).")
-        upload.upload_annotations(input, url_ann, 1)
     assert (Path(url[5:]) / "info").is_file()
     assert (Path(url_seg[5:]) / "info").is_file()
-    assert (Path(url_ann[5:]) / "info").is_file()
 
 
 ####################
@@ -62,45 +55,38 @@ def test_ensure_local_data(vars_local):
 def test_session_no_urls(vars_local):
     """Tests that initializing a NeuroglancerSession object without passing urls is valid.
     """
-    _, url, url_seg, url_ann, mip, _, _ = vars_local
+    _, url, url_seg, mip, _, _ = vars_local
     NeuroglancerSession(url)
     NeuroglancerSession(url, url_segments=url_seg)
-    NeuroglancerSession(url, url_annotations=url_ann)
-    NeuroglancerSession(url, 0, url_segments=url_seg, url_annotations=url_ann)
 
 
 def test_session_incomplete_urls(vars_local):
     """Tests that initializing a NeuroglancerSession on data without segmentation or annotation channels is valid and raises a warning.
     """
-    input, url, url_seg, url_ann, mip, _, _ = vars_local
+    input, url, url_seg, mip, _, _ = vars_local
     path = (
         Path(__file__).parents[1] / "data" / "test_upload" / "serial"
     ).as_uri()  # does not have segments or annotation
     with pytest.warns(UserWarning):
         sess = NeuroglancerSession(path)
-    with pytest.warns(UserWarning):
-        sess = NeuroglancerSession(path, url_segments=url_seg)
 
 
 def test_session_bad_urls(vars_local):
     """Tests that initializing a NeuroglancerSession object by passing bad urls isn't valid.
     """
-    _, url, url_segments, url_annotations, mip, seg_id, v_id = vars_local
+    _, url, url_segments, mip, seg_id, v_id = vars_local
     url_bad = url + "0"  # bad url
     url_segments_bad = url_segments + "0"  # bad url
-    url_annotations_bad = url_annotations + "0"
     with pytest.raises(InfoUnavailableError):
         sess = NeuroglancerSession(url_bad)
     with pytest.raises(InfoUnavailableError):
         sess = NeuroglancerSession(url, url_segments=url_segments_bad)
-    with pytest.raises(InfoUnavailableError):
-        sess = NeuroglancerSession(url, url_annotations=url_annotations_bad)
 
 
 def test_NeuroglancerSession_bad_inputs(vars_local):
     """Tests that errors are raised when bad inputs are given to initializing session.NeuroglancerSession.
     """
-    _, url, url_seg, url_ann, mip, seg_id, v_id = vars_local
+    _, url, url_seg, mip, seg_id, v_id = vars_local
     with pytest.raises(TypeError):
         NeuroglancerSession(url=0)
     with pytest.raises(NotImplementedError):
@@ -115,10 +101,6 @@ def test_NeuroglancerSession_bad_inputs(vars_local):
         NeuroglancerSession(url, url_segments=0)
     with pytest.raises(NotImplementedError):
         NeuroglancerSession(url, url_segments="asdf")
-    with pytest.raises(TypeError):
-        NeuroglancerSession(url, url_annotations=0)
-    with pytest.raises(NotImplementedError):
-        NeuroglancerSession(url, url_annotations="asdf")
 
 
 def test_set_url_segments_bad_inputs(session):
@@ -218,10 +200,12 @@ def test_pull_bounds_seg_bad_inputs(session):
     """Tests that errors are raised when bad inputs are given to session.pull_bounds_seg.
     """
     sess, seg_id, v_id = session
-    with pytest.raises(TypeError):
+    with pytest.raises(NotImplementedError):
         sess.pull_bounds_seg(0)
-    with pytest.raises(ValueError):
-        sess.pull_bounds_seg((-1, -1, -1, -1, -1, -1))
+    # with pytest.raises(TypeError):
+    #     sess.pull_bounds_seg(0)
+    # with pytest.raises(ValueError):
+    #     sess.pull_bounds_seg((-1, -1, -1, -1, -1, -1))
 
 
 def test_push_bad_inputs(session):
@@ -230,16 +214,18 @@ def test_push_bad_inputs(session):
     sess, seg_id, v_id = session
     img = np.array([[[1, 1, 1], [2, 2, 2]]])
     bounds = (0, 0, 0, 10, 10, 10)
-    with pytest.raises(TypeError):
+    with pytest.raises(NotImplementedError):
         sess.push(0, bounds)
-    with pytest.raises(ValueError):
-        sess.push(np.array([[0, 0, 0], [0, 0, 0]]), bounds)
-    with pytest.raises(TypeError):
-        sess.push(img, 0)
-    with pytest.raises(TypeError):
-        sess.push(img, ("a", -1, -1, -1, -1, -1))
-    with pytest.raises(ValueError):
-        sess.push(img, (-1, -1, -1, -1, -1, -1))
+    # with pytest.raises(TypeError):
+    #     sess.push(0, bounds)
+    # with pytest.raises(ValueError):
+    #     sess.push(np.array([[0, 0, 0], [0, 0, 0]]), bounds)
+    # with pytest.raises(TypeError):
+    #     sess.push(img, 0)
+    # with pytest.raises(TypeError):
+    #     sess.push(img, ("a", -1, -1, -1, -1, -1))
+    # with pytest.raises(ValueError):
+    #     sess.push(img, (-1, -1, -1, -1, -1, -1))
 
 
 ###############
@@ -250,7 +236,7 @@ def test_push_bad_inputs(session):
 def test_set_url_segments(vars_local):
     """Tests setting a segmentation url .
     """
-    _, url, url_segments, url_annotations, mip, seg_id, v_id = vars_local
+    _, url, url_segments, mip, seg_id, v_id = vars_local
     sess = NeuroglancerSession(url=url, mip=mip)
     sess.set_url_segments(url_segments)
     assert sess.url_segments == url_segments
@@ -354,55 +340,56 @@ def test_push_pull_annotation(session):
     """
     sess, seg_id, v_id = session
     img, bounds, vox_list = sess.pull_vertex_list(
-        2, [v_id, v_id + 1], expand=True, source="image"
-    )
+        2, [v_id, v_id + 1], expand=True
+    )  # source="image"
     labels = tubes_seg(img, vox_list, radius=0.5)
     assert (labels != 0).any()
-    sess.push(labels, bounds)
-    img2, bounds2, vox_list2 = sess.pull_vertex_list(
-        2, [v_id, v_id + 1], expand=True, source="annotation"
-    )
-    assert (img != 0).any()
-    assert (img2 != 0).any()
-    assert bounds == bounds2
-    assert (vox_list == vox_list2).all()
-    assert img.shape == img2.shape
-    assert (img == img2.astype("uint16")).all()  # hmmmmmmmm
+    with pytest.raises(NotImplementedError):
+        sess.push(labels, bounds)
+    # img2, bounds2, vox_list2 = sess.pull_vertex_list(
+    #     2, [v_id, v_id + 1], expand=True, source="annotation"
+    # )
+    # assert (img != 0).any()
+    # assert (img2 != 0).any()
+    # assert bounds == bounds2
+    # assert (vox_list == vox_list2).all()
+    # assert img.shape == img2.shape
+    # assert (img == img2.astype("uint16")).all()
 
 
-def test_pull_chunk_push_label(session):
-    """Tests pulling a chunk of a volume, converting it to an annotation, and pushing the annotation.
-    """
-    sess, seg_id, v_id = session
+# def test_pull_chunk_push_label(session):
+#     """Tests pulling a chunk of a volume, converting it to an annotation, and pushing the annotation.
+#     """
+#     sess, seg_id, v_id = session
 
-    def _img_to_labels(img, voxel, low=None, up=255):
-        """Test method that converts volume to pixel-wise annotations.
-        """
-        img_T1 = sitk.GetImageFromArray(np.squeeze(img), isVector=False)
-        img_T1_255 = sitk.Cast(sitk.RescaleIntensity(img_T1), sitk.sitkUInt8)
-        seed = (int(voxel[2]), int(voxel[1]), int(voxel[0]))
-        seg = sitk.Image(img_T1.GetSize(), sitk.sitkUInt8)
-        seg.CopyInformation(img_T1)
-        seg[seed] = 1
-        seg = sitk.BinaryDilate(seg, 1)
-        seg_con = sitk.ConnectedThreshold(
-            img_T1_255, seedList=[seed], lower=int(np.round(low)), upper=up
-        )
-        vectorRadius = (1, 1, 1)
-        kernel = sitk.sitkBall
-        seg_clean = sitk.BinaryMorphologicalClosing(seg_con, vectorRadius, kernel)
-        labels = sitk.GetArrayFromImage(seg_clean)
-        return labels
+#     def _img_to_labels(img, voxel, low=None, up=255):
+#         """Test method that converts volume to pixel-wise annotations.
+#         """
+#         img_T1 = sitk.GetImageFromArray(np.squeeze(img), isVector=False)
+#         img_T1_255 = sitk.Cast(sitk.RescaleIntensity(img_T1), sitk.sitkUInt8)
+#         seed = (int(voxel[2]), int(voxel[1]), int(voxel[0]))
+#         seg = sitk.Image(img_T1.GetSize(), sitk.sitkUInt8)
+#         seg.CopyInformation(img_T1)
+#         seg[seed] = 1
+#         seg = sitk.BinaryDilate(seg, 1)
+#         seg_con = sitk.ConnectedThreshold(
+#             img_T1_255, seedList=[seed], lower=int(np.round(low)), upper=up
+#         )
+#         vectorRadius = (1, 1, 1)
+#         kernel = sitk.sitkBall
+#         seg_clean = sitk.BinaryMorphologicalClosing(seg_con, vectorRadius, kernel)
+#         labels = sitk.GetArrayFromImage(seg_clean)
+#         return labels
 
-    img, bounds, vox_list = sess.pull_chunk(2, v_id, source="image")
-    labels = _img_to_labels(img, vox_list)
-    assert (labels != 0).any()
-    sess.push(labels, bounds)
-    img2, bounds2, vox_list2 = sess.pull_chunk(2, v_id, source="annotation")
-    assert (img != 0).any()
-    assert (img2 != 0).any()
-    assert bounds == bounds2
-    assert (vox_list == vox_list2).all()
-    assert img.shape == img2.shape
-    assert (img == img2.astype("uint16")).all()  # hmmmmmmmm
+#     img, bounds, vox_list = sess.pull_chunk(2, v_id)  # source="image"
+#     labels = _img_to_labels(img, vox_list)
+#     assert (labels != 0).any()
+#     sess.push(labels, bounds)
+# img2, bounds2, vox_list2 = sess.pull_chunk(2, v_id, source="annotation")
+# assert (img != 0).any()
+# assert (img2 != 0).any()
+# assert bounds == bounds2
+# assert (vox_list == vox_list2).all()
+# assert img.shape == img2.shape
+# assert (img == img2.astype("uint16")).all()  # hmmmmmmmm
 
