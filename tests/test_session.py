@@ -12,6 +12,21 @@ from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError
 from brainlit.algorithms.generate_fragments.tube_seg import tubes_seg
 
+# ensures data is available
+top_level = Path(__file__).parents[1] / "data"
+input = (top_level / "data_octree").as_posix()
+url = (top_level / "test_upload").as_uri()
+url_segments = url + "_segments"
+url = url + "/serial"
+if not (Path(url[5:]) / "info").is_file():
+    print("Uploading data.")
+    upload.upload_volumes(input, url, 1)
+if not (Path(url_seg[5:]) / "info").is_file():
+    print("Uploading segmentataion.")
+    upload.upload_segments(input, url_seg, 1)
+assert (Path(url[5:]) / "info").is_file()
+assert (Path(url_seg[5:]) / "info").is_file()
+
 
 @pytest.fixture
 def vars_local():
@@ -24,20 +39,6 @@ def vars_local():
     seg_id = 2
     v_id = 300
     return input, url, url_segments, mip, seg_id, v_id
-
-
-def test_ensure_local_data(vars_local):
-    """Checks and reruns uploads from test_upload to ensure data is available.
-    """
-    input, url, url_seg, _, _, _ = vars_local
-    if not (Path(url[5:]) / "info").is_file():
-        print("Uploading data.")
-        upload.upload_volumes(input, url, 1)
-    if not (Path(url_seg[5:]) / "info").is_file():
-        print("Uploading segmentataion.")
-        upload.upload_segments(input, url_seg, 1)
-    assert (Path(url[5:]) / "info").is_file()
-    assert (Path(url_seg[5:]) / "info").is_file()
 
 
 @pytest.fixture

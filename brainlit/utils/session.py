@@ -27,7 +27,7 @@ class NeuroglancerSession:
     """Utility class which pulls and pushes data.
 
     Arguments:
-        url: Precompued path either to a file URI or url URI. Defaults to mouselight brain1_2.
+        url: Precompued path either to a file URI or url URI. Defaults to mouselight brain1.
         mip: Resolution level to pull and push data at. Defaults to 0, the highest resolution.
         url_segments: Precomputed path to segmentation data. Optional, default None.
 
