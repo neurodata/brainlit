@@ -16,7 +16,7 @@ from brainlit.algorithms.generate_fragments.tube_seg import tubes_seg
 top_level = Path(__file__).parents[1] / "data"
 input = (top_level / "data_octree").as_posix()
 url = (top_level / "test_upload").as_uri()
-url_segments = url + "_segments"
+url_seg = url + "_segments"
 url = url + "/serial"
 if not (Path(url[5:]) / "info").is_file():
     print("Uploading data.")
