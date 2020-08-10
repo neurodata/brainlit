@@ -26,13 +26,6 @@ def vars_local():
     return input, url, url_segments, mip, seg_id, v_id
 
 
-@pytest.fixture
-def session(vars_local):  # using local vars
-    _, url, url_seg, mip, seg_id, v_id = vars_local
-    sess = NeuroglancerSession(url=url, mip=mip, url_segments=url_seg)
-    return sess, seg_id, v_id
-
-
 def test_ensure_local_data(vars_local):
     """Checks and reruns uploads from test_upload to ensure data is available.
     """
@@ -45,6 +38,13 @@ def test_ensure_local_data(vars_local):
         upload.upload_segments(input, url_seg, 1)
     assert (Path(url[5:]) / "info").is_file()
     assert (Path(url_seg[5:]) / "info").is_file()
+
+
+@pytest.fixture
+def session(vars_local):  # using local vars
+    _, url, url_seg, mip, seg_id, v_id = vars_local
+    sess = NeuroglancerSession(url=url, mip=mip, url_segments=url_seg)
+    return sess, seg_id, v_id
 
 
 ####################
