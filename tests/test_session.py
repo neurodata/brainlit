@@ -20,10 +20,10 @@ url_segments = url + "_segments"
 url = url + "/serial"
 if not (Path(url[5:]) / "info").is_file():
     print("Uploading data.")
-    upload.upload_volumes(input, url, 1)
+    upload_volumes(input, url, 1)
 if not (Path(url_seg[5:]) / "info").is_file():
     print("Uploading segmentataion.")
-    upload.upload_segments(input, url_seg, 1)
+    upload_segments(input, url_seg, 1)
 assert (Path(url[5:]) / "info").is_file()
 assert (Path(url_seg[5:]) / "info").is_file()
 
