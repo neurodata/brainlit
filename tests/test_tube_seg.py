@@ -4,8 +4,14 @@ from brainlit.algorithms.generate_fragments import tube_seg
 import numpy as np
 from brainlit.utils.session import NeuroglancerSession
 from skimage import draw
+from pathlib import Path
 
-URL = "s3://mouse-light-viz/precomputed_volumes/brain1_2"
+URL = "s3://mouse-light-viz/precomputed_volumes/brain1"
+top_level = Path(__file__).parents[1] / "data"
+input = (top_level / "data_octree").as_posix()
+url = (top_level / "test_upload").as_uri()
+URL_SEG = url + "_segments"
+URL = url + "/serial"
 
 
 def test_pairwise():
@@ -46,8 +52,8 @@ def test_draw_sphere():
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL + "_segments")
-    img, _, _ = ngl_session.pull_vertex_list(13, [4], expand=True)
+    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     center = [
         np.random.randint(shape[0]),
@@ -86,8 +92,8 @@ def test_draw_tube_spheres():
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)        
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL + "_segments")
-    img, _, _ = ngl_session.pull_vertex_list(13, [4], expand=True)
+    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     vertex0 = [
         np.random.randint(shape[0] / 2),
@@ -138,8 +144,8 @@ def test_draw_tube_edt():
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)        
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL + "_segments")
-    img, _, _ = ngl_session.pull_vertex_list(13, [4], expand=True)
+    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     vertex0 = [
         np.random.randint(shape[0] / 2),
@@ -190,8 +196,8 @@ def test_tubes_seg():
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL + "_segments")
-    img, _, _ = ngl_session.pull_vertex_list(13, [4], expand=True)
+    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     vertices = np.random.randint(min(shape), size=(4, 3))
     radius = np.random.randint(1, 4)
