@@ -393,4 +393,3 @@ def test_push_pull_annotation(session):
 # assert (vox_list == vox_list2).all()
 # assert img.shape == img2.shape
 # assert (img == img2.astype("uint16")).all()  # hmmmmmmmm
-
