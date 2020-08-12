@@ -168,7 +168,7 @@ def tubes_from_paths(
     if radius is not None:
         check_type(radius, (int, float))
         if radius <= 0:
-            raise ValueError(f"Radius {radius} must be positive, not.")
+            raise ValueError(f"Radius {radius} must be positive.")
 
     def _within_img(line, size):
         arrline = np.array(line).astype(int)
