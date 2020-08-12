@@ -3,6 +3,7 @@ import brainlit
 from brainlit.algorithms.generate_fragments import tube_seg
 import numpy as np
 from brainlit.utils.session import NeuroglancerSession
+from brainlit.utils.swc import graph_to_paths
 from skimage import draw
 from pathlib import Path
 
@@ -229,3 +230,39 @@ def test_tubes_seg():
     assert np.unique(labels).all() in [0, 1]
     assert d_bg > radius ** 2
     assert d_tube <= radius ** 2
+
+
+def test_tubes_from_paths_bad_inputs():
+    """Tests that the tubes_from_paths method raises errors when given bad inputs.
+    """
+    sess = NeuroglancerSession(URL, 0, URL_SEG)
+    img, bbox, verts = sess.pull_voxel(2, 300, radius=5)  # A valid bbox with data.
+    G = sess.get_segments(2, bbox)
+    bbox = bbox.to_list()
+    paths = graph_to_paths(G)  # valid paths
+    size = np.subtract(bbox[3:], bbox[:3])
+    with pytest.raises(TypeError):
+        tube_seg.tubes_from_paths("asdf", paths)
+    with pytest.raises(ValueError):
+        tube_seg.tubes_from_paths((-1, -1, -1), paths)
+    with pytest.raises(TypeError):
+        tube_seg.tubes_from_paths(size, "asdf")
+    with pytest.raises(TypeError):
+        tube_seg.tubes_from_paths(size, [[0, 0, "asdf"]])
+    with pytest.raises(TypeError):
+        tube_seg.tubes_from_paths(size, paths, radius="asdf")
+    with pytest.raises(ValueError):
+        tube_seg.tubes_from_paths(size, paths, radius=-1)
+
+
+def test_tubes_from_paths():
+    """Tests that, given valid paths, valid tubes are created.
+    """
+    sess = NeuroglancerSession(URL, 0, URL_SEG)
+    img, bbox, verts = sess.pull_voxel(2, 300, radius=5)  # A valid bbox with data.
+    G = sess.get_segments(2, bbox)
+    bbox = bbox.to_list()
+    paths = graph_to_paths(G)  # valid paths
+    size = np.subtract(bbox[3:], bbox[:3])
+    tubes = tube_seg.tubes_from_paths(size, paths)
+    assert (tubes != 0).any()

@@ -7,18 +7,18 @@ from cloudvolume import CloudVolume, view
 from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError
 from pathlib import Path
-from .swc import read_s3, df_to_graph, get_sub_neuron, graph_to_paths
+from brainlit.utils.swc import read_s3, df_to_graph, get_sub_neuron, graph_to_paths
+from brainlit.algorithms.generate_fragments.tube_seg import tubes_from_paths
 import napari
 import warnings
 import networkx as nx
 from typing import Optional, List, Union, Tuple, Literal
-from .util import (
+from brainlit.utils.util import (
     check_type,
     check_size,
     check_precomputed,
     check_iterable_type,
     check_iterable_nonnegative,
-    tubes_from_paths,
 )
 
 Bounds = Union[Bbox, Tuple[int, int, int, int, int, int]]
@@ -149,6 +149,8 @@ class NeuroglancerSession:
         Returns:
             labels: A volume within the bounding box, with 1 on tubes and 0 elsewhere.
         """
+        if self.cv_segments is None:
+            raise ValueError("Cannot get segments without segmentation data.")
         check_type(seg_id, int)
         if radius is not None:
             check_type(radius, (int, float))
@@ -159,6 +161,8 @@ class NeuroglancerSession:
         paths = graph_to_paths(G)
         if isinstance(bbox, Bbox):
             bbox = bbox.to_list()
+        check_iterable_type(bbox, (int, np.integer))
+        check_iterable_nonnegative(bbox)
         labels = tubes_from_paths(np.subtract(bbox[3:], bbox[:3]), paths, radius)
         return labels
 
