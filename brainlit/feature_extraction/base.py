@@ -26,7 +26,7 @@ class BaseFeatures(BaseEstimator):
     def __init__(
         self,
         url: str,
-        size: List[int] = [1, 1, 1],
+        size: int,
         offset: List[int] = [15, 15, 15],
         segment_url: Optional[str] = None,
     ):
@@ -160,7 +160,7 @@ class BaseFeatures(BaseEstimator):
                 start = time.time()
 
                 img, bounds, voxel = ngl.pull_voxel(
-                    seg_id, v_id, self.size[0]
+                    seg_id, v_id, self.size
                 )
                 img_off = ngl.pull_bounds_img(bounds + self.offset)
 
@@ -254,7 +254,7 @@ class BaseFeatures(BaseEstimator):
             verts = segment.vertices[start_vert:]
         for v_id, vertex in enumerate(verts):
             img, bounds, voxel = ngl.pull_voxel(
-                seg_id, v_id, self.size[0]
+                seg_id, v_id, self.size
             )
             img_off = ngl.pull_bounds_img(bounds + self.offset)
             features = self._convert_to_features(img, include_neighborhood)
