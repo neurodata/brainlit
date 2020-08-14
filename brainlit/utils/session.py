@@ -5,12 +5,15 @@ import matplotlib.pyplot as plt
 import SimpleITK as sitk
 from cloudvolume import CloudVolume, view
 from cloudvolume.lib import Bbox
+from cloudvolume.exceptions import InfoUnavailableError
 from pathlib import Path
-from .swc import read_s3, df_to_graph, get_sub_neuron
+from brainlit.utils.swc import read_s3, df_to_graph, get_sub_neuron, graph_to_paths
+from brainlit.algorithms.generate_fragments.tube_seg import tubes_from_paths
 import napari
+import warnings
 import networkx as nx
-from typing import Optional, List, Union, Tuple
-from .util import (
+from typing import Optional, List, Union, Tuple, Literal
+from brainlit.utils.util import (
     check_type,
     check_size,
     check_precomputed,
@@ -25,16 +28,17 @@ class NeuroglancerSession:
     """Utility class which pulls and pushes data.
 
     Arguments:
-        url: Precompued path either to a file URI or url URI. Defaults to mouselight brain1_2.
+        url: Precompued path either to a file URI or url URI. Defaults to mouselight brain1.
         mip: Resolution level to pull and push data at. Defaults to 0, the highest resolution.
-        url_segments: Precomputed path to segmentation data.
+        url_segments: Precomputed path to segmentation data. Optional, default None.
 
     Attributes:
         url: CloudVolumePrecomputedPath to image data.
         url_segments: CloudVolumePrecomputedPath to segmentation data. Optional, default None.
-            Automatically tries precomputed path url+"_segments".
+            Automatically tries precomputed path url+"_segments" if None.
         cv (CloudVolumePrecomputed): CloudVolume object for image data.
         cv_segments (CloudVolumePrecomputed): CloudVolume object for segmentation data. Optional, default None.
+        cv_annotations (CloudVolumePrecomputed): CloudVolume object for segmentation data. Optional, default None.
         mip: Resolution level.
         chunk_size: The chunk size of the volume at the specified mip, given as (x, y, z).
         scales: The resolution of the volume at the specified mip, given as (x, y, z).
@@ -42,7 +46,7 @@ class NeuroglancerSession:
 
     def __init__(
         self,
-        url: str = "s3://mouse-light-viz/precomputed_volumes/brain1_2",
+        url: str,  #  = "s3://mouse-light-viz/precomputed_volumes/brain1"
         mip: int = 0,
         url_segments: Optional[str] = None,
     ):
@@ -61,10 +65,11 @@ class NeuroglancerSession:
             try:  # default is to add _segments
                 self.cv_segments = CloudVolume(url + "_segments", parallel=False)
                 self.url_segments = url + "_segments"
-            except Error as e:
-                print(e)
-                raise Warning(
-                    f"Segmentation volume not found at {self.url_segments}, defaulting to None."
+            except InfoUnavailableError:
+                warnings.warn(
+                    UserWarning(
+                        f"Segmentation volume not found at {self.url_segments}, defaulting to None."
+                    )
                 )
                 self.cv_segments = None
         else:
@@ -125,10 +130,41 @@ class NeuroglancerSession:
         if bbox is not None:
             if isinstance(bbox, Bbox):
                 bbox = bbox.to_list()
-            check_iterable_type(bbox, int)
+            check_iterable_type(bbox, (int, np.integer))
             check_iterable_nonnegative(bbox)
             G = get_sub_neuron(G, [bbox[:3], bbox[3:]])
         return G
+
+    def create_tubes(
+        self, seg_id: Union[int, float], bbox: Bounds, radius: Optional[int] = None
+    ):
+        """Creates labels from a segment id and bounding box.
+        Finds vertices within bounding box and draws tubes between edges.
+
+        Arguments:
+            seg_id: The id of the .swc file.
+            bbox: The bounding box to draw tubes within.
+            radius: Euclidean distance threshold used to draw tubes, default None = 1 px thick.
+
+        Returns:
+            labels: A volume within the bounding box, with 1 on tubes and 0 elsewhere.
+        """
+        if self.cv_segments is None:
+            raise ValueError("Cannot get segments without segmentation data.")
+        check_type(seg_id, int)
+        if radius is not None:
+            check_type(radius, (int, float))
+            if radius <= 0:
+                raise ValueError("Radius must be positive.")
+
+        G = self.get_segments(seg_id, bbox)
+        paths = graph_to_paths(G)
+        if isinstance(bbox, Bbox):
+            bbox = bbox.to_list()
+        check_iterable_type(bbox, (int, np.integer))
+        check_iterable_nonnegative(bbox)
+        labels = tubes_from_paths(np.subtract(bbox[3:], bbox[:3]), paths, radius)
+        return labels
 
     def pull_voxel(
         self, seg_id: int, v_id: int, radius: int = 1
@@ -194,16 +230,14 @@ class NeuroglancerSession:
             lower = list(np.min(voxel_list, axis=0) - buffer)
             higher = list(np.max(voxel_list, axis=0) + buffer + 1)
             bounds = Bbox(lower, higher)
-
         if expand:
             bounds = bounds.expand_to_chunk_size(self.chunk_size)
-        lower = bounds.to_list()[:3]
+        vox_in_img_list = np.array(voxel_list) - bounds.to_list()[:3]
         img = self.pull_bounds_img(bounds)
-        vox_in_img_list = np.array(voxel_list) - lower
         return img, bounds, vox_in_img_list
 
     def pull_chunk(
-        self, seg_id: int, v_id: int, radius: int = 0
+        self, seg_id: int, v_id: int, radius: int = 0,
     ) -> Tuple[np.ndarray, Bbox, Tuple[int, int, int]]:
         """Pull a number of chunks around a specified skeleton vertex.
 
@@ -233,7 +267,7 @@ class NeuroglancerSession:
             self.chunk_size[2] * radius,
         ]
         bounds = Bbox(np.subtract(seed[:3], shape), np.add(seed[3:], shape))
-        img = self.cv.download(bounds, mip=self.mip)
+        img = self.pull_bounds_img(bounds)
         vox_in_img = voxel - np.array(bounds.to_list()[:3])
         return np.squeeze(np.array(img)), bounds, vox_in_img
 
@@ -263,28 +297,35 @@ class NeuroglancerSession:
         Returns:
             img: Volume pulled according to the bounding box.
         """
-        if isinstance(bounds, Bbox):
-            bounds = bounds.to_list()
-        check_iterable_type(bounds, int)
-        check_iterable_nonnegative(bounds)
+        raise NotImplementedError("Annotation channels not supported.")
+        # if isinstance(bounds, Bbox):
+        #     bounds = bounds.to_list()
+        # check_iterable_type(bounds, (int, np.integer))
+        # check_iterable_nonnegative(bounds)
+        # if self.cv_annotations is None:
+        #     raise ValueError("Cannot pull from undefined annotation layer.")
 
-        img = self.cv[bounds]
-        return np.squeeze(np.array(img))
+        # img = self.cv_annotations[Bbox(bounds[:3], bounds[3:])]
+        # return np.squeeze(np.array(img))
 
-    def push(self, img: np.ndarray, bounds: Bounds):
-        """Push a volume.
+    def push(
+        self, img: np.ndarray, bounds: Bounds,
+    ):
+        """Push a volume to an annotation channel.
 
         Arguments:
             img : Volume to push
             bounds : Bounding box or tuple containing (x0, y0, z0, x1, y1, z1) bounds.
         """
-        if not isinstance(img, np.ndarray):
-            raise TypeError(f"Image should be numpy array..")
-        if (img == 0).all():
-            raise ValueError(f"Should not push an empty volume of all 0.")
-        if isinstance(bounds, Bbox):
-            bounds = bounds.to_list()
-        check_iterable_type(bounds, int)
-        check_iterable_nonnegative(bounds)
-
-        self.cv[bounds] = img.astype("uint64")
+        raise NotImplementedError("Annotation channels not supported.")
+        # if not isinstance(img, np.ndarray):
+        #     raise TypeError(f"Image should be numpy array..")
+        # if (img == 0).all():
+        #     raise ValueError(f"Should not push an empty volume of all 0.")
+        # if isinstance(bounds, Bbox):
+        #     bounds = bounds.to_list()
+        # check_iterable_type(bounds, (int, np.integer))
+        # check_iterable_nonnegative(bounds)
+        # if self.cv_annotations is None:
+        #     raise ValueError("Cannot pull from undefined annotation layer.")
+        # self.cv_annotations[Bbox(bounds[:3], bounds[3:])] = img.astype("uint64")
