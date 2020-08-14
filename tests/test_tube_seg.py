@@ -266,3 +266,17 @@ def test_tubes_from_paths():
     size = np.subtract(bbox[3:], bbox[:3])
     tubes = tube_seg.tubes_from_paths(size, paths)
     assert (tubes != 0).any()
+
+
+def test_tubes_exact():
+    """Tests that exact pixels are filled in.
+    """
+    img = np.zeros((10, 10, 10))
+    verts = [[5, 5, 0], [5, 5, 10]]
+    tubes = tube_seg.tubes_from_paths(img.shape, [verts])
+    assert tubes.shape == img.shape
+    assert (tubes[5, 5, :] == 1).all()
+    for i in range(10):  # set middle column to zero
+        tubes[5, 5, i] = 0
+    assert (tubes == 0).all()  # now everything should be zero
+
