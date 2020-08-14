@@ -7,6 +7,7 @@ import time
 from cloudvolume import CloudVolume
 import feather
 from joblib import Parallel, delayed
+from typing import Optional, List, Union, Tuple, Literal
 
 
 class BaseFeatures(BaseEstimator):
@@ -83,7 +84,7 @@ class BaseFeatures(BaseEstimator):
         voxel_dict = {}
         counter = 0
         batch_id = 0
-        ngl = NeuroglancerSession(self.url, segment_url=self.segment_url)
+        ngl = NeuroglancerSession(self.url, url_segments=self.segment_url)
         # if self.segment_url is None:
         #     ngl_skel = NeuroglancerSession(self.url)
         # else:
@@ -159,7 +160,7 @@ class BaseFeatures(BaseEstimator):
                 start = time.time()
 
                 img, bounds, voxel = ngl.pull_voxel(
-                    seg_id, v_id, self.size[0], self.size[1], self.size[2]
+                    seg_id, v_id, self.size[0]
                 )
                 img_off = ngl.pull_bounds_img(bounds + self.offset)
 
@@ -168,8 +169,8 @@ class BaseFeatures(BaseEstimator):
 
                 start = time.time()
 
-                features = self._convert_to_features(img, include_neighborhood)
-                features_off = self._convert_to_features(img_off, include_neighborhood)
+                features = self._convert_to_features(img)
+                features_off = self._convert_to_features(img_off)
 
                 end = time.time()
                 self.conversion_time += end - start
@@ -253,7 +254,7 @@ class BaseFeatures(BaseEstimator):
             verts = segment.vertices[start_vert:]
         for v_id, vertex in enumerate(verts):
             img, bounds, voxel = ngl.pull_voxel(
-                seg_id, v_id, self.size[0], self.size[1], self.size[2]
+                seg_id, v_id, self.size[0]
             )
             img_off = ngl.pull_bounds_img(bounds + self.offset)
             features = self._convert_to_features(img, include_neighborhood)
