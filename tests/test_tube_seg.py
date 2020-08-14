@@ -279,4 +279,3 @@ def test_tubes_exact():
     for i in range(10):  # set middle column to zero
         tubes[5, 5, i] = 0
     assert (tubes == 0).all()  # now everything should be zero
-
