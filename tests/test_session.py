@@ -9,7 +9,7 @@ from pathlib import Path
 import networkx as nx
 from cloudvolume import CloudVolume
 from cloudvolume.lib import Bbox
-from cloudvolume.exceptions import InfoUnavailableError
+from cloudvolume.exceptions import InfoUnavailableError, SkeletonDecodeError
 from brainlit.algorithms.generate_fragments.tube_seg import tubes_seg
 
 # ensures data is available
@@ -126,6 +126,26 @@ def test_get_segments_bad_inputs(session):
         sess.get_segments(seg_id, 0)
     with pytest.raises(ValueError):
         sess.get_segments(seg_id, bad_bbox)
+
+
+def test_create_tubes_bad_inputs(session):
+    """Tests that errors are raised when bad inputs are given to session.create_tubes.
+    """
+    sess, seg_id, v_id = session
+    bbox = (0, 0, 0, 10, 10, 10)
+    bad_bbox = (-1, 0, 0, 10, 10, 10)
+    with pytest.raises(TypeError):
+        sess.create_tubes("a", bbox)
+    with pytest.raises(SkeletonDecodeError):
+        sess.create_tubes(0, bbox)
+    with pytest.raises(TypeError):
+        sess.create_tubes(seg_id, "asdf")
+    with pytest.raises(ValueError):
+        sess.create_tubes(seg_id, bad_bbox)
+    with pytest.raises(TypeError):
+        sess.create_tubes(seg_id, bbox, "a")
+    with pytest.raises(ValueError):
+        sess.create_tubes(seg_id, bbox, -1)
 
 
 def test_pull_voxel_bad_inputs(session):
@@ -252,6 +272,17 @@ def test_get_segments(session):
     G_sub = sess.get_segments(seg_id, (0, 0, 0, 20, 20, 20))
     assert G != G_sub
     assert isinstance(G, nx.Graph) and isinstance(G_sub, nx.Graph)
+
+
+def test_create_tubes(session):
+    """Tests that create_tubes returns valid tubes.
+    """
+    sess, seg_id, v_id = session
+    img, bbox, verts = sess.pull_voxel(
+        seg_id, v_id, radius=5
+    )  # A valid bbox with data.
+    tubes = sess.create_tubes(seg_id, bbox)
+    assert (tubes != 0).any()
 
 
 def test_pull_voxel(session):

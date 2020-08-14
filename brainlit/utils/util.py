@@ -1,6 +1,8 @@
 import contextlib
 import joblib
 from pathlib import Path
+from tqdm import tqdm
+import numpy as np
 
 
 @contextlib.contextmanager
@@ -47,13 +49,13 @@ def check_iterable_nonnegative(input):
 
 
 def check_size(input, allow_float=True):
-    check_type(input, (list, tuple))
+    check_type(input, (list, tuple, np.ndarray))
     if len(input) != 3:
         raise ValueError(f"{input} must have x, y, z dimensions")
     if allow_float:
-        check_iterable_type(input, (int, float))
+        check_iterable_type(input, (int, np.integer, float))
     else:
-        check_iterable_type(input, int)
+        check_iterable_type(input, (int, np.integer))
 
 
 def check_precomputed(input):

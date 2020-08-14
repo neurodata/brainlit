@@ -7,12 +7,13 @@ from cloudvolume import CloudVolume, view
 from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError
 from pathlib import Path
-from .swc import read_s3, df_to_graph, get_sub_neuron
+from brainlit.utils.swc import read_s3, df_to_graph, get_sub_neuron, graph_to_paths
+from brainlit.algorithms.generate_fragments.tube_seg import tubes_from_paths
 import napari
 import warnings
 import networkx as nx
 from typing import Optional, List, Union, Tuple, Literal
-from .util import (
+from brainlit.utils.util import (
     check_type,
     check_size,
     check_precomputed,
@@ -134,6 +135,37 @@ class NeuroglancerSession:
             G = get_sub_neuron(G, [bbox[:3], bbox[3:]])
         return G
 
+    def create_tubes(
+        self, seg_id: Union[int, float], bbox: Bounds, radius: Optional[int] = None
+    ):
+        """Creates labels from a segment id and bounding box.
+        Finds vertices within bounding box and draws tubes between edges.
+
+        Arguments:
+            seg_id: The id of the .swc file.
+            bbox: The bounding box to draw tubes within.
+            radius: Euclidean distance threshold used to draw tubes, default None = 1 px thick.
+
+        Returns:
+            labels: A volume within the bounding box, with 1 on tubes and 0 elsewhere.
+        """
+        if self.cv_segments is None:
+            raise ValueError("Cannot get segments without segmentation data.")
+        check_type(seg_id, int)
+        if radius is not None:
+            check_type(radius, (int, float))
+            if radius <= 0:
+                raise ValueError("Radius must be positive.")
+
+        G = self.get_segments(seg_id, bbox)
+        paths = graph_to_paths(G)
+        if isinstance(bbox, Bbox):
+            bbox = bbox.to_list()
+        check_iterable_type(bbox, (int, np.integer))
+        check_iterable_nonnegative(bbox)
+        labels = tubes_from_paths(np.subtract(bbox[3:], bbox[:3]), paths, radius)
+        return labels
+
     def pull_voxel(
         self, seg_id: int, v_id: int, radius: int = 1
     ) -> Tuple[np.ndarray, Bbox, np.ndarray]:
@@ -198,12 +230,10 @@ class NeuroglancerSession:
             lower = list(np.min(voxel_list, axis=0) - buffer)
             higher = list(np.max(voxel_list, axis=0) + buffer + 1)
             bounds = Bbox(lower, higher)
-
         if expand:
             bounds = bounds.expand_to_chunk_size(self.chunk_size)
-        lower = bounds.to_list()[:3]
+        vox_in_img_list = np.array(voxel_list) - bounds.to_list()[:3]
         img = self.pull_bounds_img(bounds)
-        vox_in_img_list = np.array(voxel_list) - lower
         return img, bounds, vox_in_img_list
 
     def pull_chunk(
