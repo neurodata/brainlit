@@ -28,6 +28,7 @@ REQUIRED_PACKAGES = [
     "statsmodels>=0.11.1",
     "nibabel>=2.4.1",
     "nilearn>=0.5.2",
+    "feather-format==0.4.1",
 ]
 
 # Find savanna version.
