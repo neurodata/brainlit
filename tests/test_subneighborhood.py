@@ -23,7 +23,6 @@ assert (Path(url[5:]) / "info").is_file()
 assert (Path(url_seg[5:]) / "info").is_file()
 
 
-URL = (Path(__file__).resolve().parents[1] / "data" / "upload").as_uri()
 # URL = "s3://mouse-light-viz/precomputed_volumes/brain1"
 SIZE = 2
 OFF = [15, 15, 15]
@@ -32,7 +31,7 @@ OFF = [15, 15, 15]
 @pytest.fixture
 def gen_array():
     nbr = nbrhood.NeighborhoodFeatures(
-        url=URL, size=SIZE, offset=[15, 15, 15], segment_url=URL + "_segments"
+        url=url, size=SIZE, offset=[15, 15, 15], segment_url=url_seg
     )
     df_nbr = nbr.fit([2], 5)
     ind = SIZE * 2 + 1

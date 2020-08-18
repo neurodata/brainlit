@@ -28,7 +28,6 @@ assert (Path(url[5:]) / "info").is_file()
 assert (Path(url_seg[5:]) / "info").is_file()
 
 
-URL = (Path(__file__).resolve().parents[1] / "data" / "upload").as_uri()
 # URL = "s3://mouse-light-viz/precomputed_volumes/brain1"
 SIZE = 2
 SEGLIST = [2]
@@ -49,28 +48,24 @@ def test_init_bad_inputs():
     with pytest.raises(TypeError):
         nbrhood.NeighborhoodFeatures(url=URL, size=0.5, offset=OFF)
     with pytest.raises(ValueError):
-        nbrhood.NeighborhoodFeatures(
-            url=URL, size=-1, offset=OFF, segment_url=URL + "_segments"
-        )
+        nbrhood.NeighborhoodFeatures(url=url, size=-1, offset=OFF, segment_url=url_seg)
     with pytest.raises(TypeError):
-        nbrhood.NeighborhoodFeatures(
-            url=URL, size=SIZE, offset=12, segment_url=URL + "_segments"
-        )
+        nbrhood.NeighborhoodFeatures(url=url, size=SIZE, offset=12, segment_url=url_seg)
     with pytest.raises(TypeError):
-        nbrhood.NeighborhoodFeatures(url=URL, size=SIZE, offset=OFF, segment_url=0)
+        nbrhood.NeighborhoodFeatures(url=url, size=SIZE, offset=OFF, segment_url=0)
     with pytest.raises(NotImplementedError):
-        nbrhood.NeighborhoodFeatures(url=URL, size=SIZE, offset=OFF, segment_url="asdf")
+        nbrhood.NeighborhoodFeatures(url=url, size=SIZE, offset=OFF, segment_url="asdf")
 
 
 def test_fit_bad_inputs():
     """Tests that proper errors are raised when bad inputs are given to fit method.
     """
     nbr = nbrhood.NeighborhoodFeatures(
-        url=URL, size=SIZE, offset=[15, 15, 15], segment_url=URL + "_segments"
+        url=url, size=SIZE, offset=[15, 15, 15], segment_url=url_seg
     )
     with pytest.raises(TypeError):
         nbr.fit(seg_ids=1, num_verts=5, file_path="demo", batch_size=1000)
-    with pytest.raises(cloudvolume.exceptions.SkeletonDecodeError):
+    with pytest.raises(cloudvolume.exceptions.InfoUnavailableError):
         nbr.fit(seg_ids=[1], num_verts=5, file_path="demo", batch_size=1000)
 
 
@@ -83,7 +78,7 @@ def test_neighborhood():
     """Tests that neighborhood data is generated correctly.
     """
     nbr = nbrhood.NeighborhoodFeatures(
-        url=URL, size=1, offset=[15, 15, 15], segment_url=URL + "_segments"
+        url=url, size=1, offset=[15, 15, 15], segment_url=url_seg
     )
     df_nbr = nbr.fit([2], 5)
     assert df_nbr.shape == (10, 30)  # 5on, 5off for each swc
@@ -122,7 +117,7 @@ def test_file_write():
         os.remove(f)
 
     nbr = nbrhood.NeighborhoodFeatures(
-        url=URL, size=1, offset=[15, 15, 15], segment_url=URL + "_segments"
+        url=url, size=1, offset=[15, 15, 15], segment_url=url_seg
     )
     nbr.fit([2], 5, file_path="test", batch_size=10)
 
