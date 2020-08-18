@@ -100,7 +100,7 @@ def create_cloud_volume(
     num_resolutions: int,
     chunk_size: Optional[Sequence[int]] = None,
     parallel: Optional[bool] = False,
-    layer_type: Optional[Literal["image", "segmentaion"]] = "image",
+    layer_type: Optional[Literal["image", "segmentaion", "annotation"]] = "image",
     dtype: Optional[Literal["uint16", "uint64"]] = None,
     commit_info: Optional[bool] = True,
 ) -> CloudVolumePrecomputed:
@@ -127,7 +127,7 @@ def create_cloud_volume(
     if dtype is None:
         if layer_type == "image":
             dtype = "uint16"
-        elif layer_type == "segmentation":
+        elif layer_type == "segmentation" or layer_type == "annotation":
             dtype = "uint64"
         else:
             raise ValueError(
@@ -144,8 +144,10 @@ def create_cloud_volume(
     check_size(chunk_size)
     check_type(parallel, bool)
     check_type(layer_type, str)
-    if layer_type not in ["image", "segmentation"]:
-        raise ValueError(f"{layer_type} should be 'image' or 'segmentation'")
+    if layer_type not in ["image", "segmentation", "annotation"]:
+        raise ValueError(
+            f"{layer_type} should be 'image', 'segmentation', or 'annotation'"
+        )
     check_type(dtype, str)
     if dtype not in ["uint16", "uint64"]:
         raise ValueError(f"{dtype} should be 'uint16' or 'uint64'")
@@ -168,7 +170,7 @@ def create_cloud_volume(
     ]
     if commit_info:
         vol.commit_info()
-    if layer_type == "image":
+    if layer_type == "image" or layer_type == "annotation":
         vols = [
             CloudVolume(precomputed_path, mip=i, parallel=parallel)
             for i in range(num_resolutions - 1, -1, -1)
@@ -385,6 +387,15 @@ def upload_segments(input_path, precomputed_path, num_mips):
     segments, segids = create_skel_segids(str(swc_dir), origin)
     for skel in segments:
         vols[0].skeleton.upload(skel)
+
+
+def upload_annotations(input_path, precomputed_path, num_mips):
+    """Uploads empty annotation volume.
+    """
+    (_, _, vox_size, img_size, origin) = get_volume_info(input_path, num_mips,)
+    create_cloud_volume(
+        precomputed_path, img_size, vox_size, num_mips, layer_type="annotation",
+    )
 
 
 if __name__ == "__main__":

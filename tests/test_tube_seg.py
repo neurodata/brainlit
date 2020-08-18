@@ -3,9 +3,16 @@ import brainlit
 from brainlit.algorithms.generate_fragments import tube_seg
 import numpy as np
 from brainlit.utils.session import NeuroglancerSession
+from brainlit.utils.swc import graph_to_paths
 from skimage import draw
+from pathlib import Path
 
-URL = "s3://mouse-light-viz/precomputed_volumes/brain1_2"
+URL = "s3://mouse-light-viz/precomputed_volumes/brain1"
+top_level = Path(__file__).parents[1] / "data"
+input = (top_level / "data_octree").as_posix()
+url = (top_level / "test_upload").as_uri()
+URL_SEG = url + "_segments"
+URL = url + "/serial"
 
 
 def test_pairwise():
@@ -46,8 +53,8 @@ def test_draw_sphere():
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL + "_segments")
-    img, _, _ = ngl_session.pull_vertex_list(13, [4], expand=True)
+    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     center = [
         np.random.randint(shape[0]),
@@ -86,8 +93,8 @@ def test_draw_tube_spheres():
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)        
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL + "_segments")
-    img, _, _ = ngl_session.pull_vertex_list(13, [4], expand=True)
+    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     vertex0 = [
         np.random.randint(shape[0] / 2),
@@ -138,8 +145,8 @@ def test_draw_tube_edt():
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)        
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL + "_segments")
-    img, _, _ = ngl_session.pull_vertex_list(13, [4], expand=True)
+    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     vertex0 = [
         np.random.randint(shape[0] / 2),
@@ -190,8 +197,8 @@ def test_tubes_seg():
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL + "_segments")
-    img, _, _ = ngl_session.pull_vertex_list(13, [4], expand=True)
+    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     vertices = np.random.randint(min(shape), size=(4, 3))
     radius = np.random.randint(1, 4)
@@ -223,3 +230,52 @@ def test_tubes_seg():
     assert np.unique(labels).all() in [0, 1]
     assert d_bg > radius ** 2
     assert d_tube <= radius ** 2
+
+
+def test_tubes_from_paths_bad_inputs():
+    """Tests that the tubes_from_paths method raises errors when given bad inputs.
+    """
+    sess = NeuroglancerSession(URL, 0, URL_SEG)
+    img, bbox, verts = sess.pull_voxel(2, 300, radius=5)  # A valid bbox with data.
+    G = sess.get_segments(2, bbox)
+    bbox = bbox.to_list()
+    paths = graph_to_paths(G)  # valid paths
+    size = np.subtract(bbox[3:], bbox[:3])
+    with pytest.raises(TypeError):
+        tube_seg.tubes_from_paths("asdf", paths)
+    with pytest.raises(ValueError):
+        tube_seg.tubes_from_paths((-1, -1, -1), paths)
+    with pytest.raises(TypeError):
+        tube_seg.tubes_from_paths(size, "asdf")
+    with pytest.raises(TypeError):
+        tube_seg.tubes_from_paths(size, [[0, 0, "asdf"]])
+    with pytest.raises(TypeError):
+        tube_seg.tubes_from_paths(size, paths, radius="asdf")
+    with pytest.raises(ValueError):
+        tube_seg.tubes_from_paths(size, paths, radius=-1)
+
+
+def test_tubes_from_paths():
+    """Tests that, given valid paths, valid tubes are created.
+    """
+    sess = NeuroglancerSession(URL, 0, URL_SEG)
+    img, bbox, verts = sess.pull_voxel(2, 300, radius=5)  # A valid bbox with data.
+    G = sess.get_segments(2, bbox)
+    bbox = bbox.to_list()
+    paths = graph_to_paths(G)  # valid paths
+    size = np.subtract(bbox[3:], bbox[:3])
+    tubes = tube_seg.tubes_from_paths(size, paths)
+    assert (tubes != 0).any()
+
+
+def test_tubes_exact():
+    """Tests that exact pixels are filled in.
+    """
+    img = np.zeros((10, 10, 10))
+    verts = [[5, 5, 0], [5, 5, 10]]
+    tubes = tube_seg.tubes_from_paths(img.shape, [verts])
+    assert tubes.shape == img.shape
+    assert (tubes[5, 5, :] == 1).all()
+    for i in range(10):  # set middle column to zero
+        tubes[5, 5, i] = 0
+    assert (tubes == 0).all()  # now everything should be zero
