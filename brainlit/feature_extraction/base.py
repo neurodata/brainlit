@@ -1,22 +1,50 @@
 from abc import abstractmethod
 from sklearn.base import BaseEstimator
 from brainlit.utils.session import NeuroglancerSession
+from brainlit.utils.util import *
+import warnings
 import numpy as np
 import pandas as pd
 import time
 from cloudvolume import CloudVolume
 import feather
 from joblib import Parallel, delayed
+from typing import Optional, List, Union, Tuple, Literal
 
 
 class BaseFeatures(BaseEstimator):
-    """
-    Base class for generating features from precomputed volumes.    
+    """Base class for generating features from precomputed volumes.
+
+    Arguments:
+        url: Precompued path either to a file URI or url URI of image data.
+        size: A size hyperparameter. For Neighborhoods, this is the radius.
+        offset: Added to the coordinates of a positive sample to generate a negative sample.
+        segment_url: Precompued path either to a file URI or url URI of segmentation data.
+
+    Attributes:
+        url: CloudVolumePrecomputedPath to image data.
+        size: A size hyperparameter. In Neighborhoods, this is the radius.
+        offset: Added to the coordinates of a positive sample to generate a negative sample.
+        download_time: Tracks time taken to download the data.
+        conversion_time: Tracks time taken to convert data to features.
+        write_time: Tracks time taken to write features to files.
+        segment_url: CloudVolumePrecomputedPath to segmentation data.
     """
 
-    def __init__(self, url, size=[1, 1, 1], offset=[15, 15, 15], segment_url=None):
-        if type(url) is not str:
-            raise TypeError("URL must be str")
+    def __init__(
+        self,
+        url: str,
+        size: int,
+        offset: Tuple[int, int, int] = [15, 15, 15],
+        segment_url: Optional[str] = None,
+    ):
+        check_precomputed(url)
+        check_type(size, int)
+        if size < 0:
+            raise ValueError(f"Size {size} should be nonnegative.")
+        check_size(offset)
+        if segment_url is not None:
+            check_precomputed(segment_url)
         self.url = url
         self.size = size
         self.offset = offset
@@ -26,74 +54,74 @@ class BaseFeatures(BaseEstimator):
         self.segment_url = segment_url
 
     @abstractmethod
-    def _convert_to_features(self, img):
-        """
-        Computes features from image data.
+    def _convert_to_features(self, img: np.ndarray) -> np.ndarray:
+        """Computes features from image data.
 
-        Parameters
-        ----------
-        img : ndarray
-            Image data.
+        Arguments:
+            img: Image data.
 
-        Returns
-        -------
-        features : ndarray
-            Feature data.
+        Returns:
+            features: Feature data.
         """
 
     def fit(
         self,
-        seg_ids,
-        num_verts=None,
-        file_path=None,
-        batch_size=10000,
-        start_seg=None,
-        start_vert=0,
-        include_neighborhood=False,
-        n_jobs=1,
-    ):
+        seg_ids: List[int],
+        num_verts: Optional[int] = None,
+        file_path: Optional[str] = None,
+        batch_size: int = 10000,
+        start_seg: Optional[int] = None,
+        start_vert: int = 0,
+        include_neighborhood: bool = False,
+        n_jobs: int = 1,
+    ) -> np.ndarray:
+        """Pulls image and background.
+
+        Arguments:
+            seg_ids: A list of segment indices.
+            num_verts: If not None, only runs on a set number of vertices. Defaults to None.
+            file_path: If not None, then the extracted data will be written directly
+                into a feather binary file. The file_path specifies the prefix
+                of the file. Defaults to None.
+            batch_size: Size of each batch of data to be loaded/written. Only
+                used when file_path is not none. Default 10000.
+            start_seg: Specifies which segment in the seg_ids list to start at. Default 0.
+            start_vert: Specifies which vertex of the first seg_id to start at. Default 0.
+            include_neighborhood: If extracting linear features, specifies if the general
+                neighborhood should be extracted as well. Defaults to False.
+            n_jobs: Number of cores to use. -1 to use all available cores. Defaults to 1.
+
+        Returns:
+            df: A dataframe of data containing [segment, vertex, label, f_1, f_2, ..., f_d] columns.
         """
-        Pulls image and background.
+        check_iterable_type(seg_ids, int)
+        if num_verts is not None:
+            check_type(num_verts, int)
+        if file_path is not None:
+            check_type(file_path, str)
+        check_type(batch_size, int)
+        if batch_size < 1:
+            raise ValueError(f"Batch size {batch_size} should not be negative.")
+        if start_seg is not None:
+            check_type(start_seg, int)
+            if start_seg < 0:
+                raise ValueError(
+                    f"Starting segment {start_seg} should not be negative."
+                )
+        check_type(start_vert, int)
+        if start_vert < 0:
+            raise ValueError(f"Starting vertex {start_vert} should not be negative.")
+        check_type(include_neighborhood, bool)
+        check_type(n_jobs, int)
+        if n_jobs < 1:
+            raise ValueError(f"Number of jobs {n_jobs} should be positive.")
 
-        Parameters
-        ----------
-        seg_ids : list of ints
-            A list of segment indices.
-
-        num_verts : int, optional (default=None)
-            If not none, only runs on a set number of vertices.
-        
-        file_path : str
-            If not none, then the extracted data will be written directly
-            into a feather binary file. The file_path specifies the prefix
-            of the file.
-
-        batch_size : int
-            Size of each batch of data to be loaded/written. Is only
-            used when file_path is not none.
-        
-        start_seg : int
-            Specifies which segment in the seg_ids list to start at.
-        
-        start_vert : int
-            Specifies which vertex of the first seg_id to start at
-        
-        include_neighborhood : boolean
-            If extracting linear features, specifies if the general
-            neighborhood should be extracted as well.
-        
-        n_jobs : int
-            Number of cores to use. -1 to use all available cores.
-
-        Returns
-        -------
-        df : ndarray
-            A dataframe of data.
-        """
         voxel_dict = {}
         counter = 0
         batch_id = 0
-        ngl = NeuroglancerSession(self.url, segment_url=self.segment_url)
+        ngl = NeuroglancerSession(self.url, url_segments=self.segment_url)
+        # ngl.cv.progress = False
+        ngl.cv_segments.progress = False
         # if self.segment_url is None:
         #     ngl_skel = NeuroglancerSession(self.url)
         # else:
@@ -147,6 +175,8 @@ class BaseFeatures(BaseEstimator):
         batch_size=None,
         file_path=None,
     ):
+        """Core code which actually extracts features.
+        """
         voxel_dict = {}
         counter = 0
         batch_id = 0
@@ -157,8 +187,16 @@ class BaseFeatures(BaseEstimator):
             else:
                 cv_skel = CloudVolume(self.segment_url)
                 segment = cv_skel.skeleton.get(seg_id)
-            if num_verts is not None:
-                verts = segment.vertices[start_vert:num_verts]
+            if num_verts is not None and num_verts <= len(segment.vertices):
+                if num_verts <= len(segment.vertices):
+                    verts = segment.vertices[start_vert:num_verts]
+                else:
+                    warnings.warn(
+                        UserWarning(
+                            f"Number of vertices {num_verts} greater than total vertices {len(segment.vertices)}. Defaulting to max len."
+                        )
+                    )
+                    verts = segment.vertices[start_vert:]
             else:
                 verts = segment.vertices[start_vert:]
             start_vert = 0
@@ -166,9 +204,7 @@ class BaseFeatures(BaseEstimator):
 
                 start = time.time()
 
-                img, bounds, voxel = ngl.pull_voxel(
-                    seg_id, v_id, self.size[0], self.size[1], self.size[2]
-                )
+                img, bounds, voxel = ngl.pull_voxel(seg_id, v_id, self.size)
                 img_off = ngl.pull_bounds_img(bounds + self.offset)
 
                 end = time.time()
@@ -176,8 +212,8 @@ class BaseFeatures(BaseEstimator):
 
                 start = time.time()
 
-                features = self._convert_to_features(img, include_neighborhood)
-                features_off = self._convert_to_features(img_off, include_neighborhood)
+                features = self._convert_to_features(img)
+                features_off = self._convert_to_features(img_off)
 
                 end = time.time()
                 self.conversion_time += end - start
@@ -260,9 +296,7 @@ class BaseFeatures(BaseEstimator):
         else:
             verts = segment.vertices[start_vert:]
         for v_id, vertex in enumerate(verts):
-            img, bounds, voxel = ngl.pull_voxel(
-                seg_id, v_id, self.size[0], self.size[1], self.size[2]
-            )
+            img, bounds, voxel = ngl.pull_voxel(seg_id, v_id, self.size)
             img_off = ngl.pull_bounds_img(bounds + self.offset)
             features = self._convert_to_features(img, include_neighborhood)
             features_off = self._convert_to_features(img_off, include_neighborhood)
