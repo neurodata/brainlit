@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from sklearn.base import BaseEstimator
 from brainlit.utils.session import NeuroglancerSession
+from brainlit.utils.util import *
+import warnings
 import numpy as np
 import pandas as pd
 import time
@@ -15,7 +17,7 @@ class BaseFeatures(BaseEstimator):
 
     Arguments:
         url: Precompued path either to a file URI or url URI of image data.
-        size: A size hyperparameter. In Neighborhoods, this is the radius.
+        size: A size hyperparameter. For Neighborhoods, this is the radius.
         offset: Added to the coordinates of a positive sample to generate a negative sample.
         segment_url: Precompued path either to a file URI or url URI of segmentation data.
 
@@ -33,11 +35,16 @@ class BaseFeatures(BaseEstimator):
         self,
         url: str,
         size: int,
-        offset: List[int] = [15, 15, 15],
+        offset: Tuple[int, int, int] = [15, 15, 15],
         segment_url: Optional[str] = None,
     ):
-        if type(url) is not str:
-            raise TypeError("URL must be str")
+        check_precomputed(url)
+        check_type(size, int)
+        if size < 0:
+            raise ValueError(f"Size {size} should be nonnegative.")
+        check_size(offset)
+        if segment_url is not None:
+            check_precomputed(segment_url)
         self.url = url
         self.size = size
         self.offset = offset
@@ -85,12 +92,36 @@ class BaseFeatures(BaseEstimator):
             n_jobs: Number of cores to use. -1 to use all available cores. Defaults to 1.
 
         Returns:
-            df: A dataframe of data.
+            df: A dataframe of data containing [segment, vertex, label, f_1, f_2, ..., f_d] columns.
         """
+        check_iterable_type(seg_ids, int)
+        if num_verts is not None:
+            check_type(num_verts, int)
+        if file_path is not None:
+            check_type(file_path, str)
+        check_type(batch_size, int)
+        if batch_size < 1:
+            raise ValueError(f"Batch size {batch_size} should not be negative.")
+        if start_seg is not None:
+            check_type(start_seg, int)
+            if start_seg < 0:
+                raise ValueError(
+                    f"Starting segment {start_seg} should not be negative."
+                )
+        check_type(start_vert, int)
+        if start_vert < 0:
+            raise ValueError(f"Starting vertex {start_vert} should not be negative.")
+        check_type(include_neighborhood, bool)
+        check_type(n_jobs, int)
+        if n_jobs < 1:
+            raise ValueError(f"Number of jobs {n_jobs} should be positive.")
+
         voxel_dict = {}
         counter = 0
         batch_id = 0
         ngl = NeuroglancerSession(self.url, url_segments=self.segment_url)
+        # ngl.cv.progress = False
+        ngl.cv_segments.progress = False
         # if self.segment_url is None:
         #     ngl_skel = NeuroglancerSession(self.url)
         # else:
@@ -156,8 +187,16 @@ class BaseFeatures(BaseEstimator):
             else:
                 cv_skel = CloudVolume(self.segment_url)
                 segment = cv_skel.skeleton.get(seg_id)
-            if num_verts is not None:
-                verts = segment.vertices[start_vert:num_verts]
+            if num_verts is not None and num_verts <= len(segment.vertices):
+                if num_verts <= len(segment.vertices):
+                    verts = segment.vertices[start_vert:num_verts]
+                else:
+                    warnings.warn(
+                        UserWarning(
+                            f"Number of vertices {num_verts} greater than total vertices {len(segment.vertices)}. Defaulting to max len."
+                        )
+                    )
+                    verts = segment.vertices[start_vert:]
             else:
                 verts = segment.vertices[start_vert:]
             start_vert = 0
