@@ -48,10 +48,10 @@ def check_iterable_nonnegative(input):
         raise ValueError((f"{input} elements should be nonnegative."))
 
 
-def check_size(input, allow_float=True):
+def check_size(input, allow_float=True, dim=3):
     check_type(input, (list, tuple, np.ndarray))
-    if len(input) != 3:
-        raise ValueError(f"{input} must have x, y, z dimensions")
+    if len(input) != dim:
+        raise ValueError(f"{input} must have {dim} dimensions")
     if allow_float:
         check_iterable_type(input, (int, np.integer, float))
     else:

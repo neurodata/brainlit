@@ -29,33 +29,37 @@ def gen_array():
 ##############
 
 
-def test_init_bad_inputs():
+def test_subneighborhood_bad_inputs(gen_array):
+    arr = gen_array
+    arr_flat = arr.flatten()
     with pytest.raises(TypeError):
-        nbrhood.NeighborhoodFeatures(url=0, size=SIZE, offset=OFF)
-    with pytest.raises(NotImplementedError):
-        nbrhood.NeighborhoodFeatures(url="asdf", size=SIZE, offset=OFF)
+        nbrhood.subsample("asdf", (5, 5), (3, 3))
+    # 2d
     with pytest.raises(TypeError):
-        nbrhood.NeighborhoodFeatures(url=URL, size=0.5, offset=OFF)
+        nbrhood.subsample(arr_flat, 0, (3, 3))
     with pytest.raises(ValueError):
-        nbrhood.NeighborhoodFeatures(
-            url=URL, size=-1, offset=OFF, segment_url=URL + "_segments"
-        )
+        nbrhood.subsample(arr_flat, (5), (3, 3))
     with pytest.raises(TypeError):
-        nbrhood.NeighborhoodFeatures(
-            url=URL, size=SIZE, offset=12, segment_url=URL + "_segments"
-        )
+        nbrhood.subsample(arr_flat, (-1, -1), (3, 3))
     with pytest.raises(TypeError):
-        nbrhood.NeighborhoodFeatures(url=URL, size=SIZE, offset=OFF, segment_url=0)
+        nbrhood.subsample(arr_flat, (5, 5), 0)
     with pytest.raises(ValueError):
-        nbrhood.NeighborhoodFeatures(url=URL, size=SIZE, offset=OFF, segment_url="asdf")
-
-
-def test_fit_bad_inputs():
-    nbr = nbrhood.NeighborhoodFeatures(
-        url=URL, size=SIZE, offset=[15, 15, 15], segment_url=URL + "_segments"
-    )
+        nbrhood.subsample(arr_flat, (5, 5), (3))
+    with pytest.raises(ValueError):
+        nbrhood.subsample(arr_flat, (5, 5), (-1, -1))
+    # 3d
     with pytest.raises(TypeError):
-        nbr.fit(10, 5)
+        nbrhood.subsample(arr_flat, 0, (3, 3, 3))
+    with pytest.raises(ValueError):
+        nbrhood.subsample(arr_flat, (5), (3, 3, 3))
+    with pytest.raises(ValueError):
+        nbrhood.subsample(arr_flat, (-1, -1, -1), (3, 3, 3))
+    with pytest.raises(TypeError):
+        nbrhood.subsample(arr_flat, (5, 5, 5), 0)
+    with pytest.raises(ValueError):
+        nbrhood.subsample(arr_flat, (5, 5, 5), (3))
+    with pytest.raises(ValueError):
+        nbrhood.subsample(arr_flat, (5, 5, 5), (-1, -1, -1))
 
 
 ##################

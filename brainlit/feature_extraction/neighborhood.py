@@ -1,6 +1,7 @@
 import numpy as np
 import brainlit
 from brainlit.preprocessing import preprocess, image_process
+from brainlit.utils.util import check_type, check_size
 from scipy import ndimage as ndi
 from pathlib import Path
 import pandas as pd
@@ -45,7 +46,7 @@ class NeighborhoodFeatures(BaseFeatures):
 
 
 def subsample(
-    arr: np.ndarray, orig_shape: Tuple[int, int, int], dest_shape: Tuple[int, int, int]
+    arr: np.ndarray, orig_shape: List[int], dest_shape: List[int]
 ) -> np.ndarray:
     """Subsamples a flattened neighborhood to a smaller flattened neighborhood.
     
@@ -54,6 +55,11 @@ def subsample(
         orig_shape: The original shape of the array before flattening
         dest_shape: The desired shape of the array before flattening
     """
+    check_type(arr, np.ndarray)
+    try:
+        check_size(orig_shape, dim=3)
+    except Error:
+        check_size(dest_shape, dim=2)
     start = np.subtract(orig_shape, dest_shape) // 2
     end = start + dest_shape
     if len(orig_shape) is 2:
