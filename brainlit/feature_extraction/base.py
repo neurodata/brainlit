@@ -13,14 +13,20 @@ from typing import Optional, List, Union, Tuple, Literal
 class BaseFeatures(BaseEstimator):
     """Base class for generating features from precomputed volumes.
 
+    Arguments:
+        url: Precompued path either to a file URI or url URI of image data.
+        size: A size hyperparameter. In Neighborhoods, this is the radius.
+        offset: Added to the coordinates of a positive sample to generate a negative sample.
+        segment_url: Precompued path either to a file URI or url URI of segmentation data.
+
     Attributes:
-        url: 
-        size:
-        offset:
-        download_time:
-        conversion_time:
-        write_time:
-        segment_url:
+        url: CloudVolumePrecomputedPath to image data.
+        size: A size hyperparameter. In Neighborhoods, this is the radius.
+        offset: Added to the coordinates of a positive sample to generate a negative sample.
+        download_time: Tracks time taken to download the data.
+        conversion_time: Tracks time taken to convert data to features.
+        write_time: Tracks time taken to write features to files.
+        segment_url: CloudVolumePrecomputedPath to segmentation data.
     """
 
     def __init__(
@@ -159,9 +165,7 @@ class BaseFeatures(BaseEstimator):
 
                 start = time.time()
 
-                img, bounds, voxel = ngl.pull_voxel(
-                    seg_id, v_id, self.size
-                )
+                img, bounds, voxel = ngl.pull_voxel(seg_id, v_id, self.size)
                 img_off = ngl.pull_bounds_img(bounds + self.offset)
 
                 end = time.time()
@@ -253,9 +257,7 @@ class BaseFeatures(BaseEstimator):
         else:
             verts = segment.vertices[start_vert:]
         for v_id, vertex in enumerate(verts):
-            img, bounds, voxel = ngl.pull_voxel(
-                seg_id, v_id, self.size
-            )
+            img, bounds, voxel = ngl.pull_voxel(seg_id, v_id, self.size)
             img_off = ngl.pull_bounds_img(bounds + self.offset)
             features = self._convert_to_features(img, include_neighborhood)
             features_off = self._convert_to_features(img_off, include_neighborhood)

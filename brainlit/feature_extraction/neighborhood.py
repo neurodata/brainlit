@@ -12,6 +12,21 @@ from .base import BaseFeatures
 
 class NeighborhoodFeatures(BaseFeatures):
     """Computes features based off neighborhood properties.
+
+    Arguments:
+        url: Precompued path either to a file URI or url URI of image data.
+        size: A size hyperparameter. In Neighborhoods, this is the radius.
+        offset: Added to the coordinates of a positive sample to generate a negative sample.
+        segment_url: Precompued path either to a file URI or url URI of segmentation data.
+
+    Attributes:
+        url: CloudVolumePrecomputedPath to image data.
+        size: A size hyperparameter. In Neighborhoods, this is the radius.
+        offset: Added to the coordinates of a positive sample to generate a negative sample.
+        download_time: Tracks time taken to download the data.
+        conversion_time: Tracks time taken to convert data to features.
+        write_time: Tracks time taken to write features to files.
+        segment_url: CloudVolumePrecomputedPath to segmentation data.
     """
 
     def __init__(
