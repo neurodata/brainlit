@@ -1,6 +1,6 @@
 import pytest
 from brainlit.utils.session import NeuroglancerSession
-from brainlit.utils.upload import upload_volumes
+from brainlit.utils.upload import upload_volumes, upload_segments
 from brainlit.feature_extraction import neighborhood as nbrhood
 import numpy as np
 import pandas as pd
