@@ -69,11 +69,11 @@ def subsample(
 
     start = np.subtract(orig_shape, dest_shape) // 2
     end = start + dest_shape
-    if len(orig_shape) is 2:
+    if len(orig_shape) == 2:
         idx = np.ravel_multi_index(
             (np.mgrid[start[0] : end[0], start[1] : end[1]].reshape(2, -1)), orig_shape
         )
-    elif len(orig_shape) is 3:
+    elif len(orig_shape) == 3:
         idx = np.ravel_multi_index(
             (
                 np.mgrid[
