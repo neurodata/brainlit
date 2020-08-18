@@ -23,6 +23,8 @@ OFF = [15, 15, 15]
 
 
 def test_init_bad_inputs():
+    """Tests that proper errors are raised when bad inputs are given to __init__ method.
+    """
     with pytest.raises(TypeError):
         nbrhood.NeighborhoodFeatures(url=0, size=SIZE, offset=OFF)
     with pytest.raises(NotImplementedError):
@@ -44,6 +46,8 @@ def test_init_bad_inputs():
 
 
 def test_fit_bad_inputs():
+    """Tests that proper errors are raised when bad inputs are given to fit method.
+    """
     nbr = nbrhood.NeighborhoodFeatures(
         url=URL, size=SIZE, offset=[15, 15, 15], segment_url=URL + "_segments"
     )
@@ -58,16 +62,9 @@ def test_fit_bad_inputs():
 ##################
 
 
-def test_segment_url():
-    nbr = nbrhood.NeighborhoodFeatures(
-        url=URL, size=1, offset=[15, 15, 15], segment_url=URL + "_segments",
-    )
-    df_nbr = nbr.fit([2], 5)
-    assert df_nbr.shape == (10, 30)  # 5on, 5off for each swc
-    assert not df_nbr.empty
-
-
 def test_neighborhood():
+    """Tests that neighborhood data is generated correctly.
+    """
     nbr = nbrhood.NeighborhoodFeatures(
         url=URL, size=1, offset=[15, 15, 15], segment_url=URL + "_segments"
     )
@@ -101,6 +98,8 @@ def test_neighborhood():
 
 
 def test_file_write():
+    """Tests that files are written correctly.
+    """
     files = sorted(glob.glob("*.feather"))
     for f in sorted(files):
         os.remove(f)
