@@ -56,10 +56,17 @@ def subsample(
         dest_shape: The desired shape of the array before flattening
     """
     check_type(arr, np.ndarray)
-    try:
+    if len(orig_shape) != len(dest_shape):
+        raise ValueError("Mismatched in and out dimensions.")
+    if np.prod(orig_shape) != len(arr):
+        raise ValueError("Original shape is incorrect.")
+    if len(orig_shape) == 3:
         check_size(orig_shape, dim=3)
-    except Error:
+    elif len(orig_shape) == 2:
         check_size(dest_shape, dim=2)
+    else:
+        raise NotImplementedError("Only 2 and 3 dimensions supported.")
+
     start = np.subtract(orig_shape, dest_shape) // 2
     end = start + dest_shape
     if len(orig_shape) is 2:

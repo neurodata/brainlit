@@ -31,35 +31,32 @@ def gen_array():
 
 def test_subneighborhood_bad_inputs(gen_array):
     arr = gen_array
-    arr_flat = arr.flatten()
+    arr_flat = arr[0, :, :].flatten()
+    arr_flat3 = arr.flatten()
     with pytest.raises(TypeError):
         nbrhood.subsample("asdf", (5, 5), (3, 3))
     # 2d
     with pytest.raises(TypeError):
         nbrhood.subsample(arr_flat, 0, (3, 3))
     with pytest.raises(ValueError):
-        nbrhood.subsample(arr_flat, (5), (3, 3))
+        nbrhood.subsample(arr_flat, (5,), (3, 3))
     with pytest.raises(TypeError):
-        nbrhood.subsample(arr_flat, (-1, -1), (3, 3))
-    with pytest.raises(TypeError):
-        nbrhood.subsample(arr_flat, (5, 5), 0)
+        nbrhood.subsample(arr_flat, (5, 5), ("a", "b"))
     with pytest.raises(ValueError):
-        nbrhood.subsample(arr_flat, (5, 5), (3))
+        nbrhood.subsample(arr_flat, (5, 5), (3,))
     with pytest.raises(ValueError):
         nbrhood.subsample(arr_flat, (5, 5), (-1, -1))
     # 3d
     with pytest.raises(TypeError):
-        nbrhood.subsample(arr_flat, 0, (3, 3, 3))
+        nbrhood.subsample(arr_flat3, 0, (3, 3, 3))
     with pytest.raises(ValueError):
-        nbrhood.subsample(arr_flat, (5), (3, 3, 3))
-    with pytest.raises(ValueError):
-        nbrhood.subsample(arr_flat, (-1, -1, -1), (3, 3, 3))
+        nbrhood.subsample(arr_flat3, (5,), (3, 3, 3))
     with pytest.raises(TypeError):
-        nbrhood.subsample(arr_flat, (5, 5, 5), 0)
+        nbrhood.subsample(arr_flat3, (5, 5, 5), 0)
     with pytest.raises(ValueError):
-        nbrhood.subsample(arr_flat, (5, 5, 5), (3))
+        nbrhood.subsample(arr_flat3, (5, 5, 5), (3,))
     with pytest.raises(ValueError):
-        nbrhood.subsample(arr_flat, (5, 5, 5), (-1, -1, -1))
+        nbrhood.subsample(arr_flat3, (5, 5, 5), (-1, -1, -1))
 
 
 ##################
