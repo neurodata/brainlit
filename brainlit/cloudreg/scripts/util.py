@@ -40,13 +40,13 @@ def get_bias_field(img, mask=None, scale=1.0, niters=[50, 50, 50, 50]):
     minval = minmaxfilter.GetMinimum()
     img_rescaled = sitk.Cast(img, sitk.sitkFloat32) - minval + 1.0
 
-    spacing = np.array(img_rescaled.GetSpacing())/scale
+    spacing = np.array(img_rescaled.GetSpacing()) / scale
     img_ds = imgResample(img_rescaled, spacing=spacing)
     img_ds = sitk.Cast(img_ds, sitk.sitkFloat32)
 
     # Calculate bias
     if mask is None:
-        mask = sitk.Image(img_ds.GetSize(), sitk.sitkUInt8)+1
+        mask = sitk.Image(img_ds.GetSize(), sitk.sitkUInt8) + 1
         mask.CopyInformation(img_ds)
     else:
         if type(mask) is not sitk.SimpleITK.Image:
@@ -64,10 +64,10 @@ def get_bias_field(img, mask=None, scale=1.0, niters=[50, 50, 50, 50]):
     return bias
 
 
-
 @contextlib.contextmanager
 def tqdm_joblib(tqdm_object):
     """Context manager to patch joblib to report into tqdm progress bar given as argument"""
+
     class TqdmBatchCompletionCallback:
         def __init__(self, time, index, parallel):
             self.index = index
@@ -89,7 +89,7 @@ def tqdm_joblib(tqdm_object):
 
 def chunks(l, n):
     for i in range(0, len(l), n):
-        yield l[i:i + n]
+        yield l[i : i + n]
 
 
 def imgResample(img, spacing, size=[], useNearest=False, origin=None, outsideValue=0):
@@ -117,21 +117,21 @@ def imgResample(img, spacing, size=[], useNearest=False, origin=None, outsideVal
     """
 
     if origin is None:
-        origin = [0]*3
+        origin = [0] * 3
     if len(spacing) != img.GetDimension():
-        raise Exception(
-            "len(spacing) != " + str(img.GetDimension()))
+        raise Exception("len(spacing) != " + str(img.GetDimension()))
 
     # Set Size
     if size == []:
         inSpacing = img.GetSpacing()
         inSize = img.GetSize()
-        size = [int(math.ceil(inSize[i] * (inSpacing[i] / spacing[i])))
-                for i in range(img.GetDimension())]
+        size = [
+            int(math.ceil(inSize[i] * (inSpacing[i] / spacing[i])))
+            for i in range(img.GetDimension())
+        ]
     else:
         if len(size) != img.GetDimension():
-            raise Exception(
-                "len(size) != " + str(img.GetDimension()))
+            raise Exception("len(size) != " + str(img.GetDimension()))
 
     # Resample input image
     interpolator = [sitk.sitkLinear, sitk.sitkNearestNeighbor][useNearest]
@@ -145,10 +145,11 @@ def imgResample(img, spacing, size=[], useNearest=False, origin=None, outsideVal
         origin,
         spacing,
         img.GetDirection(),
-        outsideValue)
+        outsideValue,
+    )
+
 
 # below code from https://stackoverflow.com/questions/42641315/s3-urls-get-bucket-name-and-path
-
 
 
 class S3Url(object):
@@ -186,9 +187,9 @@ class S3Url(object):
     @property
     def key(self):
         if self._parsed.query:
-            return self._parsed.path.lstrip('/') + '?' + self._parsed.query
+            return self._parsed.path.lstrip("/") + "?" + self._parsed.query
         else:
-            return self._parsed.path.lstrip('/')
+            return self._parsed.path.lstrip("/")
 
     @property
     def url(self):
@@ -196,21 +197,22 @@ class S3Url(object):
 
 
 def upload_file_to_s3(local_path, s3_bucket, s3_key):
-    s3 = boto3.resource('s3')
+    s3 = boto3.resource("s3")
     s3.meta.client.upload_file(local_path, s3_bucket, s3_key)
 
-    
+
 def download_file_from_s3(s3_bucket, s3_key, local_path):
-    s3 = boto3.resource('s3')
+    s3 = boto3.resource("s3")
     s3.meta.client.download_file(s3_bucket, s3_key, local_path)
 
+
 def s3_object_exists(bucket, key):
-    s3 = boto3.resource('s3')
+    s3 = boto3.resource("s3")
 
     try:
         s3.Object(bucket, key).load()
     except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == "404":
+        if e.response["Error"]["Code"] == "404":
             # The object does not exist.
             return False
         else:
@@ -222,24 +224,32 @@ def s3_object_exists(bucket, key):
 
 
 def download_terastitcher_files(s3_path, local_path):
-    default_terastitcher_files = ['xml_import.xml', 'xml_displcompute.xml', 'xml_dislproj.xml', 'xml_merging.xml', 'xml_displthres.xml']
-    s3 = boto3.resource('s3')
+    default_terastitcher_files = [
+        "xml_import.xml",
+        "xml_displcompute.xml",
+        "xml_dislproj.xml",
+        "xml_merging.xml",
+        "xml_displthres.xml",
+    ]
+    s3 = boto3.resource("s3")
     s3_url = S3Url(s3_path)
-    xml_paths = list(get_matching_s3_keys(s3_url.bucket, prefix=s3_url.key, suffix='xml'))
+    xml_paths = list(
+        get_matching_s3_keys(s3_url.bucket, prefix=s3_url.key, suffix="xml")
+    )
     xml_paths = [i for i in xml_paths if i in default_terastitcher_files]
     if len(xml_paths) == 0:
         # xml files were not at s3_path
         return False
     # download xml results to local_path
-    for i in tqdm(xml_paths, desc='downloading xml files from S3'):
-        fname = i.split('/')[-1]
+    for i in tqdm(xml_paths, desc="downloading xml files from S3"):
+        fname = i.split("/")[-1]
         s3.meta.client.download_file(s3_url.bucket, i, f"{local_path}/{fname}")
 
     return True
 
 
 # code from https://alexwlchan.net/2019/07/listing-s3-keys/
-def get_matching_s3_keys(bucket, prefix='', suffix=''):
+def get_matching_s3_keys(bucket, prefix="", suffix=""):
     """
     Generate the keys in an S3 bucket.
 
@@ -247,29 +257,29 @@ def get_matching_s3_keys(bucket, prefix='', suffix=''):
     :param prefix: Only fetch keys that start with this prefix (optional).
     :param suffix: Only fetch keys that end with this suffix (optional).
     """
-    s3 = boto3.client('s3')
-    kwargs = {'Bucket': bucket, 'Prefix': prefix}
+    s3 = boto3.client("s3")
+    kwargs = {"Bucket": bucket, "Prefix": prefix}
     while True:
         resp = s3.list_objects_v2(**kwargs)
         try:
-            resp['Contents']
+            resp["Contents"]
         except Exception as e:
             print(e)
             return None
-        for obj in resp['Contents']:
-            key = obj['Key']
+        for obj in resp["Contents"]:
+            key = obj["Key"]
             if key.endswith(suffix):
                 yield key
 
         try:
-            kwargs['ContinuationToken'] = resp['NextContinuationToken']
+            kwargs["ContinuationToken"] = resp["NextContinuationToken"]
         except KeyError:
             break
 
 
-
 # below code from https://github.com/boto/boto3/issues/358#issuecomment-372086466
 from awscli.clidriver import create_clidriver
+
 
 def aws_cli(*cmd):
     old_env = dict(os.environ)
@@ -277,7 +287,7 @@ def aws_cli(*cmd):
 
         # Environment
         env = os.environ.copy()
-        env['LC_CTYPE'] = u'en_US.UTF'
+        env["LC_CTYPE"] = "en_US.UTF"
         os.environ.update(env)
 
         # Run awscli in the same process
@@ -285,11 +295,10 @@ def aws_cli(*cmd):
 
         # Deal with problems
         if exit_code > 0:
-            raise RuntimeError('AWS CLI exited with code {}'.format(exit_code))
+            raise RuntimeError("AWS CLI exited with code {}".format(exit_code))
     finally:
         os.environ.clear()
         os.environ.update(old_env)
-
 
 
 def get_reorientations(in_orient, out_orient):
@@ -298,36 +307,31 @@ def get_reorientations(in_orient, out_orient):
     """
 
     dimension = len(in_orient)
-    if (len(in_orient) != dimension):
-        raise Exception(
-            "in_orient must be a string of length {0}.".format(dimension))
-    if (len(out_orient) != dimension):
-        raise Exception(
-            "out_orient must be a string of length {0}.".format(dimension))
+    if len(in_orient) != dimension:
+        raise Exception("in_orient must be a string of length {0}.".format(dimension))
+    if len(out_orient) != dimension:
+        raise Exception("out_orient must be a string of length {0}.".format(dimension))
     in_orient = str(in_orient).lower()
     out_orient = str(out_orient).lower()
 
     inDirection = ""
     outDirection = ""
-    orientToDirection = {"r": "r", "l": "r",
-                         "s": "s", "i": "s", "a": "a", "p": "a"}
+    orientToDirection = {"r": "r", "l": "r", "s": "s", "i": "s", "a": "a", "p": "a"}
     for i in range(dimension):
         try:
             inDirection += orientToDirection[in_orient[i]]
         except BaseException:
-            raise Exception("in_orient \'{0}\' is invalid.".format(in_orient))
+            raise Exception("in_orient '{0}' is invalid.".format(in_orient))
 
         try:
             outDirection += orientToDirection[out_orient[i]]
         except BaseException:
-            raise Exception("out_orient \'{0}\' is invalid.".format(out_orient))
+            raise Exception("out_orient '{0}' is invalid.".format(out_orient))
 
     if len(set(inDirection)) != dimension:
-        raise Exception(
-            "in_orient \'{0}\' is invalid.".format(in_orient))
+        raise Exception("in_orient '{0}' is invalid.".format(in_orient))
     if len(set(outDirection)) != dimension:
-        raise Exception(
-            "out_orient \'{0}\' is invalid.".format(out_orient))
+        raise Exception("out_orient '{0}' is invalid.".format(out_orient))
 
     order = []
     flip = []
@@ -340,19 +344,28 @@ def get_reorientations(in_orient, out_orient):
 
 def start_ec2_instance(instance_id, instance_type):
     # get ec2 client
-    ec2 = boto3.resource('ec2')
+    ec2 = boto3.resource("ec2")
 
     # stop instance in case it is running
     ec2.meta.client.stop_instances(InstanceIds=[instance_id])
-    waiter = ec2.meta.client.get_waiter('instance_stopped')
+    waiter = ec2.meta.client.get_waiter("instance_stopped")
     waiter.wait(InstanceIds=[instance_id])
     # make sure instance is the right type
-    ec2.meta.client.modify_instance_attribute(InstanceId=instance_id, Attribute='instanceType', Value=instance_type)
+    ec2.meta.client.modify_instance_attribute(
+        InstanceId=instance_id, Attribute="instanceType", Value=instance_type
+    )
     # start instance
     ec2.meta.client.start_instances(InstanceIds=[instance_id])
     # wait until instance is started up
-    waiter = ec2.meta.client.get_waiter('instance_status_ok')
+    waiter = ec2.meta.client.get_waiter("instance_status_ok")
     waiter.wait(InstanceIds=[instance_id])
     # get instance ip address
     instance = ec2.Instance(instance_id)
     return instance.public_ip_address
+
+
+def calc_hierarchy_levels(img_size, lowest_res=1024):
+    max_xy = max(img_size[0:1])
+    # we add one because 0 is included in the number of downsampling levels
+    num_levels = max(1, math.ceil(math.log(max_xy / lowest_res, 2)) + 1)
+    return num_levels

@@ -1,3 +1,4 @@
+mkdir -p ~/ssd1 ~/ssd2
 if [ $(($(lsblk | grep nvme | wc -l) - 2)) -lt $((4)) ]
 then
     mkfs.ext4 -E nodiscard -m0 /dev/nvme0n1

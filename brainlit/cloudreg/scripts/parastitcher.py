@@ -1,6 +1,6 @@
 # uncompyle6 version 3.4.0
 # Python bytecode 2.7 (62211)
-# Decompiled from: Python 3.7.3 (default, Mar 27 2019, 09:23:15) 
+# Decompiled from: Python 3.7.3 (default, Mar 27 2019, 09:23:15)
 # [Clang 10.0.1 (clang-1001.0.46.3)]
 # Embedded file name: Parastitcher3.py
 # Compiled at: 2018-09-06 04:29:28
@@ -62,12 +62,14 @@ from mpi4py import MPI
 from collections import deque
 from subprocess import *
 import os.path, pickle
-prefix = ''
+
+prefix = ""
 debug_level = 0
 default_tile_size = 256
-resume_status_fname = 'para_resume_status.bin'
+resume_status_fname = "para_resume_status.bin"
 suspend_resume_enabled = False
-save_status_prefix = ''
+save_status_prefix = ""
+
 
 def partition(m, n, N):
     """
@@ -121,8 +123,7 @@ def partition(m, n, N):
         p_m_cur = p_m_cur - 1
         p_n_cur = (c - n * p_m_cur) / m
 
-    return (
-     int(p_m), int(p_n))
+    return (int(p_m), int(p_n))
 
 
 def extract_params():
@@ -187,16 +188,29 @@ def worker(input_file):
    """
     myrank = comm.Get_rank()
     t1 = time.time()
-    print((
-     'Scheduled job n. ', list(input_file.keys())[0], ' is executed by rank: ', myrank))
+    print(
+        (
+            "Scheduled job n. ",
+            list(input_file.keys())[0],
+            " is executed by rank: ",
+            myrank,
+        )
+    )
     if debug_level > 0:
-        execution_string = prefix + list(input_file.values())[0] + ' > ' + 'output_' + str(list(input_file.keys())[0]) + '.out'
+        execution_string = (
+            prefix
+            + list(input_file.values())[0]
+            + " > "
+            + "output_"
+            + str(list(input_file.keys())[0])
+            + ".out"
+        )
     else:
         execution_string = prefix + list(input_file.values())[0]
-    print ( execution_string )
+    print(execution_string)
     os.system(execution_string)
     t2 = time.time()
-    print((' ---> Processor ', myrank, ' has calculated for ', t2 - t1))
+    print((" ---> Processor ", myrank, " has calculated for ", t2 - t1))
     return input_file
 
 
@@ -211,9 +225,8 @@ def subordinate():
         status = MPI.Status()
         input_name = comm.recv(source=0, tag=MPI.ANY_TAG, status=status)
         if status.tag == DIETAG:
-            end_signal = [
-             'Exit cpu n. ', myrank]
-            print(( end_signal[0], end_signal[1] ))
+            end_signal = ["Exit cpu n. ", myrank]
+            print((end_signal[0], end_signal[1]))
             comm.send(end_signal, dest=0, tag=1)
             return
         result = worker(input_name)
@@ -227,10 +240,10 @@ def read_input(inputf, nline=0):
     """
     i = 0
     data = []
-    f = open(inputf, 'r')
+    f = open(inputf, "r")
     for line in f:
         line = line.strip()
-        l = line.split(' ', 1)
+        l = line.split(" ", 1)
         data.append(l)
         if nline != 0 and i > nline:
             break
@@ -262,8 +275,7 @@ def extract_np(inputf):
     end = start + tmp_string[1][start:].find('"')
     sel_string = tmp_string[1][start:end]
     ncols = int(sel_string)
-    return (
-     nrows, ncols, nslices)
+    return (nrows, ncols, nslices)
 
 
 def find_last_slash(string):
@@ -278,33 +290,31 @@ def find_last_slash(string):
     index = []
     i = 0
     for chara in string:
-        if chara == '/' or chara == '\\':
+        if chara == "/" or chara == "\\":
             index.append(i)
             check = 1
         i += 1
 
     if check == 1:
         last_slash = max(index)
-        output_string = [string[0:last_slash + 1], string[last_slash + 1:]]
+        output_string = [string[0 : last_slash + 1], string[last_slash + 1 :]]
     else:
-        output_string = [
-         '', string]
+        output_string = ["", string]
     return output_string
 
 
 def add_chars(params):
-    string = [
-     'volin_plugin=', 'imin_plugin']
+    string = ["volin_plugin=", "imin_plugin"]
     i = 0
     for line in params:
         for local_string in string:
             tmp = line.find(local_string)
             if tmp != -1:
                 size = len(local_string)
-                sel_string = line.split('=')
+                sel_string = line.split("=")
                 input_string = sel_string[1]
                 mod_string = '"' + input_string + '"'
-                tot_mod_string = sel_string[0] + '=' + mod_string
+                tot_mod_string = sel_string[0] + "=" + mod_string
                 params[i] = tot_mod_string
 
         i += 1
@@ -345,15 +355,37 @@ def do_additional_partition(nprocs, nrows, ncols, n_ss):
     """
         All parameters should be float
         """
-    print(( 'do_additional_partition ( nprocs =', nprocs, ', nrows =', nrows, ', ncols =', ncols, ', nlayers =', n_ss ))
+    print(
+        (
+            "do_additional_partition ( nprocs =",
+            nprocs,
+            ", nrows =",
+            nrows,
+            ", ncols =",
+            ncols,
+            ", nlayers =",
+            n_ss,
+        )
+    )
     if n_ss >= 2 * nprocs:
         return (1, 1)
     else:
         if floor(nrows / 2) * floor(ncols / 2) * n_ss < 2 * nprocs:
-            print(( 'WARNING: not enough paritions for', nprocs, 'processors' ))
-            print(( 'Dataset partitioned in', int(floor(nrows / 2)), 'x', int(floor(ncols / 2)), 'x', n_ss, '=', int(floor(nrows / 2)) * int(floor(ncols / 2)) * n_ss, 'partitions' ))
-            return (
-             max(1, floor(nrows / 2)), max(1, floor(ncols / 2)))
+            print(("WARNING: not enough paritions for", nprocs, "processors"))
+            print(
+                (
+                    "Dataset partitioned in",
+                    int(floor(nrows / 2)),
+                    "x",
+                    int(floor(ncols / 2)),
+                    "x",
+                    n_ss,
+                    "=",
+                    int(floor(nrows / 2)) * int(floor(ncols / 2)) * n_ss,
+                    "partitions",
+                )
+            )
+            return (max(1, floor(nrows / 2)), max(1, floor(ncols / 2)))
         m = max(nrows, ncols)
         n = min(nrows, ncols)
         p_m, p_n = partition(m, n, ceil(2 * nprocs / n_ss))
@@ -361,8 +393,7 @@ def do_additional_partition(nprocs, nrows, ncols, n_ss):
             temp = p_m
             p_m = p_n
             p_n = temp
-        return (
-         p_m, p_n)
+        return (p_m, p_n)
 
 
 def score_function(params):
@@ -427,7 +458,7 @@ def main_step6(queue, rs_fname):
    """
     n_tasks = len(queue)
     if suspend_resume_enabled:
-        rs_file = open(rs_fname, 'rb')
+        rs_file = open(rs_fname, "rb")
         done = pickle.load(rs_file)
         rs_file.close()
     else:
@@ -444,7 +475,7 @@ def main_step6(queue, rs_fname):
             break
         comm.send(input_file, dest=rank, tag=WORKTAG)
 
-    print( 'MASTER: first loop terminated' )
+    print("MASTER: first loop terminated")
     while queue:
         input_file = pop_left(queue)
         while input_file != None and list(input_file.keys())[0] in done:
@@ -454,26 +485,30 @@ def main_step6(queue, rs_fname):
             break
         status = MPI.Status()
         flag = comm.recv(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status)
-        assert status.tag == 0, 'Wrong tag: a message signalling a finished task expected'
+        assert (
+            status.tag == 0
+        ), "Wrong tag: a message signalling a finished task expected"
         done.append(list(flag.keys())[0])
         if suspend_resume_enabled:
-            rs_file = open(rs_fname, 'wb')
+            rs_file = open(rs_fname, "wb")
             pickle.dump(done, rs_file)
             rs_file.close()
         comm.send(input_file, dest=status.source, tag=WORKTAG)
 
-    print( 'MASTER: second loop terminated' )
+    print("MASTER: second loop terminated")
     while len(done) < n_tasks:
         status = MPI.Status()
         flag = comm.recv(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status)
-        assert status.tag == 0, 'Wrong tag: a message signalling a finished task expected'
+        assert (
+            status.tag == 0
+        ), "Wrong tag: a message signalling a finished task expected"
         done.append(list(flag.keys())[0])
         if suspend_resume_enabled:
-            rs_file = open(rs_fname, 'wb')
+            rs_file = open(rs_fname, "wb")
             pickle.dump(done, rs_file)
             rs_file.close()
 
-    print ( 'MASTER: third loop terminated' )
+    print("MASTER: third loop terminated")
     status = MPI.Status()
     for rank in range(1, nprocs):
         comm.send(0, dest=rank, tag=DIETAG)
@@ -509,16 +544,34 @@ def read_params():
     params = extract_params()
     params.pop(0)
     params = check_double_quote(params)
-    input_name = read_item(params, '-projin=', './input.xml')
-    info_string = 'teraconverter ' + ' --sfmt="TIFF (unstitched, 3D)"' + ' --dfmt="TIFF (tiled, 3D)"' + ' -s="' + input_name + '" -d=/'
-    execution_string = prefix + info_string + ' --info="' + os.getcwd() + '/__dims__.txt"'
+    input_name = read_item(params, "-projin=", "./input.xml")
+    info_string = (
+        "teraconverter "
+        + ' --sfmt="TIFF (unstitched, 3D)"'
+        + ' --dfmt="TIFF (tiled, 3D)"'
+        + ' -s="'
+        + input_name
+        + '" -d=/'
+    )
+    execution_string = (
+        prefix + info_string + ' --info="' + os.getcwd() + '/__dims__.txt"'
+    )
     os.system(execution_string)
-    print( execution_string )
-    file_in = read_item(params, '--origin=', os.getcwd() + '/__dims__.txt')
-    print(('Origin file is: ', file_in))
-    input_params_in_file = ['HEIGHT=', 'WIDTH=', 'DEPTH=', 'BYTESxCHAN=', 'DIM_C=', 'VXL_V=', 'VXL_H=', 'VXL_D=']
+    print(execution_string)
+    file_in = read_item(params, "--origin=", os.getcwd() + "/__dims__.txt")
+    print(("Origin file is: ", file_in))
+    input_params_in_file = [
+        "HEIGHT=",
+        "WIDTH=",
+        "DEPTH=",
+        "BYTESxCHAN=",
+        "DIM_C=",
+        "VXL_V=",
+        "VXL_H=",
+        "VXL_D=",
+    ]
     params_from_file = search_for_entry(input_params_in_file, file_in)
-    os.remove(os.getcwd() + '/__dims__.txt')
+    os.remove(os.getcwd() + "/__dims__.txt")
     height = int(params_from_file[0])
     width = int(params_from_file[1])
     depth = int(params_from_file[2])
@@ -527,17 +580,17 @@ def read_params():
     vxl_V = abs(float(params_from_file[5]))
     vxl_H = abs(float(params_from_file[6]))
     vxl_D = abs(float(params_from_file[7]))
-    output_name = read_item(params, '-volout=', './OUT')
-    wb1 = read_item(params, '--slicedepth=', 0)
-    wb2 = read_item(params, '--sliceheight=', 0)
-    wb3 = read_item(params, '--slicewidth=', 0)
+    output_name = read_item(params, "-volout=", "./OUT")
+    wb1 = read_item(params, "--slicedepth=", 0)
+    wb2 = read_item(params, "--sliceheight=", 0)
+    wb3 = read_item(params, "--slicewidth=", 0)
     sfmt = '"TIFF (unstitched, 3D)"'
-    volout_plugin = read_item(params, '--volout_plugin=', '"TiledXY|2Dseries"')
-    if volout_plugin == 'TiledXY|3Dseries':
+    volout_plugin = read_item(params, "--volout_plugin=", '"TiledXY|2Dseries"')
+    if volout_plugin == "TiledXY|3Dseries":
         dfmt = '"TIFF (tiled, 3D)"'
     else:
         dfmt = '"TIFF (tiled, 2D)"'
-    resolutions = read_item(params, '--resolutions=', '0')
+    resolutions = read_item(params, "--resolutions=", "0")
     iresolutions = [int(resolutions[0])]
     len_res = len(resolutions)
     if len_res > 0:
@@ -545,8 +598,8 @@ def read_params():
             iresolutions.append(int(resolutions[i]))
 
     max_res = max(iresolutions)
-    isotropic = read_item(params, '--isotropic', 'False')
-    if isotropic == '':
+    isotropic = read_item(params, "--isotropic", "False")
+    if isotropic == "":
         isotropic = True
     else:
         isotropic = False
@@ -563,10 +616,39 @@ def read_params():
     else:
         h = 0
     max_res_D = max_res - h
-    print(('vxl_V, vxl_H, vxl_D, isotropic, h, max_res, max_res_D :', vxl_V, vxl_H, vxl_D, isotropic, h, max_res, max_res_D))
+    print(
+        (
+            "vxl_V, vxl_H, vxl_D, isotropic, h, max_res, max_res_D :",
+            vxl_V,
+            vxl_H,
+            vxl_D,
+            isotropic,
+            h,
+            max_res,
+            max_res_D,
+        )
+    )
     last_string = collect_instructions(params)
     return (
-     input_name, output_name, wb1, wb2, wb3, sfmt, dfmt, iresolutions, max_res, isotropic, max_res_D, params, last_string, height, width, depth, bytes_x_chan, n_chans)
+        input_name,
+        output_name,
+        wb1,
+        wb2,
+        wb3,
+        sfmt,
+        dfmt,
+        iresolutions,
+        max_res,
+        isotropic,
+        max_res_D,
+        params,
+        last_string,
+        height,
+        width,
+        depth,
+        bytes_x_chan,
+        n_chans,
+    )
 
 
 def read_item(input_arr, item, default, message=True):
@@ -584,8 +666,15 @@ def read_item(input_arr, item, default, message=True):
     if tmp == None:
         value = default
         if message:
-            print((
-             'The value for ', item, ' was not declared. It will be set to', value, 'by default.'))
+            print(
+                (
+                    "The value for ",
+                    item,
+                    " was not declared. It will be set to",
+                    value,
+                    "by default.",
+                )
+            )
     elif isinstance(default, int):
         value = int(tmp)
     elif isinstance(default, float):
@@ -609,10 +698,10 @@ def collect_instructions(inst):
             if i == 0:
                 results = str(inst[i])
             else:
-                results = results + ' ' + str(inst[i])
+                results = results + " " + str(inst[i])
 
     else:
-        results = ''
+        results = ""
     return results
 
 
@@ -628,10 +717,10 @@ def search_for_entry(string_2_serch, file_in, nline=0):
     """
     i = 0
     data = []
-    f = open(file_in, 'r')
+    f = open(file_in, "r")
     for line in f:
         line = line.strip()
-        l = line.split(' ', 1)
+        l = line.split(" ", 1)
         data = data + l
         if nline != 0 and i > nline:
             break
@@ -640,12 +729,20 @@ def search_for_entry(string_2_serch, file_in, nline=0):
     f.close()
     len_string = len(string_2_serch)
     if len_string <= 0:
-        print('No possible options! No values will be created!')
+        print("No possible options! No values will be created!")
     elif len_string == 1:
         tmp = check_flag(data, string_2_serch[0], True)
         if tmp == None:
-            output = '0'
-            print(('The name of ', string_2_serch, ' was not declared. It will be set to', output, 'by default.'))
+            output = "0"
+            print(
+                (
+                    "The name of ",
+                    string_2_serch,
+                    " was not declared. It will be set to",
+                    output,
+                    "by default.",
+                )
+            )
         else:
             output = tmp
     elif len_string > 1:
@@ -654,14 +751,22 @@ def search_for_entry(string_2_serch, file_in, nline=0):
         for i in string_2_serch:
             tmp = check_flag(data, i, True)
             if tmp == None:
-                output.append('0')
-                print(('The name of ', i, ' was not declared. It will be set to', output[ii], 'by default.'))
+                output.append("0")
+                print(
+                    (
+                        "The name of ",
+                        i,
+                        " was not declared. It will be set to",
+                        output[ii],
+                        "by default.",
+                    )
+                )
             else:
                 output.append(tmp)
             ii = ii + 1
 
     else:
-        print('No possible options! No values will be created!')
+        print("No possible options! No values will be created!")
     return output
 
 
@@ -684,7 +789,9 @@ def sort_list(len_1, len_2, len_3):
     return order
 
 
-def sort_start_end(start_1, start_2, start_3, end_1, end_2, end_3, size_1, size_2, size_3):
+def sort_start_end(
+    start_1, start_2, start_3, end_1, end_2, end_3, size_1, size_2, size_3
+):
     """
    Sort start points and edn point in two lists of elements
    Input:
@@ -712,8 +819,7 @@ def sort_start_end(start_1, start_2, start_3, end_1, end_2, end_3, size_1, size_
     end_list = []
     len_arr = {}
     for i in range(0, len_list):
-        tmp = [
-         start_3[order[i][2]], start_2[order[i][1]], start_1[order[i][0]]]
+        tmp = [start_3[order[i][2]], start_2[order[i][1]], start_1[order[i][0]]]
         start_list.append(tmp)
         tmp = [end_3[order[i][2]], end_2[order[i][1]], end_1[order[i][0]]]
         end_list.append(tmp)
@@ -734,13 +840,15 @@ def check_double_quote(inpstring):
     if type(inpstring) == list:
         newstring = []
         for index in inpstring:
-            tmp1 = index.find(' ')
+            tmp1 = index.find(" ")
             if tmp1 != -1:
                 tmp2 = index.find('"')
                 if tmp2 == -1:
-                    dummy = index.find('=')
+                    dummy = index.find("=")
                     if dummy != -1:
-                        newstring.append(index[0:dummy + 1] + '"' + index[dummy + 1:] + '"')
+                        newstring.append(
+                            index[0 : dummy + 1] + '"' + index[dummy + 1 :] + '"'
+                        )
                     else:
                         newstring.append('"' + index + '"')
                 else:
@@ -749,13 +857,15 @@ def check_double_quote(inpstring):
                 newstring.append(index)
 
     else:
-        tmp1 = inpstring.find(' ')
+        tmp1 = inpstring.find(" ")
         if tmp1 != -1:
             tmp2 = inpstring.find('"')
             if tmp2 == -1:
-                dummy = inpstring.find('=')
+                dummy = inpstring.find("=")
                 if dummy != -1:
-                    newstring = inpstring[0:dummy + 1] + '"' + inpstring[dummy + 1:] + '"'
+                    newstring = (
+                        inpstring[0 : dummy + 1] + '"' + inpstring[dummy + 1 :] + '"'
+                    )
                 else:
                     newstring = '"' + inpstring + '"'
             else:
@@ -774,12 +884,29 @@ def eliminate_double_quote(inpstring):
       newstring = new string (or array of strings) corrected by eliminating enclosing quotes if any
    """
     len_str = len(inpstring)
-    if inpstring[0] == '"' and inpstring[(len_str - 1)] == '"' or inpstring[0] == "'" and inpstring[(len_str - 1)] == "'":
-        newstring = inpstring[1:len_str - 1]
+    if (
+        inpstring[0] == '"'
+        and inpstring[(len_str - 1)] == '"'
+        or inpstring[0] == "'"
+        and inpstring[(len_str - 1)] == "'"
+    ):
+        newstring = inpstring[1 : len_str - 1]
     return newstring
 
 
-def generate_first_command(input_name, output_name, wb1, wb2, wb3, sfmt, dfmt, iresolutions, max_res, params, last_string):
+def generate_first_command(
+    input_name,
+    output_name,
+    wb1,
+    wb2,
+    wb3,
+    sfmt,
+    dfmt,
+    iresolutions,
+    max_res,
+    params,
+    last_string,
+):
     """
    Generate first command line
    Input:
@@ -797,20 +924,43 @@ def generate_first_command(input_name, output_name, wb1, wb2, wb3, sfmt, dfmt, i
    Output:
       first_string = Command line to preprocess the data 
    """
-    first_string = 'teraconverter ' + '--height=' + str(wb2) + ' --width=' + str(wb3)
-    first_string = first_string + ' --depth=' + str(wb1) + ' --sfmt=' + sfmt + ' --dfmt=' + dfmt
-    tmp_res = ''
+    first_string = "teraconverter " + "--height=" + str(wb2) + " --width=" + str(wb3)
+    first_string = (
+        first_string + " --depth=" + str(wb1) + " --sfmt=" + sfmt + " --dfmt=" + dfmt
+    )
+    tmp_res = ""
     for i in iresolutions:
         tmp_res = tmp_res + str(i)
 
-    first_string = first_string + ' --resolutions=' + tmp_res + ' -s="' + input_name + '" -d="' + output_name + '" '
+    first_string = (
+        first_string
+        + " --resolutions="
+        + tmp_res
+        + ' -s="'
+        + input_name
+        + '" -d="'
+        + output_name
+        + '" '
+    )
     if last_string != []:
         first_string = first_string + last_string
-    first_string = first_string + ' --makedirs'
+    first_string = first_string + " --makedirs"
     return first_string
 
 
-def generate_final_command(input_name, output_name, wb1, wb2, wb3, sfmt, dfmt, iresolutions, max_res, params, last_string):
+def generate_final_command(
+    input_name,
+    output_name,
+    wb1,
+    wb2,
+    wb3,
+    sfmt,
+    dfmt,
+    iresolutions,
+    max_res,
+    params,
+    last_string,
+):
     """
    Generate last command line to merge metadata
    Input:
@@ -828,20 +978,45 @@ def generate_final_command(input_name, output_name, wb1, wb2, wb3, sfmt, dfmt, i
    Output:
       final_string = Command line to merge metadata 
    """
-    final_string = 'teraconverter ' + '--height=' + str(wb2) + ' --width=' + str(wb3)
-    final_string = final_string + ' --depth=' + str(wb1) + ' --sfmt=' + sfmt + ' --dfmt=' + dfmt
-    tmp_res = ''
+    final_string = "teraconverter " + "--height=" + str(wb2) + " --width=" + str(wb3)
+    final_string = (
+        final_string + " --depth=" + str(wb1) + " --sfmt=" + sfmt + " --dfmt=" + dfmt
+    )
+    tmp_res = ""
     for i in iresolutions:
         tmp_res = tmp_res + str(i)
 
-    final_string = final_string + ' --resolutions=' + tmp_res + ' -s="' + input_name + '" -d="' + output_name + '" '
+    final_string = (
+        final_string
+        + " --resolutions="
+        + tmp_res
+        + ' -s="'
+        + input_name
+        + '" -d="'
+        + output_name
+        + '" '
+    )
     if last_string != []:
         final_string = final_string + last_string
-    final_string = final_string + ' --metadata'
+    final_string = final_string + " --metadata"
     return final_string
 
 
-def generate_parallel_command(start_list, end_list, input_name, output_name, wb1, wb2, wb3, sfmt, dfmt, iresolutions, max_res, params, last_string):
+def generate_parallel_command(
+    start_list,
+    end_list,
+    input_name,
+    output_name,
+    wb1,
+    wb2,
+    wb3,
+    sfmt,
+    dfmt,
+    iresolutions,
+    max_res,
+    params,
+    last_string,
+):
     """
    Generate the list of parallel command lines
    Input:
@@ -864,20 +1039,35 @@ def generate_parallel_command(start_list, end_list, input_name, output_name, wb1
     index = len(start_list)
     list_string = {}
     for i in range(0, index):
-        dummy = ''
-        dummy = 'teraconverter ' + '--height=' + str(wb2) + ' --width=' + str(wb3)
-        dummy = dummy + ' --depth=' + str(wb1) + ' --sfmt=' + sfmt + ' --dfmt=' + dfmt
-        tmp_res = ''
+        dummy = ""
+        dummy = "teraconverter " + "--height=" + str(wb2) + " --width=" + str(wb3)
+        dummy = dummy + " --depth=" + str(wb1) + " --sfmt=" + sfmt + " --dfmt=" + dfmt
+        tmp_res = ""
         for j in iresolutions:
             tmp_res = tmp_res + str(j)
 
-        dummy = dummy + ' --resolutions=' + tmp_res + ' -s="' + input_name + '" -d="' + output_name + '" '
+        dummy = (
+            dummy
+            + " --resolutions="
+            + tmp_res
+            + ' -s="'
+            + input_name
+            + '" -d="'
+            + output_name
+            + '" '
+        )
         if last_string != []:
             dummy = dummy + last_string
-        dummy = dummy + ' --parallel'
-        dummy = dummy + ' --H0=' + str(start_list[i][0]) + ' --H1=' + str(end_list[i][0])
-        dummy = dummy + ' --V0=' + str(start_list[i][1]) + ' --V1=' + str(end_list[i][1])
-        dummy = dummy + ' --D0=' + str(start_list[i][2]) + ' --D1=' + str(end_list[i][2])
+        dummy = dummy + " --parallel"
+        dummy = (
+            dummy + " --H0=" + str(start_list[i][0]) + " --H1=" + str(end_list[i][0])
+        )
+        dummy = (
+            dummy + " --V0=" + str(start_list[i][1]) + " --V1=" + str(end_list[i][1])
+        )
+        dummy = (
+            dummy + " --D0=" + str(start_list[i][2]) + " --D1=" + str(end_list[i][2])
+        )
         list_string.update({i: dummy})
 
     return list_string
@@ -943,21 +1133,18 @@ def prep_array(wb, r, k):
     """
     for i in range(0, k):
         if i == 0:
-            array = [
-             int(wb)]
+            array = [int(wb)]
         elif i > 0:
             array.append(int(wb))
         else:
-            print((
-             'Option not permitted!!!!!! i =', i))
+            print(("Option not permitted!!!!!! i =", i))
             sys.exit(1)
 
     if r != 0:
         if k != 0:
             array.append(r)
         else:
-            array = [
-             r]
+            array = [r]
     return array
 
 
@@ -983,8 +1170,7 @@ def create_sizes(size, wb, max_res, norest=False):
     if norest:
         tmp_len = len(arr)
         if arr[(tmp_len - 1)] != arr[(tmp_len - 2)]:
-            print((
-             'Attention! : ', arr[(tmp_len - 1)], ' points was deleted!'))
+            print(("Attention! : ", arr[(tmp_len - 1)], " points was deleted!"))
             arr.pop()
     return arr
 
@@ -1022,13 +1208,12 @@ def ctrl_parallelism(sfmt, dfmt):
     partition_depth = True
     partition_width = True
     partition_height = True
-    if sfmt == 'TIFF (3D)' or dfmt == 'TIFF (series, 2D)':
+    if sfmt == "TIFF (3D)" or dfmt == "TIFF (series, 2D)":
         partition_width = False
         partition_height = False
-    if sfmt == 'TIFF (series, 2D)':
+    if sfmt == "TIFF (series, 2D)":
         partition_width = False
-    return (
-     partition_depth, partition_width, partition_height)
+    return (partition_depth, partition_width, partition_height)
 
 
 def create_commands(gi_np, info=False):
@@ -1041,140 +1226,253 @@ def create_commands(gi_np, info=False):
       len_arr = Dictionary containing elements like {index:[size_width(i),size_height(i),size_depth(i)],.....}
       final_string = String to merge all metadadata
    """
-    input_name, output_name, wb1, wb2, wb3, sfmt, dfmt, iresolutions, max_res, isotropic, max_res_D, params, last_string, height, width, depth, bytes_x_chan, n_chans = read_params()
-    print('#' * 80)
-    print(('Input file = ', input_name))
-    print(('Output directory', output_name))
+    (
+        input_name,
+        output_name,
+        wb1,
+        wb2,
+        wb3,
+        sfmt,
+        dfmt,
+        iresolutions,
+        max_res,
+        isotropic,
+        max_res_D,
+        params,
+        last_string,
+        height,
+        width,
+        depth,
+        bytes_x_chan,
+        n_chans,
+    ) = read_params()
+    print("#" * 80)
+    print(("Input file = ", input_name))
+    print(("Output directory", output_name))
     if wb1 == 0:
         wb1 = default_tile_size
     if wb2 == 0:
         wb2 = default_tile_size
     if wb3 == 0:
         wb3 = default_tile_size
-    print((
-     'Rough depth for the tiles in width direction = ', wb3))
-    print(('Rough depth for the tiles in height direction = ', wb2))
-    print(('Rough depth for the tiles in depth direction = ', wb1))
-    print(('Source Format = ', sfmt))
-    print(('Destination Format = ', dfmt))
-    print(('Resolutions = ', iresolutions))
-    print(('Max Resolutions', max_res))
-    print(('Width (in voxel) of the immage = ', width))
-    print(('Height (in voxel) of the immage = ', height))
-    print(('Depth (in voxel) of the immage = ', depth))
+    print(("Rough depth for the tiles in width direction = ", wb3))
+    print(("Rough depth for the tiles in height direction = ", wb2))
+    print(("Rough depth for the tiles in depth direction = ", wb1))
+    print(("Source Format = ", sfmt))
+    print(("Destination Format = ", dfmt))
+    print(("Resolutions = ", iresolutions))
+    print(("Max Resolutions", max_res))
+    print(("Width (in voxel) of the immage = ", width))
+    print(("Height (in voxel) of the immage = ", height))
+    print(("Depth (in voxel) of the immage = ", depth))
     print(params)
     if isotropic:
-        last_string = last_string + ' --isotropic'
-    print((
-     'Last input elements of the original string = ', last_string))
-    print('#' * 80)
+        last_string = last_string + " --isotropic"
+    print(("Last input elements of the original string = ", last_string))
+    print("#" * 80)
     size_1 = create_sizes(depth, wb1, max_res_D)
     size_2 = create_sizes(height, wb2, max_res)
     size_3 = create_sizes(width, wb3, max_res)
-    assert dfmt != 'HDF5 (BigDataViewer)' or dfmt != 'HDF5 (Imaris IMS)', 'Paraconverter cannot be used with HDF5 output formats'
-    partition_depth, partition_width, partition_height = ctrl_parallelism(eliminate_double_quote(sfmt), eliminate_double_quote(dfmt))
-    print(('--------> ', eliminate_double_quote(sfmt), eliminate_double_quote(dfmt), partition_depth, partition_width, partition_height))
+    assert (
+        dfmt != "HDF5 (BigDataViewer)" or dfmt != "HDF5 (Imaris IMS)"
+    ), "Paraconverter cannot be used with HDF5 output formats"
+    partition_depth, partition_width, partition_height = ctrl_parallelism(
+        eliminate_double_quote(sfmt), eliminate_double_quote(dfmt)
+    )
+    print(
+        (
+            "--------> ",
+            eliminate_double_quote(sfmt),
+            eliminate_double_quote(dfmt),
+            partition_depth,
+            partition_width,
+            partition_height,
+        )
+    )
     if len(size_1) >= 2 * gi_np or not partition_width and not partition_height:
-        size_2 = [
-         height]
+        size_2 = [height]
         size_3 = [width]
     elif len(size_1) * len(size_2) >= 2 * gi_np or not partition_width:
-        size_3 = [
-         width]
-    print(('number of work units (Depth, Height, Width): ', len(size_1), len(size_2), len(size_3)))
-    print(('size of work units (Depth, Height, Width): ', size_1, size_2, size_3))
+        size_3 = [width]
+    print(
+        (
+            "number of work units (Depth, Height, Width): ",
+            len(size_1),
+            len(size_2),
+            len(size_3),
+        )
+    )
+    print(("size of work units (Depth, Height, Width): ", size_1, size_2, size_3))
     if info:
-        first_string = ''
-        list_string = ''
-        final_string = ''
+        first_string = ""
+        list_string = ""
+        final_string = ""
         len_arr = 0
-        voxel_num = round(1.1 * gi_np * (size_2[0] * size_3[0] * max(64, pow(2, max_res))) * n_chans * bytes_x_chan / 1073741824, 3)
-        print('#' * 80)
-        print('Memory needed for ' + str(gi_np) + ' concurrent processes: ' + str(voxel_num) + ' GBytes')
-        print('#' * 80)
+        voxel_num = round(
+            1.1
+            * gi_np
+            * (size_2[0] * size_3[0] * max(64, pow(2, max_res)))
+            * n_chans
+            * bytes_x_chan
+            / 1073741824,
+            3,
+        )
+        print("#" * 80)
+        print(
+            "Memory needed for "
+            + str(gi_np)
+            + " concurrent processes: "
+            + str(voxel_num)
+            + " GBytes"
+        )
+        print("#" * 80)
     else:
         start_3, end_3 = create_starts_end(size_3, 0)
         start_2, end_2 = create_starts_end(size_2, 0)
         start_1, end_1 = create_starts_end(size_1, 0)
-        order, start_list, end_list, len_arr = sort_start_end(start_1, start_2, start_3, end_1, end_2, end_3, size_1, size_2, size_3)
-        first_string = generate_first_command(input_name, output_name, wb1, wb2, wb3, sfmt, dfmt, iresolutions, max_res, params, last_string)
-        list_string = generate_parallel_command(start_list, end_list, input_name, output_name, wb1, wb2, wb3, sfmt, dfmt, iresolutions, max_res, params, last_string)
-        final_string = generate_final_command(input_name, output_name, wb1, wb2, wb3, sfmt, dfmt, iresolutions, max_res, params, last_string)
-    return (
-     first_string, list_string, output_name, len_arr, final_string)
+        order, start_list, end_list, len_arr = sort_start_end(
+            start_1, start_2, start_3, end_1, end_2, end_3, size_1, size_2, size_3
+        )
+        first_string = generate_first_command(
+            input_name,
+            output_name,
+            wb1,
+            wb2,
+            wb3,
+            sfmt,
+            dfmt,
+            iresolutions,
+            max_res,
+            params,
+            last_string,
+        )
+        list_string = generate_parallel_command(
+            start_list,
+            end_list,
+            input_name,
+            output_name,
+            wb1,
+            wb2,
+            wb3,
+            sfmt,
+            dfmt,
+            iresolutions,
+            max_res,
+            params,
+            last_string,
+        )
+        final_string = generate_final_command(
+            input_name,
+            output_name,
+            wb1,
+            wb2,
+            wb3,
+            sfmt,
+            dfmt,
+            iresolutions,
+            max_res,
+            params,
+            last_string,
+        )
+    return (first_string, list_string, output_name, len_arr, final_string)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     comm = MPI.COMM_WORLD
     nprocs = comm.Get_size()
     myrank = comm.Get_rank()
     comm.Barrier()
-    tmp = read_item(sys.argv, '--info', 'no_info')
-    if tmp == 'no_info':
+    tmp = read_item(sys.argv, "--info", "no_info")
+    if tmp == "no_info":
         info = False
     else:
         info = True
     step2 = False
-    tmp = read_item(sys.argv, '--displcompute', 'no_step', False)
-    if tmp != 'no_step':
+    tmp = read_item(sys.argv, "--displcompute", "no_step", False)
+    if tmp != "no_step":
         step2 = True
-    tmp = read_item(sys.argv, '-2', 'no_step', False)
-    if tmp != 'no_step':
+    tmp = read_item(sys.argv, "-2", "no_step", False)
+    if tmp != "no_step":
         step2 = True
     step6 = False
-    tmp = read_item(sys.argv, '--merge', 'no_step', False)
-    if tmp != 'no_step':
+    tmp = read_item(sys.argv, "--merge", "no_step", False)
+    if tmp != "no_step":
         step6 = True
-    tmp = read_item(sys.argv, '-6', 'no_step', False)
-    if tmp != 'no_step':
+    tmp = read_item(sys.argv, "-6", "no_step", False)
+    if tmp != "no_step":
         step6 = True
-    if platform.system() != 'Windows':
+    if platform.system() != "Windows":
         if step2:
-            if prefix == '':
-                if os.system('which ./terastitcher') == 0:
-                    prefix = './'
-                elif os.system('which terastitcher') != 0:
-                    raise ValueError('The executable of terasticher is not reachable')
+            if prefix == "":
+                if os.system("which ./terastitcher") == 0:
+                    prefix = "./"
+                elif os.system("which terastitcher") != 0:
+                    raise ValueError("The executable of terasticher is not reachable")
         elif step6:
-            if prefix == '':
-                if os.system('which ./teraconverter') == 0:
-                    prefix = './'
-                elif os.system('which teraconverter') != 0:
-                    raise ValueError('The executable of teraconverter is not reachable')
+            if prefix == "":
+                if os.system("which ./teraconverter") == 0:
+                    prefix = "./"
+                elif os.system("which teraconverter") != 0:
+                    raise ValueError("The executable of teraconverter is not reachable")
     if myrank == 0:
         t1 = time.time()
-        print('*' * 80)
-        print((str(datetime.datetime.utcnow()), ' -- Calculation started on ', nprocs, '- 1 cores.'))
-        print('*' * 80)
+        print("*" * 80)
+        print(
+            (
+                str(datetime.datetime.utcnow()),
+                " -- Calculation started on ",
+                nprocs,
+                "- 1 cores.",
+            )
+        )
+        print("*" * 80)
     comm.Barrier()
     if myrank == 0:
         if step2:
-            execution_flag = '-2'
+            execution_flag = "-2"
             params = extract_params()
             print(params)
             params.pop(0)
-            print('Alignment will be performed')
-            tmp = check_flag(params, 'subvoldim=', True)
+            print("Alignment will be performed")
+            tmp = check_flag(params, "subvoldim=", True)
             if tmp == None:
                 nsubstring_min = 200
-                print(('Number of substring was not declared. It will be set to', nsubstring_min, 'by default.'))
+                print(
+                    (
+                        "Number of substring was not declared. It will be set to",
+                        nsubstring_min,
+                        "by default.",
+                    )
+                )
             else:
                 tmp = int(tmp)
                 nsubstring_min = tmp
-            tmp = check_flag(params, 'projin=', False)
+            tmp = check_flag(params, "projin=", False)
             if tmp == None:
-                input_name = 'xml_import.xml'
-                print(('Name of the input file was not declared. It will be set to', input_name, 'by default.'))
+                input_name = "xml_import.xml"
+                print(
+                    (
+                        "Name of the input file was not declared. It will be set to",
+                        input_name,
+                        "by default.",
+                    )
+                )
             else:
                 input_name = tmp
-            tmp = check_flag(params, 'projout=', True)
+            tmp = check_flag(params, "projout=", True)
             if tmp == None:
-                output_name = 'xml_compdispl.xml'
-                print(('name of the output file was not declared. It will be set to', output_name, 'by default.'))
+                output_name = "xml_compdispl.xml"
+                print(
+                    (
+                        "name of the output file was not declared. It will be set to",
+                        output_name,
+                        "by default.",
+                    )
+                )
             else:
                 output_name = tmp
             len_out = len(output_name)
-            output_name = output_name[0:len_out - 4]
+            output_name = output_name[0 : len_out - 4]
             params = add_chars(params)
             nrows, ncols, nslices = extract_np(input_name)
             n_ss = int(ceil(float(nslices) / float(nsubstring_min)))
@@ -1182,7 +1480,9 @@ if __name__ == '__main__':
             first_size = last_size + 1
             n_of_first_stacks = nslices % n_ss
             n_of_last_stacks = n_ss - n_of_first_stacks
-            p_r, p_c = do_additional_partition(float(nprocs - 1), float(nrows), float(ncols), float(n_ss))
+            p_r, p_c = do_additional_partition(
+                float(nprocs - 1), float(nrows), float(ncols), float(n_ss)
+            )
             s_r = int(floor(nrows / p_r))
             r_r = nrows % p_r
             r_start = [0]
@@ -1217,20 +1517,30 @@ if __name__ == '__main__':
                 gr_dir_names = []
                 for i in range(len(r_start)):
                     for j in range(len(c_start)):
-                        gr_dir_names.append('gr_R[' + str(r_start[i]) + ',' + str(r_end[i]) + ']_C[' + str(c_start[j]) + ',' + str(c_end[j]) + ']/')
+                        gr_dir_names.append(
+                            "gr_R["
+                            + str(r_start[i])
+                            + ","
+                            + str(r_end[i])
+                            + "]_C["
+                            + str(c_start[j])
+                            + ","
+                            + str(c_end[j])
+                            + "]/"
+                        )
 
             cmd_string = {}
-            params_str = (' ').join(params)
+            params_str = (" ").join(params)
             tmp_out_name = find_last_slash(output_name)
-            tmp_xml_dir = tmp_out_name[0] + 'tmp/'
+            tmp_xml_dir = tmp_out_name[0] + "tmp/"
             try:
                 shutil.rmtree(tmp_xml_dir)
             except OSError:
                 pass
 
-            print('removed directory tree ' + tmp_xml_dir + ' if any')
+            print("removed directory tree " + tmp_xml_dir + " if any")
             os.mkdir(tmp_xml_dir)
-            print('created directory ' + tmp_xml_dir)
+            print("created directory " + tmp_xml_dir)
             if len(r_start) == 1 and len(c_start) == 1:
                 start_dict = {}
                 end_dict = {}
@@ -1247,21 +1557,41 @@ if __name__ == '__main__':
                         new_params.update({i: last_size})
                         end_tmp += last_size
                     end_dict.update({i: end_tmp - 1})
-                    tmp_string = execution_flag + ' ' + params_str + ' --projout=' + new_output_name + '-' + str(start_dict[i]).zfill(6) + '-' + str(end_dict[i]).zfill(6) + '.xml' + ' --subvoldim=' + str(new_params[i]) + ' --D0=' + str(start_dict[i]) + ' --D1=' + str(end_dict[i]) + ' --noprogressbar'
+                    tmp_string = (
+                        execution_flag
+                        + " "
+                        + params_str
+                        + " --projout="
+                        + new_output_name
+                        + "-"
+                        + str(start_dict[i]).zfill(6)
+                        + "-"
+                        + str(end_dict[i]).zfill(6)
+                        + ".xml"
+                        + " --subvoldim="
+                        + str(new_params[i])
+                        + " --D0="
+                        + str(start_dict[i])
+                        + " --D1="
+                        + str(end_dict[i])
+                        + " --noprogressbar"
+                    )
                     cmd_string.update({i: tmp_string})
 
             else:
                 for r in range(len(r_start)):
                     for c in range(len(c_start)):
-                        gr_xml_dir = tmp_out_name[0] + gr_dir_names[(r * len(c_start) + c)]
+                        gr_xml_dir = (
+                            tmp_out_name[0] + gr_dir_names[(r * len(c_start) + c)]
+                        )
                         try:
                             shutil.rmtree(gr_xml_dir)
                         except OSError:
                             pass
 
-                        print('removed directory tree ' + gr_xml_dir + ' if any')
+                        print("removed directory tree " + gr_xml_dir + " if any")
                         os.mkdir(gr_xml_dir)
-                        print('created directory ' + gr_xml_dir)
+                        print("created directory " + gr_xml_dir)
                         start_dict = {}
                         end_dict = {}
                         start_tmp = 0
@@ -1277,69 +1607,179 @@ if __name__ == '__main__':
                                 new_params.update({i: last_size})
                                 end_tmp += last_size
                             end_dict.update({i: end_tmp - 1})
-                            tmp_string = execution_flag + ' ' + params_str + ' --projout=' + new_output_name + '-' + str(start_dict[i]).zfill(6) + '-' + str(end_dict[i]).zfill(6) + '.xml' + ' --subvoldim=' + str(new_params[i]).zfill(6) + ' --D0=' + str(start_dict[i]).zfill(6) + ' --D1=' + str(end_dict[i]).zfill(6)
-                            tmp_string = tmp_string + ' --R0=' + str(r_start[r]) + ' --R1=' + str(r_end[r]) + ' --C0=' + str(c_start[c]) + ' --C1=' + str(c_end[c]) + ' --noprogressbar --parallel'
+                            tmp_string = (
+                                execution_flag
+                                + " "
+                                + params_str
+                                + " --projout="
+                                + new_output_name
+                                + "-"
+                                + str(start_dict[i]).zfill(6)
+                                + "-"
+                                + str(end_dict[i]).zfill(6)
+                                + ".xml"
+                                + " --subvoldim="
+                                + str(new_params[i]).zfill(6)
+                                + " --D0="
+                                + str(start_dict[i]).zfill(6)
+                                + " --D1="
+                                + str(end_dict[i]).zfill(6)
+                            )
+                            tmp_string = (
+                                tmp_string
+                                + " --R0="
+                                + str(r_start[r])
+                                + " --R1="
+                                + str(r_end[r])
+                                + " --C0="
+                                + str(c_start[c])
+                                + " --C1="
+                                + str(c_end[c])
+                                + " --noprogressbar --parallel"
+                            )
                             if c < len(c_start) - 1:
-                                tmp_string = tmp_string + ' --disable_last_col'
+                                tmp_string = tmp_string + " --disable_last_col"
                             if r < len(r_start) - 1:
-                                tmp_string = tmp_string + ' --disable_last_row'
-                            cmd_string.update({(r * len(c_start) + c) * n_ss + i: tmp_string})
+                                tmp_string = tmp_string + " --disable_last_row"
+                            cmd_string.update(
+                                {(r * len(c_start) + c) * n_ss + i: tmp_string}
+                            )
 
             work_list = cmd_string
             main_step2(work_list)
             if len(r_start) == 1 and len(c_start) == 1:
                 slash_pos = len(tmp_xml_dir) - 1
                 if debug_level > 0:
-                    execution_string = prefix + 'mergedisplacements -d=' + tmp_xml_dir[0:slash_pos] + ' -o=' + tmp_out_name[0] + tmp_out_name[1] + '.xml' + ' > ' + 'ouput_mdispls.out'
+                    execution_string = (
+                        prefix
+                        + "mergedisplacements -d="
+                        + tmp_xml_dir[0:slash_pos]
+                        + " -o="
+                        + tmp_out_name[0]
+                        + tmp_out_name[1]
+                        + ".xml"
+                        + " > "
+                        + "ouput_mdispls.out"
+                    )
                 else:
-                    execution_string = prefix + 'mergedisplacements -d=' + tmp_xml_dir[0:slash_pos] + ' -o=' + tmp_out_name[0] + tmp_out_name[1] + '.xml'
-                print(execution_string, end=' ')
+                    execution_string = (
+                        prefix
+                        + "mergedisplacements -d="
+                        + tmp_xml_dir[0:slash_pos]
+                        + " -o="
+                        + tmp_out_name[0]
+                        + tmp_out_name[1]
+                        + ".xml"
+                    )
+                print(execution_string, end=" ")
                 print()
                 os.system(execution_string)
             else:
                 for dname in gr_dir_names:
-                    slash_pos = dname.find('/')
-                    suffix = dname[dname.find('_'):slash_pos]
+                    slash_pos = dname.find("/")
+                    suffix = dname[dname.find("_") : slash_pos]
                     if debug_level > 0:
-                        execution_string = prefix + 'mergedisplacements -d=' + tmp_out_name[0] + dname[0:slash_pos] + ' -o=' + tmp_out_name[0] + 'tmp/' + tmp_out_name[1] + suffix + '.xml' + ' > ' + 'ouput_' + suffix + '.out'
+                        execution_string = (
+                            prefix
+                            + "mergedisplacements -d="
+                            + tmp_out_name[0]
+                            + dname[0:slash_pos]
+                            + " -o="
+                            + tmp_out_name[0]
+                            + "tmp/"
+                            + tmp_out_name[1]
+                            + suffix
+                            + ".xml"
+                            + " > "
+                            + "ouput_"
+                            + suffix
+                            + ".out"
+                        )
                     else:
-                        execution_string = prefix + 'mergedisplacements -d=' + tmp_out_name[0] + dname[0:slash_pos] + ' -o=' + tmp_out_name[0] + 'tmp/' + tmp_out_name[1] + suffix + '.xml'
+                        execution_string = (
+                            prefix
+                            + "mergedisplacements -d="
+                            + tmp_out_name[0]
+                            + dname[0:slash_pos]
+                            + " -o="
+                            + tmp_out_name[0]
+                            + "tmp/"
+                            + tmp_out_name[1]
+                            + suffix
+                            + ".xml"
+                        )
                     print(execution_string)
                     os.system(execution_string)
 
                 slash_pos = len(tmp_xml_dir) - 1
                 if debug_level > 0:
-                    execution_string = prefix + 'mergedisplacements --mgroups -d=' + tmp_xml_dir[0:slash_pos] + ' -o=' + tmp_out_name[0] + tmp_out_name[1] + '.xml' + ' > ' + 'ouput_mgroups.out'
+                    execution_string = (
+                        prefix
+                        + "mergedisplacements --mgroups -d="
+                        + tmp_xml_dir[0:slash_pos]
+                        + " -o="
+                        + tmp_out_name[0]
+                        + tmp_out_name[1]
+                        + ".xml"
+                        + " > "
+                        + "ouput_mgroups.out"
+                    )
                 else:
-                    execution_string = prefix + 'mergedisplacements --mgroups -d=' + tmp_xml_dir[0:slash_pos] + ' -o=' + tmp_out_name[0] + tmp_out_name[1] + '.xml'
+                    execution_string = (
+                        prefix
+                        + "mergedisplacements --mgroups -d="
+                        + tmp_xml_dir[0:slash_pos]
+                        + " -o="
+                        + tmp_out_name[0]
+                        + tmp_out_name[1]
+                        + ".xml"
+                    )
                 print(execution_string)
                 os.system(execution_string)
             if len(r_start) > 1 or len(c_start) > 1:
                 for r in range(len(r_start)):
                     for c in range(len(c_start)):
-                        gr_xml_dir = tmp_out_name[0] + gr_dir_names[(r * len(c_start) + c)]
+                        gr_xml_dir = (
+                            tmp_out_name[0] + gr_dir_names[(r * len(c_start) + c)]
+                        )
                         shutil.rmtree(gr_xml_dir)
-                        print('deleted directory ' + gr_xml_dir + ' and all files in it')
+                        print(
+                            "deleted directory " + gr_xml_dir + " and all files in it"
+                        )
 
             shutil.rmtree(tmp_xml_dir)
-            print('deleted directory ' + tmp_xml_dir + ' and all files in it')
+            print("deleted directory " + tmp_xml_dir + " and all files in it")
         elif step6:
             if info:
-                first_string, list_string, output_name, len_arr, final_string = create_commands(nprocs - 1, True)
+                (
+                    first_string,
+                    list_string,
+                    output_name,
+                    len_arr,
+                    final_string,
+                ) = create_commands(nprocs - 1, True)
             else:
-                first_string, list_string, output_name, len_arr, final_string = create_commands(nprocs - 1)
-                if save_status_prefix == '':
-                    save_status_prefix = output_name + '/'
+                (
+                    first_string,
+                    list_string,
+                    output_name,
+                    len_arr,
+                    final_string,
+                ) = create_commands(nprocs - 1)
+                if save_status_prefix == "":
+                    save_status_prefix = output_name + "/"
                 rs_fname = save_status_prefix + resume_status_fname
                 if not os.path.exists(rs_fname):
                     if debug_level > 0:
-                        execution_string = prefix + first_string + ' > ' + 'output_first.out'
+                        execution_string = (
+                            prefix + first_string + " > " + "output_first.out"
+                        )
                     else:
                         execution_string = prefix + first_string
                     os.system(execution_string)
                     print(execution_string)
                     if suspend_resume_enabled:
-                        rs_file = open(rs_fname, 'wb')
+                        rs_file = open(rs_fname, "wb")
                         pickle.dump([], rs_file)
                         rs_file.close()
                 cmd_string = list_string
@@ -1349,13 +1789,15 @@ if __name__ == '__main__':
                 work_list = sort_work(cmd_string, elaborations)
                 main_step6(work_list, rs_fname)
                 if debug_level > 0:
-                    execution_string = prefix + final_string + ' > ' + 'output_final.out'
+                    execution_string = (
+                        prefix + final_string + " > " + "output_final.out"
+                    )
                 else:
                     execution_string = prefix + final_string
                 os.system(execution_string)
                 print(execution_string)
     elif step2:
-        prefix = prefix + 'terastitcher '
+        prefix = prefix + "terastitcher "
         subordinate()
     elif step6:
         if info:
@@ -1365,6 +1807,13 @@ if __name__ == '__main__':
     comm.Barrier()
     if myrank == 0:
         t2 = time.time()
-        print('*' * 80)
-        print((str(datetime.datetime.utcnow()), '-- Calculation ended after ', t2 - t1, ' seconds'))
-        print('*' * 80)
+        print("*" * 80)
+        print(
+            (
+                str(datetime.datetime.utcnow()),
+                "-- Calculation ended after ",
+                t2 - t1,
+                " seconds",
+            )
+        )
+        print("*" * 80)

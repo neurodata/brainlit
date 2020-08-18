@@ -1,7 +1,7 @@
 function [] = lddmm_register(in_args)
 
-    arg_list = ["target_name", "registration_prefix", "atlas_prefix", "dxJ0", "grid_correction", "missing_data_correction", "bias_correction", "fixed_scale", "initial_affine", "sigmaR"];
-    defaults = {'~/autofluorescence_data.tif', '~/registration', '~/CloudReg/registration/atlases/', [9.36 9.36  5], 1, 1, 1, 1.0, eye(4), 1e4};
+    arg_list = ["target_name", "registration_prefix", "atlas_prefix", "dxJ0", "grid_correction", "missing_data_correction", "bias_correction", "fixed_scale", "initial_affine", "sigmaR", "num_iterations"];
+    defaults = {'~/autofluorescence_data.tif', '~/registration', '~/CloudReg/registration/atlases/', [9.36 9.36  5], 1, 1, 1, 1.0, eye(4), 1e4, 5000};
 
     if ~exist('in_args','var') || isempty('in_args')
         in_args = defaults;
@@ -48,8 +48,8 @@ function [] = lddmm_register(in_args)
     % prior on brain, artifact, background likelihood (in that order)
     prior = [0.79, 0.2, 0.01];
 
-    % total number of iterations
-    niter = 5000;
+    % % total number of iterations
+    % niter = 5000;
 
     do_GN = 1; % do gauss newton
     uniform_scale_only = 1; % for uniform scaling
@@ -447,7 +447,8 @@ function [] = lddmm_register(in_args)
         
         
         if ~isempty(coeffsname)
-            coeffs = load(coeffsname).coeffs;
+            coeffs = load(coeffsname);
+            coeffs = coeffs.coeffs;
             coeffs_1 = upsample(coeffs(:,:,:,1),[size(J,1),size(J,2),size(J,3)]);
             coeffs_2 = upsample(coeffs(:,:,:,2),[size(J,1),size(J,2),size(J,3)]);
             coeffs_3 = upsample(coeffs(:,:,:,3),[size(J,1),size(J,2),size(J,3)]);

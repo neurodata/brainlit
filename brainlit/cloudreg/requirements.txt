@@ -1,5 +1,5 @@
 boto3
-cloud-volume
+cloud - volume
 tinybrain
 tqdm
 joblib
@@ -10,4 +10,3 @@ imagecodecs
 paramiko
 scipy
 h5py
-

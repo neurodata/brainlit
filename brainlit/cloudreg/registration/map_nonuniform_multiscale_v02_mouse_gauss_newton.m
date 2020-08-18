@@ -37,9 +37,15 @@ end
 
 
 %%%% params for preprocessing
-missing_data_correction = 1;
-grid_correction = 1;
-bias_correction = 1;
+if ~exist('missing_data_correction')
+    missing_data_correction = 1;
+end
+if ~exist('grid_correction')
+    grid_correction = 1;
+end
+if~exist('bias_correction')
+    bias_correction = 0;
+end
 %%%% end params for preprocessing
 
 %%%% params for registration
@@ -53,7 +59,20 @@ end
 A = initial_affine;
 
 % weight of regularization 
-sigmaR = 1e4;
+if ~exist('sigmaR')
+    sigmaR = 5e3;
+end
+
+if ~exist('niter')
+    % total number of iterations
+    niter = 5000;
+end
+
+if ~exist('eV')
+    % velocity field update step size
+    eV = 1e6;
+end
+
 
 nT = 10; % number of timesteps over which to integrate flow
 sigmaC = 5.0;
@@ -76,17 +95,12 @@ a = 500;
 % gauss newton affine step size
 eA = 0.2;
 
-% velocity field update step size
-eV = 1e6;
-
 
 
 % prior on brain, artifact, background likelihood (in that order)
 prior = [0.79, 0.2, 0.01];
 
 
-% total number of iterations
-niter = 5000;
 
 do_GN = 1; % do gauss newton
 uniform_scale_only = 1; % for uniform scaling
@@ -95,7 +109,7 @@ rigid_only  = 0; % constrain affine to be rigid
 %%%% end parameters %%%%
 
 
-downloop_start = 2;
+downloop_start = 1;
 for downloop = downloop_start : 2
 
     if downloop > 1
