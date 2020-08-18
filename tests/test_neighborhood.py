@@ -46,7 +46,7 @@ def test_init_bad_inputs():
     with pytest.raises(NotImplementedError):
         nbrhood.NeighborhoodFeatures(url="asdf", size=SIZE, offset=OFF)
     with pytest.raises(TypeError):
-        nbrhood.NeighborhoodFeatures(url=URL, size=0.5, offset=OFF)
+        nbrhood.NeighborhoodFeatures(url=url, size=0.5, offset=OFF)
     with pytest.raises(ValueError):
         nbrhood.NeighborhoodFeatures(url=url, size=-1, offset=OFF, segment_url=url_seg)
     with pytest.raises(TypeError):
@@ -65,7 +65,7 @@ def test_fit_bad_inputs():
     )
     with pytest.raises(TypeError):
         nbr.fit(seg_ids=1, num_verts=5, file_path="demo", batch_size=1000)
-    with pytest.raises(cloudvolume.exceptions.InfoUnavailableError):
+    with pytest.raises(cloudvolume.exceptions.SkeletonDecodeError):
         nbr.fit(seg_ids=[1], num_verts=5, file_path="demo", batch_size=1000)
 
 
