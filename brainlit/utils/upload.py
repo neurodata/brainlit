@@ -13,10 +13,10 @@ import contextlib
 
 import tifffile as tf
 from pathlib import Path
-from .swc import swc2skeleton
+from brainlit.utils.swc import swc2skeleton
 import time
 from tqdm.auto import tqdm
-from .util import (
+from brainlit.utils.util import (
     tqdm_joblib,
     check_type,
     check_iterable_type,
