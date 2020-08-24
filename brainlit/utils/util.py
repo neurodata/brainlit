@@ -1,5 +1,3 @@
-# TOMMY REVIEW
-
 import contextlib
 import joblib
 from pathlib import Path

@@ -1,5 +1,3 @@
-# TOMMY REVIEW
-
 import math
 from cloudvolume import CloudVolume, Skeleton, storage
 from cloudvolume.frontends.precomputed import CloudVolumePrecomputed
@@ -27,7 +25,7 @@ from brainlit.utils.util import (
     check_binary_path,
 )
 
-
+# TOMMY REVIEW
 def get_volume_info(
     image_dir: str,
     num_resolutions: int,
@@ -95,6 +93,7 @@ def get_volume_info(
     return files_ordered, paths_bin, vox_size, img_size, origin
 
 
+# TOMMY REVIEW
 def create_cloud_volume(
     precomputed_path: str,
     img_size: Sequence[int],
@@ -195,6 +194,7 @@ def create_cloud_volume(
     return vols
 
 
+# TOMMY REVIEW
 def get_data_ranges(
     bin_path: List[List[str]], chunk_size: Tuple[int, int, int]
 ) -> Tuple[List[int], List[int], List[int]]:
@@ -228,6 +228,7 @@ def get_data_ranges(
     return x_range, y_range, z_range
 
 
+# TOMMY REVIEW
 def process(file_path: str, bin_path: List[str], vol: CloudVolumePrecomputed):
     """The parallelizable method to upload data.
 
@@ -252,6 +253,7 @@ def process(file_path: str, bin_path: List[str], vol: CloudVolumePrecomputed):
     return
 
 
+# TOMMY REVIEW
 def upload_volumes(
     input_path: str,
     precomputed_path: str,
@@ -339,6 +341,7 @@ def upload_volumes(
             print("timed out on a slice. moving on to the next step of pipeline")
 
 
+# TOMMY REVIEW
 def create_skel_segids(
     swc_dir: str, origin: Sequence[Union[int, float]]
 ) -> Tuple[Skeleton, List[int]]:
@@ -367,6 +370,7 @@ def create_skel_segids(
     return skeletons, segids
 
 
+# TOMMY REVIEW
 def upload_segments(input_path, precomputed_path, num_mips):
     """Uploads segmentation data from local to precomputed path.
 
@@ -391,6 +395,7 @@ def upload_segments(input_path, precomputed_path, num_mips):
         vols[0].skeleton.upload(skel)
 
 
+# TOMMY REVIEW
 def upload_annotations(input_path, precomputed_path, num_mips):
     """Uploads empty annotation volume.
     """

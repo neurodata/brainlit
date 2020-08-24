@@ -1,5 +1,3 @@
-# TOMMY REVIEW
-
 from abc import abstractmethod
 from sklearn.base import BaseEstimator
 from brainlit.utils.session import NeuroglancerSession
@@ -13,7 +11,7 @@ import feather
 from joblib import Parallel, delayed
 from typing import Optional, List, Union, Tuple, Literal
 
-
+# TOMMY REVIEW
 class BaseFeatures(BaseEstimator):
     """Base class for generating features from precomputed volumes.
 
@@ -66,6 +64,7 @@ class BaseFeatures(BaseEstimator):
             features: Feature data.
         """
 
+    # TOMMY REVIEW
     def fit(
         self,
         seg_ids: List[int],

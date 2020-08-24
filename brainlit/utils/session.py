@@ -1,5 +1,4 @@
 # Reference: https://github.com/neurodata/mouselight_code/blob/region_growing/src/ngl_pipeline.py
-# TOMMY REVIEW
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -24,7 +23,7 @@ from brainlit.utils.util import (
 
 Bounds = Union[Bbox, Tuple[int, int, int, int, int, int]]
 
-
+# TOMMY REVIEW
 class NeuroglancerSession:
     """Utility class which pulls and pushes data.
 
@@ -100,6 +99,7 @@ class NeuroglancerSession:
         ).astype(int)
         return voxel
 
+    # TOMMY REVIEW
     def set_url_segments(self, seg_url: str):
         """Sets the url_segments and cv_segments attributes.
 
@@ -111,6 +111,7 @@ class NeuroglancerSession:
         self.url_segments = seg_url
         self.cv_segments = CloudVolume(self.url_segments, parallel=False)
 
+    # TOMMY REVIEW
     def get_segments(self, seg_id: int, bbox: Optional[Bounds] = None) -> nx.Graph:
         """Get a graph of a segmentation annotation within a bounding box.
 
@@ -135,6 +136,7 @@ class NeuroglancerSession:
             G = get_sub_neuron(G, [bbox[:3], bbox[3:]])
         return G
 
+    # TOMMY REVIEW
     def create_tubes(
         self, seg_id: Union[int, float], bbox: Bounds, radius: Optional[int] = None
     ):
@@ -166,6 +168,7 @@ class NeuroglancerSession:
         labels = tubes_from_paths(np.subtract(bbox[3:], bbox[:3]), paths, radius)
         return labels
 
+    # TOMMY REVIEW
     def pull_voxel(
         self, seg_id: int, v_id: int, radius: int = 1
     ) -> Tuple[np.ndarray, Bbox, np.ndarray]:
@@ -196,6 +199,7 @@ class NeuroglancerSession:
         vox_in_img = voxel - np.array(bounds.to_list()[:3])
         return np.squeeze(np.array(img)), bounds, vox_in_img
 
+    # TOMMY REVIEW
     def pull_vertex_list(
         self, seg_id: int, v_id_list: List[int], buffer: int = 1, expand: bool = False,
     ) -> Tuple[np.ndarray, Bbox, List[Tuple[int, int, int]]]:
@@ -236,6 +240,7 @@ class NeuroglancerSession:
         img = self.pull_bounds_img(bounds)
         return img, bounds, vox_in_img_list
 
+    # TOMMY REVIEW
     def pull_chunk(
         self, seg_id: int, v_id: int, radius: int = 0,
     ) -> Tuple[np.ndarray, Bbox, Tuple[int, int, int]]:
@@ -271,6 +276,7 @@ class NeuroglancerSession:
         vox_in_img = voxel - np.array(bounds.to_list()[:3])
         return np.squeeze(np.array(img)), bounds, vox_in_img
 
+    # TOMMY REVIEW
     def pull_bounds_img(self, bounds: Bounds) -> np.ndarray:
         """Pull a volume around a specified bounding box. Works on image channels.
 

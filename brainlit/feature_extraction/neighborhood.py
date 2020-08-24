@@ -1,5 +1,3 @@
-# TOMMY REVIEW
-
 import numpy as np
 import brainlit
 from brainlit.preprocessing import preprocess, image_process
@@ -12,7 +10,7 @@ from typing import List, Optional, Dict, Tuple
 
 from .base import BaseFeatures
 
-
+# TOMMY REVIEW
 class NeighborhoodFeatures(BaseFeatures):
     """Computes features based off neighborhood properties.
 
@@ -47,6 +45,7 @@ class NeighborhoodFeatures(BaseFeatures):
         return dict(enumerate(img.flatten()))
 
 
+# TOMMY REVIEW
 def subsample(
     arr: np.ndarray, orig_shape: List[int], dest_shape: List[int]
 ) -> np.ndarray:
