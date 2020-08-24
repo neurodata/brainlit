@@ -7,6 +7,9 @@ Reference
     :maxdepth: 2
 
     algs
+    cloudreg
+    feature_extraction
     preprocessing
-    viz
+    registration
     utils
+    viz
