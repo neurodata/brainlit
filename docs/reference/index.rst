@@ -7,7 +7,6 @@ Reference
     :maxdepth: 2
 
     algs
-    cloudreg
     feature_extraction
     preprocessing
     registration

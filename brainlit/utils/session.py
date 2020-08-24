@@ -34,8 +34,7 @@ class NeuroglancerSession:
 
     Attributes:
         url: CloudVolumePrecomputedPath to image data.
-        url_segments: CloudVolumePrecomputedPath to segmentation data. Optional, default None.
-            Automatically tries precomputed path url+"_segments" if None.
+        url_segments: CloudVolumePrecomputedPath to segmentation data. Optional, default None. Automatically tries precomputed path url+"_segments" if None.
         cv (CloudVolumePrecomputed): CloudVolume object for image data.
         cv_segments (CloudVolumePrecomputed): CloudVolume object for segmentation data. Optional, default None.
         cv_annotations (CloudVolumePrecomputed): CloudVolume object for segmentation data. Optional, default None.

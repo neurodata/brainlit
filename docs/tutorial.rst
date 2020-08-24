@@ -101,4 +101,4 @@ These tutorials demonstrate tools to load and visualize data from s3 buckets or 
 
    notebooks/visualization/loading
    notebooks/visualization/visualization
-   notebook/visualization/neighborhood_visualization_demo
+   notebooks/visualization/neighborhood_visualization_demo
