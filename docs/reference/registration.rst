@@ -15,12 +15,15 @@ Image Data
 ----------
 
 .. autoapiclass:: ImageMetaData
+    :members:
 .. autoapiclass:: Image
-
+    :members:
+    
 Transformers
 ------------
 
 .. autoapiclass:: Transform
+    :members:
 
 Visualization
 -------------
