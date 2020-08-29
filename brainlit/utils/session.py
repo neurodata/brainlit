@@ -96,7 +96,9 @@ class NeuroglancerSession:
 
         vertex = seg[v_id]
         print(vertex)
-        voxel = np.round(np.divide(vertex, self.scales)).astype(int)
+        voxel = np.round(
+            np.divide(vertex, self.cv_segments.scales[self.mip]["resolution"])
+        ).astype(int)
         return voxel
 
     def set_url_segments(self, seg_url: str):
