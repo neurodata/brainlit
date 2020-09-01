@@ -10,14 +10,17 @@ from typing import List, Optional, Dict, Tuple
 
 from .base import BaseFeatures
 
-# TOMMY REVIEW
+
 class NeighborhoodFeatures(BaseFeatures):
     """Computes features based off neighborhood properties.
 
     Arguments:
         url: Precompued path either to a file URI or url URI of image data.
-        size: A size hyperparameter. In Neighborhoods, this is the radius.
+        radius: The radius around each point considered a neighborhood, in each dimension.
+            If radius is [x,y,z], the neighborhood will be a [2x+1, 2y+1, 2z+1] volume centered at the point of interest.
+            Defaults to [1, 1, 1].
         offset: Added to the coordinates of a positive sample to generate a negative sample.
+            Defaults to [15, 15, 15].
         segment_url: Precompued path either to a file URI or url URI of segmentation data.
 
     Attributes:
@@ -33,7 +36,7 @@ class NeighborhoodFeatures(BaseFeatures):
     def __init__(
         self,
         url: str,
-        size: List[int] = [1, 1, 1],
+        radius: List[int] = [1, 1, 1],
         offset: List[int] = [15, 15, 15],
         segment_url: Optional[str] = None,
     ):
