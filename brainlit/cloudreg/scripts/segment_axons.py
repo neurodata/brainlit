@@ -1,30 +1,9 @@
 from argparse import ArgumentParser
 from cloudvolume import CloudVolume
-import tifffile as tf
 import numpy as np
-from skimage import (
-    filters,
-    morphology,
-    measure,
-    exposure,
-    util,
-    segmentation,
-    transform,
-    feature,
-)
-from tqdm import tqdm, trange
-
-from scipy import ndimage as ndi
-
-from glob import glob
-
+from tqdm import trange
 import SimpleITK as sitk
-
-import pandas as pd
-
-from skimage.morphology import selem, binary_opening
 from joblib import Parallel, delayed
-
 import tinybrain
 
 

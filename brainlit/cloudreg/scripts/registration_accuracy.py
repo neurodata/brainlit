@@ -1,6 +1,8 @@
+# local imports
+from .util import aws_cli
+
 import os
 import subprocess
-from glob import glob
 import shlex
 import requests as r
 import numpy as np
@@ -8,11 +10,8 @@ import h5py
 from cloudvolume import CloudVolume
 from collections import defaultdict
 import uuid
-from util import aws_cli
 import argparse
 from scipy.io import loadmat
-
-import pathlib
 
 
 def loadmat_v73(mat_path):

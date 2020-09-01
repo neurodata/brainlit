@@ -1,55 +1,24 @@
-import argparse
-import boto3
-import paramiko
-import os
-from util import get_reorientations, start_ec2_instance
-from visualization import (
+# local imports
+from .util import start_ec2_instance, run_command_on_server
+from .visualization import (
     create_viz_link,
-    ara_annotation_data_link,
     ara_average_data_link,
 )
-from scipy.spatial.transform import Rotation
-import numpy as np
-from cloudvolume import CloudVolume
-from registration import get_affine_matrix
+from .registration import get_affine_matrix
+
+import argparse
+import boto3
 
 python_path = "/home/ubuntu/colm_pipeline_env/bin/python"
-
-
-def run_command_on_server(command, ssh_key_path, ip_address, username="ubuntu"):
-
-    key = paramiko.RSAKey.from_private_key_file(ssh_key_path)
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-    # Connect/ssh to an instance
-    try:
-        # Here 'ip_address' is public IP of EC2
-        client.connect(hostname=ip_address, username=username, pkey=key)
-
-        # Execute a command after connecting/ssh to an instance
-        stdin, stdout, stderr = client.exec_command(command, get_pty=True)
-        for line in iter(stdout.readline, ""):
-            print(line, end="")
-
-        # output = stdout.read().decode('utf-8')
-        errors = stderr.read().decode("utf-8")
-
-        # close the client connection once the job is done
-        client.close()
-        return errors
-
-    except Exception as e:
-        print(e)
 
 
 def run_registration(
     ssh_key_path,
     instance_id,
+    instance_type,
     input_s3_path,
     output_s3_path,
     log_s3_path,
-    instance_type,
     initial_translation,
     initial_rotation,
     orientation,
@@ -60,6 +29,25 @@ def run_registration(
     sigma_regularization,
     num_iterations,
 ):
+    """Run EM-LDDMM registration on an AWS EC2 instance
+
+    Args:
+        ssh_key_path (str): Local path to ssh key for this server
+        instance_id (str): ID of EC2 instance to use
+        instance_type (str): AWS EC2 instance type. Recommended is r5.8xlarge
+        input_s3_path (str): S3 path to precomputed data to be registered
+        output_s3_path (str): S3 path to store precomputed volume of atlas transformed to input data
+        log_s3_path (str): S3 path to store intermediates at
+        initial_translation (list of float): Initial translations in x,y,z of input data
+        initial_rotation (list): Initial rotation in x,y,z for input data
+        orientation (str): 3-letter orientation of input data
+        fixed_scale (float): Isotropic scale factor on input data    
+        missing_data_correction (bool): Perform missing data correction to ignore zeros in image
+        grid_correction (bool): Perform grid correction (for COLM data)
+        bias_correction (bool): Perform illumination correction
+        sigma_regularization (float): Regularization constat in cost function. Higher regularization constant means less regularization
+        num_iterations (int): Number of iterations of EM-LDDMM to run
+    """
 
     # this is the initialization for registration
     atlas_res = 50
@@ -231,10 +219,10 @@ if __name__ == "__main__":
     run_registration(
         args.ssh_key_path,
         args.instance_id,
+        args.instance_type,
         args.input_s3_path,
         args.output_s3_path,
         args.log_s3_path,
-        args.instance_type,
         [args.x, args.y, args.z],
         [args.yz, args.xz, args.xy],
         args.orientation,

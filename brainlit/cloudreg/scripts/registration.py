@@ -1,22 +1,23 @@
-import shlex
-from download_data import download_data
-from util import S3Url
-from cloudvolume import CloudVolume
-from scipy.spatial.transform import Rotation
-import numpy as np
-from util import get_reorientations, aws_cli
-from visualization import (
+# local imports
+from .util import get_reorientations, aws_cli
+from .visualization import (
     ara_average_data_link,
     ara_annotation_data_link,
     create_viz_link,
+    S3Url
 )
+from .download_data import download_data
+from .ingest_image_stack import ingest_image_stack
+
+import shlex
+from cloudvolume import CloudVolume
+from scipy.spatial.transform import Rotation
+import numpy as np
 import argparse
 import subprocess
 import os
-from ingest_image_stack import ingest_image_stack
 
 atlas_orientation = "PIR"
-
 
 def get_affine_matrix(
     translation,
@@ -27,10 +28,21 @@ def get_affine_matrix(
     s3_path,
     center=False,
 ):
+    """Get Neuroglancer-compatible affine matrix transfrming precomputed volume given set of translations and rotations
+
+    Args:
+        translation (list of float): x,y,z translations respectively in microns
+        rotation (list of float): x,y,z rotations respectively in degrees
+        from_orientation (str): 3-letter orientation of source data 
+        to_orientation (str): 3-letter orientation of target data
+        fixed_scale (float): Isotropic scale factor
+        s3_path (str): S3 path to precomputed volume for source data
+        center (bool, optional): If true, center image at it's origin. Defaults to False.
+
+    Returns:
+        np.ndarray: Returns 4x4 affine matrix representing the given translations and rotations of source data at S3 path
     """
-    translation: x,y,z  translations respectively in microns
-    center: if not None, should be an S3 path to compute the origin from
-    """
+  
     # since neuroglancer uses corner 0 coordinates we need to center the volume at it's center
     vol = CloudVolume(s3_path)
     # volume size in um
@@ -89,10 +101,24 @@ def register(
     regularization,
     num_iterations,
 ):
+    """Run EM-LDDMM registration on precomputed volume at input_s3_path
 
-    # registration
-    # get channel name
-    print(input_s3_path)
+    Args:
+        input_s3_path (str): S3 path to precomputed data to be registered
+        output_s3_path (str): S3 path to store precomputed volume of atlas transformed to input data
+        log_s3_path (str): S3 path to store intermediates at
+        orientation (str): 3-letter orientation of input data
+        fixed_scale (float): Isotropic scale factor on input data
+        translation (list of float): Initial translations in x,y,z of input data
+        rotation (list): Initial rotation in x,y,z for input data
+        missing_data_correction (bool): Perform missing data correction to ignore zeros in image
+        grid_correction (bool): Perform grid correction (for COLM data)
+        bias_correction (bool): Perform illumination correction
+        regularization (float): Regularization constat in cost function. Higher regularization constant means less regularization
+        num_iterations (int): Number of iterations of EM-LDDMM to run
+    """
+
+    # get volume info
     s3_url = S3Url(input_s3_path)
     channel = s3_url.key.split("/")[-1]
     exp = s3_url.key.split("/")[-2]

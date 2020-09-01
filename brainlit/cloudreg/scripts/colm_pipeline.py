@@ -1,17 +1,15 @@
-from download_raw_data import download_raw_data
-from correct_raw_data import correct_raw_data
-from create_precomputed_volume import create_precomputed_volume
-from correct_stitched_data import correct_stitched_data
-from stitching import run_terastitcher
-from util import (
+from .download_raw_data import download_raw_data
+from .correct_raw_data import correct_raw_data
+from .create_precomputed_volume import create_precomputed_volume
+from .correct_stitched_data import correct_stitched_data
+from .stitching import run_terastitcher
+from .util import (
     S3Url,
-    upload_file_to_s3,
-    download_file_from_s3,
     download_terastitcher_files,
     tqdm_joblib,
-    aws_cli,
 )
-from visualization import create_viz_link
+from .visualization import create_viz_link
+
 import numpy as np
 from glob import glob
 from tqdm import tqdm
@@ -30,16 +28,18 @@ def colm_pipeline(
     stitched_data_path,
     log_s3_path=None,
 ):
-    """
-    input_s3_path: S3 path to raw COLM data. Should be of the form s3://<bucket>/<experiment>
-    output_s3_path: S3 path to store precomputed volume. Precomputed volumes for each channel will be stored under this path. Should be of the form s3://<bucket>/<path_to_precomputed>
-    channel_of_interest: Channel number to operate on. Should be a single integer.
-    autofluorescence_channel: Autofluorescence channel number. Should be a single integer.
-    raw_data_path: Local path where corrected raw data will be stored.
-    stitched_data_path: Local path where stitched slices will be stored.
-    log_s3_path: S3 path at which pipeline intermediates can be stored including bias correction tile and xml files from Terastitcher.
+    """Run COLM pipeline including vignetting correction, stitching, illumination correction, and upload to S3 in Neuroglancer-compatible format
 
+    Args:
+        input_s3_path (str): S3 path to raw COLM data. Should be of the form s3://<bucket>/<experiment>
+        output_s3_path (str): S3 path to store precomputed volume. Precomputed volumes for each channel will be stored under this path. Should be of the form s3://<bucket>/<path_to_precomputed>
+        channel_of_interest (int): Channel number to operate on. Should be a single integer.
+        autofluorescence_channel (int): Autofluorescence channel number. Should be a single integer.
+        raw_data_path (str): Local path where corrected raw data will be stored.
+        stitched_data_path (str): Local path where stitched slices will be stored.
+        log_s3_path (str, optional): S3 path at which pipeline intermediates can be stored including bias correction tile and xml files from Terastitcher. Defaults to None.
     """
+
     # get the metadata file paths specific for COLM
     input_s3_url = S3Url(input_s3_path.strip("/"))
     output_s3_url = S3Url(output_s3_path.strip("/"))
@@ -47,7 +47,7 @@ def colm_pipeline(
     # download raw data onto local SSD
     vw0_path = f"{input_s3_url.url}/VW0/"
     download_raw_data(
-        vw0_path, channel_of_interest, raw_data_path, log_s3_path=log_s3_path
+        vw0_path, channel_of_interest, raw_data_path
     )
 
     # compute stitching alignments first if you need to
@@ -163,4 +163,5 @@ if __name__ == "__main__":
             ) as progress_bar:
                 Parallel(-1)(delayed(shutil.rmtree)(f) for f in directories_to_remove)
             # make sure to delete mdata.bin from terastitcher
-            os.remove(f"{args.raw_data_path}/mdata.bin")
+            if os.path.exists(f"{args.raw_data_path}/mdata.bin"):
+                os.remove(f"{args.raw_data_path}/mdata.bin")

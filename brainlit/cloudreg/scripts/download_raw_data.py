@@ -1,3 +1,10 @@
+# local imports
+from .util import (
+    tqdm_joblib,
+    chunks,
+    S3Url,
+)
+
 import time
 import os
 from io import BytesIO
@@ -10,20 +17,21 @@ from tqdm import tqdm
 from joblib import Parallel, delayed, cpu_count
 import math
 import tifffile as tf
-from util import (
-    tqdm_joblib,
-    chunks,
-    imgResample,
-    upload_file_to_s3,
-    S3Url,
-    s3_object_exists,
-)
 
 
 config = Config(connect_timeout=5, retries={"max_attempts": 5})
 
 
 def get_out_path(in_path, outdir):
+    """Get output path for given tile, maintaining folder structure for Terastitcher
+
+    Args:
+        in_path (str): S3 key to raw tile
+        outdir (str): Path to local directory to store raw data
+
+    Returns:
+        str: Path to store raw tile at.
+    """
     head, fname = os.path.split(in_path)
     head_tmp = head.split("/")
     head = f"{outdir}/" + "/".join(head_tmp[-1:])
@@ -35,6 +43,14 @@ def get_out_path(in_path, outdir):
 
 
 def get_all_s3_objects(s3, **base_kwargs):
+    """Get all s3 objects with base_kwargs
+
+    Args:
+        s3 (boto3.S3.client): an active S3 Client.
+
+    Yields:
+        dict: Response object with keys to objects if there are any.
+    """
     continuation_token = None
     while True:
         list_kwargs = dict(MaxKeys=1000, **base_kwargs)
@@ -48,6 +64,16 @@ def get_all_s3_objects(s3, **base_kwargs):
 
 
 def get_list_of_files_to_process(in_bucket_name, prefix, channel):
+    """Get paths of all raw data files for a given channel.
+
+    Args:
+        in_bucket_name (str): S3 bucket in which raw data live
+        prefix (str): Prefix for the S3 path at which raw data live
+        channel (int): Channel number to process
+
+    Returns:
+        list of str: List of S3 paths for all raw data files
+    """
     session = boto3.Session()
     s3_client = session.client("s3", config=config)
     loc_prefixes = s3_client.list_objects_v2(
@@ -66,6 +92,15 @@ def get_list_of_files_to_process(in_bucket_name, prefix, channel):
 
 
 def download_tile(s3, raw_tile_bucket, raw_tile_path, outdir, bias=None):
+    """Download single raw data image file from S3 to local directory
+
+    Args:
+        s3 (S3.Resource): A Boto3 S3 resource
+        raw_tile_bucket (str): Name of bucket with raw data
+        raw_tile_path (str): Path to raw data file in S3 bucket
+        outdir (str): Local path to store raw data
+        bias (np.ndarray, optional): Bias correction multiplied by image before saving. Must be same size as image Defaults to None.
+    """
     out_path = get_out_path(raw_tile_path, outdir)
     raw_tile_obj = s3.Object(raw_tile_bucket, raw_tile_path)
     # try this unless you get endpoin None error
@@ -83,6 +118,13 @@ def download_tile(s3, raw_tile_bucket, raw_tile_path, outdir, bias=None):
 
 
 def download_tiles(tiles, raw_tile_bucket, outdir):
+    """Download a chunk of tiles from S3 to local storage
+
+    Args:
+        tiles (list of str): S3 paths to raw data files to download
+        raw_tile_bucket (str): Name of bucket where raw data live
+        outdir (str): Local path to store raw data at
+    """
     session = boto3.Session()
     s3 = session.resource("s3")
 
@@ -90,7 +132,14 @@ def download_tiles(tiles, raw_tile_bucket, outdir):
         download_tile(s3, raw_tile_bucket, tile, outdir)
 
 
-def download_raw_data(in_bucket_path, channel, outdir, log_s3_path=None):
+def download_raw_data(in_bucket_path, channel, outdir):
+    """Download COLM raw data from S3 to local storage
+
+    Args:
+        in_bucket_path (str): Name of S3 bucket where raw dadta live at
+        channel (int): Channel number to process
+        outdir (str): Local path to store raw data
+    """
 
     input_s3_url = S3Url(in_bucket_path.strip("/"))
     in_bucket_name = input_s3_url.bucket
@@ -130,12 +179,7 @@ if __name__ == "__main__":
         default="/home/ubuntu/",
         type=str,
     )
-    parser.add_argument(
-        "--log_s3_path",
-        help="S3 path where any logging information will be stored",
-        type=str,
-    )
 
     args = parser.parse_args()
 
-    download_raw_data(args.in_bucket_path, args.channel, args.outdir, args.log_s3_path)
+    download_raw_data(args.in_bucket_path, args.channel, args.outdir)

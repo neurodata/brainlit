@@ -1,8 +1,9 @@
-import json
+# local imports
+from .util import S3Url
+
 import requests
 from cloudvolume import CloudVolume
 import numpy as np
-from util import S3Url
 import copy
 
 # 100 um
@@ -58,6 +59,20 @@ def create_viz_link(
     neuroglancer_link="https://ara.viz.neurodata.io/?json_url=",
     output_resolution=np.array([1e-4] * 3),
 ):
+    """Create a viz link from S3 layer paths using Neurodata's deployment of Neuroglancer and Neurodata's json state server.
+
+    Args:
+        s3_layer_paths (list): List of S3 paths to precomputed volumes to include in the viz link. 
+        affine_matrices (list of np.ndarray, optional): List of affine matrices associated with each layer. Affine matrices should be 3x3 for 2D data and 4x4 for 3D data. Defaults to None.
+        shader_controls (str, optional): String of shader controls compliant with Neuroglancer shader controls. Defaults to None.
+        url (str, optional): URL to JSON state server to store Neueroglancer JSON state. Defaults to "https://json.neurodata.io/v1".
+        neuroglancer_link (str, optional): URL for Neuroglancer deployment, default is to use Neurodata deployment of Neuroglancer.. Defaults to "https://ara.viz.neurodata.io/?json_url=".
+        output_resolution (np.ndarray, optional): Desired output resolution for all layers in nanometers. Defaults to np.array([1e-4] * 3) nanometers.
+
+    Returns:
+        str : viz link to data
+    """
+    
     json_data = get_neuroglancer_json(
         s3_layer_paths, affine_matrices, output_resolution
     )
@@ -68,9 +83,15 @@ def create_viz_link(
 
 
 def get_neuroglancer_json(s3_layer_paths, affine_matrices, output_resolution):
-    """
-    s3_layer_paths must be a list of s3 paths to precomputed volumes you want to visualize
-    affine_matrices must be a list of 4x4 np.arrays that contain the transformation for each layer and is the same length as s3_layer_paths
+    """Generate Neuroglancer state json.
+
+    Args:
+        s3_layer_paths (list of str): List of S3 paths to precomputed layers.
+        affine_matrices (list of np.ndarray): List of affine matrices for each layer.
+        output_resolution (np.ndarray): Resolution we want to visualize at for all layers.
+
+    Returns:
+        dict: Neuroglancer state JSON
     """
     ngl_json = copy.deepcopy(minimum_ngl_json)
     ngl_json["layers"] = []
@@ -86,6 +107,14 @@ def get_neuroglancer_json(s3_layer_paths, affine_matrices, output_resolution):
 
 
 def get_output_dimensions_json(output_resolution):
+    """Convert output dimensions to Neuroglancer JSON
+
+    Args:
+        output_resolution (np.ndarray): desired output resolution for precomputed data.
+
+    Returns:
+        dict: Neuroglancer JSON for output dimensions
+    """
     # output dimensions must be  in meters
     output_json = copy.deepcopy(minimum_ngl_json["dimensions"])
     output_json["x"][0] = output_resolution[0]
@@ -94,10 +123,20 @@ def get_output_dimensions_json(output_resolution):
     return output_json
 
 
-def get_layer_json(s3_layer_path, affine_matrix, output_resolution):
     """
     affine_matrix has translations in microns
     output resolution in meters
+    """
+def get_layer_json(s3_layer_path, affine_matrix, output_resolution):
+    """Generate Neuroglancer JSON for single layer.
+
+    Args:
+        s3_layer_path (str): S3 path to precomputed layer.
+        affine_matrix (np.ndarray): Affine matrix to apply to current layer. Translation in this matrix is in microns.
+        output_resolution (np.ndarray): desired output resolution to visualize layer at.
+
+    Returns:
+        dict: Neuroglancer JSON for single layer.
     """
     vol = CloudVolume(s3_layer_path)
     s3_url = S3Url(s3_layer_path)

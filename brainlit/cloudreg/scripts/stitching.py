@@ -1,3 +1,9 @@
+# local imports
+from .util import (
+    S3Url,
+    upload_file_to_s3,
+)
+
 # generate xml_import and terastitcher commands
 from configparser import ConfigParser
 import math
@@ -6,14 +12,6 @@ from psutil import virtual_memory
 import joblib
 import boto3
 import os
-from util import (
-    S3Url,
-    upload_file_to_s3,
-    download_file_from_s3,
-    download_terastitcher_files,
-    tqdm_joblib,
-    aws_cli,
-)
 import subprocess
 import shlex
 from glob import glob
@@ -21,12 +19,19 @@ from tqdm import tqdm
 
 parastitcher_path = f"{os.path.dirname(os.path.realpath(__file__))}/parastitcher.py"
 paraconverter_path = f"{os.path.dirname(os.path.realpath(__file__))}/paraconverter.py"
-python_path = os.path.expanduser("~/colm_pipeline_env/bin/python")
+python_path = "python"
 
 STITCH_ONLY, COMPUTE_ONLY, ALL_STEPS = range(3)
 
 
 def write_import_xml(fname_importxml, scanned_matrix, metadata):
+    """Write xml_import file for Terastitcher based on COLM metadata
+
+    Args:
+        fname_importxml (str): Path to wheer xml_import.xml should be stored
+        scanned_matrix (list of lists): List of locations that have been imaged by the microscope
+        metadata (dict): Metadata assocated with this COLM experiment
+    """
     img_regex = ".*.tiff"
     eofl = "\r\n"
     with open(fname_importxml, "w") as fp:
@@ -70,6 +75,17 @@ def write_import_xml(fname_importxml, scanned_matrix, metadata):
 
 
 def write_terastitcher_commands(fname_ts, metadata, stitched_dir, do_steps):
+    """Generate Terastitcher commands from metadata
+
+    Args:
+        fname_ts (str): Path to bash file to store Terastitcher commands
+        metadata (dict): Metadata information about experiment
+        stitched_dir (str): Path to where stitched data will be stored
+        do_steps (int): Indicator of which steps to run
+
+    Returns:
+        list of str: List of Terastitcher commands to run
+    """
     eofl = "\n"
     subvoldim = 60
     # subvoldim = max(metadata['num_slices']//num_processes,20)
@@ -116,6 +132,14 @@ def write_terastitcher_commands(fname_ts, metadata, stitched_dir, do_steps):
 
 
 def get_metadata(path_to_config):
+    """Get metadata from COLM config file.
+
+    Args:
+        path_to_config (str): Path to Experiment.ini file (COLM config file)
+
+    Returns:
+        dict: Metadata information.
+    """
     metadata = {}
 
     config = ConfigParser()
@@ -232,6 +256,14 @@ def get_metadata(path_to_config):
 
 
 def get_scanned_cells(fname_scanned_cells):
+    """Read Scanned Cells.txt file from COLM into list
+
+    Args:
+        fname_scanned_cells (str): Path to scanned cells file.
+
+    Returns:
+        list of lists: Indicates whether or not a given location has been imaged on the COLM
+    """
     # read scanned matrix file
     scanned_matrix = []
     with open(fname_scanned_cells, "r") as fp:
@@ -244,17 +276,31 @@ def get_scanned_cells(fname_scanned_cells):
 def generate_stitching_commands(
     stitched_dir, stack_dir, metadata_s3_bucket, metadata_s3_path, do_steps=ALL_STEPS
 ):
+    """Generate Terastitcher stitching commands given COLM metadata files.
+
+    Args:
+        stitched_dir (str): Path to store stitched data at.
+        stack_dir (str): Path to unstiched raw data.
+        metadata_s3_bucket (str): Name of S3 bucket in which metdata is located.
+        metadata_s3_path (str): Specific path to metadata files in the bucket
+        do_steps (int, optional): Represents which Terastitcher steps to run. Defaults to ALL_STEPS (2).
+
+    Returns:
+        tuple (dict, list of str): Metadata and list of Terastitcher commands
+    """
 
     # download COLM metadata files
+    # if they don't exist locally
     scanned_cells_path = f"{stack_dir}/Scanned Cells.txt"
     config_file_path = f"{stack_dir}/Experiment.ini"
-    s3 = boto3.resource("s3")
-    s3.Object(
-        metadata_s3_bucket, f"{metadata_s3_path}/Scanned Cells.txt"
-    ).download_file(scanned_cells_path)
-    s3.Object(metadata_s3_bucket, f"{metadata_s3_path}/Experiment.ini").download_file(
-        config_file_path
-    )
+    if not os.path.exists(scanned_cells_path) or not os.path.exists(config_file_path):
+        s3 = boto3.resource("s3")
+        s3.Object(
+            metadata_s3_bucket, f"{metadata_s3_path}/Scanned Cells.txt"
+        ).download_file(scanned_cells_path)
+        s3.Object(
+            metadata_s3_bucket, f"{metadata_s3_path}/Experiment.ini"
+        ).download_file(config_file_path)
 
     # get metadata
     metadata = get_metadata(config_file_path)
@@ -283,14 +329,21 @@ def run_terastitcher(
     stitch_only=False,
     compute_only=False,
 ):
+    """Run Terastitcher commands to fully stitch raw data.
+
+    Args:
+        raw_data_path (str): Path to raw data (VW0 folder for COLM data)
+        stitched_data_path (str): Path to where stitched data will be stored
+        input_s3_path (str): S3 Path to where raw data and metadata live
+        log_s3_path (str, optional): S3 path to store intermediates and XML files for Terastitcher. Defaults to None.
+        stitch_only (bool, optional): Do stitching only if True. Defaults to False.
+        compute_only (bool, optional): Compute alignments only if True. Defaults to False.
+
+    Returns:
+        dict: Metadata associated with this sample from Experiment.ini file (COLM data)
+    """
 
     input_s3_url = S3Url(input_s3_path.strip("/"))
-
-    # generate commands to stitch data using Terastitcher
-    # if stitch_only and not log_s3_path:
-    #     raise("If using previous stitching results, must specify log_s3_path")
-    # download terastitcher files if they arent already on local storage
-    # download_terastitcher_files(log_s3_path, raw_data_path)
 
     if stitch_only:
         do_steps = STITCH_ONLY
@@ -308,9 +361,12 @@ def run_terastitcher(
     )
 
     # run the Terastitcher commands
+    mdata = f"{raw_data_path}/mdata.bin"
     for i in commands:
         print(i)
         subprocess.run(shlex.split(i))
+        if os.path.exists(mdata):
+            os.remove(mdata)
 
     # # upload xml results to log_s3_path if not None
     # # and if not stitch_only

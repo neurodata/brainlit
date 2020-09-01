@@ -5,6 +5,15 @@ import numpy as np
 
 
 def get_mip_at_res(vol, resolution):
+    """Find the mip that is at least a given resolution
+
+    Args:
+        vol (cloudvolume.CloudVoluem): CloudVolume object for desired precomputed volume
+        resolution (int): Desired resolution in nanometers
+
+    Returns:
+        tuple: mip and resolution at that mip
+    """
     tmp_mip = 0
     tmp_res = 0
     for i, scale in enumerate(vol.scales):
@@ -15,6 +24,16 @@ def get_mip_at_res(vol, resolution):
 
 
 def download_data(s3_path, outfile, desired_resolution=15000):
+    """Download whole precomputed volume from S3 at desired resolution
+
+    Args:
+        s3_path (str): S3 path to precomputed volume
+        outfile (str): Path to output file
+        desired_resolution (int, optional): Lowest resolution (in nanometers) at which to download data if desired res isnt available. Defaults to 15000.
+
+    Returns:
+        resolution: Resoluton of downloaded data in microns
+    """
     vol = CloudVolume(s3_path)
     mip_needed, resolution = get_mip_at_res(vol, np.array([desired_resolution] * 3))
     vol = CloudVolume(s3_path, mip=mip_needed, parallel=True)
@@ -39,7 +58,7 @@ if __name__ == "__main__":
     parser.add_argument("outfile", help="name of output file saved as tif stack.")
     parser.add_argument(
         "desired_resolution",
-        help="Desired minimum resolution for downloaded image.",
+        help="Desired minimum resolution for downloaded image in nanometers.",
         nargs="+",
     )
     args = parser.parse_args()

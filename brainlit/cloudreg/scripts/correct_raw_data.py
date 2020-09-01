@@ -1,5 +1,12 @@
+# local imports
+from .util import (
+    tqdm_joblib,
+    chunks,
+    S3Url,
+    get_bias_field,
+)
+
 import glob
-import time
 import os
 from io import BytesIO
 import argparse
@@ -12,21 +19,20 @@ from joblib import Parallel, delayed, cpu_count
 import math
 import tifffile as tf
 import SimpleITK as sitk
-from util import (
-    tqdm_joblib,
-    chunks,
-    imgResample,
-    upload_file_to_s3,
-    S3Url,
-    s3_object_exists,
-    get_bias_field,
-)
 
 
 config = Config(connect_timeout=5, retries={"max_attempts": 5})
 
 
 def sum_tiles(files):
+    """Sum the images in files together
+
+    Args:
+        files (list of str): Local Paths to images to sum
+
+    Returns:
+        np.ndarray: Sum of the images in files
+    """
     raw_tile = np.squeeze(tf.imread(files[0]))
     running_sum = np.zeros(raw_tile.shape, dtype="float")
 
@@ -36,7 +42,14 @@ def sum_tiles(files):
     return running_sum
 
 
-def correct_tile(raw_tile_path, outdir, bias, background_value=None):
+def correct_tile(raw_tile_path, bias, background_value=None):
+    """Apply vignetting corrrection to single tile
+
+    Args:
+        raw_tile_path (str): Path to raw data image
+        bias (np.ndarray): Vignetting correction that is multiplied by image
+        background_value (float, optional): Background value. Defaults to None.
+    """
     # overwrite existing tile
     out_path = raw_tile_path
     raw_tile = np.squeeze(tf.imread(raw_tile_path)).astype("float")
@@ -57,13 +70,29 @@ def correct_tile(raw_tile_path, outdir, bias, background_value=None):
         )
 
 
-def correct_tiles(tiles, outdir, bias, background_value=None):
+def correct_tiles(tiles, bias, background_value=None):
+    """Correct a list of tiles
+
+    Args:
+        tiles (list of str): Paths to raw data images to correct
+        bias (np.ndarray): Vignetting correction to multiply by raw data
+        background_value (float, optional): Background value to subtract from raw data. Defaults to None.
+    """
     for tile in tiles:
-        correct_tile(tile, outdir, bias, background_value)
+        correct_tile(tile, bias, background_value)
 
 
 def get_background_value(raw_data_path):
-    first_plane = np.sort(glob.glob(f"{raw_data_path}/LOC*/*PLN0000*.tiff"))
+    """Estimate background value for COLM data
+
+    Args:
+        raw_data_path (str): Path to raw data
+
+    Returns:
+        float: Estimated value of background in image
+    """
+    # this line finds all the tiles from the first plane of images. only works for COLM
+    first_plane = np.sort(glob.glob(f"{raw_data_path}/*/*PLN0000*.tiff"))
 
     def _mean(image_path):
         return np.mean(tf.imread(image_path))
@@ -85,6 +114,15 @@ def correct_raw_data(
     log_s3_path=None,
     background_correction=True,
 ):
+    """Correct vignetting artifact in raw data
+
+    Args:
+        raw_data_path (str): Path to raw data
+        channel (int): Channel number to prcess
+        subsample_factor (int, optional): Factor to subsample the raw data by to compute vignetting correction. Defaults to 2.
+        log_s3_path (str, optional): S3 path to store intermediates at. Defaults to None.
+        background_correction (bool, optional): If True, subtract estimated background value from all tiles. Defaults to True.
+    """
 
     total_n_jobs = cpu_count()
     # overwrite existing raw data with corrected data
@@ -92,9 +130,10 @@ def correct_raw_data(
 
     # get list of all tiles to correct for  given channel
     all_files = np.sort(glob.glob(f"{raw_data_path}/*/*.tiff"))
+    total_files = len(all_files)
+    background_val = 0
     if background_correction:
         background_val = get_background_value(raw_data_path)
-    total_files = len(all_files)
 
     bias_path = f"{outdir}/CHN0{channel}_bias.tiff"
     if os.path.exists(bias_path):
@@ -140,7 +179,7 @@ def correct_raw_data(
     work = chunks(all_files, files_per_proc)
     with tqdm_joblib(tqdm(desc="Correcting tiles", total=total_n_jobs)) as progress_bar:
         Parallel(n_jobs=total_n_jobs, verbose=10)(
-            delayed(correct_tiles)(files, outdir, bias, background_val)
+            delayed(correct_tiles)(files, bias, background_val)
             for files in work
         )
 

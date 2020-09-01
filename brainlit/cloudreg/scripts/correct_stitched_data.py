@@ -1,15 +1,26 @@
+# local imports
+from .util import imgResample, tqdm_joblib, get_bias_field
+
 import argparse
 from tqdm import tqdm
 import SimpleITK as sitk
 import numpy as np
 from cloudvolume import CloudVolume
 import tinybrain
-from joblib import Parallel, delayed
-
-from util import imgResample, tqdm_joblib, get_bias_field
+from joblib import Parallel, delayed, cpu_count
+from psutil import virtual_memory
+import math
 
 
 def process_slice(bias_slice, z, data_orig_path, data_bc_path):
+    """Correct and upload a single slice of data
+
+    Args:
+        bias_slice (sitk.Image): Slice of illumination correction
+        z (int): Z slice of data to apply correction to
+        data_orig_path (str): S3 path to source data that needs to be corrected
+        data_bc_path (str): S3 path where corrected data will be stored
+    """
     data_vol = CloudVolume(
         data_orig_path, parallel=False, progress=False, fill_missing=True
     )
@@ -39,14 +50,40 @@ def process_slice(bias_slice, z, data_orig_path, data_bc_path):
 
 
 def correct_stitched_data(data_s3_path, out_s3_path, resolution=15, num_procs=12):
+    """Correct illumination inhomogeneity in stitched precomputed data on S3 and upload result back to S3 as precomputed
+
+    Args:
+        data_s3_path (str): S3 path to precomputed volume that needs to be illumination corrected
+        out_s3_path (str): S3 path to store corrected precomputed volume
+        resolution (int, optional): Resolution in microns at which illumination correction is computed. Defaults to 15.
+        num_procs (int, optional): Number of proceses to use when uploading data to S3. Defaults to 12.
+    """
     # create vol
     vol = CloudVolume(data_s3_path)
     mip = 0
     for i in range(len(vol.scales)):
-        # get low res image smaller than 15 um
         if vol.scales[i]["resolution"][0] <= resolution * 1000:
             mip = i
-    vol_ds = CloudVolume(data_s3_path, mip, parallel=True, fill_missing=True)
+    vol_ds = CloudVolume(data_s3_path, mip, parallel=False, fill_missing=True, progress=True)
+
+    # make sure num procs isn't too large for amount of memory needed
+    mem = virtual_memory()
+    num_processes = min(
+        math.floor(
+            mem.total
+            / (
+                (np.prod(vol.scales[0]["size"][:2]))
+                # multiply by bytes per voxel (uint16 = 2 bytes)
+                * 2
+                # fudge factor
+                # need 2 copies of full res image, 1 full res bias, 1 full res corrected image, and image downsampled at 6 resolutions
+                * 2**7
+            )
+        ),
+        cpu_count(),
+    )
+    num_procs = num_processes
+    print(f"using {num_procs} processes for bias correction")
 
     # create new vol if it doesnt exist
     vol_bc = CloudVolume(out_s3_path, info=vol.info.copy())

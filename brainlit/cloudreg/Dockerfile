@@ -20,13 +20,19 @@ ENV SSH_KEY_PATH=/run/secrets/ssh_key
 ENV CV_CRED_PATH=/run/secrets/cloudvolume_credentials
 
 # install CloudReg
-RUN git clone https://github.com/neurodata/CloudReg.git
+ADD https://api.github.com/repos/neurodata/CloudReg/git/refs/heads/master version.json
+RUN git clone https://github.com/neurodata/CloudReg.git --branch master --single-branch
+
 RUN cd CloudReg && \
     pip install -r requirements.txt && \
     pip install --pre SimpleITK --find-links https://github.com/SimpleITK/SimpleITK/releases/tag/v2.0rc1
 
+# need to upgrade this package as bug fix
+RUN pip install --upgrade protobuf
+
 # installed terastitcher binaries are in /usr/local
 # we want terastitcher, teraconverter, mergedisplacements, mdatagenerator
+RUN apt install -y libscalapack-openmpi-dev openmpi-bin
 COPY --from=terastitcher /usr/local/bin/terastitcher /usr/local/bin/teraconverter /usr/local/bin/mdatagenerator /usr/local/bin/mergedisplacements /usr/local/bin/
 
 ADD entrypoint.sh entrypoint.sh
