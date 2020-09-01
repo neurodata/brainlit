@@ -4,7 +4,7 @@ from .visualization import (
     ara_average_data_link,
     ara_annotation_data_link,
     create_viz_link,
-    S3Url
+    S3Url,
 )
 from .download_data import download_data
 from .ingest_image_stack import ingest_image_stack
@@ -18,6 +18,7 @@ import subprocess
 import os
 
 atlas_orientation = "PIR"
+
 
 def get_affine_matrix(
     translation,
@@ -42,7 +43,7 @@ def get_affine_matrix(
     Returns:
         np.ndarray: Returns 4x4 affine matrix representing the given translations and rotations of source data at S3 path
     """
-  
+
     # since neuroglancer uses corner 0 coordinates we need to center the volume at it's center
     vol = CloudVolume(s3_path)
     # volume size in um

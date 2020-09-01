@@ -46,9 +46,7 @@ def colm_pipeline(
 
     # download raw data onto local SSD
     vw0_path = f"{input_s3_url.url}/VW0/"
-    download_raw_data(
-        vw0_path, channel_of_interest, raw_data_path
-    )
+    download_raw_data(vw0_path, channel_of_interest, raw_data_path)
 
     # compute stitching alignments first if you need to
     # download stitching files if they exist at log path

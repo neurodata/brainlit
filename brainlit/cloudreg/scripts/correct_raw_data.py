@@ -179,8 +179,7 @@ def correct_raw_data(
     work = chunks(all_files, files_per_proc)
     with tqdm_joblib(tqdm(desc="Correcting tiles", total=total_n_jobs)) as progress_bar:
         Parallel(n_jobs=total_n_jobs, verbose=10)(
-            delayed(correct_tiles)(files, bias, background_val)
-            for files in work
+            delayed(correct_tiles)(files, bias, background_val) for files in work
         )
 
 

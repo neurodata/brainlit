@@ -64,7 +64,9 @@ def correct_stitched_data(data_s3_path, out_s3_path, resolution=15, num_procs=12
     for i in range(len(vol.scales)):
         if vol.scales[i]["resolution"][0] <= resolution * 1000:
             mip = i
-    vol_ds = CloudVolume(data_s3_path, mip, parallel=False, fill_missing=True, progress=True)
+    vol_ds = CloudVolume(
+        data_s3_path, mip, parallel=False, fill_missing=True, progress=True
+    )
 
     # make sure num procs isn't too large for amount of memory needed
     mem = virtual_memory()
@@ -77,7 +79,7 @@ def correct_stitched_data(data_s3_path, out_s3_path, resolution=15, num_procs=12
                 * 2
                 # fudge factor
                 # need 2 copies of full res image, 1 full res bias, 1 full res corrected image, and image downsampled at 6 resolutions
-                * 2**7
+                * 2 ** 7
             )
         ),
         cpu_count(),

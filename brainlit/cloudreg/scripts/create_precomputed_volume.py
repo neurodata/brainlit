@@ -56,10 +56,7 @@ def create_cloud_volume(
         volume_size=img_size,  # e.g. a cubic millimeter dataset
     )
     vol = CloudVolume(precomputed_path, info=info, parallel=parallel)
-    [
-        vol.add_scale((2 ** i, 2 ** i, 1), chunk_size=chunk_size)
-        for i in range(num_mips)
-    ]
+    [vol.add_scale((2 ** i, 2 ** i, 1), chunk_size=chunk_size) for i in range(num_mips)]
 
     vol.commit_info()
     return vol
@@ -173,7 +170,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     create_precomputed_volume(
-        args.input_path,
-        np.array(args.voxel_size),
-        args.precomputed_path,
+        args.input_path, np.array(args.voxel_size), args.precomputed_path,
     )

@@ -72,7 +72,7 @@ def create_viz_link(
     Returns:
         str : viz link to data
     """
-    
+
     json_data = get_neuroglancer_json(
         s3_layer_paths, affine_matrices, output_resolution
     )
@@ -122,11 +122,12 @@ def get_output_dimensions_json(output_resolution):
     output_json["z"][0] = output_resolution[2]
     return output_json
 
-
     """
     affine_matrix has translations in microns
     output resolution in meters
     """
+
+
 def get_layer_json(s3_layer_path, affine_matrix, output_resolution):
     """Generate Neuroglancer JSON for single layer.
 
