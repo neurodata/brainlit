@@ -31,7 +31,7 @@ OFF = [15, 15, 15]
 @pytest.fixture
 def gen_array():
     nbr = nbrhood.NeighborhoodFeatures(
-        url=url, size=SIZE, offset=[15, 15, 15], segment_url=url_seg
+        url=url, radius=SIZE, offset=[15, 15, 15], segment_url=url_seg
     )
     df_nbr = nbr.fit([2], 5)
     ind = SIZE * 2 + 1

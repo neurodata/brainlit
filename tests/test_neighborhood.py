@@ -42,26 +42,32 @@ def test_init_bad_inputs():
     """Tests that proper errors are raised when bad inputs are given to __init__ method.
     """
     with pytest.raises(TypeError):
-        nbrhood.NeighborhoodFeatures(url=0, size=SIZE, offset=OFF)
+        nbrhood.NeighborhoodFeatures(url=0, radius=SIZE, offset=OFF)
     with pytest.raises(NotImplementedError):
-        nbrhood.NeighborhoodFeatures(url="asdf", size=SIZE, offset=OFF)
+        nbrhood.NeighborhoodFeatures(url="asdf", radius=SIZE, offset=OFF)
     with pytest.raises(TypeError):
-        nbrhood.NeighborhoodFeatures(url=url, size=0.5, offset=OFF)
+        nbrhood.NeighborhoodFeatures(url=url, radius=0.5, offset=OFF)
     with pytest.raises(ValueError):
-        nbrhood.NeighborhoodFeatures(url=url, size=-1, offset=OFF, segment_url=url_seg)
+        nbrhood.NeighborhoodFeatures(
+            url=url, radius=-1, offset=OFF, segment_url=url_seg
+        )
     with pytest.raises(TypeError):
-        nbrhood.NeighborhoodFeatures(url=url, size=SIZE, offset=12, segment_url=url_seg)
+        nbrhood.NeighborhoodFeatures(
+            url=url, radius=SIZE, offset=12, segment_url=url_seg
+        )
     with pytest.raises(TypeError):
-        nbrhood.NeighborhoodFeatures(url=url, size=SIZE, offset=OFF, segment_url=0)
+        nbrhood.NeighborhoodFeatures(url=url, radius=SIZE, offset=OFF, segment_url=0)
     with pytest.raises(NotImplementedError):
-        nbrhood.NeighborhoodFeatures(url=url, size=SIZE, offset=OFF, segment_url="asdf")
+        nbrhood.NeighborhoodFeatures(
+            url=url, radius=SIZE, offset=OFF, segment_url="asdf"
+        )
 
 
 def test_fit_bad_inputs():
     """Tests that proper errors are raised when bad inputs are given to fit method.
     """
     nbr = nbrhood.NeighborhoodFeatures(
-        url=url, size=SIZE, offset=[15, 15, 15], segment_url=url_seg
+        url=url, radius=SIZE, offset=[15, 15, 15], segment_url=url_seg
     )
     with pytest.raises(TypeError):
         nbr.fit(seg_ids=1, num_verts=5, file_path="demo", batch_size=1000)
@@ -78,7 +84,7 @@ def test_neighborhood():
     """Tests that neighborhood data is generated correctly.
     """
     nbr = nbrhood.NeighborhoodFeatures(
-        url=url, size=1, offset=[15, 15, 15], segment_url=url_seg
+        url=url, radius=1, offset=[15, 15, 15], segment_url=url_seg
     )
     df_nbr = nbr.fit([2], 5)
     assert df_nbr.shape == (10, 30)  # 5on, 5off for each swc
@@ -86,7 +92,7 @@ def test_neighborhood():
 
 
 # def test_linear_features():
-#     lin = linear_features.LinearFeatures(url=URL, size=1, offset=[15, 15, 15], segment_url=URL+"_segments")
+#     lin = linear_features.LinearFeatures(url=URL, radius=1, offset=[15, 15, 15], segment_url=URL+"_segments")
 #     lin.add_filter("gaussian", sigma=[1, 1, 0.3])
 #     df_lin = lin.fit([2, 7], 5)
 #     assert df_lin.shape == (20, 4)
@@ -98,7 +104,7 @@ def test_neighborhood():
 
 
 # def test_add_filter():
-#     lin = linear_features.LinearFeatures(url=URL, size=1, offset=[15, 15, 15], segment_url=URL+"_segments")
+#     lin = linear_features.LinearFeatures(url=URL, radius=1, offset=[15, 15, 15], segment_url=URL+"_segments")
 #     with pytest.raises(ValueError):
 #         lin.add_filter("asdf")
 #     lin.add_filter("gaussian gradient", sigma=[1, 1, 0.3])
@@ -117,7 +123,7 @@ def test_file_write():
         os.remove(f)
 
     nbr = nbrhood.NeighborhoodFeatures(
-        url=url, size=1, offset=[15, 15, 15], segment_url=url_seg
+        url=url, radius=1, offset=[15, 15, 15], segment_url=url_seg
     )
     nbr.fit([2], 5, file_path="test", batch_size=10)
 
@@ -140,7 +146,7 @@ def test_file_write():
 #         os.remove(f)
 
 #     nbr = nbrhood.NeighborhoodFeatures(
-#         url=URL, size=1, offset=[15, 15, 15], segment_url=URL + "_segments"
+#         url=URL, radius=1, offset=[15, 15, 15], segment_url=URL + "_segments"
 #     )
 #     nbr.fit(seg_ids=[2, 7], num_verts=4, file_path="test", batch_size=4, n_jobs=2)
 #     files = sorted(glob.glob("*.feather"))
@@ -154,7 +160,7 @@ def test_file_write():
 #     ]
 
 #     nbr = nbrhood.NeighborhoodFeatures(
-#         url=URL, size=1, offset=[15, 15, 15], segment_url=URL + "_segments"
+#         url=URL, radius=1, offset=[15, 15, 15], segment_url=URL + "_segments"
 #     )
 #     nbr.fit(seg_ids=[2, 7], num_verts=2, file_path="test", batch_size=6, n_jobs=2)
 #     files = sorted(glob.glob("*.feather"))
