@@ -13,7 +13,7 @@ from pathlib import Path
 
 URL = str(Path(__file__).resolve().parents[0] / "upload")
 # read in s3 path to dataframe
-s3_path = "s3://mouse-light-viz/precomputed_volumes/brain1"
+s3_path = "s3://mouse-light-viz/precomputed_volumes/brain1_segments"
 df_s3 = swc.read_s3(s3_path, seg_id=2, mip=6)
 
 
