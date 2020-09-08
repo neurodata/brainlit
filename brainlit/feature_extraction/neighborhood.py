@@ -48,7 +48,6 @@ class NeighborhoodFeatures(BaseFeatures):
         return dict(enumerate(img.flatten()))
 
 
-# TOMMY REVIEW
 def subsample(
     arr: np.ndarray, orig_shape: List[int], dest_shape: List[int]
 ) -> np.ndarray:

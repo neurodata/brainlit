@@ -6,7 +6,7 @@ import networkx as nx
 from cloudvolume import CloudVolume, Skeleton
 from io import StringIO
 
-# TOMMY REVIEW
+
 def read_swc(path):
     """Read a single swc file
 
@@ -69,7 +69,6 @@ def read_swc(path):
     return df, offset, color, cc, branch
 
 
-# TOMMY REVIEW
 def read_swc_offset(path):
     df, offset, color, cc, branch = read_swc(path)
     df["x"] = df["x"] + offset[0]
@@ -79,7 +78,6 @@ def read_swc_offset(path):
     return df, color, cc, branch
 
 
-# TOMMY REVIEW
 def append_df(cumulative, new):
     """Append the dataframe of one fragment to the dataframe of one or more other fragments
 
@@ -122,7 +120,6 @@ def append_df(cumulative, new):
     return cumulative.reset_index(drop=True)
 
 
-# TOMMY REVIEW
 def read_swc_dir(path, nFiles=1):
     """Read all swc files in a directory and create a large dataframe of all the results
 
@@ -158,7 +155,6 @@ def read_swc_dir(path, nFiles=1):
     return df_cumulative
 
 
-# TOMMY REVIEW
 def bbox_vox(df):
     """Returns the coordinate of a box center and its dimensions that contain fragments
 
@@ -178,7 +174,6 @@ def bbox_vox(df):
     return start, end
 
 
-# TOMMY REVIEW
 def read_s3(s3_path, seg_id, mip):
     """Read a s3 bucket path to a skeleton object
     into a pandas dataframe.
@@ -227,7 +222,6 @@ def read_s3(s3_path, seg_id, mip):
     return df
 
 
-# TOMMY REVIEW
 def generate_df_subset(swc_df, vox_in_img_list):
     """Read a new subset of swc dataframe in coordinates in img spacing.
 
@@ -256,7 +250,6 @@ def generate_df_subset(swc_df, vox_in_img_list):
     return df_new
 
 
-# TOMMY REVIEW
 def space_to_voxel(spatial_coord, spacing, origin=np.array([0, 0, 0])):
     """Converts coordinate from spatial units to voxel units.
 
@@ -280,7 +273,6 @@ def space_to_voxel(spatial_coord, spacing, origin=np.array([0, 0, 0])):
     return voxel_coord
 
 
-# TOMMY REVIEW
 def swc_to_voxel(df, spacing, origin=np.array([0, 0, 0])):
     """Converts coordinates in pd.DataFrame representing swc from spatial units
     to voxel units
@@ -318,7 +310,6 @@ def swc_to_voxel(df, spacing, origin=np.array([0, 0, 0])):
     return df_voxel
 
 
-# TOMMY REVIEW
 def df_to_graph(df_voxel):
     """Converts dataframe of swc in voxel coordinates into a directed graph
 
@@ -355,7 +346,6 @@ def df_to_graph(df_voxel):
     return G
 
 
-# TOMMY REVIEW
 def get_sub_neuron(G, bounding_box):
     """Returns sub-neuron with node coordinates bounded by start and end
 
@@ -404,7 +394,6 @@ def get_sub_neuron(G, bounding_box):
     return G_sub
 
 
-# TOMMY REVIEW
 def graph_to_paths(G):
     """Converts neuron represented as a directed graph with no cycles into a
     list of paths.
@@ -447,7 +436,6 @@ def graph_to_paths(G):
     return np.array(paths, dtype="object")
 
 
-# TOMMY REVIEW
 def get_bfs_subgraph(G, node_id, depth, df=None):
     """
     Creates a spanning subgraph from a seed node and parent graph using BFS.
@@ -484,7 +472,6 @@ def get_bfs_subgraph(G, node_id, depth, df=None):
     return G_sub, tree
 
 
-# TOMMY REVIEW
 def swc2skeleton(swc_file, origin=None):
     """Converts swc file into Skeleton object
 

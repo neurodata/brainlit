@@ -23,7 +23,7 @@ from brainlit.utils.util import (
 
 Bounds = Union[Bbox, Tuple[int, int, int, int, int, int]]
 
-# TOMMY REVIEW
+
 class NeuroglancerSession:
     """Utility class which pulls and pushes data.
 
@@ -99,7 +99,6 @@ class NeuroglancerSession:
         ).astype(int)
         return voxel
 
-    # TOMMY REVIEW
     def set_url_segments(self, seg_url: str):
         """Sets the url_segments and cv_segments attributes.
 
@@ -236,7 +235,6 @@ class NeuroglancerSession:
         img = self.pull_bounds_img(bounds)
         return img, bounds, vox_in_img_list
 
-    # TOMMY REVIEW
     def pull_chunk(
         self, seg_id: int, v_id: int, radius: int = 0,
     ) -> Tuple[np.ndarray, Bbox, Tuple[int, int, int]]:
@@ -273,7 +271,6 @@ class NeuroglancerSession:
         vox_in_img = voxel - np.array(bounds.to_list()[:3])
         return np.squeeze(np.array(img)), bounds, vox_in_img
 
-    # TOMMY REVIEW
     def pull_bounds_img(self, bounds: Bounds) -> np.ndarray:
         """Pull a volume around a specified bounding box. Works on image channels.
 
