@@ -40,7 +40,7 @@ class NeighborhoodFeatures(BaseFeatures):
         offset: List[int] = [15, 15, 15],
         segment_url: Optional[str] = None,
     ):
-        super().__init__(url=url, size=size, offset=offset, segment_url=segment_url)
+        super().__init__(url=url, size=radius, offset=offset, segment_url=segment_url)
 
     def _convert_to_features(self, img: np.ndarray) -> Dict:
         """Computes features from image data by flattening the image.
