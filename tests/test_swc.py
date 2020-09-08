@@ -13,8 +13,8 @@ from pathlib import Path
 
 URL = str(Path(__file__).resolve().parents[0] / "upload")
 # read in s3 path to dataframe
-s3_path = "s3://mouse-light-viz/precomputed_volumes/brain1_segments"
-df_s3 = swc.read_s3(s3_path, seg_id=2, mip=1)
+s3_path = "s3://mouse-light-viz/precomputed_volumes/brain1"
+df_s3 = swc.read_s3(s3_path, seg_id=2, mip=6)
 
 
 # read in swc file to dataframe
@@ -37,8 +37,8 @@ paths = swc.graph_to_paths(G)
 paths_s3 = swc.graph_to_paths(G_s3)
 
 # create a subset of the dataframe
-url = "s3://mouse-light-viz/precomputed_volumes/brain1_lowres"
-mip = 1
+url = "s3://mouse-light-viz/precomputed_volumes/brain1"
+mip = 6
 ngl = NeuroglancerSession(url, mip=mip, url_segments=url + "_segments")
 buffer = 10
 subneuron_df = df_s3[0:5]
