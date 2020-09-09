@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+  #!/usr/bin/env bash
 
 mkdir -p ~/.cloudvolume
 mkdir -p ~/.cloudvolume/secrets

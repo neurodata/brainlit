@@ -1,13 +1,7 @@
 **/.DS_Store
 data/test_*
-data/data_octree/1/
-data/data_octree/2/
-data/data_octree/3/
-data/data_octree/4/
-data/data_octree/5/
-data/data_octree/6/
-data/data_octree/7/
-data/data_octree/8/
+data/upload*
+docs/notebooks/pipelines/demo*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

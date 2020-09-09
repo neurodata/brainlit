@@ -64,7 +64,7 @@ def read_swc(path):
         path,
         names=["sample", "structure", "x", "y", "z", "r", "parent"],
         skiprows=header_length,
-        delim_whitespace=True,
+        delimiter=" ",
     )
     return df, offset, color, cc, branch
 
@@ -212,7 +212,8 @@ def read_s3(s3_path, seg_id, mip):
         string_io,
         names=["sample", "structure", "x", "y", "z", "r", "parent"],
         skiprows=h_len,
-        delim_whitespace=True,
+        sep=" "
+        # delim_whitespace=True,
     )
     res = cv.scales[mip]["resolution"]
     df["x"] = np.round(df["x"] / res[0])
@@ -432,7 +433,7 @@ def graph_to_paths(G):
 
         paths.append(path)
 
-    return paths
+    return np.array(paths, dtype="object")
 
 
 def get_bfs_subgraph(G, node_id, depth, df=None):

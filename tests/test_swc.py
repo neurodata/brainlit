@@ -40,7 +40,7 @@ paths_s3 = swc.graph_to_paths(G_s3)
 url = "s3://mouse-light-viz/precomputed_volumes/brain1_lowres"
 mip = 1
 ngl = NeuroglancerSession(url, mip=mip, url_segments=url + "_segments")
-buffer = [10, 10, 10]
+buffer = 10
 subneuron_df = df_s3[0:5]
 vertex_list = subneuron_df["sample"].array
 img, bounds, vox_in_img_list = ngl.pull_vertex_list(
