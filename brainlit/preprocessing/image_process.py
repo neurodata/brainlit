@@ -3,18 +3,19 @@ from skimage.measure import label
 import scipy.ndimage as ndi
 import matplotlib.pyplot as plt
 from itertools import product
+from typing import List, Optional
 
 
 def gabor_filter(
-    input,
-    sigma,
-    phi,
-    frequency,
-    offset=0.0,
-    output=None,
-    mode="reflect",
-    cval=0.0,
-    truncate=4.0,
+    input: np.ndarray,
+    sigma: Union(float, List[float]),
+    phi: Union(float, List[float]),
+    frequency: float,
+    offset: float = 0.0,
+    output: Optional(Union(np.ndarray, np.dtype)),
+    mode: str = "reflect",
+    cval: float = 0.0,
+    truncate: float = 4.0,
 ):
     """Multidimensional Gabor filter. A gabor filter
     is an elementwise product between a Gaussian 
