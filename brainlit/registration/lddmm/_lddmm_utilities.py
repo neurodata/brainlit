@@ -25,7 +25,7 @@ from scipy.ndimage import gaussian_filter
 
 def _validate_scalar_to_multi(value, size=None, dtype=None):
     """
-    If value's length is 1, upcast it to match size. 
+    If value's length is 1, upcast it to match size.
     Otherwise, if it does not match size, raise error.
 
     If size is not provided, cast to a 1-dimensional np.ndarray.
@@ -98,13 +98,13 @@ def _validate_ndarray(
     required_shape=None,
 ):
     """
-    Cast (a copy of) array to a np.ndarray if possible and return it 
+    Cast (a copy of) array to a np.ndarray if possible and return it
     unless it is noncompliant with minimum_ndim, required_ndim, and dtype.
-    
+
     Note: the following checks and validations are performed in order.
-    
+
     If required_ndim is None or 0, _validate_ndarray will accept any object.
-    
+
     array is cast to an np.ndarray of type dtype.
 
     If minimum_ndim is provided and array.ndim < minimum_ndim, array.shape is left-padded by 1's until minimum_ndim is satisfied.
@@ -112,9 +112,9 @@ def _validate_ndarray(
     If required_ndim is provided and array.ndim != required_ndim, an exception is raised.
 
     If forbid_object_dtype == True and array.dtype == object, an exception is raised, unless dtype is provided as object.
-    
+
     If a shape is provided to broadcast_to_shape, array is broadcasted to that shape.
-    
+
     If a shape is provided to reshape_to_shape, array is reshaped to that shape.
 
     If a shape is provided to required_shape, if the shape does not match this shape then an exception is raised.
@@ -234,7 +234,7 @@ def _validate_resolution(resolution, ndim, dtype=float):
 
 def _compute_axes(shape, resolution=1, origin="center"):
     """
-    Returns the real_axes defining an image with the given shape 
+    Returns the real_axes defining an image with the given shape
     at the given resolution as a list of numpy arrays.
     """
 
@@ -272,7 +272,7 @@ def _compute_axes(shape, resolution=1, origin="center"):
 
 def _compute_coords(shape, resolution=1, origin="center"):
     """
-    Returns the real_coordinates of an image with the given shape 
+    Returns the real_coordinates of an image with the given shape
     at the given resolution as a single numpy array of shape (*shape, len(shape)).
     """
 
@@ -370,7 +370,7 @@ def resample(
 ):
     """
     Resamples image from an old resolution to a new resolution.
-    
+
     Parameters
     ----------
         image: np.ndarray
@@ -391,7 +391,7 @@ def resample(
             If True, this implies that the last dimension of image is not a spatial dimension and not subject to interpolation. By default False.
         anti_aliasing: bool, optional
             If True, applies a gaussian filter across dimensions to be downsampled before interpolating. By default True.
-    
+
     Returns
     -------
     np.ndarray

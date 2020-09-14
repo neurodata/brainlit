@@ -251,7 +251,9 @@ def compute_regisration_accuracy(
             matlab -nodisplay -nosplash -nodesktop -r \"addpath(\'{base_path}\');Aname=\'{affine_path}\';vname=\'{velocity_path}\';v_size=[{v_size}];points=[{points_string}];points_t = transform_points(points,Aname,vname,v_size,\'atlas\');save(\'./transformed_points.mat\',\'points_t\');exit;\"
         """
         print(matlab_command)
-        subprocess.run(shlex.split(matlab_command),)
+        subprocess.run(
+            shlex.split(matlab_command),
+        )
 
         # transformed_points.m created now
         points_t = loadmat(transformed_points_path)["points_t"]
