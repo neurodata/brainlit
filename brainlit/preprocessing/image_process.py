@@ -17,7 +17,7 @@ def gabor_filter(
     truncate=4.0,
 ):
     """Multidimensional Gabor filter. A gabor filter
-    is an elementwise product between a Gaussian 
+    is an elementwise product between a Gaussian
     and a complex exponential.
 
     Parameters
@@ -35,15 +35,15 @@ def gabor_filter(
         is a sequence of length n-1. Convention follows
         https://en.wikipedia.org/wiki/N-sphere#Spherical_coordinates.
     frequency : scalar
-        Frequency of the complex exponential. Units are revolutions/voxels. 
+        Frequency of the complex exponential. Units are revolutions/voxels.
     offset : scalar
         Phase shift of the complex exponential. Units are radians.
     output : array or dtype, optional
-        The array in which to place the output, or the dtype of the returned array. 
+        The array in which to place the output, or the dtype of the returned array.
         By default an array of the same dtype as input will be created. Only the real component will be saved
         if output is an array.
     mode : {‘reflect’, ‘constant’, ‘nearest’, ‘mirror’, ‘wrap’}, optional
-        The mode parameter determines how the input array is extended beyond its boundaries. 
+        The mode parameter determines how the input array is extended beyond its boundaries.
         Default is ‘reflect’.
     cval : scalar, optional
         Value to fill past edges of input if mode is ‘constant’. Default is 0.0.
@@ -54,20 +54,20 @@ def gabor_filter(
     Returns
     -------
     real, imaginary : arrays
-        Returns real and imaginary responses, arrays of same 
+        Returns real and imaginary responses, arrays of same
         shape as `input`.
 
     Notes
     -----
     The multidimensional filter is implemented by creating
     a gabor filter array, then using the convolve method.
-    Also, sigma specifies the standard deviations of the 
+    Also, sigma specifies the standard deviations of the
     Gaussian along the coordinate axes, and the Gaussian
     is not rotated. This is unlike
     skimage.filters.gabor, whose Gaussian is
     rotated with the complex exponential.
     The reasoning behind this design choice is that
-    sigma can be more easily designed to deal with 
+    sigma can be more easily designed to deal with
     anisotropic voxels.
 
     Examples
@@ -85,7 +85,7 @@ def gabor_filter(
             [ 9, 10, 12, 13, 14],
             [16, 18, 19, 21, 22],
             [24, 25, 27, 28, 30],
-            [29, 30, 32, 34, 35]]), 
+            [29, 30, 32, 34, 35]]),
      array([[ 0,  0, -1,  0,  0],
             [ 0,  0, -1,  0,  0],
             [ 0,  0, -1,  0,  0],

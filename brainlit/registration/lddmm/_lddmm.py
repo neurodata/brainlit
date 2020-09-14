@@ -424,7 +424,7 @@ class _Lddmm:
     def register(self):
         """
         Register the template to the target using the current state of the attributes.
-        
+
         Return a dictionary of relevant quantities most notably including the transformations:
             phi_inv_affine_inv is the position field that maps the template to the target.
             affine_phi is the position field that maps the target to the template.
@@ -735,25 +735,25 @@ class _Lddmm:
 
     def _compute_contrast_map(self):
         """
-            Compute contrast_coefficients mapping deformed_template to target.
+        Compute contrast_coefficients mapping deformed_template to target.
 
-            Accesses attributes:
-                target
-                target_resolution
-                deformed_template
-                spatially_varying_contrast_map
-                sigma_matching
-                contrast_order
-                sigma_contrast
-                contrast_iterations
-                matching_weights
-                contrast_polynomial_basis
-                contrast_coefficients
+        Accesses attributes:
+            target
+            target_resolution
+            deformed_template
+            spatially_varying_contrast_map
+            sigma_matching
+            contrast_order
+            sigma_contrast
+            contrast_iterations
+            matching_weights
+            contrast_polynomial_basis
+            contrast_coefficients
 
-            Updates attributes:
-                contrast_polynomial_basis
-                contrast_coefficients
-            """
+        Updates attributes:
+            contrast_polynomial_basis
+            contrast_coefficients
+        """
 
         # Update self.contrast_polynomial_basis.
         for power in range(self.contrast_order + 1):
@@ -869,8 +869,8 @@ class _Lddmm:
             deformed_template_ravel = np.ravel(self.deformed_template)
             target_ravel = np.ravel(self.target)
             matching_weights_ravel = np.ravel(self.matching_weights)
-            contrast_polynomial_basis_semi_ravel = self.contrast_polynomial_basis.reshape(
-                self.target.size, -1
+            contrast_polynomial_basis_semi_ravel = (
+                self.contrast_polynomial_basis.reshape(self.target.size, -1)
             )  # A view, not a copy.
 
             # Create intermediate composites.
@@ -1425,7 +1425,7 @@ def lddmm_register(
 ):
     """
     Compute a registration between template and target, to be applied with lddmm_transform_image.
-    
+
     Parameters
     ----------
         template: np.ndarray
@@ -1437,12 +1437,12 @@ def lddmm_register(
         target_resolution: float, seq, optional
             A scalar or list of scalars indicating the resolution of the target. Overrides 0 input. By default 1.
         multiscales: float, seq, optional
-            A scalar, list of scalars, or list of lists or np.ndarray of scalars, determining the levels of downsampling at which the registration should be performed before moving on to the next. 
-            Values must be either all at least 1, or all at most 1. Both options are interpreted as downsampling. For example, multiscales=[10, 3, 1] will result in the template and target being downsampled by a factor of 10 and registered. 
-            This registration will be upsampled and used to initialize another registration of the template and target downsampled by 3, and then again on the undownsampled data. multiscales=[1/10, 1/3, 1] is equivalent. 
-            Alternatively, the scale for each dimension can be specified, e.g. multiscales=[ [10, 5, 5], [3, 3, 3], 1] for a 3D registration will result in the template and target downsampled by [10, 5, 5], then [3, 3, 3], then [1, 1, 1]. 
-            If provided with more than 1 value, all following arguments with the exceptions of initial_affine, initial_velocity_fields, and initial_contrast_coefficients, 
-            which may be provided for the first value in multiscales, may optionally be provided as sequences with length equal to the number of values provided to multiscales. Each such value is used at the corresponding scale. 
+            A scalar, list of scalars, or list of lists or np.ndarray of scalars, determining the levels of downsampling at which the registration should be performed before moving on to the next.
+            Values must be either all at least 1, or all at most 1. Both options are interpreted as downsampling. For example, multiscales=[10, 3, 1] will result in the template and target being downsampled by a factor of 10 and registered.
+            This registration will be upsampled and used to initialize another registration of the template and target downsampled by 3, and then again on the undownsampled data. multiscales=[1/10, 1/3, 1] is equivalent.
+            Alternatively, the scale for each dimension can be specified, e.g. multiscales=[ [10, 5, 5], [3, 3, 3], 1] for a 3D registration will result in the template and target downsampled by [10, 5, 5], then [3, 3, 3], then [1, 1, 1].
+            If provided with more than 1 value, all following arguments with the exceptions of initial_affine, initial_velocity_fields, and initial_contrast_coefficients,
+            which may be provided for the first value in multiscales, may optionally be provided as sequences with length equal to the number of values provided to multiscales. Each such value is used at the corresponding scale.
             Additionally, template_resolution and target_resolution cannot be provided for each scale in multiscales. Rather, they are given once to indicate the resolution of the template and target as input.
             multiscales should be provided as descending values. By default 1.
         num_iterations: int, optional
@@ -1454,13 +1454,13 @@ def lddmm_register(
         affine_stepsize: float, optional
             The unitless stepsize for affine adjustments. Should be between 0 and 1. By default 0.3.
         deformative_stepsize: float, optional
-            The stepsize for deformative adjustments. Optimal values are problem-specific. Setting preconditioner_velocity_smooth_length increases the appropriate value of deformative_stepsize. 
+            The stepsize for deformative adjustments. Optimal values are problem-specific. Setting preconditioner_velocity_smooth_length increases the appropriate value of deformative_stepsize.
             If equal to 0 then the result is affine-only registration. By default 0.
         fixed_affine_scale: float, optional
             The scale to impose on the affine at all iterations. If None, no scale is imposed. Otherwise, this has the effect of making the affine always rigid. By default None.
         sigma_regularization: float, optional
-            A scalar indicating the freedom to deform. Small values put harsher constraints on the smoothness of a deformation. 
-            With sufficiently large values, the registration will overfit any noise in the target, leading to unrealistic deformations. However, this may still be appropriate with a small num_iterations. 
+            A scalar indicating the freedom to deform. Small values put harsher constraints on the smoothness of a deformation.
+            With sufficiently large values, the registration will overfit any noise in the target, leading to unrealistic deformations. However, this may still be appropriate with a small num_iterations.
             Overrides 0 input. By default np.inf.
         velocity_smooth_length: float, optional
             The length scale of smoothing of the velocity_fields in physical units. Affects the optimum velocity_fields smoothness. By default 2 * np.max(self.template_resolution).
@@ -1481,11 +1481,11 @@ def lddmm_register(
         contrast_smooth_length: float, optional
             The length scale of smoothing of the contrast_coefficients if spatially_varying_contrast_map == True. Overrides 0 input. By default 2 * np.max(self.target_resolution).
         sigma_matching: float, optional
-            An estimate of the spread of the noise in the target, 
-            representing the tradeoff between the regularity and accuracy of the registration, where a smaller value should result in a less smooth, more accurate result. 
+            An estimate of the spread of the noise in the target,
+            representing the tradeoff between the regularity and accuracy of the registration, where a smaller value should result in a less smooth, more accurate result.
             Typically it should be set to an estimate of the standard deviation of the noise in the image, particularly with artifacts. Overrides 0 input. By default the standard deviation of the target.
         classify_and_weight_voxels: bool, optional
-            If True, artifacts and background are jointly classified with registration using sigma_artifact, artifact_prior, sigma_background, and background_prior. 
+            If True, artifacts and background are jointly classified with registration using sigma_artifact, artifact_prior, sigma_background, and background_prior.
             Artifacts refer to excessively bright voxels while background refers to excessively dim voxels. By default False.
         sigma_artifact: float, optional
             The level of expected variation between artifact and non-artifact intensities. Overrides 0 input. By default 5 * sigma_matching.
@@ -1498,9 +1498,9 @@ def lddmm_register(
         initial_affine: np.ndarray, optional
             The affine array that the registration will begin with. By default np.eye(template.ndim + 1).
         initial_contrast_coefficients: np.ndarray, optional
-            The contrast coefficients that the registration will begin with. 
-            If None, the 0th order coefficient(s) are set to np.mean(self.target) - np.mean(self.template) * np.std(self.target) / np.std(self.template), 
-            if self.contrast_order > 1, the 1st order coefficient(s) are set to np.std(self.target) / np.std(self.template), 
+            The contrast coefficients that the registration will begin with.
+            If None, the 0th order coefficient(s) are set to np.mean(self.target) - np.mean(self.template) * np.std(self.target) / np.std(self.template),
+            if self.contrast_order > 1, the 1st order coefficient(s) are set to np.std(self.target) / np.std(self.template),
             and all others are set to zero. By default None.
         initial_velocity_fields: np.ndarray, optional
             The velocity fields that the registration will begin with. By default all zeros.
@@ -1508,21 +1508,21 @@ def lddmm_register(
             A boolean flag indicating whether to accumulate additional intermediate values and display informative plots for calibration purposes. By default False.
         track_progress_every_n: int, optional
             If positive, a progress update will be printed every track_progress_every_n iterations of registration. By default 0.
-    
+
     Example:
         >>> import numpy as np
         >>> from scipy.ndimage import rotate
         >>> from skimage.registration import lddmm_register, lddmm_transform_image
-        >>> # 
+        >>> #
         >>> # Define images. The template is registered to the target image but both transformations are returned.
         >>> # template is a binary ellipse with semi-radii 5 and 8 in dimensions 0 and 1. The overall shape is (19, 25).
         >>> # target is a 30 degree rotation of template in the (1,2) plane.
-        >>> # 
+        >>> #
         >>> template = np.array([[[(col-12)**2/8**2 + (row-9)**2/5**2 <= 1 for col in range(25)] for row in range(19)]]*2, int)
         >>> target = rotate(template, 30, (1,2))
-        >>> # 
+        >>> #
         >>> # Register the template to the target, then deform the template and target to match the other.
-        >>> # 
+        >>> #
         >>> lddmm_dict = lddmm_register(template, target, deformative_stepsize = 0.5)
         >>> deformed_target = lddmm_transform_image(target, deform_to='template', **lddmm_dict)
         >>> deformed_template = lddmm_transform_image(template, deform_to='target', **lddmm_dict)
@@ -1961,7 +1961,7 @@ def lddmm_transform_image(
     **unused_kwargs,
 ):
     """
-    Apply the transform, or position field affine_phi or phi_inv_affine_inv, to the subject 
+    Apply the transform, or position field affine_phi or phi_inv_affine_inv, to the subject
     to deform it to either the template or the target.
 
     The user is expected to provide subject, and optionally subject_resolution, deform_to, and output_resolution.
@@ -1978,14 +1978,14 @@ def lddmm_transform_image(
         subject_resolution: float, seq, optional
             The resolution of subject in each dimension, or just one scalar to indicate isotropy. By default 1.
         output_resolution: float, seq, optional
-            The resolution of the output deformed_subject in each dimension, or just one scalar to indicate isotropy, 
+            The resolution of the output deformed_subject in each dimension, or just one scalar to indicate isotropy,
             or None to indicate the resolution of template or target based on deform_to. Cannot be provided along with output_shape. By default None.
         output_shape: seq, optional
             The shape of the output deformed_subject, or None to indicate the shape of the template or target based on deform_to. Cannot be provided along with output_resolution. By default None.
         deform_to: str, optional
             Either "template" or "target", indicating which position field to apply to subject. By default "template".
         extrapolation_fill_value: float, optional
-            The fill_value kwarg passed to scipy.interpolate.interpn. 
+            The fill_value kwarg passed to scipy.interpolate.interpn.
             If None, this is set to a low quantile of the subject's 10**-subject.ndim quantile to estimate background. By default None.
         affine_phi: np.ndarray, optional
             The position field in the shape of the template for deforming images to the template space. By default None.
@@ -2065,7 +2065,9 @@ def lddmm_transform_image(
 
 
 def _transform_points(
-    points, position_field, position_field_resolution,
+    points,
+    position_field,
+    position_field_resolution,
 ):
 
     # Validate inputs.
@@ -2114,7 +2116,7 @@ def lddmm_transform_points(
     Parameters
     ----------
         points: np.ndarray
-            The points in either the template space or the target space to be transformed into the other space, in physical units centered on the image. 
+            The points in either the template space or the target space to be transformed into the other space, in physical units centered on the image.
             The last dimension of points must have length equal to the dimensionality of the template and target.
         deform_to: str, optional
             Either "template" or "target" indicating whether to transform points to the template space or the target space. By default "template".

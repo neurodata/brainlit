@@ -11,10 +11,10 @@ from ..lddmm._lddmm_utilities import _validate_ndarray
 
 def correct_bias_field(image, correct_at_scale=1, as_float32=True, **kwargs):
     """
-    Shifts image such that its minimum value is 1, computes the bias field after downsampling by correct_at_scale, 
+    Shifts image such that its minimum value is 1, computes the bias field after downsampling by correct_at_scale,
     upsamples this bias field and applies it to the shifted image, then undoes the shift and returns the result.
     Computes bias field using sitk.N4BiasFieldCorrection (http://bit.ly/2oFwAun).
-    
+
     Args:
         image (np.ndarray): The image to be bias corrected.
         correct_at_scale (float, optional): The scale by which the shape of image is reduced before computing the bias. Defaults to 1.
@@ -22,7 +22,7 @@ def correct_bias_field(image, correct_at_scale=1, as_float32=True, **kwargs):
 
     Kwargs:
         Any additional keyword arguments overwrite the default values passed to sitk.N4BiasFieldCorrection.
-    
+
     Returns:
         np.ndarray: A copy of image after bias correction.
     """
@@ -71,7 +71,8 @@ def correct_bias_field(image, correct_at_scale=1, as_float32=True, **kwargs):
     sitk_maskImage = N4BiasFieldCorrection_kwargs["maskImage"].astype(np.uint8)
     sitk_maskImage = sitk.GetImageFromArray(sitk_maskImage)
     N4BiasFieldCorrection_kwargs.update(
-        image=sitk_image, maskImage=sitk_maskImage,
+        image=sitk_image,
+        maskImage=sitk_maskImage,
     )
     bias_corrected_downsampled_image = sitk.N4BiasFieldCorrection(
         *N4BiasFieldCorrection_kwargs.values()
@@ -106,22 +107,22 @@ def remove_grid_artifact(
 ):
     """
     Remove the grid artifact from tiled data.
-    
+
     Args:
         image (np.ndarray): The image with a grid artifact.
         z_axis (int, optional): The axis along which the tiles are stacked. Defaults to 0.
-        sigma_blur (float, optional): The size of the blur used to compute the bias for grid edges in units of voxels. 
+        sigma_blur (float, optional): The size of the blur used to compute the bias for grid edges in units of voxels.
             Should be approximately the size of the tiles. Defaults to np.ceil(np.sqrt(np.min(image.shape))).
-        mask (np.ndarray, str, NoneType, optional): A mask of the valued voxels in the image. 
+        mask (np.ndarray, str, NoneType, optional): A mask of the valued voxels in the image.
             Supported values are:
-                a np.ndarray with a shape corresponding to image.shape, 
-                None, indicating no mask (i.e. all voxels are considered in the artifact correction), 
+                a np.ndarray with a shape corresponding to image.shape,
+                None, indicating no mask (i.e. all voxels are considered in the artifact correction),
                 'Otsu', indicating that the Otsu threshold will be used to identify foreground and background voxels.
             Defaults to 'Otsu'.
         otsu_nbins (int, optional): The number of bins used to calculate the histogram in skimage.filters.threshold_otsu if mask == 'Otsu'. Defaults to 256.
         otsu_binary_closing_radius (int, optional): The radius of the structuring element given to binary_close if mask == 'Otsu'. Defaults to np.ceil(np.sqrt(np.min(image.shape)) / 3).
         otsu_background_is_dim (bool, optional): If True and mask == 'Otsu', when computing the mask it is assumed that the background will have a lower value than the foreground. Defaults to True.
-    
+
     Returns:
         np.ndarray: A copy of image with its grid artifact removed.
     """

@@ -440,7 +440,12 @@ class Test_resample:
 
     def test_zero_origin_upsample(self):
         kwargs = dict(
-            image=np.array([[0, 1, 2], [3, 4, 5],]),
+            image=np.array(
+                [
+                    [0, 1, 2],
+                    [3, 4, 5],
+                ]
+            ),
             new_resolution=1 / 2,
             old_resolution=1,
             err_to_larger=True,
@@ -461,7 +466,12 @@ class Test_resample:
 
     def test_center_origin_upsample(self):
         kwargs = dict(
-            image=np.array([[0, 1, 2], [3, 4, 5],]),
+            image=np.array(
+                [
+                    [0, 1, 2],
+                    [3, 4, 5],
+                ]
+            ),
             new_resolution=1 / 2,
             old_resolution=1,
             err_to_larger=True,
@@ -498,7 +508,12 @@ class Test_resample:
             method="linear",
             anti_aliasing=False,
         )
-        correct_output = np.array([[0, 2, 4], [10, 12, 14],])
+        correct_output = np.array(
+            [
+                [0, 2, 4],
+                [10, 12, 14],
+            ]
+        )
         assert np.array_equal(resample(**kwargs), correct_output)
 
     def test_center_origin_downsample(self):
@@ -519,12 +534,22 @@ class Test_resample:
             method="linear",
             anti_aliasing=False,
         )
-        correct_output = np.array([[2.5, 4.5, 6.5], [12.5, 14.5, 16.5],])
+        correct_output = np.array(
+            [
+                [2.5, 4.5, 6.5],
+                [12.5, 14.5, 16.5],
+            ]
+        )
         assert np.array_equal(resample(**kwargs), correct_output)
 
     def test_zero_origin_joint_upsample_and_downsample(self):
         kwargs = dict(
-            image=np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9],]),
+            image=np.array(
+                [
+                    [0, 1, 2, 3, 4],
+                    [5, 6, 7, 8, 9],
+                ]
+            ),
             new_resolution=[1 / 2, 2],
             old_resolution=1,
             err_to_larger=True,
@@ -534,13 +559,23 @@ class Test_resample:
             anti_aliasing=False,
         )
         correct_output = np.array(
-            [[0, 2, 4], [2.5, 4.5, 6.5], [5.0, 7.0, 9.0], [7.5, 9.5, 11.5],]
+            [
+                [0, 2, 4],
+                [2.5, 4.5, 6.5],
+                [5.0, 7.0, 9.0],
+                [7.5, 9.5, 11.5],
+            ]
         )
         assert np.array_equal(resample(**kwargs), correct_output)
 
     def test_center_origin_joint_upsample_and_downsample(self):
         kwargs = dict(
-            image=np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9],]),
+            image=np.array(
+                [
+                    [0, 1, 2, 3, 4],
+                    [5, 6, 7, 8, 9],
+                ]
+            ),
             new_resolution=[1 / 2, 2],
             old_resolution=1,
             err_to_larger=True,
@@ -561,7 +596,13 @@ class Test_resample:
 
     def test_center_origin_joint_upsample_and_downsample_with_err_to_larger_False(self):
         kwargs = dict(
-            image=np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14],]),
+            image=np.array(
+                [
+                    [0, 1, 2, 3, 4],
+                    [5, 6, 7, 8, 9],
+                    [10, 11, 12, 13, 14],
+                ]
+            ),
             new_resolution=[1 / 2, 2],
             old_resolution=1,
             err_to_larger=False,
@@ -571,7 +612,14 @@ class Test_resample:
             anti_aliasing=False,
         )
         correct_output = np.array(
-            [[0, 2], [2.5, 4.5], [5.0, 7.0], [7.5, 9.5], [10.0, 12.0], [12.5, 14.5],]
+            [
+                [0, 2],
+                [2.5, 4.5],
+                [5.0, 7.0],
+                [7.5, 9.5],
+                [10.0, 12.0],
+                [12.5, 14.5],
+            ]
         )
         assert np.array_equal(resample(**kwargs), correct_output)
 
@@ -585,7 +633,8 @@ class Test_sinc_resample:
     # Test shape of an upsample.
     def test_upsample_shape(self):
         kwargs = dict(
-            array=np.arange(10 * 20 * 30).reshape(10, 20, 30), new_shape=(12, 45, 30),
+            array=np.arange(10 * 20 * 30).reshape(10, 20, 30),
+            new_shape=(12, 45, 30),
         )
         output = sinc_resample(**kwargs)
         assert np.array_equal(output.shape, kwargs["new_shape"])
@@ -593,7 +642,8 @@ class Test_sinc_resample:
     # Test shape of a downsample.
     def test_downsample_shape(self):
         kwargs = dict(
-            array=np.arange(10 * 20 * 30).reshape(10, 20, 30), new_shape=(8, 20, 14),
+            array=np.arange(10 * 20 * 30).reshape(10, 20, 30),
+            new_shape=(8, 20, 14),
         )
         output = sinc_resample(**kwargs)
         assert np.array_equal(output.shape, kwargs["new_shape"])
@@ -601,7 +651,8 @@ class Test_sinc_resample:
     # Test shape of a general resample.
     def test_joint_upsample_and_downsample_shape(self):
         kwargs = dict(
-            array=np.arange(10 * 20 * 30).reshape(10, 20, 30), new_shape=(10, 23, 27),
+            array=np.arange(10 * 20 * 30).reshape(10, 20, 30),
+            new_shape=(10, 23, 27),
         )
         output = sinc_resample(**kwargs)
         assert np.array_equal(output.shape, kwargs["new_shape"])

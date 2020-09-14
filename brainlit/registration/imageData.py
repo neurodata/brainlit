@@ -3,15 +3,15 @@ import numpy as np
 
 class ImageMetaData:
     """Container class for metadata about an image. Stores:
-        - nxyz (np.ndarray): image shape - computed from provided image.
-        - dxyz (np.ndarray or scalar): image resolution - if dxyz is a scalar, it is upcast to the length of nxyz.
-        - xyz (np.ndarray): image coordinates - computed, not provided.
-        - origin (np.ndarray): origin for xyz coordinates - default is center.
-            Options:
-            - 'center'
-            - 'zero'
-            - np.ndarray of the same length as nxyz
-            - scalar, upcast to np.ndarray of same length as nxyz"""
+    - nxyz (np.ndarray): image shape - computed from provided image.
+    - dxyz (np.ndarray or scalar): image resolution - if dxyz is a scalar, it is upcast to the length of nxyz.
+    - xyz (np.ndarray): image coordinates - computed, not provided.
+    - origin (np.ndarray): origin for xyz coordinates - default is center.
+        Options:
+        - 'center'
+        - 'zero'
+        - np.ndarray of the same length as nxyz
+        - scalar, upcast to np.ndarray of same length as nxyz"""
 
     def __init__(self, dxyz, nxyz=None, image=None, origin="center", name=None):
         """If nxyz is provided, use it as nxyz, the image's shape.
@@ -43,7 +43,7 @@ class ImageMetaData:
 
     @staticmethod
     def _validate_nxyz(nxyz, image) -> np.ndarray:
-        """Validate compatibility between nxyz and image as provided, 
+        """Validate compatibility between nxyz and image as provided,
         and return an appropriate value for the nxyz attribute."""
 
         # Validate agreement between nxyz and image.
@@ -88,7 +88,7 @@ class ImageMetaData:
 
     @staticmethod
     def _validate_dxyz(dxyz, nxyz: np.ndarray) -> np.ndarray:
-        """Validate dxyz and its compatibility with nxyz. 
+        """Validate dxyz and its compatibility with nxyz.
         Return an appropriate value for the dxyz attribute."""
 
         # Cast as np.ndarray.

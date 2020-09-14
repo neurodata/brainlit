@@ -37,7 +37,7 @@ paths = swc.graph_to_paths(G)
 paths_s3 = swc.graph_to_paths(G_s3)
 
 # create a subset of the dataframe
-url = "s3://mouse-light-viz/precomputed_volumes/brain1_lowres"
+url = "s3://mouse-light-viz/precomputed_volumes/brain1"
 mip = 1
 ngl = NeuroglancerSession(url, mip=mip, url_segments=url + "_segments")
 buffer = 10

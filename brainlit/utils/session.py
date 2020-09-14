@@ -174,7 +174,7 @@ class NeuroglancerSession:
         Arguments:
             seg_id: ID of the segment to use, depends on data in s3.
             v_id: ID of the vertex to use, depends on the segment.
-            radius: Radius of pulled volume around central voxel, in voxels. 
+            radius: Radius of pulled volume around central voxel, in voxels.
                 Optional, default is 1 (3x3 volume is pulled, centered at the vertex).
 
         Returns:
@@ -197,7 +197,11 @@ class NeuroglancerSession:
         return np.squeeze(np.array(img)), bounds, vox_in_img
 
     def pull_vertex_list(
-        self, seg_id: int, v_id_list: List[int], buffer: int = 1, expand: bool = False,
+        self,
+        seg_id: int,
+        v_id_list: List[int],
+        buffer: int = 1,
+        expand: bool = False,
     ) -> Tuple[np.ndarray, Bbox, List[Tuple[int, int, int]]]:
         """Pull a region containing all listed vertices.
 
@@ -237,14 +241,17 @@ class NeuroglancerSession:
         return img, bounds, vox_in_img_list
 
     def pull_chunk(
-        self, seg_id: int, v_id: int, radius: int = 0,
+        self,
+        seg_id: int,
+        v_id: int,
+        radius: int = 0,
     ) -> Tuple[np.ndarray, Bbox, Tuple[int, int, int]]:
         """Pull a number of chunks around a specified skeleton vertex.
 
         Arguments:
             seg_id: ID of the segment to use, depends on data in s3.
             v_id: ID of the vertex to use, depends on the segment.
-            radius: Radius of pulled volume around central chunk, in chunks. 
+            radius: Radius of pulled volume around central chunk, in chunks.
                 Optional, default is 0 (single chunk which contains the voxel).
 
         Returns:
@@ -309,7 +316,9 @@ class NeuroglancerSession:
         # return np.squeeze(np.array(img))
 
     def push(
-        self, img: np.ndarray, bounds: Bounds,
+        self,
+        img: np.ndarray,
+        bounds: Bounds,
     ):
         """Push a volume to an annotation channel.
 

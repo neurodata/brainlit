@@ -40,8 +40,7 @@ class NeighborhoodFeatures(BaseFeatures):
         super().__init__(url=url, size=size, offset=offset, segment_url=segment_url)
 
     def _convert_to_features(self, img: np.ndarray) -> Dict:
-        """Computes features from image data by flattening the image.
-        """
+        """Computes features from image data by flattening the image."""
         return dict(enumerate(img.flatten()))
 
 
@@ -49,7 +48,7 @@ def subsample(
     arr: np.ndarray, orig_shape: List[int], dest_shape: List[int]
 ) -> np.ndarray:
     """Subsamples a flattened neighborhood to a smaller flattened neighborhood.
-    
+
     Arguments:
         arr: The flattened array
         orig_shape: The original shape of the array before flattening
