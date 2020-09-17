@@ -12,25 +12,29 @@ This repository is a container of methods that Neurodata usees to expose their o
 
 ![Brainlight Features](https://i.postimg.cc/QtG9Xs68/Brainlit.png)
 
-- [Motivation](#motivation)
-- [Installation](#installation)
-  - [Environment](#environment)
-  - [Install from pypi](#install-from-pypi)
-  - [Install from source](#install-from-source)
-- [How to Use Brainlit](#how-to-use-brainlit)
-  - [Data Setup](#data-setup)
-  - [Create a Session](#create-a-session)
-- [Features](#features)
-  - [Registration](#registration)
-- [Core](#core)
-  - [Push/Pull Data](#push-and-pull-data)
-  - [Visualize](#visualize)
-  - [Manually Segment](#manually-segment)
-  - [Automatically Segment](#automatically-and-semi-automatically-segment)
-- [API reference](#api-reference)
-- [Tests](#tests)
-- [Contributing](#contributing)
-- [Credits](#credits)
+- [Brainlit](#brainlit)
+  - [Motivation](#motivation)
+  - [Installation](#installation)
+    - [Environment](#environment)
+      - [(optional, any python >= 3.8 environment will suffice)](#optional-any-python--38-environment-will-suffice)
+    - [Install from pypi](#install-from-pypi)
+    - [Install from source](#install-from-source)
+  - [How to use Brainlit](#how-to-use-brainlit)
+    - [Data setup](#data-setup)
+    - [Create a session](#create-a-session)
+  - [Features](#features)
+    - [Registration](#registration)
+  - [Core](#core)
+    - [(Push and Pull Data)](#push-and-pull-data)
+    - [Visualize](#visualize)
+    - [Manually Segment](#manually-segment)
+    - [Automatically and Semi-automatically Segment](#automatically-and-semi-automatically-segment)
+  - [API Reference](#api-reference)
+  - [Tests](#tests)
+  - [Common errors and troubleshooting](#common-errors-and-troubleshooting)
+    - [AWS credentials](#aws-credentials)
+  - [Contributing](#contributing)
+  - [Credits](#credits)
 
 ## Motivation
 
@@ -150,6 +154,15 @@ The documentation can be found at [https://brainlight.readthedocs.io/en/latest/]
 
 Running tests can easily be done by moving to the root directory of the brainlit package ant typing `pytest tests` or `python -m pytest tests`.  
 Running a specific test, such as `test_upload.py` can be done simply by `ptest tests/test_upload.py`.
+
+## Common errors and troubleshooting
+
+### AWS credentials
+
+Brainlit can access data volumes stored in [AWS S3](link to S3 homepage) through the [CloudVolume](link to CloudVolume) package. As specified in the [docs](link to CloudVolume docs), AWS credentials have to be stored in a file called `aws-secret.json` inside the `~/cloudvolume/secrets/` folder.
+
+Some common errors related to AWS credentials are:
+
 
 ## Contributing
 
