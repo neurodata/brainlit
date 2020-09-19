@@ -37,10 +37,53 @@ This repository is a container of methods that Neurodata usees to expose their o
 The repository originated as the project of a team in Joshua Vogelstein's class **Neurodata** at Johns Hopkins University. This project was focused on data science towards the [mouselight data](https://www.hhmi.org/news/mouselight-project-maps-1000-neurons-and-counting-in-the-mouse-brain). It becme apparent that the tools developed for the class would be useful for other groups doing data science on large data volumes.
 The repository can now be considered a "holding bay" for code developed by Neurodata for collaborators and researchers to use.
 
+## Installing on Windows Linux Subsystem (WSL2)
+
+For Windows 10 users that prefer Linux functionality without the speed sacrifice of a VM, Brainlit can be installed and run on WSL2.
+- OS Specifications: Version 1903, Build 18362 or higher
+- [Installation Instructions](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+- Any Linux distribution can be installed. Ubuntu16.04.3 was used for this tutorial.
+
+#### Install python required libraries and build tools. 
+Run the below commands. See [here](https://stackoverflow.com/questions/8097161/how-would-i-build-python-myself-from-source-code-on-ubuntu/31492697) for more information. 
+
+```
+$ sudo apt update && sudo apt install -y build-essential git libexpat1-dev libssl-dev zlib1g-dev 
+$ libncurses5-dev libbz2-dev liblzma-dev 
+$ libsqlite3-dev libffi-dev tcl-dev linux-headers-generic libgdbm-dev 
+$ libreadline-dev tk tk-dev
+```
+
+#### Install a python version management tool, and create/activate a virtual environment
+- [Pyenv WSL2 Install](https://gist.github.com/monkut/35c2ef098b871144b49f3f9979032cee) (easiest for WSL2)
+- [Anaconda WSL2 Install](https://gist.github.com/kauffmanes/5e74916617f9993bc3479f401dfec7da)
+
+#### Install brainlit
+- See [installation section](#installation) of README.md
+
+#### Create and save AWS Secrets file
+- See AWS Secrets file section of README.md
+
+#### Configure jupyter notebook
+`$ sudo apt-get install jupyter notebook`
+Add this line to your ~/.bashrc script
+`export DISPLAY=`grep -oP "(?<=nameserver ).+" /etc/resolv.conf`:0.0 `
+
+#### Configure X11 Port Forwarding
+- Install [VcXsrv Windows X Server](https://sourceforge.net/projects/vcxsrv/) on your Windows host machine
+- Run XLaunch on your Windows Host Machine with default settings AND select the "Disable Access Control" option
+- Let VcXsrv through your Public & Private windows firewall
+(Control Panel -> System and Security -> Windows Defender Firewall -> Allowed Apps -> Change Settings)
+- Try running `xclock` on the subsystem -- this should launch on your windows machine.  If this works, port forwarding will allow you to launch applications from WSL2 onto your local Windows host.
+
+#### Exceptions
+- The napari viewer specifically cannot be launched, because [OpenGL versions>1.5 are not currently supported by WSL2](https://discourse.ubuntu.com/t/opengl-on-ubuntu-on-wsl-2-timeline/17599).  This should be resolved in upcoming WSL2 updates.
+
+
+
+
 ## Installation
-
 ### Environment
-
 #### (optional, any python >= 3.8 environment will suffice)
 
 - [get conda](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html)
