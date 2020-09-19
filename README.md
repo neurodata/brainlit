@@ -160,6 +160,8 @@ Running a specific test, such as `test_upload.py` can be done simply by `ptest t
 
 ## Common errors and troubleshooting
 
+- [ioS Install/Run Issues](https://github.com/NeuroDataDesign/brainlit/blob/aws-keys-docs-jacopo/docs/iOS_Install_%26_Run_Issues.md)
+
 ### AWS credentials
 
 :warning: **SECURITY DISCLAIMER** :warning:
