@@ -29,6 +29,8 @@ Install jupyter notebook: `$ python -m pip install jupyter notebook` and add the
 ```
 `export DISPLAY=`grep -oP "(?<=nameserver ).+" /etc/resolv.conf`:0.0 `
 ```
+To launch jupyter notebooks, you need to type `$ jupyter notebook --allow-root`, not just `$ jupyter notebook`
+Then copy and past one of the URLs outputted into your web browser.  
 
 #### Configure X11 Port Forwarding
 - Install [VcXsrv Windows X Server](https://sourceforge.net/projects/vcxsrv/) on your Windows host machine
