@@ -90,10 +90,10 @@ Add this line to your `~/.bashrc` script:
 
 #### Configure X11 Port Forwarding
 - Install [VcXsrv Windows X Server](https://sourceforge.net/projects/vcxsrv/) on your Windows host machine
-- Run XLaunch on your Windows Host Machine with default settings AND select the "Disable Access Control" option
-- Let VcXsrv through your Public & Private windows firewall
+- Let VcXsrv through your Public & Private windows firewall. 
 (Control Panel -> System and Security -> Windows Defender Firewall -> Allowed Apps -> Change Settings)
-- Try running `xclock` on the subsystem -- this should launch on your windows machine.  If this works, port forwarding will allow you to launch applications from WSL2 onto your local Windows host.
+- Run XLaunch on your Windows Host Machine with default settings AND select the "Disable Access Control" option
+- To confim X11 Port Forwarding is configured, run `xclock` on the subsystem.  This should launch on your windows machine. 
 
 #### Exceptions
 - The Napari viewer cannot be fully launched (only launches a black screen), because [OpenGL versions>1.5 are not currently supported by WSL2](https://discourse.ubuntu.com/t/opengl-on-ubuntu-on-wsl-2-timeline/17599).  This should be resolved in upcoming WSL2 updates.
