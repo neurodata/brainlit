@@ -17,7 +17,7 @@ This repository is a container of methods that Neurodata usees to expose their o
   - [Environment](#environment)
   - [Install from pypi](#install-from-pypi)
   - [Install from source](#install-from-source)
-- [WSL2-Specific Installation](#Installing-on-Windows-Linux-Subsystem-(WSL2))
+- [WSL2-Specific Installation](#Windows-Linux-Subsystem-2-Installation)
 - [How to Use Brainlit](#how-to-use-brainlit)
   - [Data Setup](#data-setup)
   - [Create a Session](#create-a-session)
@@ -57,7 +57,7 @@ The repository can now be considered a "holding bay" for code developed by Neuro
 - install brainlit: `pip install -e .`
 
 
-## Installing on Windows Linux Subsystem (WSL2)
+## Windows Linux Subsystem 2 Installation
 
 For Windows 10 users that prefer Linux functionality without the speed sacrifice of a VM, Brainlit can be installed and run on WSL2.
 - OS Specifications: Version 1903, Build 18362 or higher
@@ -72,7 +72,6 @@ $ libncurses5-dev libbz2-dev liblzma-dev
 $ libsqlite3-dev libffi-dev tcl-dev linux-headers-generic libgdbm-dev
 $ libreadline-dev tk tk-dev
 ```
-
 
 #### Install a python version management tool, and create/activate a virtual environment
 - [Pyenv WSL2 Install](https://gist.github.com/monkut/35c2ef098b871144b49f3f9979032cee) (easiest for WSL2)
