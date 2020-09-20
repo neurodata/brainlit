@@ -30,7 +30,7 @@ Install jupyter notebook: `$ python -m pip install jupyter notebook` and add the
 `export DISPLAY=`grep -oP "(?<=nameserver ).+" /etc/resolv.conf`:0.0 `
 ```
 To launch jupyter notebook, you need to type `$ jupyter notebook --allow-root`, not just `$ jupyter notebook`
-Then copy and past one of the URLs outputted into your web browser.  
+Then copy and paste one of the URLs outputted into your web browser.  
 If your browser is unable to connect, try unblocking the default jupyter port via this command: `$ sudo ufw allow 8888 `
 
 #### Configure X11 Port Forwarding
