@@ -25,7 +25,7 @@ $ libreadline-dev tk tk-dev
 - See AWS Secrets file section of README.md
 
 #### Configure jupyter notebook
-`$ sudo apt-get install jupyter notebook`
+`$ python -m pip install jupyter notebook`
 Add this line to your `~/.bashrc` script: 
 ```
 `export DISPLAY=`grep -oP "(?<=nameserver ).+" /etc/resolv.conf`:0.0 `
