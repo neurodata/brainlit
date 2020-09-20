@@ -27,7 +27,9 @@ $ libreadline-dev tk tk-dev
 #### Configure jupyter notebook
 `$ sudo apt-get install jupyter notebook`
 Add this line to your `~/.bashrc` script: 
-``export DISPLAY=`grep -oP "(?<=nameserver ).+" /etc/resolv.conf`:0.0 ``
+```
+`export DISPLAY=`grep -oP "(?<=nameserver ).+" /etc/resolv.conf`:0.0 `
+```
 
 #### Configure X11 Port Forwarding
 - Install [VcXsrv Windows X Server](https://sourceforge.net/projects/vcxsrv/) on your Windows host machine
