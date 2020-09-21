@@ -20,7 +20,7 @@ $ libreadline-dev tk tk-dev
 - [Anaconda WSL2 Install](https://gist.github.com/kauffmanes/5e74916617f9993bc3479f401dfec7da)
 
 #### Install brainlit
-- See [installation section](#installation) of README.md
+- See [installation section](https://github.com/NeuroDataDesign/brainlit/blob/wsl2-tutorial/README.md#installation) of README.md
 
 #### Create and save AWS Secrets file
 - See AWS Secrets file section of README.md
