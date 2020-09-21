@@ -9,7 +9,7 @@ import time
 from cloudvolume import CloudVolume
 import feather
 from joblib import Parallel, delayed
-from typing import Optional, List, Union, Tuple, Literal
+from typing import Optional, List, Union, Tuple
 
 
 class BaseFeatures(BaseEstimator):

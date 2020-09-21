@@ -149,6 +149,7 @@ def tubes_seg(img, vertices, radius, spheres=False):
     return labels
 
 
+# TOMMY REVIEW
 def tubes_from_paths(
     size: Tuple[int, int, int],
     paths: List[List[int]],
