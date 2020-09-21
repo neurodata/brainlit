@@ -12,7 +12,7 @@ from brainlit.algorithms.generate_fragments.tube_seg import tubes_from_paths
 import napari
 import warnings
 import networkx as nx
-from typing import Optional, List, Union, Tuple, Literal
+from typing import Optional, List, Union, Tuple
 from brainlit.utils.util import (
     check_type,
     check_size,

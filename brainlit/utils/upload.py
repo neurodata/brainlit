@@ -8,7 +8,7 @@ import joblib
 from glob import glob
 import argparse
 from psutil import virtual_memory
-from typing import Optional, Sequence, Union, Literal, Tuple, List
+from typing import Optional, Sequence, Union, Tuple, List
 import contextlib
 
 import tifffile as tf
@@ -30,7 +30,7 @@ def get_volume_info(
     image_dir: str,
     num_resolutions: int,
     channel: Optional[int] = 0,
-    extension: Optional[Literal["tif"]] = "tif",
+    extension: Optional[str] = "tif",
 ) -> Tuple[List, List, List, Tuple, List]:
     """Get filepaths along the octree-format image directory
 
@@ -100,8 +100,8 @@ def create_cloud_volume(
     num_resolutions: int,
     chunk_size: Optional[Sequence[int]] = None,
     parallel: Optional[bool] = False,
-    layer_type: Optional[Literal["image", "segmentaion", "annotation"]] = "image",
-    dtype: Optional[Literal["uint16", "uint64"]] = None,
+    layer_type: Optional[str] = "image",
+    dtype: Optional[str] = None,
     commit_info: Optional[bool] = True,
 ) -> CloudVolumePrecomputed:
     """Create CloudVolume object and info file.
