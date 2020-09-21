@@ -12,7 +12,7 @@
         * cd into the repo: `cd brainlit`
         * install brainlit: `pip install -e .`
 
-#Downloading brains tutorial on iOS using conda environment, using jupyter notebook: 
+# Downloading brains tutorial on iOS using conda environment, using jupyter notebook: 
 * in a new terminal: `conda activate brainlit`
 * cd to directory brainlit is installed
 * `cd brainlit/docs/notebooks/utils`
@@ -20,7 +20,7 @@
 * select `downloading_brains.ipynb`
 * run tutorial
 
-#Common issues and fixes:
+# Common issues and fixes:
 * Issues with using a jupyter notebook
     * [fixes](https://jupyter-notebook.readthedocs.io/en/stable/troubleshooting.html)
 * Imports cause schema warning
