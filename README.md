@@ -73,7 +73,7 @@ Users on Windows may experience dependency installation issues when managing a C
 
 #### Other potential solutions
 
-- [Install gcc for Windows.](https://www.guru99.com/c-gcc-install.html) Follow the instructions [here](https://stackoverflow.com/questions/3297254/how-to-use-mingws-gcc-compiler-when-installing-python-package-using-pip) and run `pip install -e . --no-cache-dir` 
+- [Install gcc for Windows](https://www.guru99.com/c-gcc-install.html) and follow the instructions [here](https://stackoverflow.com/questions/3297254/how-to-use-mingws-gcc-compiler-when-installing-python-package-using-pip) and run `pip install -e . --no-cache-dir` 
 - [Install Microsoft Manifest Tool](https://docs.microsoft.com/en-us/windows/win32/sbscs/mt-exe) and add it to your `PATH` variable.
 
 ## How to use Brainlit
