@@ -29,7 +29,7 @@ $ libreadline-dev tk tk-dev
 #### Configure jupyter notebook
 Install jupyter notebook: `$ python -m pip install jupyter notebook` and add the following line to your `~/.bashrc` script: 
 ```
-`export DISPLAY=`grep -oP "(?<=nameserver ).+" /etc/resolv.conf`:0.0 `
+export DISPLAY=`grep -oP "(?<=nameserver ).+" /etc/resolv.conf`:0.0 
 ```
 To launch jupyter notebook, you need to type `$ jupyter notebook --allow-root`, not just `$ jupyter notebook`
 Then copy and paste one of the URLs outputted into your web browser.  
