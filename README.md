@@ -57,6 +57,25 @@ The repository can now be considered a "holding bay" for code developed by Neuro
 - cd into the repo: `cd brainlit`
 - install brainlit: `pip install -e .`
 
+### Windows Users
+
+Users on Windows may experience dependency installation issues when managing a Conda environment in Python 3.8. There are a few potential solutions:
+
+#### Switch to Python 3.7 - Recommended
+
+- Create a new conda environment in Python 3.7: `conda create --name brainlit3.7 python=3.7`
+- cd into `brainlit` and switch to the Python 3.7 branch: `git checkout python3.7-experimental`
+- Run `pip install -e .` This should successfully install the Brainlit module for Python 3.7
+
+#### Switch to venv
+
+- [Set up a Python 3.8 environment in venv.](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/#:~:text=To%20create%20a%20virtual%20environment,virtualenv%20in%20the%20below%20commands.&text=The%20second%20argument%20is%20the,project%20and%20call%20it%20env%20.) However, dependency installation may still fail for some users.
+
+#### Other potential solutions
+
+- [Install gcc for Windows.](https://www.guru99.com/c-gcc-install.html) Follow the instructions [here](https://stackoverflow.com/questions/3297254/how-to-use-mingws-gcc-compiler-when-installing-python-package-using-pip) and run `pip install -e . --no-cache-dir` 
+- [Install Microsoft Manifest Tool](https://docs.microsoft.com/en-us/windows/win32/sbscs/mt-exe) and add it to your `PATH` variable.
+
 ## How to use Brainlit
 
 ### Data setup
