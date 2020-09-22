@@ -2,6 +2,7 @@
 data/test_*
 data/upload*
 docs/notebooks/pipelines/demo*
+**-checkpoint.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

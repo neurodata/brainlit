@@ -15,7 +15,7 @@ Prerequisites to successfully troubleshoot errors related to AWS credentials:
 
 - [ ] The data volume is hosted on S3 (i.e. the link looks like `s3://your-bucket-name/some-path/some-folder`).
 - [ ] Familiarity with [IAM Roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html) and [how to create them](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create.html).
-- [ ] An `AWS_ACCESS_KEY_ID` and an `AWS_SECRET_ACCESS_KEY` with adequate permissions, provided by the system administrator. Brainlit does not require the IAM user associated with the credentials to have access to the AWS console (i.e. it can be a service account).
+- [ ] An `AWS_ACCESS_KEY_ID` and an `AWS_SECRET_ACCESS_KEY` with adequate permissions, provided by an AWS account administrator. Brainlit does not require the IAM user associated with the credentials to have access to the AWS console (i.e. it can be a service account).
 
 Here is a collection of known issues, along with their troubleshoot guide:
 
@@ -91,7 +91,7 @@ ClientError: An error occurred (AccessDenied) when calling the GetObject operati
 
 This error is thrown when:
 
-1. The AWS credentials are stored and loaded correctly but are not allowed to access the data volume. A check with the system administrator is required.
+1. The AWS credentials are stored and loaded correctly but are not allowed to access the data volume. A check with an AWS account administrator is required.
 
 2. There is a typo in your credentials. The content of `aws-secret.json` should look like this:
 
