@@ -6,7 +6,7 @@ import nilearn.plotting as niplot
 
 def _scale_data(data, limit_mode=None, stdevs=4, quantile=0.01, limits=None):
     """Returns a copy of data scaled such that the bulk of the values are mapped to the range [0, 1].
-    
+
     Upper and lower limits are chosen based on limit_mode and other arguments.
     These limits are the anchors by which <data> is scaled such that after scaling,
     they lie on either end of the range [0, 1].
@@ -16,7 +16,7 @@ def _scale_data(data, limit_mode=None, stdevs=4, quantile=0.01, limits=None):
     - 'stdev' | stdevs [4] --> limits are the mean +/- <stdevs> standard deviations
     - 'quantile' | quantile [0.05] --> limits are the <quantile> and 1 - <quantile> quantiles
 
-    If <limits> is provided as a 2-element iterable, it will override limit_mode 
+    If <limits> is provided as a 2-element iterable, it will override limit_mode
     and be used directly as the anchoring limits:
     <limits> = (lower, upper)."""
 
@@ -180,11 +180,11 @@ def _Image_to_Nifti2Image(image, affine=None):
 
 
 def _get_cuts(data, xcuts, ycuts, zcuts, n_cuts=5, interesting_cuts=False):
-    """Returns xcuts, ycuts, & zcuts. If any of these are provided, they are used. 
-    If any are not provided, they are computed. 
-    
+    """Returns xcuts, ycuts, & zcuts. If any of these are provided, they are used.
+    If any are not provided, they are computed.
+
     The default is to compute unprovided cuts as evenly spaced slices across that dimension.
-    However, if interesting_cuts is True, then any dimension's cuts that are not specified 
+    However, if interesting_cuts is True, then any dimension's cuts that are not specified
     are computed using niplot.find_cut_slices."""
 
     if interesting_cuts is True:
@@ -192,21 +192,30 @@ def _get_cuts(data, xcuts, ycuts, zcuts, n_cuts=5, interesting_cuts=False):
         raise NotImplementedError(
             "This functionality has not been fully implemented yet."
         )
-        xcuts = xcuts or niplot.find_cut_slices(
-            Image_to_Nifti2Image(atlas_Image, affine=np.eye(4)),
-            direction="x",
-            n_cuts=n_cuts,
-        ).astype(int)
-        ycuts = ycuts or niplot.find_cut_slices(
-            Image_to_Nifti2Image(atlas_Image, affine=np.eye(4)),
-            direction="y",
-            n_cuts=n_cuts,
-        ).astype(int)
-        zcuts = zcuts or niplot.find_cut_slices(
-            Image_to_Nifti2Image(atlas_Image, affine=np.eye(4)),
-            direction="z",
-            n_cuts=n_cuts,
-        ).astype(int)
+        xcuts = (
+            xcuts
+            or niplot.find_cut_slices(
+                Image_to_Nifti2Image(atlas_Image, affine=np.eye(4)),
+                direction="x",
+                n_cuts=n_cuts,
+            ).astype(int)
+        )
+        ycuts = (
+            ycuts
+            or niplot.find_cut_slices(
+                Image_to_Nifti2Image(atlas_Image, affine=np.eye(4)),
+                direction="y",
+                n_cuts=n_cuts,
+            ).astype(int)
+        )
+        zcuts = (
+            zcuts
+            or niplot.find_cut_slices(
+                Image_to_Nifti2Image(atlas_Image, affine=np.eye(4)),
+                direction="z",
+                n_cuts=n_cuts,
+            ).astype(int)
+        )
     else:
         xcuts = xcuts or np.linspace(0, data.shape[0], n_cuts + 2)[1:-1]
         ycuts = ycuts or np.linspace(0, data.shape[1], n_cuts + 2)[1:-1]
@@ -238,7 +247,7 @@ def heatslices(
     Each row can have arbitrarily many parallel views.
     The data is scaled such that its bulk lies on the interval [0, 1], with the extrema optionally left unaccounted for in determining the scaling.
     Those values outside the limits saturate at 0 or 1 in the figure.
-    
+
     Args:
         data (np.ndarray): A 3 or 4 dimensional array containing volumetric intensity data (if 3D) or RGB data (if 4D) to be viewed.
         title (str, optional): The figure title. Defaults to None.
@@ -248,13 +257,13 @@ def heatslices(
         xcuts (list, optional): A list of indices at which to display a view in the first row. Defaults to [n_cuts evenly spaced indices. Half the spacing between indices pads each end].
         ycuts (list, optional): A list of indices at which to display a view in the second row. Defaults to [n_cuts evenly spaced indices. Half the spacing between indices pads each end].
         zcuts (list, optional): A list of indices at which to display a view in the third row. Defaults to [n_cuts evenly spaced indices. Half the spacing between indices pads each end.].
-        limit_mode (str, NoneType, optional): A string indicating what mode to use for clipping the extrema of data for determining the scaling to the interval [vmin, vmax]. 
-            
+        limit_mode (str, NoneType, optional): A string indicating what mode to use for clipping the extrema of data for determining the scaling to the interval [vmin, vmax].
             Accepted values:
                 - None
                 - 'stdev'
                 - 'quantile'
             Defaults to None.
+
         stdevs (float, optional): Used if limit_mode == 'stdev': The number of standard deviations from the mean that will be scaled to the interval [vmin, vmax]. Defaults to 4.
         quantile (float, optional): Used if limit_mode == 'quantile': The proportion of data that will not be considered for scaling to the interval [vmin, vmax]. Defaults to 0.01.
         limits (sequence, optional): The lower and upper limits bookmarking which values in data will be considered when scaling to the interval [vmin, vmax]. Overrides limit_mode. Defaults to None.

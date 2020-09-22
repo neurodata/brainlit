@@ -21,7 +21,11 @@ minimum_ngl_json = {
                 "url": "",
                 "transform": {
                     # last column here is x, y, z translations respectively
-                    "matrix": [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0],],
+                    "matrix": [
+                        [1, 0, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                    ],
                     "outputDimensions": {
                         "x": [output_dimensions[0], "m"],
                         "y": [output_dimensions[1], "m"],
