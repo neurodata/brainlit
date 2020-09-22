@@ -7,21 +7,21 @@ from brainlit.utils.swc import graph_to_paths
 from skimage import draw
 from pathlib import Path
 
-top_level = Path(__file__).parents[1] / "data"
-input = (top_level / "data_octree").as_posix()
-url = (top_level / "test_upload").as_uri()
-url_seg = url + "_segments"
-url = url + "/serial"
-if not (Path(url[5:]) / "info").is_file():
-    print("Uploading data.")
-    upload_volumes(input, url, 1)
-if not (Path(url_seg[5:]) / "info").is_file():
-    print("Uploading segmentataion.")
-    upload_segments(input, url_seg, 1)
-assert (Path(url[5:]) / "info").is_file()
-assert (Path(url_seg[5:]) / "info").is_file()
+# top_level = Path(__file__).parents[1] / "data"
+# input = (top_level / "data_octree").as_posix()
+# url = (top_level / "test_upload").as_uri()
+# url_seg = url + "_segments"
+# url = url + "/serial"
+# if not (Path(url[5:]) / "info").is_file():
+#     print("Uploading data.")
+#     upload_volumes(input, url, 1)
+# if not (Path(url_seg[5:]) / "info").is_file():
+#     print("Uploading segmentataion.")
+#     upload_segments(input, url_seg, 1)
+# assert (Path(url[5:]) / "info").is_file()
+# assert (Path(url_seg[5:]) / "info").is_file()
 
-URL = "s3://mouse-light-viz/precomputed_volumes/brain1"
+# URL = "s3://mouse-light-viz/precomputed_volumes/brain1"
 top_level = Path(__file__).parents[1] / "data"
 input = (top_level / "data_octree").as_posix()
 url = (top_level / "test_upload").as_uri()

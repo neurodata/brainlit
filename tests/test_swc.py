@@ -14,19 +14,20 @@ input = (top_level / "data_octree").as_posix()
 url = (top_level / "test_upload").as_uri()
 url_seg = url + "_segments"
 url = url + "/serial"
-if not (Path(url[5:]) / "info").is_file():
-    print("Uploading data.")
-    upload_volumes(input, url, 1)
-if not (Path(url_seg[5:]) / "info").is_file():
-    print("Uploading segmentataion.")
-    upload_segments(input, url_seg, 1)
-assert (Path(url[5:]) / "info").is_file()
-assert (Path(url_seg[5:]) / "info").is_file()
+# if not (Path(url[5:]) / "info").is_file():
+#     print("Uploading data.")
+#     upload_volumes(input, url, 1)
+# if not (Path(url_seg[5:]) / "info").is_file():
+#     print("Uploading segmentataion.")
+#     upload_segments(input, url_seg, 1)
+# assert (Path(url[5:]) / "info").is_file()
+# assert (Path(url_seg[5:]) / "info").is_file()
 
 URL = str(Path(__file__).resolve().parents[0] / "upload")
 # read in s3 path to dataframe
-s3_path = "s3://mouse-light-viz/precomputed_volumes/brain1_segments"
-df_s3 = swc.read_s3(s3_path, seg_id=2, mip=6)
+# s3_path = "s3://mouse-light-viz/precomputed_volumes/brain1_segments"
+s3_path = url_seg
+df_s3 = swc.read_s3(s3_path, seg_id=2, mip=0)
 
 
 # read in swc file to dataframe
@@ -49,9 +50,9 @@ paths = swc.graph_to_paths(G)
 paths_s3 = swc.graph_to_paths(G_s3)
 
 # create a subset of the dataframe
-url = "s3://mouse-light-viz/precomputed_volumes/brain1"
-mip = 6
-ngl = NeuroglancerSession(url, mip=mip, url_segments=url + "_segments")
+# url = "s3://mouse-light-viz/precomputed_volumes/brain1"
+mip = 0
+ngl = NeuroglancerSession(url, mip=mip, url_segments=url_seg)
 buffer = 10
 subneuron_df = df_s3[0:5]
 vertex_list = subneuron_df["sample"].array
