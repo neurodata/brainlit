@@ -1,4 +1,4 @@
-# Installing brainlit on iOS using conda environment:
+# Installing brainlit on macOS using conda environment:
 1. Installation of conda environment
     * [get Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html)
     * create a virtual environment: `conda create --name brainlit python=3.8`
@@ -23,19 +23,10 @@
 # Common issues and fixes:
 * Issues with using a jupyter notebook
     * [fixes](https://jupyter-notebook.readthedocs.io/en/stable/troubleshooting.html)
-* Imports cause schema warning
-    * ignore this
-* Activation key issue
-    * `cd ~/.cloudvolume/secrets`
-    * Add a .txt file containing aws access key and secret access key (more detailed instructions under README.md)
-    * Convert .txt file to .json 
-* Section (1) Defining variables: Change directory names if they do not exist
-    * Example 1:
-        * Before: `dir = p + "mouse-light-viz/precomputed_volumes/brain1_2”`
-        * After: `dir = p + "mouse-light-viz/precomputed_volumes/brain1"`
-    * Example 2: 
-        * Before: `dir_segments = p + "mouse-light-viz/precomputed_volumes/brain1_2_segments"`
-        * After: `dir_segments = p + "mouse-light-viz/precomputed_volumes/brain1_segments"`
+* Imports section: cause schema warning
+    * This warning doesn't cause any errors, and the code can still run unaffected.
+* AWS Credendials Issues
+    * Refer to the instructions on: https://github.com/NeuroDataDesign/brainlit/blob/develop/docs/AWS_Credentials_Issues.md
 * Section (2) Create a Neuroglancer instance and download the volume: make sure variables are correct and functions have correct inputs
     * Example 3: 
         * Before: `img, bbox, vox = ngl_sess.pull_voxel(2, v_id, radius, radius, radius)`
