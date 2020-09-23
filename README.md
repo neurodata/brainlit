@@ -75,9 +75,13 @@ Users currently may run into an issue with installing dependencies on Python 3.8
 
 #### Other potential fixes
 
-- Install [gcc for Windows](https://www.guru99.com/c-gcc-install.html) and run `pip install brainlit -e . --no-cache-dir`
+Potentially, `gcc` is missing, which is necessary for wheel installation from Python 3.6 onwards.
 
-- Add the [Microsoft Manifest Tool](https://docs.microsoft.com/en-us/windows/win32/sbscs/mt-exe) to the `PATH` variable
+- Install [gcc for Windows](https://www.guru99.com/c-gcc-install.html) and run `pip install brainlit -e . --no-cache-dir`.
+
+Post-Python 3.6, windows handles wheels through the Microsoft Manifest Tool, it might be missing.
+
+- Add the [Microsoft Manifest Tool](https://docs.microsoft.com/en-us/windows/win32/sbscs/mt-exe) to the `PATH` variable.
 
 ## How to use Brainlit
 
