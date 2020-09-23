@@ -16,6 +16,7 @@ url = url + "/serial"
 SIZE = 2
 OFF = [15, 15, 15]
 
+
 @pytest.fixture
 def gen_array():
     nbr = nbrhood.NeighborhoodFeatures(

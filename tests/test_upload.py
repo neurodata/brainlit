@@ -7,6 +7,7 @@ from cloudvolume.lib import Bbox
 
 NUM_RES = 1
 
+
 @pytest.fixture
 def volume_info(num_res=NUM_RES, channel=0):
     """Pytest fixture that gets parameters that many upload.py methods use."""
