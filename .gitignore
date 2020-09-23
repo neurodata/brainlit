@@ -1,6 +1,4 @@
 **/.DS_Store
-data/test_*
-data/upload*
 docs/notebooks/pipelines/demo*
 
 # Byte-compiled / optimized / DLL files

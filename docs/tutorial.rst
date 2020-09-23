@@ -12,6 +12,8 @@ Tutorials showcasing how to use the utils folder.
    :maxdepth: 1
 
    notebooks/utils/utils
+   notebooks/utils/uploading_brains
+   notebooks/utils/downloading_brains
 
 .. _pipeline_tutorials:
 
@@ -27,14 +29,15 @@ Demonstrate pulling data and pushing traced annotations.
 
    notebooks/pipelines/seg_pipeline_demo
 
-Manual Segmentation
--------------------
-Notebook showing how to manually segment data.
+Segmentation
+------------
+Notebooks showing how to manually and automatically segment data.
 
 .. toctree::
    :maxdepth: 1
 
    notebooks/pipelines/manual_segmentation
+   notebooks/pipelines/tubes_feature_extraction_demo
 
 
 .. _algorithm_tutorials:
@@ -98,12 +101,4 @@ These tutorials demonstrate tools to load and visualize data from s3 buckets or 
 
    notebooks/visualization/loading
    notebooks/visualization/visualization
-
-Uploading Brains
-================
-This notebook describes the process to upload brain data.
-
-.. toctree::
-   :maxdepth: 1
-
-   notebooks/utils/uploading_brains.ipynb
+   notebooks/visualization/neighborhood_visualization_demo

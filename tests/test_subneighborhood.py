@@ -7,23 +7,12 @@ import pandas as pd
 from cloudvolume import CloudVolume
 from pathlib import Path
 
-# ensures data is available
 top_level = Path(__file__).parents[1] / "data"
 input = (top_level / "data_octree").as_posix()
 url = (top_level / "test_upload").as_uri()
 url_seg = url + "_segments"
 url = url + "/serial"
-if not (Path(url[5:]) / "info").is_file():
-    print("Uploading data.")
-    upload_volumes(input, url, 1)
-if not (Path(url_seg[5:]) / "info").is_file():
-    print("Uploading segmentataion.")
-    upload_segments(input, url_seg, 1)
-assert (Path(url[5:]) / "info").is_file()
-assert (Path(url_seg[5:]) / "info").is_file()
 
-
-# URL = "s3://mouse-light-viz/precomputed_volumes/brain1"
 SIZE = 2
 OFF = [15, 15, 15]
 
@@ -31,7 +20,7 @@ OFF = [15, 15, 15]
 @pytest.fixture
 def gen_array():
     nbr = nbrhood.NeighborhoodFeatures(
-        url=url, size=SIZE, offset=[15, 15, 15], segment_url=url_seg
+        url=url, radius=SIZE, offset=[15, 15, 15], segment_url=url_seg
     )
     df_nbr = nbr.fit([2], 5)
     ind = SIZE * 2 + 1
