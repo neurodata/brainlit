@@ -72,13 +72,13 @@ save_status_prefix = ""
 
 def score_function(params):
     """
-   Assigns a score value with the formula:
-         score = 100*N_of_voxel/max(N_of_voxel)
-   Input:
-      params =  dictionary containing {input_name : [Nx,Ny,Nz]}
-   Output: 
-      scores = dictionary containing {input_name : score}
-   """
+    Assigns a score value with the formula:
+          score = 100*N_of_voxel/max(N_of_voxel)
+    Input:
+       params =  dictionary containing {input_name : [Nx,Ny,Nz]}
+    Output:
+       scores = dictionary containing {input_name : score}
+    """
     tmp_scores = {}
     scores = {}
     imp_key = list(params.keys())
@@ -96,25 +96,25 @@ def score_function(params):
 
 def sort_elaborations(scores):
     """
-   Create a list of input_name sorted by score
-   Input:
-     scores = dictionary of the form  {input_name : score}
-   Output:
-     scored = a list of input_name sorted by score
-   """
+    Create a list of input_name sorted by score
+    Input:
+      scores = dictionary of the form  {input_name : score}
+    Output:
+      scored = a list of input_name sorted by score
+    """
     scored = sorted(scores, key=scores.__getitem__, reverse=True)
     return scored
 
 
 def sort_work(params, priority):
     """
-   Returns a dictionary as params but ordered by score
-   Input:
-      params = dictionary of the form  {input_name : value}
-      priority = the list of input_name ordered by score calculated by score_function
-   Output:
-      sorted_dict = the same dictionary as params but ordered by score
-   """
+    Returns a dictionary as params but ordered by score
+    Input:
+       params = dictionary of the form  {input_name : value}
+       priority = the list of input_name ordered by score calculated by score_function
+    Output:
+       sorted_dict = the same dictionary as params but ordered by score
+    """
     sorted_dict = {}
     i = 0
     for index in priority:
@@ -126,12 +126,12 @@ def sort_work(params, priority):
 
 def pop_left(dictionary):
     """
-   Cuts the first element of dictionary and returns its first element (key:value)
-   Input/Output: 
-     dictionary = Dictionary of string containing the command lines to use. After reading the dictionary the first element is deleted from the dictionary.
-   Output:
-     first_el = first element (values) of the dictionary
-   """
+    Cuts the first element of dictionary and returns its first element (key:value)
+    Input/Output:
+      dictionary = Dictionary of string containing the command lines to use. After reading the dictionary the first element is deleted from the dictionary.
+    Output:
+      first_el = first element (values) of the dictionary
+    """
     if len(dictionary) > 0:
         first_el = {list(dictionary.keys())[0]: list(dictionary.values())[0]}
         dictionary.pop(list(dictionary.keys())[0])
@@ -142,10 +142,10 @@ def pop_left(dictionary):
 
 def worker(input_file):
     """
-   Perform elaboration for each element of the queue.
-   Input/Output
-      input_file = command to be executed
-   """
+    Perform elaboration for each element of the queue.
+    Input/Output
+       input_file = command to be executed
+    """
     myrank = comm.Get_rank()
     t1 = time.time()
     print(
@@ -166,10 +166,10 @@ def worker(input_file):
 
 def main(queue, rs_fname):
     """
-   Dispatch the work among processors.
-   Input:
-      queue = list of job inputs
-   """
+    Dispatch the work among processors.
+    Input:
+       queue = list of job inputs
+    """
     n_tasks = len(queue)
     if suspend_resume_enabled:
         rs_file = open(rs_fname, "rb")
@@ -237,8 +237,8 @@ def main(queue, rs_fname):
 
 def subordinate():
     """
-   Subordinate process.
-   """
+    Subordinate process.
+    """
     myrank = comm.Get_rank()
     WORKTAG = 1
     DIETAG = 2
@@ -256,26 +256,26 @@ def subordinate():
 
 def extract_params():
     """
-   Extract parameter from line of commands.
-   Output: 
-      params = list of parameters from original command line
-   """
+    Extract parameter from line of commands.
+    Output:
+       params = list of parameters from original command line
+    """
     params = sys.argv
     return params
 
 
 def check_flag(params, string, delete):
     """
-   Check if a parameter (string) was beeen declared in the line of commands (params) and return the associated value.
-   If delete is true the related string will be deleted
-   If string is not present, return None
-   Input:
-      params = list of parameters from original command line
-      string = string to be searched
-      delete = Boolean variable to check if the selected string must be deleted after copied in value variable
-   Output:
-      value = parameter associated to the selected string
-   """
+    Check if a parameter (string) was beeen declared in the line of commands (params) and return the associated value.
+    If delete is true the related string will be deleted
+    If string is not present, return None
+    Input:
+       params = list of parameters from original command line
+       string = string to be searched
+       delete = Boolean variable to check if the selected string must be deleted after copied in value variable
+    Output:
+       value = parameter associated to the selected string
+    """
     i = 0
     value = None
     size = len(string)
@@ -294,24 +294,24 @@ def check_flag(params, string, delete):
 
 def read_params():
     """
-   Read parameters from input string and from a file
-   Input: 
-   Output:
-      input_name = Input file
-      output_name = Standard output directory
-      wb1 = Axprossimative depth for the tiles
-      wb2 = Axprossimative height for the tiles
-      wb3 = Axprossimative width for the tiles
-      sfmt = Source format
-      dfmt = Destination format
-      iresolutions = List of integer values containing all the desidered values for level of resolution
-      max_res = Maximum level of resolution available (integer)
-      params = Array containing instruction derived from the remanent part of the imput string
-      last_string = Remanent part of the input string
-      height = Height of the input immage
-      width = Width of the input immage
-      depth = Depth of the input immage
-   """
+    Read parameters from input string and from a file
+    Input:
+    Output:
+       input_name = Input file
+       output_name = Standard output directory
+       wb1 = Axprossimative depth for the tiles
+       wb2 = Axprossimative height for the tiles
+       wb3 = Axprossimative width for the tiles
+       sfmt = Source format
+       dfmt = Destination format
+       iresolutions = List of integer values containing all the desidered values for level of resolution
+       max_res = Maximum level of resolution available (integer)
+       params = Array containing instruction derived from the remanent part of the imput string
+       last_string = Remanent part of the input string
+       height = Height of the input immage
+       width = Width of the input immage
+       depth = Depth of the input immage
+    """
     params = extract_params()
     params.pop(0)
     params = check_double_quote(params)
@@ -422,15 +422,15 @@ def read_params():
 
 def read_item(input_arr, item, default, message=True):
     """
-   Read the value related to "item" from the list "input_arr" and if no item are present set it to "default".
-   Please note: The function convert the output to the same type of "default" variable
-   Input:
-      input_arr = List of strings from imput command line
-      item = The item to search
-      default = The default value if no item are present
-   Output:
-      value = Output value for the selected item
-   """
+    Read the value related to "item" from the list "input_arr" and if no item are present set it to "default".
+    Please note: The function convert the output to the same type of "default" variable
+    Input:
+       input_arr = List of strings from imput command line
+       item = The item to search
+       default = The default value if no item are present
+    Output:
+       value = Output value for the selected item
+    """
     tmp = check_flag(input_arr, item, True)
     if tmp == None:
         value = default
@@ -541,14 +541,14 @@ def search_for_entry(string_2_serch, file_in, nline=0):
 
 def sort_list(len_1, len_2, len_3):
     """
-   Create a list sorting the indexes along three directions:
-   Input: 
-      len_1 = Number of elements of the array for the first index
-      len_2 = Number of elements of the array for the second index
-      len_3 = Number of elements of the array for the third index
-   Output:
-      order = An ordered list containig an a sequence of lists of 3 alements (one for each direction) that identify the position on the local index
-   """
+    Create a list sorting the indexes along three directions:
+    Input:
+       len_1 = Number of elements of the array for the first index
+       len_2 = Number of elements of the array for the second index
+       len_3 = Number of elements of the array for the third index
+    Output:
+       order = An ordered list containig an a sequence of lists of 3 alements (one for each direction) that identify the position on the local index
+    """
     order = []
     for i in range(0, len_1):
         for j in range(0, len_2):
@@ -562,23 +562,23 @@ def sort_start_end(
     start_1, start_2, start_3, end_1, end_2, end_3, size_1, size_2, size_3
 ):
     """
-   Sort start points and edn point in two lists of elements
-   Input:
-      start_1 = Array containing all the starting indexes for the tiles on the Depth direction
-      start_2 = Array containing all the starting indexes for the tiles on the Height direction
-      start_3 = Array containing all the starting indexes for the tiles on the Width direction
-      end_1 = Array containing all the ending indexes for the tiles on the Depth direction
-      end_2 = Array containing all the ending indexes for the tiles on the Height direction
-      end_3 = Array containing all the ending indexes for the tiles on the Width direction
-      size_1 = Array containing the size of the tile in the Depth direction
-      size_2 = Array containing the size of the tile in the Height direction
-      size_3 = Array containing the size of the tile in the Width direction
-   Output:
-      order = An ordered list containig an a sequence of lists of 3 alements (one for each direction) that identify the position on the local index 
-      start_list = Ordered list of lists of starting points. E.g.: [[width_in[0], height_in[0], depth_in[0]], [width_in[1], height_in[1], depth_in[1]], ... ,[width_in[N], height_in[N], depth_in[N]]]
-      end_list = Ordered list of lists of starting points. E.g.: [[width_fin[0], height_fin[0], depth_in[0]], [width_fin[1], height_fin[1], depth_fin[1]], ... ,[width_fin[N], height_fin[N], depth_fin[N]]]
-      len_arr = Dictionary containing elements like {index:[size_width(i),size_height(i),size_depth(i)],.....}
-   """
+    Sort start points and edn point in two lists of elements
+    Input:
+       start_1 = Array containing all the starting indexes for the tiles on the Depth direction
+       start_2 = Array containing all the starting indexes for the tiles on the Height direction
+       start_3 = Array containing all the starting indexes for the tiles on the Width direction
+       end_1 = Array containing all the ending indexes for the tiles on the Depth direction
+       end_2 = Array containing all the ending indexes for the tiles on the Height direction
+       end_3 = Array containing all the ending indexes for the tiles on the Width direction
+       size_1 = Array containing the size of the tile in the Depth direction
+       size_2 = Array containing the size of the tile in the Height direction
+       size_3 = Array containing the size of the tile in the Width direction
+    Output:
+       order = An ordered list containig an a sequence of lists of 3 alements (one for each direction) that identify the position on the local index
+       start_list = Ordered list of lists of starting points. E.g.: [[width_in[0], height_in[0], depth_in[0]], [width_in[1], height_in[1], depth_in[1]], ... ,[width_in[N], height_in[N], depth_in[N]]]
+       end_list = Ordered list of lists of starting points. E.g.: [[width_fin[0], height_fin[0], depth_in[0]], [width_fin[1], height_fin[1], depth_fin[1]], ... ,[width_fin[N], height_fin[N], depth_fin[N]]]
+       len_arr = Dictionary containing elements like {index:[size_width(i),size_height(i),size_depth(i)],.....}
+    """
     len_1 = len(start_1)
     len_2 = len(start_2)
     len_3 = len(start_3)
@@ -600,12 +600,12 @@ def sort_start_end(
 
 def check_double_quote(inpstring):
     """
-   Check if some strings needs of a double quote (if some space are inside the string, it will need to be inside two double quote). E.g.: --sfmt="TIFF (unstitched, 3D)"
-   Input:
-      inpstring: input string or array of strings
-   Output:
-      newstring = new string (or array of strings) corrected by quoting if necessary
-   """
+    Check if some strings needs of a double quote (if some space are inside the string, it will need to be inside two double quote). E.g.: --sfmt="TIFF (unstitched, 3D)"
+    Input:
+       inpstring: input string or array of strings
+    Output:
+       newstring = new string (or array of strings) corrected by quoting if necessary
+    """
     if type(inpstring) == list:
         newstring = []
         for index in inpstring:
@@ -646,12 +646,12 @@ def check_double_quote(inpstring):
 
 def eliminate_double_quote(inpstring):
     """
-   Check if the string is already enclosed by quotes
-   Input:
-      inpstring: input string or array of strings
-   Output:
-      newstring = new string (or array of strings) corrected by eliminating enclosing quotes if any
-   """
+    Check if the string is already enclosed by quotes
+    Input:
+       inpstring: input string or array of strings
+    Output:
+       newstring = new string (or array of strings) corrected by eliminating enclosing quotes if any
+    """
     len_str = len(inpstring)
     if (
         inpstring[0] == '"'
@@ -677,22 +677,22 @@ def generate_first_command(
     last_string,
 ):
     """
-   Generate first command line
-   Input:
-      input_name = Input file
-      output_name = Standard output directory
-      wb1 = Axprossimative depth for the tiles
-      wb2 = Axprossimative height for the tiles
-      wb3 = Axprossimative width for the tiles
-      sfmt = Source format
-      dfmt = Destination format
-      iresolutions = List of integer values containing all the desidered values for level of resolution
-      max_res = Maximum level of resolution available (integer)
-      params = Array containing instruction derived from the remanent part of the imput string
-      last_string = Remanent part of the input string
-   Output:
-      first_string = Command line to preprocess the data 
-   """
+    Generate first command line
+    Input:
+       input_name = Input file
+       output_name = Standard output directory
+       wb1 = Axprossimative depth for the tiles
+       wb2 = Axprossimative height for the tiles
+       wb3 = Axprossimative width for the tiles
+       sfmt = Source format
+       dfmt = Destination format
+       iresolutions = List of integer values containing all the desidered values for level of resolution
+       max_res = Maximum level of resolution available (integer)
+       params = Array containing instruction derived from the remanent part of the imput string
+       last_string = Remanent part of the input string
+    Output:
+       first_string = Command line to preprocess the data
+    """
     first_string = "teraconverter " + "--height=" + str(wb2) + " --width=" + str(wb3)
     first_string = (
         first_string + " --depth=" + str(wb1) + " --sfmt=" + sfmt + " --dfmt=" + dfmt
@@ -731,22 +731,22 @@ def generate_final_command(
     last_string,
 ):
     """
-   Generate last command line to merge metadata
-   Input:
-      input_name = Input file
-      output_name = Standard output directory
-      wb1 = Axprossimative depth for the tiles
-      wb2 = Axprossimative height for the tiles
-      wb3 = Axprossimative width for the tiles
-      sfmt = Source format
-      dfmt = Destination format
-      iresolutions = List of integer values containing all the desidered values for level of resolution
-      max_res = Maximum level of resolution available (integer)
-      params = Array containing instruction derived from the remanent part of the imput string
-      last_string = Remanent part of the input string
-   Output:
-      final_string = Command line to merge metadata 
-   """
+    Generate last command line to merge metadata
+    Input:
+       input_name = Input file
+       output_name = Standard output directory
+       wb1 = Axprossimative depth for the tiles
+       wb2 = Axprossimative height for the tiles
+       wb3 = Axprossimative width for the tiles
+       sfmt = Source format
+       dfmt = Destination format
+       iresolutions = List of integer values containing all the desidered values for level of resolution
+       max_res = Maximum level of resolution available (integer)
+       params = Array containing instruction derived from the remanent part of the imput string
+       last_string = Remanent part of the input string
+    Output:
+       final_string = Command line to merge metadata
+    """
     final_string = "teraconverter " + "--height=" + str(wb2) + " --width=" + str(wb3)
     final_string = (
         final_string + " --depth=" + str(wb1) + " --sfmt=" + sfmt + " --dfmt=" + dfmt
@@ -787,24 +787,24 @@ def generate_parallel_command(
     last_string,
 ):
     """
-   Generate the list of parallel command lines
-   Input:
-      start_list = Ordered list of lists of starting points. E.g.: [[width_in[0], height_in[0], depth_in[0]], [width_in[1], height_in[1], depth_in[1]], ... ,[width_in[N], height_in[N], depth_in[N]]]
-      end_list = Ordered list of lists of starting points. E.g.: [[width_fin[0], height_fin[0], depth_in[0]], [width_fin[1], height_fin[1], depth_fin[1]], ... ,[width_fin[N], height_fin[N], depth_fin[N]]]
-      input_name = Input file
-      output_name = Standard output directory
-      wb1 = Axprossimative depth for the tiles
-      wb2 = Axprossimative height for the tiles
-      wb3 = Axprossimative width for the tiles
-      sfmt = Source format
-      dfmt = Destination format
-      iresolutions = List of integer values containing all the desidered values for level of resolution
-      max_res = Maximum level of resolution available (integer)
-      params = Array containing instruction derived from the remanent part of the imput string
-      last_string = Remanent part of the input string
-   Output:
-      list_string = Dictionary of strings containing the command lines to process the data. E.G.: {i:command[i]} 
-   """
+    Generate the list of parallel command lines
+    Input:
+       start_list = Ordered list of lists of starting points. E.g.: [[width_in[0], height_in[0], depth_in[0]], [width_in[1], height_in[1], depth_in[1]], ... ,[width_in[N], height_in[N], depth_in[N]]]
+       end_list = Ordered list of lists of starting points. E.g.: [[width_fin[0], height_fin[0], depth_in[0]], [width_fin[1], height_fin[1], depth_fin[1]], ... ,[width_fin[N], height_fin[N], depth_fin[N]]]
+       input_name = Input file
+       output_name = Standard output directory
+       wb1 = Axprossimative depth for the tiles
+       wb2 = Axprossimative height for the tiles
+       wb3 = Axprossimative width for the tiles
+       sfmt = Source format
+       dfmt = Destination format
+       iresolutions = List of integer values containing all the desidered values for level of resolution
+       max_res = Maximum level of resolution available (integer)
+       params = Array containing instruction derived from the remanent part of the imput string
+       last_string = Remanent part of the input string
+    Output:
+       list_string = Dictionary of strings containing the command lines to process the data. E.G.: {i:command[i]}
+    """
     index = len(start_list)
     list_string = {}
     for i in range(0, index):
@@ -896,7 +896,7 @@ def opt_algo(D, w, n):
 def prep_array(wb, r, k):
     """
     Create a 1D array containing the number of elements per tile.
-    Input: 
+    Input:
          wb = size of standard blocks
          r = rest (if not equal to 0, is the size of the last block)
          k = number of standard blocks
@@ -922,16 +922,16 @@ def prep_array(wb, r, k):
 
 def create_sizes(size, wb, max_res, norest=False):
     """
-   Create a 3D array containing the size for each tile on the desidered direction
-   Input: 
-      start_wb = Start parameter for b
-      size = size (in pixel) of the input immage
-      wb = Rough depth for the tiles in the desidered direction
-      max_res = Maximum level of resolution available (integer)
-      norest = Boolean variable to chech if we need of the last array element (if it is different from the preavious one)
-   Output:
-      arr = Array containing the size for each tile on the desidered direction
-   """
+    Create a 3D array containing the size for each tile on the desidered direction
+    Input:
+       start_wb = Start parameter for b
+       size = size (in pixel) of the input immage
+       wb = Rough depth for the tiles in the desidered direction
+       max_res = Maximum level of resolution available (integer)
+       norest = Boolean variable to chech if we need of the last array element (if it is different from the preavious one)
+    Output:
+       arr = Array containing the size for each tile on the desidered direction
+    """
     values = opt_algo(size, wb, max_res)
     b = values[0]
     r = values[1]
@@ -949,15 +949,15 @@ def create_sizes(size, wb, max_res, norest=False):
 
 def create_starts_end(array, start_point=0, open_dx=True):
     """
-   Create arrays containing all the starting and ending indexes for the tiles on the desidered direction
-   Input:
-      array = Array containing the size for each tile on the desidered direction
-      start_point = Starting index for the input immage (optional)
-      open_dx = If true (the default value) ==> ending indexes = subsequent starting indexes ==> Open end
-   Output:
-      star_arr = Array containing all the starting indexes for the tiles on the desidered direction
-      end_arr = Array containing all the ending indexes for the tiles on the desidered direction
-   """
+    Create arrays containing all the starting and ending indexes for the tiles on the desidered direction
+    Input:
+       array = Array containing the size for each tile on the desidered direction
+       start_point = Starting index for the input immage (optional)
+       open_dx = If true (the default value) ==> ending indexes = subsequent starting indexes ==> Open end
+    Output:
+       star_arr = Array containing all the starting indexes for the tiles on the desidered direction
+       end_arr = Array containing all the ending indexes for the tiles on the desidered direction
+    """
     len_arr = len(array)
     ind_arr = list(range(0, len_arr))
     start_arr = []
@@ -990,14 +990,14 @@ def ctrl_parallelism(sfmt, dfmt):
 
 def create_commands(gi_np, info=False):
     """
-   Create commands to run in parallel
-   Input:
-   Output:
-      first_string = String to initialize parallel computation
-      list_string = Dictionary of strings containing the command lines to process the data. E.G.: {i:command[i]}
-      len_arr = Dictionary containing elements like {index:[size_width(i),size_height(i),size_depth(i)],.....}
-      final_string = String to merge all metadadata
-   """
+    Create commands to run in parallel
+    Input:
+    Output:
+       first_string = String to initialize parallel computation
+       list_string = Dictionary of strings containing the command lines to process the data. E.G.: {i:command[i]}
+       len_arr = Dictionary containing elements like {index:[size_width(i),size_height(i),size_depth(i)],.....}
+       final_string = String to merge all metadadata
+    """
     (
         input_name,
         output_name,

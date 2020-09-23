@@ -49,7 +49,7 @@ preset_parameters.update(
 def get_registration_presets():
     """
     Get the names of all registration presets.
-    
+
     Returns:
         dict_keys: The keys of the dictionary mapping all registration preset names to the corresponding registration parameters.
     """
@@ -60,13 +60,13 @@ def get_registration_presets():
 def get_registration_preset(preset: str) -> dict:
     """
     If <preset> is recognized, returns a dictionary containing the registration parameters corresponding to <preset>.
-    
+
     Args:
         preset (str): The name of a preset keyed to a particular dictionary of registration parameters.
-    
+
     Raises:
         NotImplementedError: Raised if <preset> is not a recognized preset name.
-    
+
     Returns:
         dict: The registration kwargs specified by <preset>.
     """

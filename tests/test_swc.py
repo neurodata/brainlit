@@ -3,19 +3,20 @@ import pandas as pd
 import tifffile as tf
 import networkx as nx
 from cloudvolume import CloudVolume
-
-
 import brainlit
 from brainlit.utils import swc
 from brainlit.utils.session import NeuroglancerSession
 
 from pathlib import Path
 
-URL = str(Path(__file__).resolve().parents[0] / "upload")
-# read in s3 path to dataframe
-s3_path = "s3://mouse-light-viz/precomputed_volumes/brain1_segments"
-df_s3 = swc.read_s3(s3_path, seg_id=2, mip=1)
+top_level = Path(__file__).parents[1] / "data"
+input = (top_level / "data_octree").as_posix()
+url = (top_level / "test_upload").as_uri()
+url_seg = url + "_segments"
+url = url + "/serial"
 
+# read in s3 path to dataframe
+df_s3 = swc.read_s3(url_seg, seg_id=2, mip=0)
 
 # read in swc file to dataframe
 swc_path = "./data/data_octree/consensus-swcs/2018-08-01_G-002_consensus.swc"
@@ -37,9 +38,8 @@ paths = swc.graph_to_paths(G)
 paths_s3 = swc.graph_to_paths(G_s3)
 
 # create a subset of the dataframe
-url = "s3://mouse-light-viz/precomputed_volumes/brain1_lowres"
-mip = 1
-ngl = NeuroglancerSession(url, mip=mip, url_segments=url + "_segments")
+mip = 0
+ngl = NeuroglancerSession(url, mip=mip, url_segments=url_seg)
 buffer = 10
 subneuron_df = df_s3[0:5]
 vertex_list = subneuron_df["sample"].array

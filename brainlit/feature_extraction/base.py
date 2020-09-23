@@ -9,7 +9,7 @@ import time
 from cloudvolume import CloudVolume
 import feather
 from joblib import Parallel, delayed
-from typing import Optional, List, Union, Tuple, Literal
+from typing import Optional, List, Union, Tuple
 
 
 class BaseFeatures(BaseEstimator):
@@ -175,8 +175,7 @@ class BaseFeatures(BaseEstimator):
         batch_size=None,
         file_path=None,
     ):
-        """Core code which actually extracts features.
-        """
+        """Core code which actually extracts features."""
         voxel_dict = {}
         counter = 0
         batch_id = 0

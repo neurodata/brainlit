@@ -8,15 +8,15 @@ import joblib
 from glob import glob
 import argparse
 from psutil import virtual_memory
-from typing import Optional, Sequence, Union, Literal, Tuple, List
+from typing import Optional, Sequence, Union, Tuple, List
 import contextlib
 
 import tifffile as tf
 from pathlib import Path
-from .swc import swc2skeleton
+from brainlit.utils.swc import swc2skeleton
 import time
 from tqdm.auto import tqdm
-from .util import (
+from brainlit.utils.util import (
     tqdm_joblib,
     check_type,
     check_iterable_type,
@@ -30,7 +30,7 @@ def get_volume_info(
     image_dir: str,
     num_resolutions: int,
     channel: Optional[int] = 0,
-    extension: Optional[Literal["tif"]] = "tif",
+    extension: Optional[str] = "tif",
 ) -> Tuple[List, List, List, Tuple, List]:
     """Get filepaths along the octree-format image directory
 
@@ -100,8 +100,8 @@ def create_cloud_volume(
     num_resolutions: int,
     chunk_size: Optional[Sequence[int]] = None,
     parallel: Optional[bool] = False,
-    layer_type: Optional[Literal["image", "segmentaion", "annotation"]] = "image",
-    dtype: Optional[Literal["uint16", "uint64"]] = None,
+    layer_type: Optional[str] = "image",
+    dtype: Optional[str] = None,
     commit_info: Optional[bool] = True,
 ) -> CloudVolumePrecomputed:
     """Create CloudVolume object and info file.
@@ -279,7 +279,8 @@ def upload_volumes(
         raise ValueError(f"{chosen} should be -1, or between 0 and {num_mips-1}")
 
     (files_ordered, paths_bin, vox_size, img_size, _) = get_volume_info(
-        input_path, num_mips,
+        input_path,
+        num_mips,
     )
     if chosen != -1:
         commit_info = False
@@ -312,7 +313,11 @@ def upload_volumes(
                     )
                 ) as progress_bar:
                     Parallel(num_procs, timeout=1800)(
-                        delayed(process)(f, b, vols[mip],)
+                        delayed(process)(
+                            f,
+                            b,
+                            vols[mip],
+                        )
                         for f, b in zip(files_ordered[mip], paths_bin[mip])
                     )
                 print(f"\nFinished mip {mip}, took {time.time()-start} seconds")
@@ -328,7 +333,11 @@ def upload_volumes(
                 )
             ) as progress_bar:
                 Parallel(num_procs, timeout=1800)(
-                    delayed(process)(f, b, vols[chosen],)
+                    delayed(process)(
+                        f,
+                        b,
+                        vols[chosen],
+                    )
                     for f, b in zip(files_ordered[chosen], paths_bin[chosen])
                 )
             print(f"\nFinished mip {chosen}, took {time.time()-start} seconds")
@@ -340,7 +349,7 @@ def upload_volumes(
 def create_skel_segids(
     swc_dir: str, origin: Sequence[Union[int, float]]
 ) -> Tuple[Skeleton, List[int]]:
-    """ Create skeletons to be uploaded as precomputed format
+    """Create skeletons to be uploaded as precomputed format
 
     Arguments:
         swc_dir: Path to consensus swc files.
@@ -379,9 +388,16 @@ def upload_segments(input_path, precomputed_path, num_mips):
     if num_mips < 1:
         raise ValueError(f"Number of resolutions should be > 0, not {num_mips}")
 
-    (_, _, vox_size, img_size, origin) = get_volume_info(input_path, num_mips,)
+    (_, _, vox_size, img_size, origin) = get_volume_info(
+        input_path,
+        num_mips,
+    )
     vols = create_cloud_volume(
-        precomputed_path, img_size, vox_size, num_mips, layer_type="segmentation",
+        precomputed_path,
+        img_size,
+        vox_size,
+        num_mips,
+        layer_type="segmentation",
     )
     swc_dir = Path(input_path) / "consensus-swcs"
     segments, segids = create_skel_segids(str(swc_dir), origin)
@@ -390,11 +406,17 @@ def upload_segments(input_path, precomputed_path, num_mips):
 
 
 def upload_annotations(input_path, precomputed_path, num_mips):
-    """Uploads empty annotation volume.
-    """
-    (_, _, vox_size, img_size, origin) = get_volume_info(input_path, num_mips,)
+    """Uploads empty annotation volume."""
+    (_, _, vox_size, img_size, origin) = get_volume_info(
+        input_path,
+        num_mips,
+    )
     create_cloud_volume(
-        precomputed_path, img_size, vox_size, num_mips, layer_type="annotation",
+        precomputed_path,
+        img_size,
+        vox_size,
+        num_mips,
+        layer_type="annotation",
     )
 
 
@@ -411,7 +433,8 @@ if __name__ == "__main__":
         help="Path to location where precomputed volume should be stored. Example: s3://<bucket>/<experiment>/<channel>",
     )
     parser.add_argument(
-        "layer_type", help="Layer type to upload. One of ['image', 'segmentation']",
+        "layer_type",
+        help="Layer type to upload. One of ['image', 'segmentation']",
     )
     parser.add_argument(
         "--extension",
@@ -420,7 +443,10 @@ if __name__ == "__main__":
         type=str,
     )
     parser.add_argument(
-        "--channel", help="Channel to upload to", default=0, type=int,
+        "--channel",
+        help="Channel to upload to",
+        default=0,
+        type=int,
     )
     parser.add_argument(
         "--num_resolutions",
@@ -445,11 +471,15 @@ if __name__ == "__main__":
         )
     elif args.layer_type == "segmentation":
         upload_segments(
-            args.input_path, args.precomputed_path, args.num_resolutions,
+            args.input_path,
+            args.precomputed_path,
+            args.num_resolutions,
         )
     else:
         upload_segments(
-            args.input_path, args.precomputed_path + "_segments", args.num_resolutions,
+            args.input_path,
+            args.precomputed_path + "_segments",
+            args.num_resolutions,
         )
         upload_volumes(
             args.input_path,

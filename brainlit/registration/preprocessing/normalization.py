@@ -11,11 +11,11 @@ def _verify_data_is_ndarray(data):
 def cast_to_typed_array(data, dtype=float):
     """
     Returns a copy of data cast as a np.ndarray of type dtype.
-    
+
     Args:
         data (np.ndarray): The array to be cast.
         dtype (type, optional): The dtype to cast data to. Defaults to float. Defaults to float.
-    
+
     Returns:
         np.ndarray: A copy of data cast to type dtype.
     """
@@ -26,10 +26,10 @@ def cast_to_typed_array(data, dtype=float):
 def normalize_by_MAD(data):
     """
     Returns a copy of data divided by its mean absolute deviation.
-    
+
     Args:
         data (np.ndarray): The array to be normalized.
-    
+
     Returns:
         np.ndarray: A copy of data divided by its mean absolute deviation.
     """
@@ -63,13 +63,13 @@ def center_to_mean(data):
 def pad(data, pad_width=10, mode="constant", constant_values=None):
     """
     Returns a padded copy of data.
-    
+
     Args:
         data (np.ndarray): The array to be padded.
         pad_width (int, optional): The amount by which to pad. Defaults to 10.
         mode (str, optional): The padding mode used in np.pad. Defaults to 'constant'.
         constant_values (float, optional): The values to use in padding if mode='constant' If None, this is set to np.quantile(data, 10**-data.ndim). Defaults to None.
-    
+
     Returns:
         np.ndarray: The padded copy of data.
     """

@@ -7,23 +7,22 @@ from brainlit.utils.swc import graph_to_paths
 from skimage import draw
 from pathlib import Path
 
-URL = "s3://mouse-light-viz/precomputed_volumes/brain1"
 top_level = Path(__file__).parents[1] / "data"
 input = (top_level / "data_octree").as_posix()
 url = (top_level / "test_upload").as_uri()
-URL_SEG = url + "_segments"
-URL = url + "/serial"
+url_seg = url + "_segments"
+url = url + "/serial"
 
 
 def test_pairwise():
 
     """
     For a given iterable array [A1,A2,...,An], test if the function can return a zipped list [(A1,A2),(A2,A3),...,(An-1,An)]
-    
+
     The list should contain n-1 pairs(2-element tuple)
-    
+
     The first element of all the tuples are [A1,A2,...,An-1]
-    
+
     The second element of all the tubles are [A2,A3,...,An]
     """
     n = np.random.randint(4, 9)
@@ -46,14 +45,14 @@ def test_draw_sphere():
 
     """
     Test if the function maps all the points located within the given radius of the given center to 1, otherwise 0
-    
+
     The output array should have the same size of input image and binary values
-    
+
     Distance between a point and the given center:
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    ngl_session = NeuroglancerSession(url=url, url_segments=url_seg)
     img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     center = [
@@ -86,14 +85,14 @@ def test_draw_tube_spheres():
 
     """
     Test if the function maps all the points within the radius of a segment line (defined by 2 given points) to 1, otherwise 0
-    
+
     The output array should have the same size of input image and binary values
-    
+
     Distance between a point and the segment line:
              <= radius (if the point has value 1)
-             >  radius (if the point has value 0)        
+             >  radius (if the point has value 0)
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    ngl_session = NeuroglancerSession(url=url, url_segments=url_seg)
     img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     vertex0 = [
@@ -138,14 +137,14 @@ def test_draw_tube_edt():
 
     """
     Test if the function maps all the points within the radius of a segment line (defined by 2 given points) to 1, otherwise 0
-    
+
     The output array should have the same size of input image and binary values
-    
+
     Distance between a point and the segment line:
              <= radius (if the point has value 1)
-             >  radius (if the point has value 0)        
+             >  radius (if the point has value 0)
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    ngl_session = NeuroglancerSession(url=url, url_segments=url_seg)
     img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     vertex0 = [
@@ -190,14 +189,14 @@ def test_tubes_seg():
 
     """
     Test if the function maps all the points within the radius of polyline (defined by given vertices) to 1, otherwise 0
-    
+
     The output array should have the same size of input image and binary values
-    
+
     Distance between a point and the polyline:
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    ngl_session = NeuroglancerSession(url=url, url_segments=url_seg)
     img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     vertices = np.random.randint(min(shape), size=(4, 3))
@@ -233,9 +232,8 @@ def test_tubes_seg():
 
 
 def test_tubes_from_paths_bad_inputs():
-    """Tests that the tubes_from_paths method raises errors when given bad inputs.
-    """
-    sess = NeuroglancerSession(URL, 0, URL_SEG)
+    """Tests that the tubes_from_paths method raises errors when given bad inputs."""
+    sess = NeuroglancerSession(url, 0, url_seg)
     img, bbox, verts = sess.pull_voxel(2, 300, radius=5)  # A valid bbox with data.
     G = sess.get_segments(2, bbox)
     bbox = bbox.to_list()
@@ -256,9 +254,8 @@ def test_tubes_from_paths_bad_inputs():
 
 
 def test_tubes_from_paths():
-    """Tests that, given valid paths, valid tubes are created.
-    """
-    sess = NeuroglancerSession(URL, 0, URL_SEG)
+    """Tests that, given valid paths, valid tubes are created."""
+    sess = NeuroglancerSession(url, 0, url_seg)
     img, bbox, verts = sess.pull_voxel(2, 300, radius=5)  # A valid bbox with data.
     G = sess.get_segments(2, bbox)
     bbox = bbox.to_list()
@@ -269,8 +266,7 @@ def test_tubes_from_paths():
 
 
 def test_tubes_exact():
-    """Tests that exact pixels are filled in.
-    """
+    """Tests that exact pixels are filled in."""
     img = np.zeros((10, 10, 10))
     verts = [[5, 5, 0], [5, 5, 10]]
     tubes = tube_seg.tubes_from_paths(img.shape, [verts])

@@ -7,8 +7,6 @@ matrix:
   include:
     - python: 3.8
 cache: pip
-before_install:
-  - "./.aws.sh"
 install:
   - pip install -r requirements.txt
   - pip install -U pytest pytest-cov pytest-doctestplus codecov
@@ -18,9 +16,6 @@ script:
   - black --check --diff ./brainlit ./tests
 after_success:
   - codecov
-env:
-  global:
-    secure: XXGsCs9mY4iCJG8KHF7OqCfh5tmZbPd6HGm3XIHYHSKWfEozG7ac+LPFfUgHOXy4SJXsEBZEs/0LAENfJS5BL9ToFxsH08QOoHt5cXx/vt/v8Al4uFJEhNvn3FSRfabYljdjDNAzcIqTpj7h0PIxLpKzQOXsaYPtKuvYlp3pwg4kdX2mw0gqcz8sF0QmeyTLsYnXb2cQ4FVUrl7y9sLLUKfsR+6kMnoQNWA9Blnm3aIKp20RPcrjlD+XLsfjA85kQEAWsryMefjPo+K4DHfHV/sTu8157Yz8/OJ3yYofR/bfhSAmHHw4LOM92UYggMSRVM0txiL1kLjxP2kBY63aNtwKrC1q7WJ2WtFTLXNUo1kMUm8QbcSOhmzErBEADKnFviYQogs9UrsWfgeW3hBTIzYwUmatXXy33drQywbHzp0PDrweaoYI9Zr606oPvpzJ8G5WZwDWbf2G785L5J21UzxSKkPMTO6RZ2Oni0cxdiT9DgPlao4Y+P7f756L4dy5YE29/mbExAfbKt8FTqnEl5JDwJBaCPJe/1uaSUy5rFF2noAHbylKrrpE3kgt+9o83gG69wQj6RFx3Z889FjvQYiMKS0Dn/TEXsaWMbX7HlEtXSq4U9r5N59cF4c/m6+/YlY8Hwz8XxeKIf/r31anI93sapuYwgb0V0jBMBGGkAk=
 
 deploy:
   - provider: pypi

@@ -2,8 +2,6 @@ import pytest
 from brainlit.utils import upload, session
 from brainlit.algorithms.generate_fragments import tube_seg
 from pathlib import Path
-
-# below inputs for validation
 import tifffile as tf
 from cloudvolume.lib import Bbox
 
@@ -12,12 +10,15 @@ NUM_RES = 1
 
 @pytest.fixture
 def volume_info(num_res=NUM_RES, channel=0):
-    """Pytest fixture that gets parameters that many upload.py methods use.
-    """
+    """Pytest fixture that gets parameters that many upload.py methods use."""
     top_level = Path(__file__).parents[1] / "data"
-    (ordered_files, bin_paths, vox_size, tiff_dims, origin,) = upload.get_volume_info(
-        str(top_level / "data_octree"), num_res, channel
-    )
+    (
+        ordered_files,
+        bin_paths,
+        vox_size,
+        tiff_dims,
+        origin,
+    ) = upload.get_volume_info(str(top_level / "data_octree"), num_res, channel)
     return (
         ordered_files,
         bin_paths,
@@ -30,8 +31,7 @@ def volume_info(num_res=NUM_RES, channel=0):
 
 @pytest.fixture
 def paths():
-    """Gets common paths for tests running uploads
-    """
+    """Gets common paths for tests running uploads"""
     top_level = Path(__file__).parents[1] / "data"
     input = top_level / "data_octree"
     return top_level, input
@@ -43,8 +43,7 @@ def paths():
 
 
 def test_get_volume_info_bad_inputs():
-    """Tests that errors are raised when bad inputs are given to upload.get_volume_info.
-    """
+    """Tests that errors are raised when bad inputs are given to upload.get_volume_info."""
     p = str(Path(__file__).parents[1] / "data")
     n = 1
     c = 0
@@ -68,9 +67,15 @@ def test_get_volume_info_bad_inputs():
 
 
 def test_create_cloud_volume_bad_inputs(volume_info):
-    """Tests that errors are raised when bad inputs are given to upload.create_cloud_volume.
-    """
-    (_, _, v, i, _, top_level,) = volume_info
+    """Tests that errors are raised when bad inputs are given to upload.create_cloud_volume."""
+    (
+        _,
+        _,
+        v,
+        i,
+        _,
+        top_level,
+    ) = volume_info
     p = "file://" + str(top_level)
     n = 1
     c = i
@@ -118,8 +123,7 @@ def test_create_cloud_volume_bad_inputs(volume_info):
 
 
 def test_get_data_ranges_bad_inputs(volume_info):
-    """Tests that errors are raised when bad inputs are given to upload.get_data_ranges.
-    """
+    """Tests that errors are raised when bad inputs are given to upload.get_data_ranges."""
     _, bin_paths, _, tiff_dims, _, _ = volume_info
     with pytest.raises(TypeError):
         upload.get_data_ranges(0, tiff_dims)
@@ -130,8 +134,7 @@ def test_get_data_ranges_bad_inputs(volume_info):
 
 
 def test_process_bad_inputs(volume_info):
-    """Tests that errors are raised when bad inputs are given to upload.process.
-    """
+    """Tests that errors are raised when bad inputs are given to upload.process."""
     fpaths, bin_paths, v, i, o, top = volume_info
     dest = "file://" + str(top / "test_upload")
     vols = upload.create_cloud_volume(dest, i, v, NUM_RES)
@@ -148,8 +151,7 @@ def test_process_bad_inputs(volume_info):
 
 
 def test_upload_volumes_bad_inputs(volume_info):
-    """Tests that errors are raised when bad inputs are given to upload.upload_volumes.
-    """
+    """Tests that errors are raised when bad inputs are given to upload.upload_volumes."""
     fpaths, bin_paths, v, i, o, top = volume_info
     n = NUM_RES
     p = False
@@ -175,8 +177,7 @@ def test_upload_volumes_bad_inputs(volume_info):
 
 
 def test_create_skel_segids_bad_inputs(volume_info):
-    """Tests that errors are raised when bad inputs are given to upload.create_skel_segids.
-    """
+    """Tests that errors are raised when bad inputs are given to upload.create_skel_segids."""
     fpaths, bin_paths, v, i, o, top = volume_info
     swcpath = str(top / "data_octree" / "consensus_swcs")
     with pytest.raises(TypeError):
@@ -190,8 +191,7 @@ def test_create_skel_segids_bad_inputs(volume_info):
 
 
 def test_upload_segments_bad_inputs(volume_info):
-    """Tests that errors are raised when bad inputs are given to upload.upload_segments.
-    """
+    """Tests that errors are raised when bad inputs are given to upload.upload_segments."""
     fpaths, bin_paths, v, i, o, top = volume_info
     n = NUM_RES
     root = str(top / "data_octree")
@@ -212,8 +212,7 @@ def test_upload_segments_bad_inputs(volume_info):
 
 
 def test_get_volume_info(volume_info):
-    """Tests that get_volume_info returns correct parameters.
-    """
+    """Tests that get_volume_info returns correct parameters."""
     ordered_files, bin_paths, vox_size, tiff_dims, origin, top_level = volume_info
     assert len(ordered_files) == NUM_RES and len(bin_paths) == NUM_RES
     assert (
@@ -227,12 +226,15 @@ def test_get_volume_info(volume_info):
 
 
 def test_create_image_layer(volume_info):
-    """Tests that create_image_layer returns valid CloudVolumePrecomputed object for image data.
-    """
+    """Tests that create_image_layer returns valid CloudVolumePrecomputed object for image data."""
     _, b, vox_size, tiff_dims, _, top_level = volume_info
     dir = top_level / "test_upload"
     vols = upload.create_cloud_volume(
-        dir.as_uri(), tiff_dims, vox_size, num_resolutions=NUM_RES, layer_type="image",
+        dir.as_uri(),
+        tiff_dims,
+        vox_size,
+        num_resolutions=NUM_RES,
+        layer_type="image",
     )
 
     assert len(vols) == NUM_RES  # one vol for each resolution
@@ -242,8 +244,7 @@ def test_create_image_layer(volume_info):
 
 
 def test_create_segmentation_layer(volume_info):
-    """Tests that create_cloud_volume returns valid CloudVolumePrecomputed object for segmentation data.
-    """
+    """Tests that create_cloud_volume returns valid CloudVolumePrecomputed object for segmentation data."""
     _, b, vox_size, tiff_dims, _, top_level = volume_info
     dir_segments = top_level / "test_upload_segments"
     vols = upload.create_cloud_volume(
@@ -261,8 +262,7 @@ def test_create_segmentation_layer(volume_info):
 
 
 def test_create_annotation_layer(volume_info):
-    """Tests that create_cloud_volume returns valid CloudVolumePrecomputed object for annotation data.
-    """
+    """Tests that create_cloud_volume returns valid CloudVolumePrecomputed object for annotation data."""
     _, b, vox_size, tiff_dims, _, top_level = volume_info
     dir_annotation = top_level / "test_upload_annotations"
     vols = upload.create_cloud_volume(
@@ -280,8 +280,7 @@ def test_create_annotation_layer(volume_info):
 
 
 def test_get_data_ranges(volume_info):
-    """Tests that get_data_ranges returns valid ranges.
-    """
+    """Tests that get_data_ranges returns valid ranges."""
     _, bin_paths, _, tiff_dims, _, _ = volume_info
     for res_bins in bin_paths:
         for bin in res_bins:
@@ -302,8 +301,7 @@ def test_get_data_ranges(volume_info):
 
 
 def test_create_skel_segids(volume_info):
-    """Tests that create_skel_segids generates valid skeleton objects.
-    """
+    """Tests that create_skel_segids generates valid skeleton objects."""
     _, _, _, _, origin, top_level = volume_info
     swc_dir = top_level / "data_octree" / "consensus-swcs"
     skels, segids = upload.create_skel_segids(swc_dir.as_posix(), origin)
@@ -317,8 +315,7 @@ def test_create_skel_segids(volume_info):
 
 
 def test_upload_segmentation(paths):
-    """Ensures that upload_segmentation runs without errors.
-    """
+    """Ensures that upload_segmentation runs without errors."""
     top_level, input = paths
     dir_segments = top_level / "test_upload_segments"
     upload.upload_segments(input.as_posix(), dir_segments.as_uri(), NUM_RES)
@@ -329,8 +326,7 @@ def test_upload_segmentation(paths):
 
 
 def test_upload_volumes_serial(paths):
-    """Ensures that upload_volumes runs without errors when `parallel` is False.
-    """
+    """Ensures that upload_volumes runs without errors when `parallel` is False."""
     top_level, input = paths
     dir = top_level / "test_upload" / "serial"
     upload.upload_volumes(input.as_posix(), dir.as_uri(), NUM_RES)
@@ -374,8 +370,7 @@ def test_upload_volumes_parallel(paths):
 
 
 def test_serial_download(paths):
-    """Tests that downloaded (uploaded serially) data matches original data.
-    """
+    """Tests that downloaded (uploaded serially) data matches original data."""
     top_level, input = paths
     dir = top_level / "test_upload" / "serial"
     dir_segments = top_level / "test_upload_segments"
