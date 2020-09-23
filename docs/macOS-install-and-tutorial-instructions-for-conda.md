@@ -12,7 +12,7 @@
         * cd into the repo: `cd brainlit`
         * install brainlit: `pip install -e .`
 
-# Downloading brains tutorial on iOS using conda environment, using jupyter notebook: 
+# Downloading brains tutorial on macOS using conda environment, using jupyter notebook: 
 * in a new terminal: `conda activate brainlit`
 * cd to directory brainlit is installed
 * `cd brainlit/docs/notebooks/utils`
