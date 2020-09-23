@@ -68,8 +68,6 @@ Users currently may run into an issue with installing dependencies on Python 3.8
 
 - Create a new environment using Python 3.7 instead: `conda create --name brainlit3.7 python=3.7`
 
-- Switch to the following branch using `git checkout python3.7-experimental` in the Anaconda prompt
-
 - Run `pip install -e .` This should successfully install the brainlit module for Conda on Windows.
 
 #### Other potential fixes
