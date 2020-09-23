@@ -20,16 +20,16 @@
 * select `downloading_brains.ipynb`
 * run tutorial
 
-# Common issues and fixes:
+# Common issues and fixes with downloading_brains notebook:
 * Issues with using a jupyter notebook
     * [fixes](https://jupyter-notebook.readthedocs.io/en/stable/troubleshooting.html)
 * Imports section: cause schema warning
     * This warning doesn't cause any errors, and the code can still run unaffected.
 * AWS Credendials Issues
     * Refer to the instructions on: https://github.com/NeuroDataDesign/brainlit/blob/develop/docs/AWS_Credentials_Issues.md
-* Section (2) Create a Neuroglancer instance and download the volume: make sure variables are correct and functions have correct inputs
+* Section (2) of downloading_brains notebook, Create a Neuroglancer instance and download the volume: make sure variables are correct and functions have correct inputs
     * Example 3: 
-        * Before: `img, bbox, vox = ngl_sess.pull_voxel(2, v_id, radius, radius, radius)`
-        * After:  `img, bbox, vox = ngl_sess.pull_voxel(2, v_id, radius)`
-* Section (4) View the volume: Kernel may crash, not allowing napari to be viewed
+        * Wrong: `img, bbox, vox = ngl_sess.pull_voxel(2, v_id, radius, radius, radius)`
+        * Right:  `img, bbox, vox = ngl_sess.pull_voxel(2, v_id, radius)`
+* Section (4) of downloading_brains notebook, View the volume: Kernel may crash, not allowing napari to be viewed
     * In terminal, type: `pip install opencv-contrib-python-headless`
