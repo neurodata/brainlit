@@ -1,5 +1,6 @@
 **/.DS_Store
 docs/notebooks/pipelines/demo*
+**-checkpoint.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
