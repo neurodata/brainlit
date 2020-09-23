@@ -7,27 +7,11 @@ from brainlit.utils.swc import graph_to_paths
 from skimage import draw
 from pathlib import Path
 
-# top_level = Path(__file__).parents[1] / "data"
-# input = (top_level / "data_octree").as_posix()
-# url = (top_level / "test_upload").as_uri()
-# url_seg = url + "_segments"
-# url = url + "/serial"
-# if not (Path(url[5:]) / "info").is_file():
-#     print("Uploading data.")
-#     upload_volumes(input, url, 1)
-# if not (Path(url_seg[5:]) / "info").is_file():
-#     print("Uploading segmentataion.")
-#     upload_segments(input, url_seg, 1)
-# assert (Path(url[5:]) / "info").is_file()
-# assert (Path(url_seg[5:]) / "info").is_file()
-
-# URL = "s3://mouse-light-viz/precomputed_volumes/brain1"
 top_level = Path(__file__).parents[1] / "data"
 input = (top_level / "data_octree").as_posix()
 url = (top_level / "test_upload").as_uri()
-URL_SEG = url + "_segments"
-URL = url + "/serial"
-
+url_seg = url + "_segments"
+url = url + "/serial"
 
 def test_pairwise():
 
@@ -67,7 +51,7 @@ def test_draw_sphere():
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    ngl_session = NeuroglancerSession(url=url, url_segments=url_seg)
     img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     center = [
@@ -107,7 +91,7 @@ def test_draw_tube_spheres():
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    ngl_session = NeuroglancerSession(url=url, url_segments=url_seg)
     img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     vertex0 = [
@@ -159,7 +143,7 @@ def test_draw_tube_edt():
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    ngl_session = NeuroglancerSession(url=url, url_segments=url_seg)
     img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     vertex0 = [
@@ -211,7 +195,7 @@ def test_tubes_seg():
              <= radius (if the point has value 1)
              >  radius (if the point has value 0)
     """
-    ngl_session = NeuroglancerSession(url=URL, url_segments=URL_SEG)
+    ngl_session = NeuroglancerSession(url=url, url_segments=url_seg)
     img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     vertices = np.random.randint(min(shape), size=(4, 3))
@@ -248,7 +232,7 @@ def test_tubes_seg():
 
 def test_tubes_from_paths_bad_inputs():
     """Tests that the tubes_from_paths method raises errors when given bad inputs."""
-    sess = NeuroglancerSession(URL, 0, URL_SEG)
+    sess = NeuroglancerSession(url, 0, url_seg)
     img, bbox, verts = sess.pull_voxel(2, 300, radius=5)  # A valid bbox with data.
     G = sess.get_segments(2, bbox)
     bbox = bbox.to_list()
@@ -270,7 +254,7 @@ def test_tubes_from_paths_bad_inputs():
 
 def test_tubes_from_paths():
     """Tests that, given valid paths, valid tubes are created."""
-    sess = NeuroglancerSession(URL, 0, URL_SEG)
+    sess = NeuroglancerSession(url, 0, url_seg)
     img, bbox, verts = sess.pull_voxel(2, 300, radius=5)  # A valid bbox with data.
     G = sess.get_segments(2, bbox)
     bbox = bbox.to_list()

@@ -1,7 +1,8 @@
 from pathlib import Path
 from brainlit.utils import upload_volumes, upload_segments
 
-# create data locally
+# this checks is data exists locally, and generates it if not
+# currently deprecated as local data is enforced by being excluded from the .gitignore
 top_level = Path(__file__).absolute().parents[0]
 input = (top_level / "data_octree").as_posix()
 url = (top_level / "test_upload").as_uri()

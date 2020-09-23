@@ -12,21 +12,6 @@ from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError, SkeletonDecodeError
 from brainlit.algorithms.generate_fragments.tube_seg import tubes_seg
 
-# ensures data is available
-# top_level = Path(__file__).parents[1] / "data"
-# input = (top_level / "data_octree").as_posix()
-# url = (top_level / "test_upload").as_uri()
-# url_seg = url + "_segments"
-# url = url + "/serial"
-# if not (Path(url[5:]) / "info").is_file():
-#     print("Uploading data.")
-#     upload_volumes(input, url, 1)
-# if not (Path(url_seg[5:]) / "info").is_file():
-#     print("Uploading segmentataion.")
-#     upload_segments(input, url_seg, 1)
-# assert (Path(url[5:]) / "info").is_file()
-# assert (Path(url_seg[5:]) / "info").is_file()
-
 
 @pytest.fixture
 def vars_local():
