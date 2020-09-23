@@ -156,9 +156,9 @@ Running a specific test, such as `test_upload.py` can be done simply by `ptest t
 
 ## Common errors and troubleshooting
 
-- [iOS Install/Run Issues](https://github.com/NeuroDataDesign/brainlit/blob/aws-keys-docs-jacopo/docs/iOS_Install_%26_Run_Issues.md)
+- [macOS Install/Run Issues](https://github.com/NeuroDataDesign/brainlit/blob/develop/docs/macOS_Install_%26_Run_Issues.md)
 
-- [AWS Credentials Issues](https://github.com/NeuroDataDesign/brainlit/blob/aws-keys-docs-jacopo/docs/AWS_Credentials_Issues.md)
+- [AWS Credentials Issues](https://github.com/NeuroDataDesign/brainlit/blob/develop/docs/AWS_Credentials_Issues.md)
 
 ## Contributing
 
