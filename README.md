@@ -16,7 +16,7 @@ This repository is a container of methods that Neurodata usees to expose their o
   - [Motivation](#motivation)
   - [Installation](#installation)
     - [Environment](#environment)
-      - [(optional, any python >= 3.8 environment will suffice)](#optional-any-python--38-environment-will-suffice)
+      - [(optional, any python >= 3.7 environment will suffice)](#optional-any-python--38-environment-will-suffice)
     - [Install from pypi](#install-from-pypi)
     - [Install from source](#install-from-source)
   - [How to use Brainlit](#how-to-use-brainlit)
