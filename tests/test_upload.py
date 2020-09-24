@@ -2,8 +2,6 @@ import pytest
 from brainlit.utils import upload, session
 from brainlit.algorithms.generate_fragments import tube_seg
 from pathlib import Path
-
-# below inputs for validation
 import tifffile as tf
 from cloudvolume.lib import Bbox
 
