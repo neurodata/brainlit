@@ -37,8 +37,8 @@
 6.  AWS Credendials Issues
     * Refer to the instructions on: https://github.com/NeuroDataDesign/brainlit/blob/develop/docs/AWS_Credentials_Issues.md
 
-7. * Section (2) of downloading_brains notebook, Create a Neuroglancer instance and download the volume: make sure variables are correct and functions have correct inputs
-    * For Example 
+7. Section (2) of downloading_brains notebook, Create a Neuroglancer instance and download the volume: make sure variables are correct and functions have correct inputs
+    * For Example:
         * Wrong: `img, bbox, vox = ngl_sess.pull_voxel(2, v_id, radius, radius, radius)`
         * Right:  `img, bbox, vox = ngl_sess.pull_voxel(2, v_id, radius)`
     
