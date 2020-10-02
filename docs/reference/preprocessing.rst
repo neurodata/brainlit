@@ -25,10 +25,4 @@ Image Filters
 .. autoapifunction:: removeSmallCCs
 
 
-Features
---------
 
-.. currentmodule:: brainlit.preprocessing.features
-
-.. autoapiclass:: NeighborhoodFeatures
-.. autoapiclass:: LinearFeatures

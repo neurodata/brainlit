@@ -12,7 +12,7 @@ def basic_preprocessing(data):
 
     Args:
         data (np.ndarray, list): An array to be preprocessed, or a list of arrays to be preprocessed.
-    
+
     Returns:
         np.ndarray, list: The input array <data> after preprocessing, or each preprocessed array from the input list <data> if a list of arrays was provided.
     """
@@ -34,7 +34,7 @@ def basic_preprocessing_with_pad(data):
 
     Args:
         data (np.ndarray, list): An array to be preprocessed, or a list of arrays to be preprocessed.
-    
+
     Returns:
         np.ndarray, list: The input array <data> after preprocessing, or each preprocessed array from the input list <data> if a list of arrays was provided.
     """

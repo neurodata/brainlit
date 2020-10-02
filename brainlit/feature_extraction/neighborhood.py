@@ -16,8 +16,11 @@ class NeighborhoodFeatures(BaseFeatures):
 
     Arguments:
         url: Precompued path either to a file URI or url URI of image data.
-        size: A size hyperparameter. In Neighborhoods, this is the radius.
+        radius: The radius around each point considered a neighborhood, in each dimension.
+            If radius is [x,y,z], the neighborhood will be a [2x+1, 2y+1, 2z+1] volume centered at the point of interest.
+            Defaults to [1, 1, 1].
         offset: Added to the coordinates of a positive sample to generate a negative sample.
+            Defaults to [15, 15, 15].
         segment_url: Precompued path either to a file URI or url URI of segmentation data.
 
     Attributes:
@@ -33,15 +36,14 @@ class NeighborhoodFeatures(BaseFeatures):
     def __init__(
         self,
         url: str,
-        size: List[int] = [1, 1, 1],
+        radius: List[int] = [1, 1, 1],
         offset: List[int] = [15, 15, 15],
         segment_url: Optional[str] = None,
     ):
-        super().__init__(url=url, size=size, offset=offset, segment_url=segment_url)
+        super().__init__(url=url, size=radius, offset=offset, segment_url=segment_url)
 
     def _convert_to_features(self, img: np.ndarray) -> Dict:
-        """Computes features from image data by flattening the image.
-        """
+        """Computes features from image data by flattening the image."""
         return dict(enumerate(img.flatten()))
 
 
@@ -49,7 +51,7 @@ def subsample(
     arr: np.ndarray, orig_shape: List[int], dest_shape: List[int]
 ) -> np.ndarray:
     """Subsamples a flattened neighborhood to a smaller flattened neighborhood.
-    
+
     Arguments:
         arr: The flattened array
         orig_shape: The original shape of the array before flattening

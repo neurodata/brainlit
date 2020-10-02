@@ -12,7 +12,7 @@ from brainlit.algorithms.generate_fragments.tube_seg import tubes_from_paths
 import napari
 import warnings
 import networkx as nx
-from typing import Optional, List, Union, Tuple, Literal
+from typing import Optional, List, Union, Tuple
 from brainlit.utils.util import (
     check_type,
     check_size,
@@ -34,8 +34,7 @@ class NeuroglancerSession:
 
     Attributes:
         url: CloudVolumePrecomputedPath to image data.
-        url_segments: CloudVolumePrecomputedPath to segmentation data. Optional, default None.
-            Automatically tries precomputed path url+"_segments" if None.
+        url_segments: CloudVolumePrecomputedPath to segmentation data. Optional, default None. Automatically tries precomputed path url+"_segments" if None.
         cv (CloudVolumePrecomputed): CloudVolume object for image data.
         cv_segments (CloudVolumePrecomputed): CloudVolume object for segmentation data. Optional, default None.
         cv_annotations (CloudVolumePrecomputed): CloudVolume object for segmentation data. Optional, default None.
@@ -119,7 +118,7 @@ class NeuroglancerSession:
             bbox: The bounding box object, default None. If None, uses entire volume.
 
         Returns:
-            G: A subgraph from the specified segment and bounding box.
+            G: A networkx subgraph from the specified segment and bounding box.
         """
         check_type(seg_id, int)
         if self.cv_segments is None:
@@ -138,8 +137,8 @@ class NeuroglancerSession:
     def create_tubes(
         self, seg_id: Union[int, float], bbox: Bounds, radius: Optional[int] = None
     ):
-        """Creates labels from a segment id and bounding box.
-        Finds vertices within bounding box and draws tubes between edges.
+        """Creates voxel-wise foreground/background labels associated with a particular neuron trace,
+        within a given bounding box of voxel coordinates.
 
         Arguments:
             seg_id: The id of the .swc file.
@@ -169,12 +168,12 @@ class NeuroglancerSession:
     def pull_voxel(
         self, seg_id: int, v_id: int, radius: int = 1
     ) -> Tuple[np.ndarray, Bbox, np.ndarray]:
-        """Pull a number of voxels around a specified skeleton vertex.
+        """Pull a subvolume around a specified skeleton vertex with of shape [2r+1, 2r+1, 2r+1], in voxels.
 
         Arguments:
             seg_id: ID of the segment to use, depends on data in s3.
             v_id: ID of the vertex to use, depends on the segment.
-            radius: Radius of pulled volume around central voxel, in voxels. 
+            radius: Radius of pulled volume around central voxel, in voxels.
                 Optional, default is 1 (3x3 volume is pulled, centered at the vertex).
 
         Returns:
@@ -197,15 +196,19 @@ class NeuroglancerSession:
         return np.squeeze(np.array(img)), bounds, vox_in_img
 
     def pull_vertex_list(
-        self, seg_id: int, v_id_list: List[int], buffer: int = 1, expand: bool = False,
+        self,
+        seg_id: int,
+        v_id_list: List[int],
+        buffer: int = 1,
+        expand: bool = False,
     ) -> Tuple[np.ndarray, Bbox, List[Tuple[int, int, int]]]:
-        """Pull a region containing all listed vertices.
+        """Pull a subvolume containing all listed vertices.
 
         Arguments:
             seg_id: ID of the segment to use, depends on data in s3.
             v_id_list: list of vertex IDs to use.
             buffer: Buffer around the bounding box (in voxels). Default 1, set to 0 if expand is True.
-            expand: Flag whether to expand region to closest set of chunks.
+            expand: Flag whether to expand subvolume to closest set of chunks.
 
         Returns:
             img: The image volume containing all vertices.
@@ -237,14 +240,18 @@ class NeuroglancerSession:
         return img, bounds, vox_in_img_list
 
     def pull_chunk(
-        self, seg_id: int, v_id: int, radius: int = 0,
+        self,
+        seg_id: int,
+        v_id: int,
+        radius: int = 0,
     ) -> Tuple[np.ndarray, Bbox, Tuple[int, int, int]]:
-        """Pull a number of chunks around a specified skeleton vertex.
+        """Pull a subvolume around a specified skeleton vertex according to chunk size.
+        Each data set has a specified chunk size, which can be found by calling self.cv.info.
 
         Arguments:
             seg_id: ID of the segment to use, depends on data in s3.
             v_id: ID of the vertex to use, depends on the segment.
-            radius: Radius of pulled volume around central chunk, in chunks. 
+            radius: Radius of pulled volume around central chunk, in chunks.
                 Optional, default is 0 (single chunk which contains the voxel).
 
         Returns:
@@ -309,7 +316,9 @@ class NeuroglancerSession:
         # return np.squeeze(np.array(img))
 
     def push(
-        self, img: np.ndarray, bounds: Bounds,
+        self,
+        img: np.ndarray,
+        bounds: Bounds,
     ):
         """Push a volume to an annotation channel.
 

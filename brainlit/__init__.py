@@ -1,6 +1,8 @@
 import warnings
 
-# import brainlit.algorithms
+import brainlit.algorithms
+import brainlit.cloudreg
+import brainlit.feature_extraction
 import brainlit.preprocessing
 import brainlit.registration
 import brainlit.utils

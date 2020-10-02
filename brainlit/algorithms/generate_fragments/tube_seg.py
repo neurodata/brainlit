@@ -19,25 +19,25 @@ def pairwise(iterable):
 def draw_sphere(shape, center, radius):
     """
     Generate a sphere of a radius at a point.
-    
+
     Adapted from https://stackoverflow.com/a/56060957
-    
+
     Parameters
     -------
     shape : tuple
         The shape of output array.
-    
+
     center : tuple
         The coordinates for the center of the sphere.
-    
+
     radius : float
         The radius of the sphere.
-    
+
     Returns
     -------
     sphere : numpy.ndarray
         An binary-valued array including a sphere.
-    
+
     """
     coords = np.ogrid[: shape[0], : shape[1], : shape[2]]
     distance = np.sqrt(
@@ -52,26 +52,26 @@ def draw_sphere(shape, center, radius):
 def draw_tube_from_spheres(img, vertex0, vertex1, radius):
     """
     Generate a segmentation mask of a tube (series of spheres) connecting known vertices.
-    
+
     Parameters
     -------
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
-    
+
     vertex0 : tuple
         A vertex containing a coordinate within a known segment.
-    
+
     vertex1 : tuple
         A vertex containing a coordinate within a known segment.
-    
+
     radius : float
         The radius of the cylinder.
-    
+
     Returns
     -------
     labels : numpy.ndarray
         An array consisting of the pixelwise segmentation.
-    
+
     """
     line = draw.line_nd(vertex0, vertex1, endpoint=True)
     line = np.array(line).T
@@ -87,26 +87,26 @@ def draw_tube_from_spheres(img, vertex0, vertex1, radius):
 def draw_tube_from_edt(img, vertex0, vertex1, radius):
     """
     Generate a segmentation mask of a tube connecting known vertices.
-    
+
     Parameters
     -------
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
-    
+
     vertex0 : tuple
         A vertex containing a coordinate within a known segment.
-    
+
     vertex1 : tuple
         A vertex containing a coordinate within a known segment.
-    
+
     radius : float
         The radius of the cylinder.
-    
+
     Returns
     -------
     labels : numpy.ndarray
         An array consisting of the pixelwise segmentation.
-    
+
     """
     line = draw.line_nd(vertex0, vertex1, endpoint=True)
     line_array = np.ones(img.shape, dtype=int)
@@ -119,25 +119,25 @@ def draw_tube_from_edt(img, vertex0, vertex1, radius):
 def tubes_seg(img, vertices, radius, spheres=False):
     """
     Generate a segmentation mask of cylinders connecting known vertices.
-    
+
     Parameters
     -------
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
-    
+
     vertices : list
         The vertices (tuples) each containing a coordinate within a known segment.
-    
+
     radius : float
         The radius of the cylinder.
     spheres : bool
         True if sphere-based segmentation should be used; False for EDT-based segmentation.
-    
+
     Returns
     -------
     labels : numpy.ndarray
         An array consisting of the pixelwise segmentation.
-    
+
     """
     output = np.zeros(img.shape)
     for a, b in pairwise(vertices):
@@ -149,6 +149,7 @@ def tubes_seg(img, vertices, radius, spheres=False):
     return labels
 
 
+# TOMMY REVIEW
 def tubes_from_paths(
     size: Tuple[int, int, int],
     paths: List[List[int]],

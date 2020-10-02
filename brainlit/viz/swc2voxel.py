@@ -5,14 +5,14 @@ from skimage import draw
 
 def snap_points(img, points, radius=[3, 3, 3]):
     """Moves neuron marker points to the highest intensity within a certain radius
-    
+
     Arguments:
         img {3d array} -- image
         points {pandas dataframe} -- dataframe with swc points as output by combine_swc_img.points2voxel
-    
+
     Keyword Arguments:
         radius {list} -- voxel radius within which to search for highest intensity (default: {[3,3,3]})
-    
+
     Returns:
         [pandas dataframe] -- dataframe with same format as points, with new xvox, yvox, zvox values (Note: x,y,z, columns are unchanged)
     """
@@ -32,11 +32,11 @@ def snap_points(img, points, radius=[3, 3, 3]):
 
 def point_threshold(img, points):
     """Threshold image according to the minimum intensity of a set of points
-    
+
     Arguments:
         img {3d array} -- image
         points {pandas dataframe} -- dataframe with swc points as output by combine_swc_img.points2voxel
-    
+
     Returns:
         [3d array] -- binary mask from thresholding
         [int] -- threshold value
@@ -52,13 +52,13 @@ def point_threshold(img, points):
 
 def remove_small_components(img, size=20):
     """Remove components from binary mask that are small
-    
+
     Arguments:
         img {3d array} -- image
-    
+
     Keyword Arguments:
         size {int} -- minimum component size (default: {20})
-    
+
     Returns:
         [3d array] -- binary mask with small components removed
     """
@@ -71,11 +71,11 @@ def remove_small_components(img, size=20):
 
 def skeletonize(img, points):
     """Draw lines between points that are connected to produce binary mask
-    
+
     Arguments:
         img {3d array} -- image
         points {pandas dataframe} -- dataframe with swc points as output by combine_swc_img.points2voxel
-    
+
     Returns:
         [3d array] -- binary mask showing skeletonization between points
     """
@@ -100,11 +100,11 @@ def skeletonize(img, points):
 
 def skeleton_threshold_intersect(img, points):
     """Compute intersection between two masks: thresholded image and skeletonization of points
-    
+
     Arguments:
         img {3d array} -- image
         points {pandas dataframe} -- dataframe with swc points as output by combine_swc_img.points2voxel
-    
+
     Returns:
         [3d array] -- binary mask of intersection
         [int] -- when the threshold is lowered to obtain a single connected component, this indicates the number of iterations used
@@ -141,9 +141,9 @@ def skeleton_threshold_intersect(img, points):
 
 def Bresenham3D(x1, y1, z1, x2, y2, z2):
     """Takes two coordinates and gives the set of coordinates that connects them with a straight line
-    
+
     Adapted from https://www.geeksforgeeks.org/bresenhams-algorithm-for-3-d-line-drawing/
-    
+
     Arguments:
         x1 {int} -- first x coodinate
         y1 {int} -- first y coodinate
@@ -151,7 +151,7 @@ def Bresenham3D(x1, y1, z1, x2, y2, z2):
         x2 {int} -- second x coodinate
         y2 {int} -- second y coodinate
         z2 {int} -- second z coodinate
-    
+
     Returns:
         [list] -- list of x coordinate connecting the points
         [list] -- list of y coordinate connecting the points

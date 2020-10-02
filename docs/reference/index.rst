@@ -7,6 +7,8 @@ Reference
     :maxdepth: 2
 
     algs
+    feature_extraction
     preprocessing
-    viz
+    registration
     utils
+    viz
