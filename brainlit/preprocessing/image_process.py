@@ -3,20 +3,20 @@ from skimage.measure import label
 import scipy.ndimage as ndi
 import matplotlib.pyplot as plt
 from itertools import product
-from typing import List, Optional
+from typing import List, Optional, Union, Tuple
 
 
 def gabor_filter(
     input: np.ndarray,
-    sigma: Union(float, List[float]),
-    phi: Union(float, List[float]),
+    sigma: Union[float, List[float]],
+    phi: Union[float, List[float]],
     frequency: float,
     offset: float = 0.0,
-    output: Optional(Union(np.ndarray, np.dtype)),
+    output: Optional[Union[np.ndarray, np.dtype, None]] = None,
     mode: str = "reflect",
     cval: float = 0.0,
     truncate: float = 4.0,
-):
+) -> Tuple[np.ndarray, np.ndarray]: 
     """Multidimensional Gabor filter. A gabor filter
     is an elementwise product between a Gaussian
     and a complex exponential.
@@ -149,7 +149,7 @@ def gabor_filter(
     return result
 
 
-def getLargestCC(segmentation):
+def getLargestCC(segmentation : np.ndarray) -> np.ndarray:
     """Returns the largest connected component of a image
 
     Parameters
@@ -171,7 +171,7 @@ def getLargestCC(segmentation):
     return largestCC
 
 
-def removeSmallCCs(segmentation, size):
+def removeSmallCCs(segmentation : np.ndarray, size : Union[int, float]) -> np.ndarray:
     """Removes small connected components from an image
 
     Parameters
