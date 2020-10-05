@@ -50,7 +50,7 @@ class NeuroglancerSession:
         url_segments: Optional[str] = None,
     ):
         check_precomputed(url)
-        check_type(mip, (np.integer, int))
+        check_type(mip, (int, np.integer))
         self.url = url
         self.cv = CloudVolume(url, parallel=False)
         if mip < 0 or mip >= len(self.cv.scales):
