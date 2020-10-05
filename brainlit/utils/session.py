@@ -50,7 +50,7 @@ class NeuroglancerSession:
         url_segments: Optional[str] = None,
     ):
         check_precomputed(url)
-        check_type(mip, int)
+        check_type(mip, (np.integer, int))
         self.url = url
         self.cv = CloudVolume(url, parallel=False)
         if mip < 0 or mip >= len(self.cv.scales):
@@ -85,7 +85,7 @@ class NeuroglancerSession:
         Returns:
             voxel: The voxel coordinates in (x, y, z) voxel space.
         """
-        check_type(seg_id, int)
+        check_type(seg_id, (int, np.integer))
         check_type(v_id, (int, np.integer))
         if self.cv_segments is None:
             raise ValueError("Cannot get voxel without segmentation data")
@@ -120,7 +120,7 @@ class NeuroglancerSession:
         Returns:
             G: A networkx subgraph from the specified segment and bounding box.
         """
-        check_type(seg_id, int)
+        check_type(seg_id, (int, np.integer))
         if self.cv_segments is None:
             raise ValueError("Cannot get segments without segmentation data.")
 
@@ -152,7 +152,7 @@ class NeuroglancerSession:
             raise ValueError("Cannot get segments without segmentation data.")
         check_type(seg_id, int)
         if radius is not None:
-            check_type(radius, (int, float))
+            check_type(radius, (int, np.integer, float, np.float))
             if radius <= 0:
                 raise ValueError("Radius must be positive.")
 
@@ -181,7 +181,7 @@ class NeuroglancerSession:
             bounds: Bounding box object which contains the bounds of the volume.
             vox_in_img: List of coordinates which locate the initial point in the volume.
         """
-        check_type(radius, int)
+        check_type(radius, (int, np.integer))
         if radius < 0:
             raise ValueError(f"{radius} should be nonnegative.")
 
@@ -215,9 +215,9 @@ class NeuroglancerSession:
             bounds: Bounding box object which contains the bounds of the volume.
             vox_in_img_list: List of coordinates which locate the vertices in the volume.
         """
-        check_type(seg_id, int)
+        check_type(seg_id, (int, np.integer))
         check_iterable_type(v_id_list, (int, np.integer))
-        check_type(buffer, int)
+        check_type(buffer, (int, np.integer))
         if buffer < 0:
             raise ValueError(f"Buffer {buffer} shouild not be negative.")
         check_type(expand, bool)
@@ -259,9 +259,9 @@ class NeuroglancerSession:
             bounds: Bounding box object which contains the bounds of the volume.
             vox_in_img: List of coordinates which locate the initial point in the volume.
         """
-        check_type(seg_id, int)
-        check_type(v_id, int)
-        check_type(radius, int)
+        check_type(seg_id, (int, np.integer))
+        check_type(v_id, (int, np.integer))
+        check_type(radius, (int, np.integer))
         if radius < 0:
             raise ValueError(f"Radius of {radius} should be nonnegative.")
 
