@@ -1,23 +1,100 @@
 from scipy.interpolate import splev
 import numpy as np
+from typing import Iterable, Union, Tuple
+from brainlit.utils.util import (
+    check_type,
+    check_size,
+    check_precomputed,
+    check_iterable_type,
+    check_iterable_nonnegative,
+)
 
 
-def splev_deg0(x, xi, i):
-    if i < len(xi) - 2:
+def splev_deg0(x: np.ndarray, xi: np.ndarray, i: int) -> np.ndarray:
+    """Compute the i-th B-spline of degree 0.
+    
+    The i-th B-spline of degree 0 is defined as the characteristic function 
+    of the half open interval [xi[i], x[i+1]). So:
+    
+    b[i,0,xi](x) = 1 if x[i] <= x < x[i+1], 0 otherwise
+
+    Arguments:
+        x: A 1xn array of parameter values where to evaluate the B-spline
+        xi: The 1xm array representing the knot sequence of the B-spline
+        i: Index of the B-spline to compute
+    Returns:
+        within: A 1xn binary array representing the i-th degree-0 B-spline
+    """
+    # Check that i is an integer
+    check_type(i, (int, np.integer))
+    # Check that xi is a non-empty, non-decreasing sequence of floats or ints
+    check_iterable_type(xi, (int, np.integer, float, np.float))
+    m = len(xi)
+    if m == 0:
+        raise ValueError(("xi cannot be empty"))
+    non_decreasing = [x <= xi[i + 1] for i, x in enumerate(xi[:-1])]
+    if not all(non_decreasing):
+        raise ValueError(("xi must be a non-decreasing sequence"))
+    # Check that x is a non-empty sequence of floats or ints
+    check_iterable_type(x, (int, np.integer, float, np.float))
+    n = len(x)
+    if n == 0:
+        raise ValueError(("x cannot be empty"))
+
+    if i < m - 2:
         within = (x >= xi[i]) & (x < xi[i + 1])
     else:
         within = (x >= xi[i]) & (x <= xi[i + 1])
     return np.array(1 * (within))
 
 
-def splev_degreecontrol(x, tck):
+def splev_degreecontrol(
+    x: np.ndarray, tck: Tuple[np.ndarray, np.ndarray, Union[int, np.integer]]
+) -> np.ndarray:
+    """Evaluate the curve S(x) from a B-spline.
+    
+    S(x) = (s[1], ..., s[L]), s[k] = sum_{i=0}^n cs[i] * b[i, p](x[k]), where:
+        * cs is the array of control points
+        * n is the length of cs
+        * b[i, p](x[k]) is the i-th B-spline of degree p evaluated at x[k]
+
+    Arguments:
+        x: A 1xL array of parameter values where to evaluate the curve
+        tck: A three-elements tuple where:
+            * tck[0]: A 1xm array representing the knots of the B-spline
+            * tck[1]: A 1xn array representing the control points of the B-spline
+            * tck[2]: An integer representing the degree of the B-spline
+    Returns:
+        A 1xL array representing the curve S(x)
+    """
+    # check that p = tck[2] aka the degree of the B-spline is an integer
+    check_type(tck[2], (int, np.integer))
     p = tck[2]
+    # check that cs = tck[1] aka the control points of the B-spline are a non-empty flat array
+    check_iterable_type(tck[1], (int, np.integer, float, np.float))
+    cs = tck[1]
+    n = len(cs)
+    if n == 0:
+        raise ValueError(("tck[1] cannot be empty"))
+    # Check that xi = tck[0] aka the knots are a non-empty, non-decreasing sequence of floats or ints
+    check_iterable_type(tck[0], (int, np.integer, float, np.float))
+    xi = tck[0]
+    m = len(xi)
+    if m == 0:
+        raise ValueError(("tck[0] cannot be empty"))
+    non_decreasing = [x <= xi[i + 1] for i, x in enumerate(xi[:-1])]
+    if not all(non_decreasing):
+        raise ValueError(("tck[0] must be a non-decreasing sequence"))
+    # check that x is a non-empty sequence
+    check_iterable_type(x, (int, np.integer, float, np.float))
+    L = len(x)
+    if L == 0:
+        raise ValueError(("x cannot be empty"))
+
     if p < 0:
         return 0 * x
     elif p == 0:
         val = 0 * x
-        cs = tck[1]
-        xi = tck[0]
         for j, c in enumerate(cs):
             if c != 0:
                 val = val + c * splev_deg0(x, xi, j)
