@@ -6,7 +6,6 @@ from sklearn.feature_extraction.image import grid_to_graph
 import scipy.ndimage as ndi
 from scipy import optimize
 from scipy.interpolate import splrep, splprep, interp1d
-from mouselight_code.src import swc2voxel
 import cv2
 import math
 import warnings
