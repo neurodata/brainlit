@@ -1,6 +1,6 @@
 from pathlib import Path
-from mouselight_code.src import read_swc
-from mouselight_code.src.make_connections import GeometricGraph
+from brainlit.algorithms.connect_fragments import read_swc
+from brainlit.algorithms.connect_fragments.fit_spline import GeometricGraph
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.cm import ScalarMappable
@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import splev
 
 swc = Path(
-    "D:/JHU/2020Fall/NDD-I/brainlitIssues/Thomas/2018-08-01_g-002_consensus.swc"
+    "C:/Users/user/brainlit/data/data_octree/consensus-swcs/2018-08-01_G-002_consensus.swc"
 )
 
 df,_,_,_ = read_swc.read_swc_offset(swc)
