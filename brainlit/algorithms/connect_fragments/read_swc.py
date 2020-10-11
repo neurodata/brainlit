@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 import re
 from random import shuffle
-from mouselight_code.src.make_connections import GeometricGraph
+from brainlit.algorithms.connect_fragments.fit_spline import GeometricGraph
 
 
 def read_swc(path):
