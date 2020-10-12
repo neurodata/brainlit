@@ -104,32 +104,74 @@ def splev_degreecontrol(
 
 
 def splev_deriv(x, tck):
-    cs = tck[1]
+    """Evaluate the first derivative S'(x) of a B-spline.
+
+    S'(x) = (s[1], ..., s[L]), s[k] = sum_{j=0}^n cs[j] * p * (A - B), p >= 1,
+    where:
+    A = b[j, p-1, xi](x) / (xi[j+p] - xi[j])
+    B = b[j+1, p-1, xi](x) / (xi[j+p+1] - xi[j+i])
+
+    Arguments:
+        x: A 1xL array of parameter values where to evaluate the curve
+        tck: A three-elements tuple where:
+            * tck[0]: A 1xm array representing the knots of the B-spline
+            * tck[1]: A 1xn array representing the control points of the B-spline
+            * tck[2]: An integer representing the degree of the B-spline
+    Returns:
+    """
+    # check that p = tck[2] aka the degree of the B-spline is an integer
+    check_type(tck[2], (int, np.integer))
     p = tck[2]
-    xi = tck[0]
-
-    pre_xi = (xi[0] - 1) * np.ones((p + 1))
-    post_xi = (xi[-1] + 1) * np.ones((p + 1))
-
-    xi = np.concatenate((pre_xi, xi, post_xi))
-    cs = np.concatenate((np.zeros(p + 1), cs, np.zeros(p + 1)))
+    # check that cs = tck[1] aka the control points of the B-spline are a non-empty flat array
+    check_iterable_type(tck[1], (int, np.integer, float, np.float))
+    cs = tck[1]
     n = len(cs)
-    deriv = np.zeros((len(x)))
+    if n == 0:
+        raise ValueError(("tck[1] cannot be empty"))
+    cs = tck[1]
+    # Check that xi = tck[0] aka the knots are a non-empty, non-decreasing sequence of floats or ints
+    check_iterable_type(tck[0], (int, np.integer, float, np.float))
+    xi = tck[0]
+    m = len(xi)
+    if m == 0:
+        raise ValueError(("tck[0] cannot be empty"))
+    non_decreasing = [x <= xi[i + 1] for i, x in enumerate(xi[:-1])]
+    if not all(non_decreasing):
+        raise ValueError(("tck[0] must be a non-decreasing sequence"))
+    # check that x is a non-empty sequence
+    check_iterable_type(x, (int, np.integer, float, np.float))
+    L = len(x)
+    if L == 0:
+        raise ValueError(("x cannot be empty"))
 
-    for j in np.arange(p + 1, n - p - 1):
+    # define p+1 extra knots
+    padding = np.ones(p + 1)
+    pre_xi = (xi[0] - 1) * padding
+    post_xi = (xi[-1] + 1) * padding
+    # define new xi such that
+    # xi_new[0] == ... == xi_new[p] := xi_old[0] - 1
+    # xi_new[p+1] <= ... <= xi_new[m+p] := xi_old
+    # xi_new[m+p+1] == ... == xi[m+2p+1] := xi_old[-1] + 1
+    xi = np.concatenate((pre_xi, xi, post_xi))
+    # define new cs such that
+    # cs_new[0] == ... == cs_new[p] := 0
+    # cs_new[p+1] <= ... <= cs_new[n+p] := cs_old
+    # cs_new[n+p+1] == ... == xi[n+2p+1] := 0
+    cs = np.concatenate((np.zeros(p + 1), cs, np.zeros(p + 1)))
+    # n_new = n_old + 2*p + 1
+    n = len(cs)
+    # initialize the derivative array
+    L = len(x)
+    deriv = np.zeros(L)
+
+    # j cycles through the original points of cs_old
+    # j = [p+1, p+1, ..., n_old+p]
+    for j in np.arange(p + 1, n - (p + 1)):
+
+        # compute A = b[j, p-1, xi](x) / (xi[j+p] - xi[j])
         xi_jp = xi[j + p]
         xi_j = xi[j]
-        if xi_j != xi_jp:
-            c1 = 1 / (xi_jp - xi_j)
-        else:
-            c1 = 0
-
-        xi_jp1 = xi[j + p + 1]
-        xi_j1 = xi[j + 1]
-        if xi_j1 != xi_jp1:
-            c2 = 1 / (xi_jp1 - xi_j1)
-        else:
-            c2 = 0
+        c1 = 0 if xi_j == xi_jp else 1 / (xi_jp - xi_j)
 
         tckb1 = list(tck)
         cb1 = 0 * cs
@@ -139,6 +181,13 @@ def splev_deriv(x, tck):
         tckb1[2] = p - 1
         tckb1 = tuple(tckb1)
 
+        A = splev_degreecontrol(x, tckb1) * c1
+
+        # compute B = b[j+1, p-1, xi](x) / (xi[j+p+1] - xi[j+i])
+        xi_jp1 = xi[j + p + 1]
+        xi_j1 = xi[j + 1]
+        c2 = 0 if xi_j1 == xi_jp1 else 1 / (xi_jp1 - xi_j1)
+
         tckb2 = list(tck)
         cb2 = 0 * cs
         cb2[j + 1] = 1
@@ -147,9 +196,9 @@ def splev_deriv(x, tck):
         tckb2[2] = p - 1
         tckb2 = tuple(tckb2)
 
-        deriv = deriv + cs[j] * (
-            splev_degreecontrol(x, tckb1) * c1 - splev_degreecontrol(x, tckb2) * c2
-        )
+        B = splev_degreecontrol(x, tckb2) * c2
+
+        deriv = deriv + cs[j] * (A - B)
     deriv = deriv * p
 
     return deriv
