@@ -1,6 +1,5 @@
 black==20.8b1
 brotlipy==0.7.0
-cloud-volume==3.0.0
 feather-format==0.4.1
 install-qt-binding==0.0.8
 jupyter==1.0.0
