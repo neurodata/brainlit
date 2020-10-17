@@ -1,136 +1,129 @@
 import numpy as np
 from brainlit.algorithms.generate_fragments import spline_fxns
 from pytest import approx, raises
-from scipy.interpolate import splprep, splev
+from scipy.interpolate import splprep, splev, BSpline
 
 
-def test_splev_deg0():
+def test_curvature():
+    x = [[]]
+    t = [[]]
+    c = [[[]]]
+    k = 1.5
+
+    # test k must be an integer
+    with raises(TypeError, match=r"'float' object cannot be interpreted as an integer"):
+        spline_fxns.curvature(x, t, c, k)
+    # test k must be non-negative
+    k = -1
+    with raises(ValueError, match=r"The order of the spline must be non-negative"):
+        spline_fxns.curvature(x, t, c, k)
+    # test t must be one-dimensional
+    k = 0
+    with raises(ValueError, match=r"t must be one-dimensional"):
+        spline_fxns.curvature(x, t, c, k)
+    # test t must be non-empty
+    t = []
+    with raises(ValueError, match=r"t must be non-empty"):
+        spline_fxns.curvature(x, t, c, k)
+    # test t must contain integers or floats
+    t = ["abc"]
+    with raises(
+        TypeError,
+        match=r"elements should be \(<class 'numpy.integer'>, <class 'float'>\)",
+    ):
+        spline_fxns.curvature(x, t, c, k)
+    # test t must be non-decreasing
+    t = [2, 1, 0]
+    with raises(ValueError, match=r"t must be a non-decreasing sequence"):
+        spline_fxns.curvature(x, t, c, k)
+    # test c must be no more than 2-dimensional
+    t = [0, 1, 2]
+    with raises(ValueError, match=r"c must be 2D max"):
+        spline_fxns.curvature(x, t, c, k)
+    # test c must be non-empty
+    c = [[]]
+    with raises(ValueError, match=r"c must be non-empty"):
+        spline_fxns.curvature(x, t, c, k)
+    # test c must contain integers or floats (1D case)
+    c = ["acb"]
+    with raises(
+        TypeError,
+        match=r"elements should be \(<class 'numpy.integer'>, <class 'float'>\)",
+    ):
+        spline_fxns.curvature(x, t, c, k)
+    # test c must contain integers or floats (ND case)
+    c = [["abc"], ["def"], ["ghi"]]
+    with raises(
+        TypeError,
+        match=r"elements should be \(<class 'numpy.integer'>, <class 'float'>\)",
+    ):
+        spline_fxns.curvature(x, t, c, k)
+    # test x must be one-dimensional
+    c = [1, 2, 3, 4]
+    with raises(ValueError, match=r"x must be one-dimensional"):
+        spline_fxns.curvature(x, t, c, k)
+    # test x must be non-empty
     x = []
-    xi = []
-    i = 1.5
-    with raises(
-        TypeError, match=r".* should be \(<class 'int'>, <class 'numpy.integer'>\).*"
-    ):
-        spline_fxns.splev_deg0(x, xi, i)
-
-    i = 1
-    with raises(ValueError, match="xi cannot be empty"):
-        spline_fxns.splev_deg0(x, xi, i)
-
-    xi = ["a", "b", "c"]
+    with raises(ValueError, match=r"x must be non-empty"):
+        spline_fxns.curvature(x, t, c, k)
+    # test x must contain integers or floats
+    x = ["abc"]
     with raises(
         TypeError,
-        match=r".* elements should be \(<class 'int'>, <class 'numpy.integer'>, <class 'float'>, <class 'float'>\).*",
+        match=r"elements should be \(<class 'numpy.integer'>, <class 'float'>\)",
     ):
-        spline_fxns.splev_deg0(x, xi, i)
+        spline_fxns.curvature(x, t, c, k)
 
-    xi = [0, 1, 0, 3]
-    with raises(ValueError, match="xi must be a non-decreasing sequence"):
-        spline_fxns.splev_deg0(x, xi, i)
+    # test curvature is 0 when C is a straight line
+    xx = np.linspace(-1, 1, 10)
+    X = xx
+    Y = X
+    Z = X
+    dX = np.ones(len(xx))
+    dY = dX
+    dZ = dX
+    ddX = np.zeros(len(xx))
+    ddY = ddX
+    ddZ = ddY
 
-    xi = [0, 1, 2, 3]
-    with raises(ValueError, match="x cannot be empty"):
-        spline_fxns.splev_deg0(x, xi, i)
+    C = [X, Y, Z]
 
-    x = ["a", "b", "c"]
-    with raises(
-        TypeError,
-        match=r".* elements should be \(<class 'int'>, <class 'numpy.integer'>, <class 'float'>, <class 'float'>\).*",
-    ):
-        spline_fxns.splev_deg0(x, xi, i)
+    tck, u = splprep(C, u=xx, k=2)
+    t = tck[0]
+    c = tck[1]
+    k = tck[2]
 
-    x = np.array([-0.5, 0, 0.5, 1])
-    xi = np.array([-1, 0, 1, 2])
-    b0 = spline_fxns.splev_deg0(x, xi, i)
-    assert (b0 == np.array([0, 1, 1, 0])).all()
+    curvature = spline_fxns.curvature(u, t, c, k)
+    assert (curvature == np.zeros(len(xx))).all()
 
-    xi = np.array([-1, 0, 1])
-    b0 = spline_fxns.splev_deg0(x, xi, i)
-    assert (b0 == np.array([0, 1, 1, 1])).all()
+    # test results in general case
+    xx = np.linspace(-np.pi, np.pi)
+    X = xx ** 3
+    Y = np.sin(xx)
+    Z = xx ** 2
+    dX = 2 * xx ** 2
+    dY = np.cos(xx)
+    dZ = 2 * xx
+    ddX = 4 * xx
+    ddY = -np.sin(xx)
+    ddZ = 2 * np.ones(len(xx))
 
+    C = [X, Y, Z]
+    dC = [dX, dY, dZ]
+    ddC = [ddX, ddY, ddZ]
 
-def test_splev_degreecontrol():
-    x = []
-    xi = []
-    cs = []
-    p = 1.5
-    tck = tuple([xi, cs, p])
-    with raises(
-        TypeError, match=r".* should be \(<class 'int'>, <class 'numpy.integer'>\).*"
-    ):
-        spline_fxns.splev_degreecontrol(x, tck)
+    tck, u = splprep(C, u=xx, k=5)
+    t = tck[0]
+    c = tck[1]
+    k = tck[2]
+    curvature = spline_fxns.curvature(xx, t, c, k)
 
-    p = -1
-    tck = tuple([xi, cs, p])
-    with raises(ValueError, match=r"tck\[1\] cannot be empty"):
-        spline_fxns.splev_degreecontrol(x, tck)
+    expected_deriv = np.array(dC).T
+    expected_dderiv = np.array(ddC).T
+    expected_cross = np.cross(expected_deriv, expected_dderiv)
+    num = np.linalg.norm(expected_cross, axis=1)
+    denom = np.linalg.norm(expected_deriv, axis=1) ** 3
+    expected_curvature = np.nan_to_num(num / denom)
 
-    cs = [[0, 1], [1, 1], [2, 0]]
-    tck = tuple([xi, cs, p])
-    with raises(
-        TypeError,
-        match=r".* elements should be \(<class 'int'>, <class 'numpy.integer'>, <class 'float'>, <class 'float'>\).*",
-    ):
-        spline_fxns.splev_degreecontrol(x, tck)
-
-    cs = [0, 1, 2]
-    tck = tuple([xi, cs, p])
-    with raises(ValueError, match=r"tck\[0\] cannot be empty"):
-        spline_fxns.splev_degreecontrol(x, tck)
-
-    xi = ["a"]
-    tck = tuple([xi, cs, p])
-    with raises(
-        TypeError,
-        match=r".* elements should be \(<class 'int'>, <class 'numpy.integer'>, <class 'float'>, <class 'float'>\).*",
-    ):
-        spline_fxns.splev_degreecontrol(x, tck)
-
-    xi = [0, 2, 1]
-    tck = tuple([xi, cs, p])
-    with raises(ValueError, match=r"tck\[0\] must be a non-decreasing sequence"):
-        spline_fxns.splev_degreecontrol(x, tck)
-
-    xi = [0, 1, 2]
-    tck = tuple([xi, cs, p])
-    with raises(ValueError, match=r"x cannot be empty"):
-        spline_fxns.splev_degreecontrol(x, tck)
-
-    x = ["a"]
-    tck = tuple([xi, cs, p])
-    with raises(
-        TypeError,
-        match=r".* elements should be \(<class 'int'>, <class 'numpy.integer'>, <class 'float'>, <class 'float'>\).*",
-    ):
-        spline_fxns.splev_degreecontrol(x, tck)
-
-    # TEST p < 0
-    x = np.linspace(-1, 1, 4)
-    p = -1
-    tck = tuple([xi, cs, p])
-    b = spline_fxns.splev_degreecontrol(x, tck)
-    assert (b == np.zeros(len(x))).all()
-
-    # TEST p = 0
-    xi = np.array([0, 0.5, 1])
-    cs = np.array([1, 1])
-    p = 0
-    tck = tuple([xi, cs, p])
-    b = spline_fxns.splev_degreecontrol(x, tck)
-    assert (b == np.array([0, 0, 1, 1])).all()
-
-    # TEST p > 0
-    xx = np.linspace(0, 2 * np.pi)
-    X, Y = xx, np.sin(xx)
-    tck, u = splprep([X, Y])
-    expected_newpoints = splev(u, tck)
-    cs = tck[1]
-    newpoints = []
-    for coord in cs:
-        coord_tck = tuple([tck[0], coord, tck[2]])
-        newpoints.append(spline_fxns.splev_degreecontrol(u, coord_tck))
-    newpoints = np.stack(newpoints, axis=1)
-    new_x = newpoints[:, 0]
-    new_y = newpoints[:, 1]
-    assert (new_x == approx(expected_newpoints[0]) and new_y == approx(expected_newpoints[1]))
+    assert curvature == approx(expected_curvature, abs=0.2)
 
