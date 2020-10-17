@@ -64,7 +64,20 @@ class GeometricGraph(nx.Graph):
     def set_root(self, root):
         self.root_node = root
 
-# main function
+    # main function
+    '''
+        Parameters:
+        1. spline_tree: a geometric graph
+        2. curr_spline_num: current spline number, used to ??
+        3. stack: 
+        4. root:
+        5. tree:
+        6. path:
+        7. other_trees:
+        8. starting length:
+        9. treenum: 
+        10. parent_num:
+    '''
     def fit_spline_tree_invariant(self):
         spline_tree = nx.DiGraph()
         curr_spline_num = 0
@@ -99,7 +112,7 @@ class GeometricGraph(nx.Graph):
             spline_tree.nodes[node]["spline"] = self.fit_spline_path(path)
 
         return spline_tree
-#keep
+    #keep
     def fit_spline_path(self, path):
         x = np.zeros((len(path), 3))
 
@@ -133,7 +146,16 @@ class GeometricGraph(nx.Graph):
         if dup:
             print(t)
             raise RuntimeError("Duplicates found in the above knot list")
-    # keep    
+    
+    
+    # find the longest path
+    '''
+        Parameters:
+        - roots: 
+
+        `in_degree` number of edges pointing to the node
+
+    ''' 
     def find_longest_path(self, tree, starting_length=0):
         other_trees = []
         if len(tree.nodes) == 1:
@@ -202,3 +224,5 @@ class GeometricGraph(nx.Graph):
                     self.nodes[node]["loc"] - self.nodes[path[i - 1]]["loc"]
                 )
         return length
+
+# %%
