@@ -65,20 +65,21 @@ class GeometricGraph(nx.Graph):
         self.root_node = root
 
     # main function
+    
+    def fit_spline_tree_invariant(self):
     '''
         Parameters:
         1. spline_tree: a geometric graph
         2. curr_spline_num: current spline number, used to ??
-        3. stack: 
-        4. root:
-        5. tree:
-        6. path:
-        7. other_trees:
-        8. starting length:
+        3. stack: list of 
+        4. root: the only node without parent; defined as 1; not to confused with 'roots'
+        5. tree: an oriented tree w.r.t. root
+        6. path: a list of nodes
+        7. other_trees: 
+        8. starting length: 
         9. treenum: 
-        10. parent_num:
+        10. parent_num: 
     '''
-    def fit_spline_tree_invariant(self):
         spline_tree = nx.DiGraph()
         curr_spline_num = 0
         stack = []
@@ -149,14 +150,21 @@ class GeometricGraph(nx.Graph):
     
     
     # find the longest path
+     def find_longest_path(self, tree, starting_length=0):
     '''
+        Return:
+        1. path: a list of nodes
+        2. other_trees
+
         Parameters:
+        - other_trees: 
         - roots: 
+        - leaves: nodes without children
 
-        `in_degree` number of edges pointing to the node
+        Modules:
+        in_degree: number of edges pointing to the node
 
-    ''' 
-    def find_longest_path(self, tree, starting_length=0):
+    '''
         other_trees = []
         if len(tree.nodes) == 1:
             path = tree.nodes
