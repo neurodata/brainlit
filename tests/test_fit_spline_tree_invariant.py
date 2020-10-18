@@ -17,7 +17,7 @@ G.add_edge(3,1)
 
 def test_multiple_roots()
 '''
-only allow geometric graph with one root
+only allow geometric graph to have one root
 '''
 G=GeometricGraph()
 G.add_node(1)
