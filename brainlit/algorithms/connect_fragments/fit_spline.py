@@ -86,7 +86,7 @@ class GeometricGraph(nx.Graph):
         5. tree: an oriented tree w.r.t. root
         6. path: a list of nodes
         7. other_trees: 
-        8. starting length: 
+        8. starting_length: 
         9. treenum: 
         10. parent_num: 
     '''
@@ -185,23 +185,25 @@ class GeometricGraph(nx.Graph):
      def find_longest_path(self, tree, starting_length=0):
     '''
         Return:
-        1. path: a list of nodes
+        1. path
         2. other_trees
 
         Parameters:
         1. other_trees: 
         2. roots: a list of nodes with in-degree=0, used to make sure there exist only one root
         3. leaves: nodes without children
-        4. shortest_paths:
-        5. distances:
-        6. shorest_idx:
-        7. leaf:
-        8. length:
-        9. children
-        10. child
+        4. shortest_paths: selected paths in leaves that are shortest in length
+        5. distances: the lengths of each path in shortest_paths
+        6. shortest_idx: the maximal value in distances
+        7. leaf: the shortest element of leaves
+        8. length: the length between nodes
+        9. children: the seccessors (or nodes) followed by a specific node
+        10. child: elements in children
+        11. path: a list of nodes
 
         Modules:
         in_degree: number of edges pointing to the node
+        out_degree: number of edges pointing out of the node
 
     '''
         other_trees = []
@@ -263,9 +265,7 @@ class GeometricGraph(nx.Graph):
 
     def path_length(self, path):
     '''
-        compute the length of path
-
-
+        compute the distance between nodes along the path
     '''
         length = 0
 
