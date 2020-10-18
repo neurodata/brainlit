@@ -40,7 +40,12 @@ Function definitions
 """
 #keep
 def checkIfDuplicates_2(listOfElems):
-    ''' Check if given list contains any duplicates '''    
+    ''' Check if given list contains any duplicates
+
+        Parameters:
+        1. setOfElems:
+        2. elem:
+    '''    
     setOfElems = set()
     for elem in listOfElems:
         if elem in setOfElems:
@@ -63,6 +68,11 @@ class GeometricGraph(nx.Graph):
 
     def set_root(self, root):
         self.root_node = root
+
+    def check_closed(self,node,edges)
+        G=GeometricGraph()
+        G.edges.data()
+
 
     # main function
     
@@ -113,8 +123,20 @@ class GeometricGraph(nx.Graph):
             spline_tree.nodes[node]["spline"] = self.fit_spline_path(path)
 
         return spline_tree
-    #keep
+
     def fit_spline_path(self, path):
+    '''
+
+        Parameters:
+        1. x:
+        2. orig:
+        3. new:
+        4. m:
+        5. diffs:
+        6. k:
+        7. tck:
+        8. u:
+    '''
         x = np.zeros((len(path), 3))
 
         for row, node in enumerate(path):
@@ -136,8 +158,18 @@ class GeometricGraph(nx.Graph):
         self.check_multiplicity(tck[0])
 
         return tck, u
-    # keep
+
     def check_multiplicity(self, t):
+    '''
+        check multiplicity
+
+        Parameters:
+        1. knots:
+        2. t:
+        3. first: first element of knots
+        4. indices_keep:
+        5. dup: 
+    '''
         knots = list(t.copy())
         first = knots[0]
         last = knots[-1]
@@ -157,9 +189,16 @@ class GeometricGraph(nx.Graph):
         2. other_trees
 
         Parameters:
-        - other_trees: 
-        - roots: 
-        - leaves: nodes without children
+        1. other_trees: 
+        2. roots: a list of nodes with in-degree=0, used to make sure there exist only one root
+        3. leaves: nodes without children
+        4. shortest_paths:
+        5. distances:
+        6. shorest_idx:
+        7. leaf:
+        8. length:
+        9. children
+        10. child
 
         Modules:
         in_degree: number of edges pointing to the node
@@ -221,9 +260,13 @@ class GeometricGraph(nx.Graph):
         path = list(path)
 
         return (path, other_trees)
-# keep
-    def path_length(self, path):
 
+    def path_length(self, path):
+    '''
+        compute the length of path
+
+
+    '''
         length = 0
 
         for i, node in enumerate(path):
