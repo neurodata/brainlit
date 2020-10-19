@@ -869,8 +869,8 @@ class _Lddmm:
             deformed_template_ravel = np.ravel(self.deformed_template)
             target_ravel = np.ravel(self.target)
             matching_weights_ravel = np.ravel(self.matching_weights)
-            contrast_polynomial_basis_semi_ravel = (
-                self.contrast_polynomial_basis.reshape(self.target.size, -1)
+            contrast_polynomial_basis_semi_ravel = self.contrast_polynomial_basis.reshape(
+                self.target.size, -1
             )  # A view, not a copy.
 
             # Create intermediate composites.
@@ -2065,9 +2065,7 @@ def lddmm_transform_image(
 
 
 def _transform_points(
-    points,
-    position_field,
-    position_field_resolution,
+    points, position_field, position_field_resolution,
 ):
 
     # Validate inputs.

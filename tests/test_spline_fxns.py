@@ -324,4 +324,3 @@ def test_speed():
     expected_speed = np.linalg.norm(dC, axis=1)
 
     assert speed == approx(expected_speed, abs=1e-1)
-
