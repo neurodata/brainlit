@@ -40,11 +40,12 @@ Function definitions
 """
 #keep
 def checkIfDuplicates_2(listOfElems):
-    ''' Check if given list contains any duplicates
+    ''' 
+    Check if given list contains any duplicates
 
-        Parameters:
-        1. setOfElems:
-        2. elem:
+    Parameters:
+    1. setOfElems:
+    2. elem:
     '''    
     setOfElems = set()
     for elem in listOfElems:
@@ -69,7 +70,7 @@ class GeometricGraph(nx.Graph):
     def set_root(self, root):
         self.root_node = root
 
-    def check_closed(self,node,edges)
+    def check_closed(self,node,edges):
         G=GeometricGraph()
         G.edges.data()
 
@@ -77,7 +78,7 @@ class GeometricGraph(nx.Graph):
     # main function
     
     def fit_spline_tree_invariant(self):
-    '''
+        '''
         Parameters:
         1. spline_tree: a geometric graph
         2. curr_spline_num: current spline number, used to ??
@@ -89,7 +90,7 @@ class GeometricGraph(nx.Graph):
         8. starting_length: 
         9. treenum: 
         10. parent_num: 
-    '''
+        '''
         spline_tree = nx.DiGraph()
         curr_spline_num = 0
         stack = []
@@ -125,7 +126,7 @@ class GeometricGraph(nx.Graph):
         return spline_tree
 
     def fit_spline_path(self, path):
-    '''
+        '''
 
         Parameters:
         1. x:
@@ -136,7 +137,7 @@ class GeometricGraph(nx.Graph):
         6. k:
         7. tck:
         8. u:
-    '''
+        '''
         x = np.zeros((len(path), 3))
 
         for row, node in enumerate(path):
@@ -160,7 +161,7 @@ class GeometricGraph(nx.Graph):
         return tck, u
 
     def check_multiplicity(self, t):
-    '''
+        '''
         check multiplicity
 
         Parameters:
@@ -169,7 +170,7 @@ class GeometricGraph(nx.Graph):
         3. first: first element of knots
         4. indices_keep:
         5. dup: 
-    '''
+        '''
         knots = list(t.copy())
         first = knots[0]
         last = knots[-1]
@@ -182,8 +183,8 @@ class GeometricGraph(nx.Graph):
     
     
     # find the longest path
-     def find_longest_path(self, tree, starting_length=0):
-    '''
+    def find_longest_path(self, tree, starting_length=0):
+        '''
         Return:
         1. path
         2. other_trees
@@ -205,7 +206,7 @@ class GeometricGraph(nx.Graph):
         in_degree: number of edges pointing to the node
         out_degree: number of edges pointing out of the node
 
-    '''
+        '''
         other_trees = []
         if len(tree.nodes) == 1:
             path = tree.nodes
@@ -264,9 +265,9 @@ class GeometricGraph(nx.Graph):
         return (path, other_trees)
 
     def path_length(self, path):
-    '''
+        '''
         compute the distance between nodes along the path
-    '''
+        '''
         length = 0
 
         for i, node in enumerate(path):
