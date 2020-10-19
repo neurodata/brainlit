@@ -303,5 +303,25 @@ def test_speed():
         spline_fxns.speed(x, t, c, k)
 
     # test results in general case
-    
+    # test results in general case
+    xx = np.linspace(-np.pi, np.pi)
+    X = xx ** 3
+    Y = np.sin(xx)
+    Z = xx ** 2
+    dX = 3 * xx ** 2
+    dY = np.cos(xx)
+    dZ = 2 * xx
+
+    C = np.array([X, Y, Z])
+    dC = np.array([dX, dY, dZ]).T
+
+    tck, _ = splprep(C, u=xx, k=5)
+    t = tck[0]
+    c = tck[1]
+    k = tck[2]
+    speed = spline_fxns.speed(xx, t, c, k, aux_outputs=False)
+
+    expected_speed = np.linalg.norm(dC, axis=1)
+
+    assert speed == approx(expected_speed, abs=1e-1)
 
