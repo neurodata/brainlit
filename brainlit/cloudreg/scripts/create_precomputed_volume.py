@@ -113,7 +113,12 @@ def create_precomputed_volume(
             tqdm(desc="Creating precomputed volume", total=len(files))
         ) as progress_bar:
             Parallel(num_procs, timeout=1800, verbose=10)(
-                delayed(process)(z, f, vol.layer_cloudpath, num_mips,)
+                delayed(process)(
+                    z,
+                    f,
+                    vol.layer_cloudpath,
+                    num_mips,
+                )
                 for z, f in zip(zs, files)
             )
     except Exception as e:

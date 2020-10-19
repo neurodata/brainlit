@@ -12,9 +12,13 @@ NUM_RES = 1
 def volume_info(num_res=NUM_RES, channel=0):
     """Pytest fixture that gets parameters that many upload.py methods use."""
     top_level = Path(__file__).parents[1] / "data"
-    (ordered_files, bin_paths, vox_size, tiff_dims, origin,) = upload.get_volume_info(
-        str(top_level / "data_octree"), num_res, channel
-    )
+    (
+        ordered_files,
+        bin_paths,
+        vox_size,
+        tiff_dims,
+        origin,
+    ) = upload.get_volume_info(str(top_level / "data_octree"), num_res, channel)
     return (
         ordered_files,
         bin_paths,
@@ -64,7 +68,14 @@ def test_get_volume_info_bad_inputs():
 
 def test_create_cloud_volume_bad_inputs(volume_info):
     """Tests that errors are raised when bad inputs are given to upload.create_cloud_volume."""
-    (_, _, v, i, _, top_level,) = volume_info
+    (
+        _,
+        _,
+        v,
+        i,
+        _,
+        top_level,
+    ) = volume_info
     p = "file://" + str(top_level)
     n = 1
     c = i
@@ -219,7 +230,11 @@ def test_create_image_layer(volume_info):
     _, b, vox_size, tiff_dims, _, top_level = volume_info
     dir = top_level / "test_upload"
     vols = upload.create_cloud_volume(
-        dir.as_uri(), tiff_dims, vox_size, num_resolutions=NUM_RES, layer_type="image",
+        dir.as_uri(),
+        tiff_dims,
+        vox_size,
+        num_resolutions=NUM_RES,
+        layer_type="image",
     )
 
     assert len(vols) == NUM_RES  # one vol for each resolution

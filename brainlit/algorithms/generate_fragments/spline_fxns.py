@@ -27,7 +27,7 @@ def speed(
         t: A 1xm array representing the knots of the B-spline
         c: A dxn array representing the control points of the B-spline
         k: An integer representing the degree of the B-spline:
-        
+
     Returns:
         speed: A 1xL array containing the speed of the B-Spline evaluated at x
     """
@@ -100,7 +100,7 @@ def curvature(
 ) -> np.ndarray:
     """Compute the curvature of a B-Spline.
 
-    The curvature measures the failure of a curve to be a straight line. 
+    The curvature measures the failure of a curve to be a straight line.
     It is defined as
 
     k = ||dT/ds||,
@@ -118,7 +118,7 @@ def curvature(
         t: A 1xm array representing the knots of the B-spline
         c: A dxn array representing the control points of the B-spline
         k: An integer representing the degree of the B-spline:
-        
+
     Returns:
         curvature: A 1xL array containing the curvature of the B-Spline evaluated at x
     """
@@ -219,7 +219,7 @@ def torsion(
         t: A 1xm array representing the knots of the B-spline
         c: A dxn array representing the control points of the B-spline
         k: An integer representing the degree of the B-spline:
-        
+
     Returns:
         torsion: A 1xL array containing the torsion of the B-Spline evaluated at x
     """

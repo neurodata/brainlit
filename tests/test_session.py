@@ -155,11 +155,17 @@ def test_pull_vertex_list_bad_inputs(session):
         sess.pull_vertex_list(seg_id, 1)
     with pytest.raises(ValueError):
         sess.pull_vertex_list(
-            seg_id, [-1,],
+            seg_id,
+            [
+                -1,
+            ],
         )
     with pytest.raises(ValueError):
         sess.pull_vertex_list(
-            seg_id, [10000000,],
+            seg_id,
+            [
+                10000000,
+            ],
         )
     with pytest.raises(TypeError):
         sess.pull_vertex_list(seg_id, v_id, buffer=1.5)

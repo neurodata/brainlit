@@ -196,7 +196,11 @@ class NeuroglancerSession:
         return np.squeeze(np.array(img)), bounds, vox_in_img
 
     def pull_vertex_list(
-        self, seg_id: int, v_id_list: List[int], buffer: int = 1, expand: bool = False,
+        self,
+        seg_id: int,
+        v_id_list: List[int],
+        buffer: int = 1,
+        expand: bool = False,
     ) -> Tuple[np.ndarray, Bbox, List[Tuple[int, int, int]]]:
         """Pull a subvolume containing all listed vertices.
 
@@ -236,7 +240,10 @@ class NeuroglancerSession:
         return img, bounds, vox_in_img_list
 
     def pull_chunk(
-        self, seg_id: int, v_id: int, radius: int = 0,
+        self,
+        seg_id: int,
+        v_id: int,
+        radius: int = 0,
     ) -> Tuple[np.ndarray, Bbox, Tuple[int, int, int]]:
         """Pull a subvolume around a specified skeleton vertex according to chunk size.
         Each data set has a specified chunk size, which can be found by calling self.cv.info.
@@ -309,7 +316,9 @@ class NeuroglancerSession:
         # return np.squeeze(np.array(img))
 
     def push(
-        self, img: np.ndarray, bounds: Bounds,
+        self,
+        img: np.ndarray,
+        bounds: Bounds,
     ):
         """Push a volume to an annotation channel.
 

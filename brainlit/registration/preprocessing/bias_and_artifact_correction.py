@@ -71,7 +71,8 @@ def correct_bias_field(image, correct_at_scale=1, as_float32=True, **kwargs):
     sitk_maskImage = N4BiasFieldCorrection_kwargs["maskImage"].astype(np.uint8)
     sitk_maskImage = sitk.GetImageFromArray(sitk_maskImage)
     N4BiasFieldCorrection_kwargs.update(
-        image=sitk_image, maskImage=sitk_maskImage,
+        image=sitk_image,
+        maskImage=sitk_maskImage,
     )
     bias_corrected_downsampled_image = sitk.N4BiasFieldCorrection(
         *N4BiasFieldCorrection_kwargs.values()
