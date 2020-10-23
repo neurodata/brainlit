@@ -1,30 +1,21 @@
 #%%
 import numpy as np
-from skimage.measure import label
-from skimage.morphology import skeletonize
-from sklearn.feature_extraction.image import grid_to_graph
-import scipy.ndimage as ndi
-from scipy import optimize
-from scipy.interpolate import splrep, splprep, interp1d
-import cv2
+from scipy.interpolate import splprep
 import math
 import warnings
 import networkx as nx
-from joblib import Parallel, delayed
-import warnings
-from itertools import product
-import quadprog
-import pickle
-import warnings
+
 
 """
 Function definitions
 """
-
+ 
 def checkIfDuplicates_2(listOfElems):
     """Check if given list contains any duplicates
 
-    """   
+    Args:
+        listOfElems (iterable)
+    """
     setOfElems = set()
     for elem in listOfElems:
         if elem in setOfElems:
@@ -39,10 +30,10 @@ Geometric Graph class
 
 
 class GeometricGraph(nx.Graph):
-    """[summary]
+    """class for undirected graphs
 
     Args:
-        nx ([type]): [description]
+        nx (Graph): A Graph stores nodes and edges with optional data, or attributes.
     """
     def __init__(self):
         super(GeometricGraph, self).__init__()
@@ -51,34 +42,30 @@ class GeometricGraph(nx.Graph):
         self.root = 1
 
     def set_root(self, root):
+        """set a note as the root
+
+        Args:
+            root (int): the vertice without parent
+        """
         self.root_node = root
 
     def check_closed(self,node,edges):
-        G=GeometricGraph()
-        G.edges.data()
+        """check if there exists closed loop in the tree
+
+        Args:
+            node ([type]): [description]
+            edges ([type]): [description]
+        """
+        self.nodes=node
+        self.edges=edges
 
 
-    # main function
-    
     def fit_spline_tree_invariant(self):
         """[summary]
 
         Returns:
-            [type]: [description]
+            spline_tree (DiGraph): a directed graph
         """
-        '''
-        Parameters:
-        1. spline_tree: a geometric graph
-        2. curr_spline_num: current spline number, used to ??
-        3. stack: list of 
-        4. root: the only node without parent; defined as 1; not to confused with 'roots'
-        5. tree: an oriented tree w.r.t. root
-        6. path: a list of nodes
-        7. other_trees: 
-        8. starting_length: 
-        9. treenum: 
-        10. parent_num: 
-        '''
         spline_tree = nx.DiGraph()
         curr_spline_num = 0
         stack = []
@@ -122,18 +109,6 @@ class GeometricGraph(nx.Graph):
         Returns:
             [type]: [description]
         """
-        '''
-
-        Parameters:
-        1. x:
-        2. orig:
-        3. new:
-        4. m:
-        5. diffs:
-        6. k:
-        7. tck:
-        8. u:
-        '''
         x = np.zeros((len(path), 3))
 
         for row, node in enumerate(path):
