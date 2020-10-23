@@ -17,36 +17,14 @@ import quadprog
 import pickle
 import warnings
 
-#keep
-class Connections:
-    def __init__(self, image_seg, image_int, voxel_dims=[1, 1, 1], verbose=False):
-        self.image = image_seg
-        self.image_int = image_int
-        self.image_labeled, self.num_comp = label(self.image, return_num=True)
-        self.image_skel = skeletonize(self.image, method="lee")
-        self.voxel_dims = np.array(voxel_dims)
-        self.coms = None
-        self.locs = None
-        self.lines = None
-        self.skels = None
-        self.graphs = None
-        self.verbose = verbose
-        # coordinates at location i,j will be coordinate in component i,
-        # closest to j
-        self.closest_idxs = -1 * np.ones((self.num_comp, self.num_comp, 3))
-
 """
 Function definitions
 """
-#keep
-def checkIfDuplicates_2(listOfElems):
-    ''' 
-    Check if given list contains any duplicates
 
-    Parameters:
-    1. setOfElems:
-    2. elem:
-    '''    
+def checkIfDuplicates_2(listOfElems):
+    """Check if given list contains any duplicates
+
+    """   
     setOfElems = set()
     for elem in listOfElems:
         if elem in setOfElems:
@@ -61,6 +39,11 @@ Geometric Graph class
 
 
 class GeometricGraph(nx.Graph):
+    """[summary]
+
+    Args:
+        nx ([type]): [description]
+    """
     def __init__(self):
         super(GeometricGraph, self).__init__()
         self.segments = None
@@ -78,6 +61,11 @@ class GeometricGraph(nx.Graph):
     # main function
     
     def fit_spline_tree_invariant(self):
+        """[summary]
+
+        Returns:
+            [type]: [description]
+        """
         '''
         Parameters:
         1. spline_tree: a geometric graph
@@ -126,6 +114,14 @@ class GeometricGraph(nx.Graph):
         return spline_tree
 
     def fit_spline_path(self, path):
+        """[summary]
+
+        Args:
+            path ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
         '''
 
         Parameters:
@@ -161,6 +157,14 @@ class GeometricGraph(nx.Graph):
         return tck, u
 
     def check_multiplicity(self, t):
+        """[summary]
+
+        Args:
+            t ([type]): [description]
+
+        Raises:
+            RuntimeError: [description]
+        """
         '''
         check multiplicity
 
@@ -184,6 +188,18 @@ class GeometricGraph(nx.Graph):
     
     # find the longest path
     def find_longest_path(self, tree, starting_length=0):
+        """[summary]
+
+        Args:
+            tree ([type]): [description]
+            starting_length (int, optional): [description]. Defaults to 0.
+
+        Raises:
+            ValueError: [description]
+
+        Returns:
+            [type]: [description]
+        """
         '''
         Return:
         1. path
@@ -265,6 +281,14 @@ class GeometricGraph(nx.Graph):
         return (path, other_trees)
 
     def path_length(self, path):
+        """[summary]
+
+        Args:
+            path ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
         '''
         compute the distance between nodes along the path
         '''
