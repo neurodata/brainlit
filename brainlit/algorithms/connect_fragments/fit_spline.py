@@ -14,7 +14,7 @@ def checkIfDuplicates_2(listOfElems):
     """Check if given list contains any duplicates
 
     Args:
-        listOfElems (iterable)
+        listOfElems (set): Build an unordered collection of unique elements.
     """
     setOfElems = set()
     for elem in listOfElems:
@@ -36,41 +36,34 @@ class GeometricGraph(nx.Graph):
         nx (Graph): A Graph stores nodes and edges with optional data, or attributes.
     """
     def __init__(self):
-        super(GeometricGraph, self).__init__()
+        super(GeometricGraph,self).__init__()
         self.segments = None
         self.cycle = None
         self.root = 1
 
-    def set_root(self, root):
-        """set a note as the root
-
-        Args:
-            root (int): the vertice without parent
-        """
-        self.root_node = root
-
-    def check_closed(self,node,edges):
-        """check if there exists closed loop in the tree
-
-        Args:
-            node ([type]): [description]
-            edges ([type]): [description]
-        """
-        self.nodes=node
-        self.edges=edges
-
 
     def fit_spline_tree_invariant(self):
-        """[summary]
+        """construct a spline tree based on the path lengths
 
         Returns:
-            spline_tree (DiGraph): a directed graph
+            spline_tree (DiGraph): a parent tree with the longest path in the directed graph
         """
+        
         spline_tree = nx.DiGraph()
         curr_spline_num = 0
         stack = []
         root = self.root
         tree = nx.algorithms.traversal.depth_first_search.dfs_tree(self, source=root)
+
+        # check if the graph is directed
+        if nx.is_directed(tree)== False:
+            raise ValueError("The geometric graph is not directed graph")
+
+        # check if the graph is edge covering
+        #if nx.is_edge_cover(tree,tree.edges)==False:
+        #    raise ValueError("The geometric graph is not edge covering")
+
+
 
         path, other_trees = self.find_longest_path(tree)
         spline_tree.add_node(curr_spline_num, path=path, starting_length=0)
@@ -101,13 +94,14 @@ class GeometricGraph(nx.Graph):
         return spline_tree
 
     def fit_spline_path(self, path):
-        """[summary]
+        """calculate the knots, B-spline coefficients, and the degree of the spline according to the path
 
         Args:
-            path ([type]): [description]
+            path (list): a list of nodes
 
         Returns:
-            [type]: [description]
+            tck (tuple): (t,c,k) a tuple containing the vector of knots, the B-spline coefficients, and the degree of the spline.
+            u (): An array of the values of the parameter.
         """
         x = np.zeros((len(path), 3))
 
@@ -132,24 +126,15 @@ class GeometricGraph(nx.Graph):
         return tck, u
 
     def check_multiplicity(self, t):
-        """[summary]
+        """check multiplicity
 
         Args:
-            t ([type]): [description]
+            t (list): the list to be checked
 
         Raises:
-            RuntimeError: [description]
+            RuntimeError: when duplicates are found
         """
-        '''
-        check multiplicity
 
-        Parameters:
-        1. knots:
-        2. t:
-        3. first: first element of knots
-        4. indices_keep:
-        5. dup: 
-        '''
         knots = list(t.copy())
         first = knots[0]
         last = knots[-1]
@@ -161,43 +146,21 @@ class GeometricGraph(nx.Graph):
             raise RuntimeError("Duplicates found in the above knot list")
     
     
-    # find the longest path
     def find_longest_path(self, tree, starting_length=0):
-        """[summary]
+        """find the longest path in a tree(Digraph)
 
         Args:
-            tree ([type]): [description]
-            starting_length (int, optional): [description]. Defaults to 0.
+            tree (Digraph): directed graph
+            starting_length (int, optional): Starting length. Defaults to 0.
 
         Raises:
-            ValueError: [description]
+            ValueError: More than one node with in_degree=0 is prohibited
 
         Returns:
-            [type]: [description]
+            path (list): a list of nodes
+            other_trees (list): directed graphs of children trees
         """
-        '''
-        Return:
-        1. path
-        2. other_trees
 
-        Parameters:
-        1. other_trees: 
-        2. roots: a list of nodes with in-degree=0, used to make sure there exist only one root
-        3. leaves: nodes without children
-        4. shortest_paths: selected paths in leaves that are shortest in length
-        5. distances: the lengths of each path in shortest_paths
-        6. shortest_idx: the maximal value in distances
-        7. leaf: the shortest element of leaves
-        8. length: the length between nodes
-        9. children: the seccessors (or nodes) followed by a specific node
-        10. child: elements in children
-        11. path: a list of nodes
-
-        Modules:
-        in_degree: number of edges pointing to the node
-        out_degree: number of edges pointing out of the node
-
-        '''
         other_trees = []
         if len(tree.nodes) == 1:
             path = tree.nodes
@@ -256,17 +219,15 @@ class GeometricGraph(nx.Graph):
         return (path, other_trees)
 
     def path_length(self, path):
-        """[summary]
+        """compute the distance between nodes along the path
 
         Args:
-            path ([type]): [description]
+            path (list): list of nodes
 
         Returns:
-            [type]: [description]
+            length (int): length between nodes
         """
-        '''
-        compute the distance between nodes along the path
-        '''
+        
         length = 0
 
         for i, node in enumerate(path):
