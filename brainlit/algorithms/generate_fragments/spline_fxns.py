@@ -23,10 +23,19 @@ def speed(
     The speed is the norm of the first derivative of the B-Spline.
 
     Arguments:
-        x: A 1xL array of parameter values where to evaluate the curve
-        t: A 1xm array representing the knots of the B-spline
-        c: A dxn array representing the coefficients/control points of the B-spline
-        k: An integer representing the degree of the B-spline:
+        x: A 1xL array of parameter values where to evaluate the curve.
+            It contains the parameter values where the speed of the B-Spline will
+            be evaluated. It is required to be non-empty, one-dimensional, and
+            real-valued.
+        t: A 1xm array representing the knots of the B-spline.
+            It is required to be a non-empty, non-decreasing, and one-dimensional
+            sequence of real-valued elements. For a B-Spline of degree k, at least
+            2k + 1 knots are required.
+        c: A dxn array representing the coefficients/control points of the B-spline.
+            Given n real-valued, d-dimensional points x_k = (x_k(1),...,x_k(d)), 
+            c is the non-empty matrix which columns are x_1^T,...,x_N^T. For a
+            B-Spline of order k, n cannot be less than m-k-1.
+        k: A non-negative integer representing the degree of the B-spline.
 
     Returns:
         speed: A 1xL array containing the speed of the B-Spline evaluated at x
@@ -120,10 +129,19 @@ def curvature(
     k = ||r'(t) x r''(t)||/||r'(t)||^3.
 
     Arguments:
-        x: A 1xL array of parameter values where to evaluate the curve
-        t: A 1xm array representing the knots of the B-spline
-        c: A dxn array representing the coefficients/control points of the B-spline
-        k: An integer representing the degree of the B-spline:
+        x: A 1xL array of parameter values where to evaluate the curve.
+            It contains the parameter values where the curvature of the B-Spline will
+            be evaluated. It is required to be non-empty, one-dimensional, and
+            real-valued.
+        t: A 1xm array representing the knots of the B-spline.
+            It is required to be a non-empty, non-decreasing, and one-dimensional
+            sequence of real-valued elements. For a B-Spline of degree k, at least
+            2k + 1 knots are required.
+        c: A dxn array representing the coefficients/control points of the B-spline.
+            Given n real-valued, d-dimensional points x_k = (x_k(1),...,x_k(d)), 
+            c is the non-empty matrix which columns are x_1^T,...,x_N^T. For a
+            B-Spline of order k, n cannot be less than m-k-1.
+        k: A non-negative integer representing the degree of the B-spline.
 
     Returns:
         curvature: A 1xL array containing the curvature of the B-Spline evaluated at x
@@ -224,10 +242,19 @@ def torsion(
     where r(u) is the position vector as a function of time.
 
     Arguments:
-        x: A 1xL array of parameter values where to evaluate the curve
-        t: A 1xm array representing the knots of the B-spline
-        c: A dxn array representing the coefficients/control points of the B-spline
-        k: An integer representing the degree of the B-spline:
+        x: A 1xL array of parameter values where to evaluate the curve.
+            It contains the parameter values where the torsion of the B-Spline will
+            be evaluated. It is required to be non-empty, one-dimensional, and
+            real-valued.
+        t: A 1xm array representing the knots of the B-spline.
+            It is required to be a non-empty, non-decreasing, and one-dimensional
+            sequence of real-valued elements. For a B-Spline of degree k, at least
+            2k + 1 knots are required.
+        c: A dxn array representing the coefficients/control points of the B-spline.
+            Given n real-valued, d-dimensional points x_k = (x_k(1),...,x_k(d)), 
+            c is the non-empty matrix which columns are x_1^T,...,x_N^T. For a
+            B-Spline of order k, n cannot be less than m-k-1.
+        k: A non-negative integer representing the degree of the B-spline.
 
     Returns:
         torsion: A 1xL array containing the torsion of the B-Spline evaluated at x
