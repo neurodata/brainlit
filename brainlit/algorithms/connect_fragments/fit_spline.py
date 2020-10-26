@@ -48,7 +48,7 @@ class GeometricGraph(nx.Graph):
         Returns:
             spline_tree (DiGraph): a parent tree with the longest path in the directed graph
         """
-        
+    
         spline_tree = nx.DiGraph()
         curr_spline_num = 0
         stack = []
@@ -62,8 +62,6 @@ class GeometricGraph(nx.Graph):
         # check if the graph is edge covering
         #if nx.is_edge_cover(tree,tree.edges)==False:
         #    raise ValueError("The geometric graph is not edge covering")
-
-
 
         path, other_trees = self.find_longest_path(tree)
         spline_tree.add_node(curr_spline_num, path=path, starting_length=0)
@@ -232,9 +230,15 @@ class GeometricGraph(nx.Graph):
 
         for i, node in enumerate(path):
             if i > 0:
-                length = length + np.linalg.norm(
+                # check if loc is defined
+                hasloc=self.nodes[node].get("loc")
+                print(type(hasloc))
+                if hasloc is None:
+                    raise KeyError("Nodes are not defined under loc attribute")
+                else:
+                    length = length + np.linalg.norm(
                     self.nodes[node]["loc"] - self.nodes[path[i - 1]]["loc"]
-                )
+                    )
         return length
 
 # %%
