@@ -325,7 +325,7 @@ def test_torsion():
         torsion == approx(expected_torsion, abs=1e-1)
         and deriv == approx(dC, abs=1e0)
         and dderiv == approx(ddC, abs=1e0)
-        and ddderiv == approx(dddC, abs=1e0)
+        and ddderiv == approx(dddC, abs=1.5e0)
     )
 
 
