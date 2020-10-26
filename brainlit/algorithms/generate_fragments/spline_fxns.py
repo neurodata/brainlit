@@ -20,16 +20,20 @@ def speed(
 ) -> np.ndarray:
     """Compute the speed of a B-Spline.
 
-    The speed is the norm of the first derivative of the B-Spline
+    The speed is the norm of the first derivative of the B-Spline.
 
     Arguments:
         x: A 1xL array of parameter values where to evaluate the curve
         t: A 1xm array representing the knots of the B-spline
-        c: A dxn array representing the control points of the B-spline
+        c: A dxn array representing the coefficients/control points of the B-spline
         k: An integer representing the degree of the B-spline:
 
     Returns:
         speed: A 1xL array containing the speed of the B-Spline evaluated at x
+
+    References:
+        * Kouba, Parametric Equations.
+            https://www.math.ucdavis.edu/~kouba/Math21BHWDIRECTORY/ArcLength.pdf
     """
 
     # convert arguments to desired type
@@ -100,14 +104,16 @@ def curvature(
 ) -> np.ndarray:
     """Compute the curvature of a B-Spline.
 
-    The curvature measures the failure of a curve to be a straight line.
+    The curvature measures the failure of a curve, r(u), to be a straight line.
     It is defined as
 
     k = ||dT/ds||,
 
     where T is the unit tangent vector, and s is the arc length:
 
-    T = dr/ds, s = int_0^t ||r'(u)||du.
+    T = dr/ds, s = int_0^t ||r'(u)||du,
+
+    where r(u) is the position vector as a function of time.
 
     The curvature can also be computed as
 
@@ -116,11 +122,15 @@ def curvature(
     Arguments:
         x: A 1xL array of parameter values where to evaluate the curve
         t: A 1xm array representing the knots of the B-spline
-        c: A dxn array representing the control points of the B-spline
+        c: A dxn array representing the coefficients/control points of the B-spline
         k: An integer representing the degree of the B-spline:
 
     Returns:
         curvature: A 1xL array containing the curvature of the B-Spline evaluated at x
+
+    References:
+        * Máté Attila, The Frenet–Serret formulas.
+            http://www.sci.brooklyn.cuny.edu/~mate/misc/frenet_serret.pdf
     """
 
     # convert arguments to desired type
@@ -184,9 +194,6 @@ def curvature(
     denom = np.linalg.norm(deriv, axis=1) ** 3
     curvature = np.nan_to_num(num / denom)
 
-    if np.isnan(np.sum(curvature)):
-        print("torsion nan")
-
     if aux_outputs == True:
         return curvature, deriv, dderiv
     else:
@@ -202,26 +209,32 @@ def torsion(
 ) -> np.ndarray:
     """Compute the torsion of a B-Spline.
 
-    The torsion measures the failure of a line to be planar.
+    The torsion measures the failure of a curve, r(u), to be planar.
     If the curvature k of a curve is not zero, then the torsion is defined as
 
-    \tau = -n * b',
+    \tau = -n \cdot b',
 
     where n is the principal normal vector, and b' the derivative w.r.t. the
     arc length s of the binormal vector.
 
     The torsion can also be computed as
 
-    \tau = |r'(t), r''(t), r'''(t)|/||r'(t) x r''(t)||^2.
+    \tau = |r'(t), r''(t), r'''(t)|/||r'(t) x r''(t)||^2,
+
+    where r(u) is the position vector as a function of time.
 
     Arguments:
         x: A 1xL array of parameter values where to evaluate the curve
         t: A 1xm array representing the knots of the B-spline
-        c: A dxn array representing the control points of the B-spline
+        c: A dxn array representing the coefficients/control points of the B-spline
         k: An integer representing the degree of the B-spline:
 
     Returns:
         torsion: A 1xL array containing the torsion of the B-Spline evaluated at x
+
+    References:
+        * Máté Attila, The Frenet–Serret formulas.
+            http://www.sci.brooklyn.cuny.edu/~mate/misc/frenet_serret.pdf
     """
 
     # convert arguments to desired type
