@@ -32,7 +32,7 @@ def speed(
             sequence of real-valued elements. For a B-Spline of degree k, at least
             2k + 1 knots are required.
         c: A dxn array representing the coefficients/control points of the B-spline.
-            Given n real-valued, d-dimensional points x_k = (x_k(1),...,x_k(d)), 
+            Given n real-valued, d-dimensional points x_k = (x_k(1),...,x_k(d)),
             c is the non-empty matrix which columns are x_1^T,...,x_N^T. For a
             B-Spline of order k, n cannot be less than m-k-1.
         k: A non-negative integer representing the degree of the B-spline.
@@ -138,7 +138,7 @@ def curvature(
             sequence of real-valued elements. For a B-Spline of degree k, at least
             2k + 1 knots are required.
         c: A dxn array representing the coefficients/control points of the B-spline.
-            Given n real-valued, d-dimensional points x_k = (x_k(1),...,x_k(d)), 
+            Given n real-valued, d-dimensional points x_k = (x_k(1),...,x_k(d)),
             c is the non-empty matrix which columns are x_1^T,...,x_N^T. For a
             B-Spline of order k, n cannot be less than m-k-1.
         k: A non-negative integer representing the degree of the B-spline.
@@ -251,7 +251,7 @@ def torsion(
             sequence of real-valued elements. For a B-Spline of degree k, at least
             2k + 1 knots are required.
         c: A dxn array representing the coefficients/control points of the B-spline.
-            Given n real-valued, d-dimensional points x_k = (x_k(1),...,x_k(d)), 
+            Given n real-valued, d-dimensional points x_k = (x_k(1),...,x_k(d)),
             c is the non-empty matrix which columns are x_1^T,...,x_N^T. For a
             B-Spline of order k, n cannot be less than m-k-1.
         k: A non-negative integer representing the degree of the B-spline.
