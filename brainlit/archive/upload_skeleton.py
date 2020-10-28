@@ -86,7 +86,7 @@ def get_volume_info(brain_dir, num_resolutions=7):
 
 
 def create_skel_segids(swc_dir, origin):
-    """ Create skeletons to be uploaded as precomputed format
+    """Create skeletons to be uploaded as precomputed format
 
     Arguments:
         swc_dir {str} -- path to consensus swc files

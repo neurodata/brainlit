@@ -59,7 +59,7 @@ def whiten(data, window_size, step_size, centered=False, epsilon=1e-5, type="PCA
     step_size : array-like
         step size in each of direction of window, same number of
         dimensions as img
-    
+
     centered : boolean
         When False (the default), centers the data first
 
@@ -266,7 +266,7 @@ def imagize_vector(data, orig_shape, window_size, step_size):
     Returns
     -------
     imagized : array-like
-        original image 
+        original image
 
     """
     if window_size.ndim > 1 or step_size.ndim > 1:

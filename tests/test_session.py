@@ -12,21 +12,6 @@ from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError, SkeletonDecodeError
 from brainlit.algorithms.generate_fragments.tube_seg import tubes_seg
 
-# ensures data is available
-top_level = Path(__file__).parents[1] / "data"
-input = (top_level / "data_octree").as_posix()
-url = (top_level / "test_upload").as_uri()
-url_seg = url + "_segments"
-url = url + "/serial"
-if not (Path(url[5:]) / "info").is_file():
-    print("Uploading data.")
-    upload_volumes(input, url, 1)
-if not (Path(url_seg[5:]) / "info").is_file():
-    print("Uploading segmentataion.")
-    upload_segments(input, url_seg, 1)
-assert (Path(url[5:]) / "info").is_file()
-assert (Path(url_seg[5:]) / "info").is_file()
-
 
 @pytest.fixture
 def vars_local():
@@ -54,16 +39,14 @@ def session(vars_local):  # using local vars
 
 
 def test_session_no_urls(vars_local):
-    """Tests that initializing a NeuroglancerSession object without passing urls is valid.
-    """
+    """Tests that initializing a NeuroglancerSession object without passing urls is valid."""
     _, url, url_seg, mip, _, _ = vars_local
     NeuroglancerSession(url)
     NeuroglancerSession(url, url_segments=url_seg)
 
 
 def test_session_incomplete_urls(vars_local):
-    """Tests that initializing a NeuroglancerSession on data without segmentation or annotation channels is valid and raises a warning.
-    """
+    """Tests that initializing a NeuroglancerSession on data without segmentation or annotation channels is valid and raises a warning."""
     input, url, url_seg, mip, _, _ = vars_local
     path = (
         Path(__file__).parents[1] / "data" / "test_upload" / "serial"
@@ -73,8 +56,7 @@ def test_session_incomplete_urls(vars_local):
 
 
 def test_session_bad_urls(vars_local):
-    """Tests that initializing a NeuroglancerSession object by passing bad urls isn't valid.
-    """
+    """Tests that initializing a NeuroglancerSession object by passing bad urls isn't valid."""
     _, url, url_segments, mip, seg_id, v_id = vars_local
     url_bad = url + "0"  # bad url
     url_segments_bad = url_segments + "0"  # bad url
@@ -85,8 +67,7 @@ def test_session_bad_urls(vars_local):
 
 
 def test_NeuroglancerSession_bad_inputs(vars_local):
-    """Tests that errors are raised when bad inputs are given to initializing session.NeuroglancerSession.
-    """
+    """Tests that errors are raised when bad inputs are given to initializing session.NeuroglancerSession."""
     _, url, url_seg, mip, seg_id, v_id = vars_local
     with pytest.raises(TypeError):
         NeuroglancerSession(url=0)
@@ -105,8 +86,7 @@ def test_NeuroglancerSession_bad_inputs(vars_local):
 
 
 def test_set_url_segments_bad_inputs(session):
-    """Tests that errors are raised when bad inputs are given to session.set_url_segments.
-    """
+    """Tests that errors are raised when bad inputs are given to session.set_url_segments."""
     sess, seg_id, v_id = session
     with pytest.raises(TypeError):
         sess.set_url_segments(0)
@@ -115,8 +95,7 @@ def test_set_url_segments_bad_inputs(session):
 
 
 def test_get_segments_bad_inputs(session):
-    """Tests that errors are raised when bad inputs are given to session.get_segments.
-    """
+    """Tests that errors are raised when bad inputs are given to session.get_segments."""
     sess, seg_id, v_id = session
     bbox = (0, 0, 0, 10, 10, 10)
     bad_bbox = (-1, 0, 0, 10, 10, 10)
@@ -129,8 +108,7 @@ def test_get_segments_bad_inputs(session):
 
 
 def test_create_tubes_bad_inputs(session):
-    """Tests that errors are raised when bad inputs are given to session.create_tubes.
-    """
+    """Tests that errors are raised when bad inputs are given to session.create_tubes."""
     sess, seg_id, v_id = session
     bbox = (0, 0, 0, 10, 10, 10)
     bad_bbox = (-1, 0, 0, 10, 10, 10)
@@ -149,8 +127,7 @@ def test_create_tubes_bad_inputs(session):
 
 
 def test_pull_voxel_bad_inputs(session):
-    """Tests that errors are raised when bad inputs are given to session.pull_voxel.
-    """
+    """Tests that errors are raised when bad inputs are given to session.pull_voxel."""
     sess, seg_id, v_id = session
     with pytest.raises(TypeError):
         sess.pull_voxel(1.5, v_id)
@@ -167,8 +144,7 @@ def test_pull_voxel_bad_inputs(session):
 
 
 def test_pull_vertex_list_bad_inputs(session):
-    """Tests that errors are raised when bad inputs are given to session.pull_vertex_list.
-    """
+    """Tests that errors are raised when bad inputs are given to session.pull_vertex_list."""
     sess, seg_id, v_id = session
     v_id = [
         v_id,
@@ -178,9 +154,19 @@ def test_pull_vertex_list_bad_inputs(session):
     with pytest.raises(TypeError):
         sess.pull_vertex_list(seg_id, 1)
     with pytest.raises(ValueError):
-        sess.pull_vertex_list(seg_id, [-1,])
+        sess.pull_vertex_list(
+            seg_id,
+            [
+                -1,
+            ],
+        )
     with pytest.raises(ValueError):
-        sess.pull_vertex_list(seg_id, [10000000,])
+        sess.pull_vertex_list(
+            seg_id,
+            [
+                10000000,
+            ],
+        )
     with pytest.raises(TypeError):
         sess.pull_vertex_list(seg_id, v_id, buffer=1.5)
     with pytest.raises(ValueError):
@@ -190,8 +176,7 @@ def test_pull_vertex_list_bad_inputs(session):
 
 
 def test_pull_chunk_bad_inputs(session):
-    """Tests that errors are raised when bad inputs are given to session.pull_chunks.
-    """
+    """Tests that errors are raised when bad inputs are given to session.pull_chunks."""
     sess, seg_id, v_id = session
     with pytest.raises(TypeError):
         sess.pull_chunk(1.5, v_id)
@@ -208,8 +193,7 @@ def test_pull_chunk_bad_inputs(session):
 
 
 def test_pull_bounds_img_bad_inputs(session):
-    """Tests that errors are raised when bad inputs are given to session.pull_bounds_img.
-    """
+    """Tests that errors are raised when bad inputs are given to session.pull_bounds_img."""
     sess, seg_id, v_id = session
     with pytest.raises(TypeError):
         sess.pull_bounds_img(0)
@@ -218,8 +202,7 @@ def test_pull_bounds_img_bad_inputs(session):
 
 
 def test_pull_bounds_seg_bad_inputs(session):
-    """Tests that errors are raised when bad inputs are given to session.pull_bounds_seg.
-    """
+    """Tests that errors are raised when bad inputs are given to session.pull_bounds_seg."""
     sess, seg_id, v_id = session
     with pytest.raises(NotImplementedError):
         sess.pull_bounds_seg(0)
@@ -230,8 +213,7 @@ def test_pull_bounds_seg_bad_inputs(session):
 
 
 def test_push_bad_inputs(session):
-    """Tests that errors are raised when bad inputs are given to session.push.
-    """
+    """Tests that errors are raised when bad inputs are given to session.push."""
     sess, seg_id, v_id = session
     img = np.array([[[1, 1, 1], [2, 2, 2]]])
     bounds = (0, 0, 0, 10, 10, 10)
@@ -255,8 +237,7 @@ def test_push_bad_inputs(session):
 
 
 def test_set_url_segments(vars_local):
-    """Tests setting a segmentation url .
-    """
+    """Tests setting a segmentation url ."""
     _, url, url_segments, mip, seg_id, v_id = vars_local
     sess = NeuroglancerSession(url=url, mip=mip)
     sess.set_url_segments(url_segments)
@@ -265,8 +246,7 @@ def test_set_url_segments(vars_local):
 
 
 def test_get_segments(session):
-    """Tests that getting segments returns a valid graph.
-    """
+    """Tests that getting segments returns a valid graph."""
     sess, seg_id, v_id = session
     G = sess.get_segments(seg_id)
     G_sub = sess.get_segments(seg_id, (0, 0, 0, 20, 20, 20))
@@ -275,8 +255,7 @@ def test_get_segments(session):
 
 
 def test_create_tubes(session):
-    """Tests that create_tubes returns valid tubes.
-    """
+    """Tests that create_tubes returns valid tubes."""
     sess, seg_id, v_id = session
     img, bbox, verts = sess.pull_voxel(
         seg_id, v_id, radius=5
@@ -286,8 +265,7 @@ def test_create_tubes(session):
 
 
 def test_pull_voxel(session):
-    """Tests that pulling a region at a voxel is valid.
-    """
+    """Tests that pulling a region at a voxel is valid."""
     sess, seg_id, v_id = session
     img, bounds, voxel = sess.pull_voxel(seg_id, v_id)
     print(img)
@@ -301,8 +279,7 @@ def test_pull_voxel(session):
 
 
 def test_pull_vertex_list(session):
-    """Tests that pulling a vertex list returns valid regions.
-    """
+    """Tests that pulling a vertex list returns valid regions."""
     sess, seg_id, v_id = session
     img, bounds, voxel = sess.pull_vertex_list(seg_id, [100, 101, 102, 103])
     assert len(img.shape) == 3
@@ -314,8 +291,7 @@ def test_pull_vertex_list(session):
 
 
 def test_pull_vertex_list_voxel(session):
-    """Tests that pulling a vertex list of a single voxel is the same as pulling that vertex voxel.
-    """
+    """Tests that pulling a vertex list of a single voxel is the same as pulling that vertex voxel."""
     sess, seg_id, v_id = session
     img, bounds, voxel = sess.pull_voxel(seg_id, v_id)
     img2, bounds2, voxel2 = sess.pull_vertex_list(seg_id, [v_id], expand=False)
@@ -326,8 +302,7 @@ def test_pull_vertex_list_voxel(session):
 
 
 def test_pull_vertex_list_chunk(session):
-    """Tests that pulling a vertex list of a single voxel is the same as pulling that chunk.
-    """
+    """Tests that pulling a vertex list of a single voxel is the same as pulling that chunk."""
     sess, seg_id, v_id = session
     img, bounds, voxel = sess.pull_chunk(seg_id, v_id)
     img2, bounds2, voxel2 = sess.pull_vertex_list(seg_id, [v_id], expand=True)
@@ -338,8 +313,7 @@ def test_pull_vertex_list_chunk(session):
 
 
 def test_pull_chunk(session):
-    """Tests that pull_chunk returns a valid region.
-    """
+    """Tests that pull_chunk returns a valid region."""
     sess, seg_id, v_id = session
     img, bounds, voxel = sess.pull_chunk(seg_id, v_id)
     assert len(img.shape) == 3
@@ -353,8 +327,7 @@ def test_pull_chunk(session):
 
 
 def test_pull_bounds_voxel(session):
-    """Tests that pulling the volume from the region returned by pull_voxel is the same as the original pull_voxel volume.
-    """
+    """Tests that pulling the volume from the region returned by pull_voxel is the same as the original pull_voxel volume."""
     sess, seg_id, v_id = session
     img, bounds, voxel = sess.pull_voxel(seg_id, v_id)
     print(bounds)
@@ -368,8 +341,7 @@ def test_pull_bounds_voxel(session):
 
 
 def test_push_pull_annotation(session):
-    """Tests pushing an annotation volume, then pulling it back, via pull_vertex_list.
-    """
+    """Tests pushing an annotation volume, then pulling it back, via pull_vertex_list."""
     sess, seg_id, v_id = session
     img, bounds, vox_list = sess.pull_vertex_list(
         2, [v_id, v_id + 1], expand=True

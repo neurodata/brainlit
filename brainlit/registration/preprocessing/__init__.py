@@ -38,14 +38,14 @@ from ..lddmm._lddmm_utilities import _validate_ndarray
 
 def preprocess(data, processes):
     """
-    Perform each preprocessing function in processes, in the order listed, 
+    Perform each preprocessing function in processes, in the order listed,
     on data if it is an array, or on each element in data if it is a list of arrays.
-    
+
     Args:
         data (np.ndarray, list): The array or list of arrays to be preprocessed.
         processes (list): The list of strings, each corresponding to the name of a preprocessing function.
         process_kwargs (seq, optional): A sequence of dictionaries containing kwargs for each element of processes. Defaults to None.
-    
+
     Raises:
         TypeError: Raised if data is a list whose elements are not all of type np.ndarray.
         TypeError: Raised if data is neither a np.ndarray or a list of np.ndarrays.
@@ -55,7 +55,7 @@ def preprocess(data, processes):
         ValueError: Raised if an alement of processes is a 2-element iterable whose second element is not a dictionary.
         TypeError: Raised if an element of processes includes a dictionary with a key that is not a string.
         ValueError: Raised if any element of processes is not a recognized preprocessing function.
-    
+
     Returns:
         np.ndarray, list: A copy of data after having each function in processes applied.
     """

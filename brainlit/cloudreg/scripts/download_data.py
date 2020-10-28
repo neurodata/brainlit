@@ -64,5 +64,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     download_data(
-        args.s3_path, args.outfile,
+        args.s3_path,
+        args.outfile,
     )

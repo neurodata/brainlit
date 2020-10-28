@@ -8,9 +8,9 @@
 ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/bvarjavand/brainlit)
 ![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/bvarjavand/brainlit)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)  
-This repository is a container of methods that Neurodata usees to expose their open-source code while it is in the process of being merged with larger scientific libraries such as scipy, scikit-image, or scikit-learn. Additionally, methods for computational neuroscience on brains too specific for a general scientific library can be found here, such as image registration software tuned specifically for large brain volumes.
+This repository is a container of methods that Neurodata uses to expose their open-source code while it is in the process of being merged with larger scientific libraries such as scipy, scikit-image, or scikit-learn. Additionally, methods for computational neuroscience on brains too specific for a general scientific library can be found here, such as image registration software tuned specifically for large brain volumes.
 
-![Brainlight Features](https://i.postimg.cc/QtG9Xs68/Brainlit.png)
+![Brainlight Features](https://github.com/neurodata/brainlit/blob/develop/docs/images/figure.png)
 
 - [Motivation](#motivation)
 - [Installation](#installation)
@@ -34,7 +34,7 @@ This repository is a container of methods that Neurodata usees to expose their o
 
 ## Motivation
 
-The repository originated as the project of a team in Joshua Vogelstein's class **Neurodata** at Johns Hopkins University. This project was focused on data science towards the [mouselight data](https://www.hhmi.org/news/mouselight-project-maps-1000-neurons-and-counting-in-the-mouse-brain). It becme apparent that the tools developed for the class would be useful for other groups doing data science on large data volumes.
+The repository originated as the project of a team in Joshua Vogelstein's class **Neurodata** at Johns Hopkins University. This project was focused on data science towards the [mouselight data](https://www.hhmi.org/news/mouselight-project-maps-1000-neurons-and-counting-in-the-mouse-brain). It became apparent that the tools developed for the class would be useful for other groups doing data science on large data volumes.
 The repository can now be considered a "holding bay" for code developed by Neurodata for collaborators and researchers to use.
 
 ## Installation
@@ -114,12 +114,12 @@ A tutorial is available in docs/notebooks/registration_demo.ipynb.
 
 ## Core
 
-The core brain-lit package can be described by the diagram at the top of the readme:
+The core brainlit package can be described by the diagram at the top of the readme:
 
 ### (Push and Pull Data)
 
 Brainlit uses the Seung Lab's [Cloudvolume](https://github.com/seung-lab/cloud-volume) package to push and pull data through the cloud or a local machine in an efficient and parallelized fashion. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/notebooks/utils/uploading_brains.ipynb).  
-The only requirement is to have an account on a cloud service on s3, azure, or google cloud.
+The only requirement is to have an account on a cloud service on s3, Azure, or Google Cloud.
 
 Loading data via local filepath of an octree structure is also supported. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/notebooks/utils/upload_brains.ipynb).
 
@@ -148,7 +148,7 @@ The documentation can be found at [https://brainlight.readthedocs.io/en/latest/]
 
 ## Tests
 
-Running tests can easily be done by moving to the root directory of the brainlit package ant typing `pytest tests` or `python -m pytest tests`.  
+Running tests can easily be done by moving to the root directory of the brainlit package and typing `pytest tests` or `python -m pytest tests`.  
 Running a specific test, such as `test_upload.py` can be done simply by `ptest tests/test_upload.py`.
 
 ## Contributing
@@ -157,5 +157,5 @@ Contribution guidelines can be found via [CONTRIBUTING.md](https://github.com/ne
 
 ## Credits
 
-Thanks to the neurodata team and the group in the neurodata class which started the project.
+Thanks to the Neurodata team and the group in the Neurodata class which started the project.
 This project is currently managed by Tommy Athey and Bijan Varjavand.
