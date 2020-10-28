@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)  
 This repository is a container of methods that Neurodata uses to expose their open-source code while it is in the process of being merged with larger scientific libraries such as scipy, scikit-image, or scikit-learn. Additionally, methods for computational neuroscience on brains too specific for a general scientific library can be found here, such as image registration software tuned specifically for large brain volumes.
 
-![Brainlight Features](https://i.postimg.cc/QtG9Xs68/Brainlit.png)
+![Brainlight Features](https://github.com/neurodata/brainlit/blob/develop/docs/images/figure.png)
 
 - [Motivation](#motivation)
 - [Installation](#installation)

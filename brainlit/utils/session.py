@@ -45,7 +45,7 @@ class NeuroglancerSession:
 
     def __init__(
         self,
-        url: str,  #  = "s3://mouse-light-viz/precomputed_volumes/brain1"
+        url: str,  #  = "s3://open-neurodata/brainlit/brain1"
         mip: int = 0,
         url_segments: Optional[str] = None,
     ):
