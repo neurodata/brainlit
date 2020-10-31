@@ -112,7 +112,7 @@ class GeometricGraph(nx.Graph):
         for row, node in enumerate(path):
             hasloc=self.nodes[node].get("loc")
             #print(type(hasloc))
-            if hasloc is 'None':
+            if hasloc is None:
                 raise KeyError("Nodes are not defined under loc attribute")
 
         x = np.zeros((len(path), 3))
@@ -251,7 +251,7 @@ class GeometricGraph(nx.Graph):
                 # check if loc is defined
                 hasloc=self.nodes[node].get("loc")
                 #print(type(hasloc))
-                if hasloc is 'None':
+                if hasloc is None:
                     raise KeyError("Nodes are not defined under loc attribute")
                 else:
                     length = length + np.linalg.norm(
