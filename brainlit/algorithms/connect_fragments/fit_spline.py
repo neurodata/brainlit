@@ -45,10 +45,13 @@ class GeometricGraph(nx.Graph):
     def fit_spline_tree_invariant(self):
         """construct a spline tree based on the path lengths
 
+        Raises:
+            ValueError: check if the graph is directed
+
         Returns:
             spline_tree (DiGraph): a parent tree with the longest path in the directed graph
         """
-    
+        
         spline_tree = nx.DiGraph()
         curr_spline_num = 0
         stack = []
@@ -96,11 +99,22 @@ class GeometricGraph(nx.Graph):
 
         Args:
             path (list): a list of nodes
+        
+        Raises:
+            KeyError: Nodes should be defined under loc attribute
 
         Returns:
             tck (tuple): (t,c,k) a tuple containing the vector of knots, the B-spline coefficients, and the degree of the spline.
             u (): An array of the values of the parameter.
         """
+
+        # check if loc is defined
+        for row, node in enumerate(path):
+            hasloc=self.nodes[node].get("loc")
+            #print(type(hasloc))
+            if hasloc is 'None':
+                raise KeyError("Nodes are not defined under loc attribute")
+
         x = np.zeros((len(path), 3))
 
         for row, node in enumerate(path):
@@ -159,6 +173,7 @@ class GeometricGraph(nx.Graph):
             other_trees (list): directed graphs of children trees
         """
 
+        
         other_trees = []
         if len(tree.nodes) == 1:
             path = tree.nodes
@@ -221,19 +236,22 @@ class GeometricGraph(nx.Graph):
 
         Args:
             path (list): list of nodes
+        
+        Raises:
+            KeyError: nodes should be defined under loc attribute
 
         Returns:
             length (int): length between nodes
         """
-        
+                
         length = 0
 
         for i, node in enumerate(path):
             if i > 0:
                 # check if loc is defined
                 hasloc=self.nodes[node].get("loc")
-                print(type(hasloc))
-                if hasloc is None:
+                #print(type(hasloc))
+                if hasloc is 'None':
                     raise KeyError("Nodes are not defined under loc attribute")
                 else:
                     length = length + np.linalg.norm(
