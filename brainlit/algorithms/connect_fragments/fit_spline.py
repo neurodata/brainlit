@@ -4,7 +4,7 @@ from scipy.interpolate import splprep
 import math
 import warnings
 import networkx as nx
-
+import itertools
 
 """
 Function definitions
@@ -46,6 +46,7 @@ class GeometricGraph(nx.Graph):
         """construct a spline tree based on the path lengths
 
         Raises:
+            ValueError: check if every node is unigue in location
             ValueError: check if every node is assigned to at least one edge
             ValueError: check if the graph contains undirected cycle(s)
             ValueErorr: check if the graph has disconnected segment(s)
@@ -53,6 +54,18 @@ class GeometricGraph(nx.Graph):
         Returns:
             spline_tree (DiGraph): a parent tree with the longest path in the directed graph
         """
+
+        # check repeated locations are assigned to differnet nodes
+        LOC=[]
+        for noNum in list(self.nodes):
+            LOC.append(np.ndarray.tolist(self.nodes[noNum]["loc"]))
+
+        LOC.sort()
+        sLOC=list(LOC for LOC,_ in itertools.groupby(LOC))
+
+        if len(LOC) != len(sLOC):
+            raise ValueError("Duplicated node locations are found")
+
 
         # check if the graph is edge-covering and a tree 
         if nx.algorithms.is_edge_cover(self,self.edges) == False:
@@ -254,7 +267,7 @@ class GeometricGraph(nx.Graph):
         """
                 
         length = 0
-
+        
         for i, node in enumerate(path):
             if i > 0:
                 # check if loc is defined and of numpy.ndarray class
