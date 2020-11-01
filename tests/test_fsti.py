@@ -5,7 +5,6 @@ import numpy as np
 
 def test_loc():
     """Nodes should be defined in 'loc' attribute
-       pytest test_fsti.py -k test_loc
     """
 
     neuron=GeometricGraph()
@@ -27,7 +26,6 @@ def test_loc():
 
 def test_loc_np():
     """Nodes 'loc' should be a numpy.array
-       pytest test_fsti.py -k test_loc_np
     """
 
     neuron=GeometricGraph()
@@ -49,7 +47,6 @@ def test_loc_np():
 
 def test_loc_3d():
     """Nodes 'loc' should be 3-dimensional
-       pytest test_fsti.py -k test_loc_3d
     """
 
     neuron=GeometricGraph()
@@ -72,7 +69,6 @@ def test_loc_3d():
 
 def test_edgcov():
     """check if every node is assigned to at least one edge
-       pytest test_fsti.py -k test_edgcov
     """
 
     neuron=GeometricGraph()
@@ -93,7 +89,6 @@ def test_edgcov():
 
 def test_cycle():
     """check if the geometric graph contains undirected cycle(s)
-       pytest test_fsti.py -k test_cycle
     """
 
     neuron=GeometricGraph()
@@ -116,7 +111,6 @@ def test_cycle():
 
 def test_disconnect():
     """check if the geometric graph contains disconnected segment(s)
-       pytest test_fsti.py -k test_disconnect
     """
 
     neuron=GeometricGraph()
@@ -134,3 +128,26 @@ def test_disconnect():
     neuron.add_edge(3,5)
     #build spline tree using fit_spline_tree_invariant()
     spline_tree = neuron.fit_spline_tree_invariant()
+
+def test_DupNodLoc():
+    """check if every node is unique in location
+    """
+
+    neuron=GeometricGraph()
+    #add nodes
+    neuron.add_node(1,loc=np.array([100,100,200]))
+    neuron.add_node(2,loc=np.array([200,0,200]))
+    neuron.add_node(3,loc=np.array([200,300,200]))
+    neuron.add_node(4,loc=np.array([300,400,200]))
+    neuron.add_node(5,loc=np.array([100,500,200]))
+    neuron.add_node(6,loc=np.array([100,500,200]))
+    #define soma
+    soma=[100,100,200]
+    #add edges
+    neuron.add_edge(2,1)
+    neuron.add_edge(2,3)
+    neuron.add_edge(3,4)
+    neuron.add_edge(3,5)
+    neuron.add_edge(3,6)
+    #build spline tree using fit_spline_tree_invariant()
+    spline_tree = neuron.fit_spline_tree_invariant()    
