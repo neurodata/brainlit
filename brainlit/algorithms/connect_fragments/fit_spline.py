@@ -46,25 +46,27 @@ class GeometricGraph(nx.Graph):
         """construct a spline tree based on the path lengths
 
         Raises:
-            ValueError: check if the graph is directed
+            ValueError: check if every node is assigned to at least one edge
+            ValueError: check if the graph contains undirected cycle(s)
+            ValueErorr: check if the graph has disconnected segment(s)
 
         Returns:
             spline_tree (DiGraph): a parent tree with the longest path in the directed graph
         """
-        
+
+        # check if the graph is edge-covering and a tree 
+        if nx.algorithms.is_edge_cover(self,self.edges) == False:
+            raise ValueError("The graph is not edge-covering")
+        elif nx.algorithms.tree.recognition.is_forest(self) == False:
+            raise ValueError("The graph is not a tree for having undirected cycle(s).")
+        elif nx.algorithms.tree.recognition.is_tree(self) == False:
+            raise ValueError("The geometric graph is not a tree for having disconnected segment(s).")
+
         spline_tree = nx.DiGraph()
         curr_spline_num = 0
         stack = []
         root = self.root
         tree = nx.algorithms.traversal.depth_first_search.dfs_tree(self, source=root)
-
-        # check if the graph is directed
-        if nx.is_directed(tree)== False:
-            raise ValueError("The geometric graph is not directed graph")
-
-        # check if the graph is edge covering
-        #if nx.is_edge_cover(tree,tree.edges)==False:
-        #    raise ValueError("The geometric graph is not edge covering")
 
         path, other_trees = self.find_longest_path(tree)
         spline_tree.add_node(curr_spline_num, path=path, starting_length=0)
@@ -91,7 +93,7 @@ class GeometricGraph(nx.Graph):
             path = spline_tree.nodes[node]["path"]
             
             spline_tree.nodes[node]["spline"] = self.fit_spline_path(path)
-
+        
         return spline_tree
 
     def fit_spline_path(self, path):
@@ -101,19 +103,24 @@ class GeometricGraph(nx.Graph):
             path (list): a list of nodes
         
         Raises:
-            KeyError: Nodes should be defined under loc attribute
+            ValueError: Nodes should be defined under loc attribute
+            TypeError: loc should be of numpy.ndarray class
+            ValueError: loc should be 3-dimensional
 
         Returns:
             tck (tuple): (t,c,k) a tuple containing the vector of knots, the B-spline coefficients, and the degree of the spline.
             u (): An array of the values of the parameter.
         """
 
-        # check if loc is defined
+        # check if loc is defined and of numpy.ndarray class
         for row, node in enumerate(path):
             hasloc=self.nodes[node].get("loc")
-            #print(type(hasloc))
             if hasloc is None:
-                raise KeyError("Nodes are not defined under loc attribute")
+                raise ValueError("Nodes are not defined under loc attribute")
+            elif type(hasloc) is not np.ndarray:
+                raise TypeError('loc is not a numpy.ndarray')
+            elif len(hasloc) != 3:
+                raise ValueError("loc is not 3-dimensional")
 
         x = np.zeros((len(path), 3))
 
@@ -238,7 +245,9 @@ class GeometricGraph(nx.Graph):
             path (list): list of nodes
         
         Raises:
-            KeyError: nodes should be defined under loc attribute
+            ValueError: nodes should be defined under loc attribute
+            TypeError: loc should be of numpy.ndarray
+            ValueError: loc should be 3-dimensional
 
         Returns:
             length (int): length between nodes
@@ -248,11 +257,14 @@ class GeometricGraph(nx.Graph):
 
         for i, node in enumerate(path):
             if i > 0:
-                # check if loc is defined
+                # check if loc is defined and of numpy.ndarray class
                 hasloc=self.nodes[node].get("loc")
-                #print(type(hasloc))
                 if hasloc is None:
-                    raise KeyError("Nodes are not defined under loc attribute")
+                    raise ValueError("Nodes are not defined under loc attribute")
+                elif type(hasloc) is not np.ndarray:
+                    raise TypeError("loc is not a numpy.ndarray")
+                elif len(hasloc) != 3:
+                    raise ValueError("loc is not 3-dimensional")
                 else:
                     length = length + np.linalg.norm(
                     self.nodes[node]["loc"] - self.nodes[path[i - 1]]["loc"]
