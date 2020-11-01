@@ -20,3 +20,5 @@
 ## Running APP2
 
 - See python script (will update later on some other notes)
+
+- The current version has a problem where the labels are flipped along y=x, will need to fix this.
