@@ -22,7 +22,8 @@ def test_loc():
     neuron.add_edge(4,2)
     neuron.add_edge(5,2)
     #build spline tree using fit_spline_tree_invariant()
-    spline_tree = neuron.fit_spline_tree_invariant()
+    with pytest.raises(KeyError):
+        spline_tree = neuron.fit_spline_tree_invariant()
 
 def test_loc_np():
     """Nodes 'loc' should be a numpy.array
@@ -43,7 +44,8 @@ def test_loc_np():
     neuron.add_edge(4,2)
     neuron.add_edge(5,2)
     #build spline tree using fit_spline_tree_invariant()
-    spline_tree = neuron.fit_spline_tree_invariant()
+    with pytest.raises(TypeError):
+        spline_tree = neuron.fit_spline_tree_invariant()
 
 def test_loc_3d():
     """Nodes 'loc' should be 3-dimensional
@@ -65,7 +67,8 @@ def test_loc_3d():
     neuron.add_edge(4,2)
     neuron.add_edge(5,2)
     #build spline tree using fit_spline_tree_invariant()
-    spline_tree = neuron.fit_spline_tree_invariant()
+    with pytest.raises(ValueError):
+        spline_tree = neuron.fit_spline_tree_invariant()
 
 def test_edgcov():
     """check if every node is assigned to at least one edge
@@ -85,7 +88,9 @@ def test_edgcov():
     neuron.add_edge(3,2)
     neuron.add_edge(4,3)
     #build spline tree using fit_spline_tree_invariant()
-    spline_tree = neuron.fit_spline_tree_invariant()
+    with pytest.raises(ValueError, match=r"The graph is not edge-covering"):
+        spline_tree = neuron.fit_spline_tree_invariant()
+    
 
 def test_cycle():
     """check if the geometric graph contains undirected cycle(s)
@@ -107,7 +112,8 @@ def test_cycle():
     neuron.add_edge(5,4)
     neuron.add_edge(3,5)
     #build spline tree using fit_spline_tree_invariant()
-    spline_tree = neuron.fit_spline_tree_invariant()
+    with pytest.raises(ValueError):
+        spline_tree = neuron.fit_spline_tree_invariant()
 
 def test_disconnect():
     """check if the geometric graph contains disconnected segment(s)
@@ -127,7 +133,8 @@ def test_disconnect():
     neuron.add_edge(3,4)
     neuron.add_edge(3,5)
     #build spline tree using fit_spline_tree_invariant()
-    spline_tree = neuron.fit_spline_tree_invariant()
+    with pytest.raises(ValueError):
+        spline_tree = neuron.fit_spline_tree_invariant()
 
 def test_DupNodLoc():
     """check if every node is unique in location
@@ -150,4 +157,5 @@ def test_DupNodLoc():
     neuron.add_edge(3,5)
     neuron.add_edge(3,6)
     #build spline tree using fit_spline_tree_invariant()
-    spline_tree = neuron.fit_spline_tree_invariant()    
+    with pytest.raises(ValueError):
+        spline_tree = neuron.fit_spline_tree_invariant()    
