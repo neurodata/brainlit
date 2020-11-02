@@ -43,7 +43,7 @@ extensions = [
     "sphinx.ext.intersphinx",
 ]
 
-nbsphinx_kernel_name = "ndd20"
+nbsphinx_kernel_name = "python3"
 
 autoapi_dirs = ["../brainlit"]
 autoapi_add_toctree_entry = False
