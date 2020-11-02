@@ -39,7 +39,7 @@ class BaseFeatures(BaseEstimator):
         segment_url: Optional[str] = None,
     ):
         check_precomputed(url)
-        check_type(size, int)
+        check_type(size, (int, np.integer))
         if size < 0:
             raise ValueError(f"Size {size} should be nonnegative.")
         check_size(offset)
@@ -94,25 +94,25 @@ class BaseFeatures(BaseEstimator):
         Returns:
             df: A dataframe of data containing [segment, vertex, label, f_1, f_2, ..., f_d] columns.
         """
-        check_iterable_type(seg_ids, int)
+        check_iterable_type(seg_ids, (int, np.integer))
         if num_verts is not None:
-            check_type(num_verts, int)
+            check_type(num_verts, (int, np.integer))
         if file_path is not None:
             check_type(file_path, str)
-        check_type(batch_size, int)
+        check_type(batch_size, (int, np.integer))
         if batch_size < 1:
             raise ValueError(f"Batch size {batch_size} should not be negative.")
         if start_seg is not None:
-            check_type(start_seg, int)
+            check_type(start_seg, (int, np.integer))
             if start_seg < 0:
                 raise ValueError(
                     f"Starting segment {start_seg} should not be negative."
                 )
-        check_type(start_vert, int)
+        check_type(start_vert, (int, np.integer))
         if start_vert < 0:
             raise ValueError(f"Starting vertex {start_vert} should not be negative.")
         check_type(include_neighborhood, bool)
-        check_type(n_jobs, int)
+        check_type(n_jobs, (int, np.integer))
         if n_jobs < 1:
             raise ValueError(f"Number of jobs {n_jobs} should be positive.")
 

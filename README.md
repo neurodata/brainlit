@@ -8,36 +8,46 @@
 ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/bvarjavand/brainlit)
 ![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/bvarjavand/brainlit)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)  
-This repository is a container of methods that Neurodata usees to expose their open-source code while it is in the process of being merged with larger scientific libraries such as scipy, scikit-image, or scikit-learn. Additionally, methods for computational neuroscience on brains too specific for a general scientific library can be found here, such as image registration software tuned specifically for large brain volumes.
+This repository is a container of methods that Neurodata uses to expose their open-source code while it is in the process of being merged with larger scientific libraries such as scipy, scikit-image, or scikit-learn. Additionally, methods for computational neuroscience on brains too specific for a general scientific library can be found here, such as image registration software tuned specifically for large brain volumes.
 
-![Brainlight Features](https://i.postimg.cc/QtG9Xs68/Brainlit.png)
+![Brainlight Features](https://github.com/neurodata/brainlit/blob/develop/docs/images/figure.png)
 
-- [Motivation](#motivation)
-- [Installation](#installation)
-  - [Environment](#environment)
-  - [Install from pypi](#install-from-pypi)
-  - [Install from source](#install-from-source)
-- [How to Use Brainlit](#how-to-use-brainlit)
-  - [Data Setup](#data-setup)
-  - [Create a Session](#create-a-session)
-- [Features](#features)
-  - [Registration](#registration)
-- [Core](#core)
-  - [Push/Pull Data](#push-and-pull-data)
-  - [Visualize](#visualize)
-  - [Manually Segment](#manually-segment)
-  - [Automatically Segment](#automatically-and-semi-automatically-segment)
-- [API reference](#api-reference)
-- [Tests](#tests)
-- [Contributing](#contributing)
-- [Credits](#credits)
+- [Brainlit](#brainlit)
+  - [Motivation](#motivation)
+  - [Installation](#installation)
+    - [Environment](#environment)
+      - [(optional, any python >= 3.7 environment will suffice)](#optional-any-python--38-environment-will-suffice)
+    - [Install from pypi](#install-from-pypi)
+    - [Install from source](#install-from-source)
+  - [How to use Brainlit](#how-to-use-brainlit)
+    - [Data setup](#data-setup)
+    - [Create a session](#create-a-session)
+  - [Features](#features)
+    - [Registration](#registration)
+  - [Core](#core)
+    - [(Push and Pull Data)](#push-and-pull-data)
+    - [Visualize](#visualize)
+    - [Manually Segment](#manually-segment)
+    - [Automatically and Semi-automatically Segment](#automatically-and-semi-automatically-segment)
+  - [API Reference](#api-reference)
+  - [Tests](#tests)
+  - [Common errors and troubleshooting](#common-errors-and-troubleshooting)
+  - [Contributing](#contributing)
+  - [Credits](#credits)
 
 ## Motivation
 
-The repository originated as the project of a team in Joshua Vogelstein's class **Neurodata** at Johns Hopkins University. This project was focused on data science towards the [mouselight data](https://www.hhmi.org/news/mouselight-project-maps-1000-neurons-and-counting-in-the-mouse-brain). It becme apparent that the tools developed for the class would be useful for other groups doing data science on large data volumes.
+The repository originated as the project of a team in Joshua Vogelstein's class **Neurodata** at Johns Hopkins University. This project was focused on data science towards the [mouselight data](https://www.hhmi.org/news/mouselight-project-maps-1000-neurons-and-counting-in-the-mouse-brain). It became apparent that the tools developed for the class would be useful for other groups doing data science on large data volumes.
 The repository can now be considered a "holding bay" for code developed by Neurodata for collaborators and researchers to use.
 
 ## Installation
+
+### Operating Systems
+Brainlit is compatible with Mac, Windows, and Unix systems.
+
+#### Windows Linux Subsystem 2 
+For Windows 10 users that prefer Linux functionality without the speed sacrifice of a Virtual Machine, Brainlit can be installed and run on WSL2. See installation walkthrough [here.](docs/WSL2-install-instructions.md)
+
 
 ### Environment
 
@@ -56,6 +66,26 @@ The repository can now be considered a "holding bay" for code developed by Neuro
 - clone the repo: `git clone https://github.com/neurodata/brainlit.git`
 - cd into the repo: `cd brainlit`
 - install brainlit: `pip install -e .`
+
+### For Windows Users setting up a Conda environment:
+
+Users currently may run into an issue with installing dependencies on Python 3.8. There are a couple workarounds currently available:
+
+#### Use Python 3.7 - RECOMMENDED
+
+- Create a new environment using Python 3.7 instead: `conda create --name brainlit3.7 python=3.7`
+
+- Run `pip install -e .` This should successfully install the brainlit module for Conda on Windows.
+
+#### Other potential fixes
+
+Potentially, `gcc` is missing, which is necessary for wheel installation from Python 3.6 onwards.
+
+- Install [gcc for Windows](https://www.guru99.com/c-gcc-install.html) and run `pip install brainlit -e . --no-cache-dir`.
+
+Post-Python 3.6, windows handles wheels through the Microsoft Manifest Tool, it might be missing.
+
+- Add the [Microsoft Manifest Tool](https://docs.microsoft.com/en-us/windows/win32/sbscs/mt-exe) to the `PATH` variable.
 
 ## How to use Brainlit
 
@@ -114,12 +144,12 @@ A tutorial is available in docs/notebooks/registration_demo.ipynb.
 
 ## Core
 
-The core brain-lit package can be described by the diagram at the top of the readme:
+The core brainlit package can be described by the diagram at the top of the readme:
 
 ### (Push and Pull Data)
 
 Brainlit uses the Seung Lab's [Cloudvolume](https://github.com/seung-lab/cloud-volume) package to push and pull data through the cloud or a local machine in an efficient and parallelized fashion. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/notebooks/utils/uploading_brains.ipynb).  
-The only requirement is to have an account on a cloud service on s3, azure, or google cloud.
+The only requirement is to have an account on a cloud service on s3, Azure, or Google Cloud.
 
 Loading data via local filepath of an octree structure is also supported. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/notebooks/utils/upload_brains.ipynb).
 
@@ -148,8 +178,14 @@ The documentation can be found at [https://brainlight.readthedocs.io/en/latest/]
 
 ## Tests
 
-Running tests can easily be done by moving to the root directory of the brainlit package ant typing `pytest tests` or `python -m pytest tests`.  
+Running tests can easily be done by moving to the root directory of the brainlit package and typing `pytest tests` or `python -m pytest tests`.  
 Running a specific test, such as `test_upload.py` can be done simply by `ptest tests/test_upload.py`.
+
+## Common errors and troubleshooting
+
+- [macOS Install/Run Issues](https://github.com/NeuroDataDesign/brainlit/blob/develop/docs/macOS_Install_%26_Run_Issues.md)
+
+- [AWS Credentials Issues](https://github.com/NeuroDataDesign/brainlit/blob/develop/docs/AWS_Credentials_Issues.md)
 
 ## Contributing
 
@@ -157,5 +193,5 @@ Contribution guidelines can be found via [CONTRIBUTING.md](https://github.com/ne
 
 ## Credits
 
-Thanks to the neurodata team and the group in the neurodata class which started the project.
+Thanks to the Neurodata team and the group in the Neurodata class which started the project.
 This project is currently managed by Tommy Athey and Bijan Varjavand.
