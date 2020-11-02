@@ -23,7 +23,7 @@
 
 - The current version has a problem where the labels are flipped along y=x, will need to fix this.
 
-## Experiment Plan
+# Experiment Plan
 
 ### Data to be used
 
