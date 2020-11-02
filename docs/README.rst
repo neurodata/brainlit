@@ -6,11 +6,6 @@ Brainlit
 ========
 
 
-.. image:: https://img.shields.io/badge/python-3.7-blue.svg
-   :target: 
-   :alt: Python
-
-
 .. image:: https://travis-ci.com/neurodata/brainlit.svg?branch=master
    :target: https://travis-ci.com/neurodata/brainlit
    :alt: Build Status
@@ -44,7 +39,8 @@ Brainlit
 .. image:: https://img.shields.io/badge/License-Apache%202.0-blue.svg
    :target: https://opensource.org/licenses/Apache-2.0
    :alt: License
-:raw-html-m2r:`<br>`
+   
+
 This repository is a container of methods that Neurodata usees to expose their open-source code while it is in the process of being merged with larger scientific libraries such as scipy, scikit-image, or scikit-learn. Additionally, methods for computational neuroscience on brains too specific for a general scientific library can be found here, such as image registration software tuned specifically for large brain volumes.
 
 
@@ -53,34 +49,9 @@ This repository is a container of methods that Neurodata usees to expose their o
    :alt: Brainlight Features
 
 
+.. toctree::
+   :numbered:
 
-* `Motivation <#motivation>`_
-* `Installation <#installation>`_
-
-  * `Environment <#environment>`_
-  * `Install from pypi <#install-from-pypi>`_
-  * `Install from source <#install-from-source>`_
-
-* `How to Use Brainlit <#how-to-use-brainlit>`_
-
-  * `Data Setup <#data-setup>`_
-  * `Create a Session <#create-a-session>`_
-
-* `Features <#features>`_
-
-  * `Registration <#registration>`_
-
-* `Core <#core>`_
-
-  * `Push/Pull Data <#push-and-pull-data>`_
-  * `Visualize <#visualize>`_
-  * `Manually Segment <#manually-segment>`_
-  * `Automatically Segment <#automatically-and-semi-automatically-segment>`_
-
-* `API reference <#api-reference>`_
-* `Tests <#tests>`_
-* `Contributing <#contributing>`_
-* `Credits <#credits>`_
 
 Motivation
 ----------
@@ -152,7 +123,7 @@ Each user will start their scripts with approximately the same lines:
 
    session = NeuroglancerSession(url='file:///abc123xyz')
 
-From here, any number of tools can be run such as the visualization or annotation tools. `Interactive demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/visualization/visualization.ipynb>`_.
+From here, any number of tools can be run such as the visualization or annotation tools. `Viz demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/visualization/visualization.ipynb>`_.
 
 Features
 --------
@@ -184,10 +155,10 @@ The core brain-lit package can be described by the diagram at the top of the rea
 (Push and Pull Data)
 ^^^^^^^^^^^^^^^^^^^^
 
-Brainlit uses the Seung Lab's `Cloudvolume <https://github.com/seung-lab/cloud-volume>`_ package to push and pull data through the cloud or a local machine in an efficient and parallelized fashion. `Interactive demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/utils/uploading_brains.ipynb>`_.\ :raw-html-m2r:`<br>`
+Brainlit uses the Seung Lab's `Cloudvolume <https://github.com/seung-lab/cloud-volume>`_ package to push and pull data through the cloud or a local machine in an efficient and parallelized fashion. `Uploading demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/utils/uploading_brains.ipynb>`_.\ :raw-html-m2r:`<br>`
 The only requirement is to have an account on a cloud service on s3, azure, or google cloud.
 
-Loading data via local filepath of an octree structure is also supported. `Interactive demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/utils/upload_brains.ipynb>`_.
+Loading data via local filepath of an octree structure is also supported. `Octree demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/utils/upload_brains.ipynb>`_.
 
 Visualize
 ^^^^^^^^^
@@ -196,19 +167,19 @@ Brainlit supports many methods to visualize large data. Visualizing the entire d
 
 screenshot
 
-Brainlit also has tools to visualize chunks of data as 2d slices or as a 3d model. `Interactive demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/visualization/visualization.ipynb>`_.
+Brainlit also has tools to visualize chunks of data as 2d slices or as a 3d model. `Visualization demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/visualization/visualization.ipynb>`_.
 
 screenshot
 
 Manually Segment
 ^^^^^^^^^^^^^^^^
 
-Brainlit includes a lightweight manual segmentation pipeline. This allows collaborators of a projec to pull data from the cloud, create annotations, and push their annotations back up as a separate channel. `Interactive demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/pipelines/manual_segementation.ipynb>`_.
+Brainlit includes a lightweight manual segmentation pipeline. This allows collaborators of a projec to pull data from the cloud, create annotations, and push their annotations back up as a separate channel. `Auto demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/pipelines/manual_segementation.ipynb>`_.
 
 Automatically and Semi-automatically Segment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Similar to the above pipeline, segmentations can be automatically or semi-automatically generated and pushed to a separate channel for viewing. `Interactive demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/pipelines/seg_pipeline_demo.ipynb>`_.
+Similar to the above pipeline, segmentations can be automatically or semi-automatically generated and pushed to a separate channel for viewing. `Semi-auto demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/pipelines/seg_pipeline_demo.ipynb>`_.
 
 API Reference
 -------------
