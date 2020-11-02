@@ -21,19 +21,23 @@
 
 - See python script (will update later on some other notes)
 
-- The current version has a problem where the labels are flipped along y=x, will need to fix this.
+- The current version has a problem where the labels are flipped along what appears to be y=x, will need to fix this.
+
+[![labels-flipped.png](https://i.postimg.cc/28D2139X/labels-flipped.png)](https://postimg.cc/4nWzM4gz)
 
 # Experiment Plan
 
 ### Data to be used
 
-The open-neurodata S3 instance has 3 brains worth of data. I will see if I can make use of all 3 of these to perform tests. The first step will be to convert these image files into the requisite `.tif` format to run Vaa3D. There is also a benchmarking dataset 
+The open-neurodata S3 instance has 3 brains worth of data. I will see if I can make use of all 3 of these to perform tests. The first step will be to convert these image files into the requisite `.tif` format to run Vaa3D. 
+
+EDIT: There is actually a benchmarking dataset with the proper ground truth labels. I will figure out how to get access to that and see if I can process the data into the proper formats necessary for running APP2.
 
 ### Algorithms to be compared
 
 The primary goal is to compare APP2 to an existing ground-truth solution. I will also compare the results that come out of an algorithm in `adaptive_thresh.py` under the `generate_fragments` directory as a means of presenting a comparison to an existing algorithm. From preliminary testing, the Otsu segmentation algorithm has decent performance on the small demo dataset that I tried. It may be necessary to investigate the algorithm's behavior on a larger scale dataset to determine if it is usable.
 
-### Further processing
+### Further processing - Labels Skeletonization
 
 The labelsets that result from APP2 and Otsu Segmentation are known as dense labelsets. These annotate every voxel that the algorithms have determined are part of a neuron. The problem resides in this high density. The ground truth is a series of hand-labeled points, which is then linearly interpolated to form a rough skeleton of the neuron path. The outputs of APP2 and Otsu will need to be skeletonized to create a similar structure to that of the ground truth labels. This will ensure that the neuron traces have a similar density.
 
