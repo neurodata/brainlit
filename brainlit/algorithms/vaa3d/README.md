@@ -27,7 +27,7 @@
 
 ### Data to be used
 
-The open-neurodata S3 instance has 3 brains worth of data. I will see if I can make use of all 3 of these to perform tests.
+The open-neurodata S3 instance has 3 brains worth of data. I will see if I can make use of all 3 of these to perform tests. The first step will be to convert these image files into the requisite `.tif` format to run Vaa3D. There is also a benchmarking dataset 
 
 ### Algorithms to be compared
 
@@ -52,4 +52,4 @@ Comparing `.swc` files will require a measure of distance.
   - To calculate the undirected spatial distance (SD) between A and B, we average DDIV(A,B) and DDIV(B,A)
   - Substantial Spatial Distance (SSD) further modifies this. It thresholds all of the distances first, keeping only those distances that are greater than 2 voxels. The percentage of "significant distances" is then calculated (kept/total).
 
-- Robustness. If all goes well, we can attempt to replicate the APP2 paper's signal deletion test, where voxels' intensities are randomly set to 0 in the source image. This will test the robustness of the algorithm to reproduce reconstructions in low overall intensity images. We can then run the algorithms with a 30%, 50%, 70% deletion and observe how the distance metrics hold up.
+- Robustness. If the above is implemented successfully, we can move forward and attempt to replicate the APP2 paper's signal deletion test, where voxels' intensities are randomly set to 0 in the source image. This will test the robustness of the algorithm to reproduce reconstructions in low overall intensity images. We can then run the algorithms with a 30%, 50%, 70% deletion and observe how the distance metrics hold up. I will do a further review of whether or not this type of test is necessary, as robustness tests are done to ensure the wider applicability of the tracing algorithm on future datasets. However, such a test might not be necessary for Brainlit specifically, as our data is expected to be of a certain quality and format since all of the Janelia brains are scanned using the same modality.
