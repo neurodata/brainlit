@@ -15,7 +15,7 @@ import numpy as np
 
 def _validate_scalar_to_multi(value, size=3, dtype=float):
     """
-    If value's length is 1, upcast it to match size. 
+    If value's length is 1, upcast it to match size.
     Otherwise, if it does not match size, raise error.
 
     Return a numpy array.
@@ -81,22 +81,22 @@ def _validate_ndarray(
     broadcast_to_shape=None,
     reshape_to_shape=None,
 ):
-    """Cast (a copy of) array to a np.ndarray if possible and return it 
+    """Cast (a copy of) array to a np.ndarray if possible and return it
     unless it is noncompliant with minimum_ndim, required_ndim, and dtype.
-    
+
     Note:
-    
+
     If required_ndim is None, _validate_ndarray will accept any object.
     If it is possible to cast to dtype, otherwise an exception is raised.
 
     If np.array(array).ndim == 0 and required_ndim == 1, array will be upcast to ndim 1.
-    
-    If forbid_object_dtype == True and the dtype is object, an exception is raised 
+
+    If forbid_object_dtype == True and the dtype is object, an exception is raised
     unless object is the dtype.
-    
-    If a shape is provided to broadcast_to_shape, unless noncompliance is found with 
+
+    If a shape is provided to broadcast_to_shape, unless noncompliance is found with
     required_ndim, array is broadcasted to that shape.
-    
+
     if a shape is provided to reshape_to_shape, array is reshaped to that shape."""
 
     # Verify arguments.
@@ -203,7 +203,7 @@ def _validate_xyz_resolution(ndim, xyz_resolution):
 
 
 def _compute_axes(shape, xyz_resolution=1, origin="center"):
-    """Returns the real_axes defining an image with the given shape 
+    """Returns the real_axes defining an image with the given shape
     at the given resolution as a list of numpy arrays.
     """
 
@@ -241,7 +241,7 @@ def _compute_axes(shape, xyz_resolution=1, origin="center"):
 
 
 def _compute_coords(shape, xyz_resolution=1, origin="center"):
-    """Returns the real_coordinates of an image with the given shape 
+    """Returns the real_coordinates of an image with the given shape
     at the given resolution as a single numpy array of shape (*shape, len(shape))."""
 
     axes = _compute_axes(shape, xyz_resolution, origin)

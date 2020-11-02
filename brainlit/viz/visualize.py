@@ -101,20 +101,20 @@ def plot_3d(
 
 def plot_image_2d(imgs, titles=None, rows=1, colorbar=False):
     """
-        Plots a 2D image
+    Plots a 2D image
 
-        Parameters
-        ----------
-        imgs : single 2D np.array or list of 2D np.arrays
-            slice of image data frog ngl_pipeline class.
-            example use: img_slice = img[:,100,:]
+    Parameters
+    ----------
+    imgs : single 2D np.array or list of 2D np.arrays
+        slice of image data frog ngl_pipeline class.
+        example use: img_slice = img[:,100,:]
 
-        titles : str, default = None
+    titles : str, default = None
 
-        Returns
-        -------
-        matplotlib figure and axis
-     """
+    Returns
+    -------
+    matplotlib figure and axis
+    """
     if isinstance(imgs, list):
         l = len(imgs)
         cols = np.ceil(l / rows).astype(int)
@@ -142,17 +142,17 @@ def plot_image_2d(imgs, titles=None, rows=1, colorbar=False):
 
 def plot_image_mip(imgs, titles=None, rows=1, axis=2, colorbar=False):
     """
-        Max Intensity Projection of 3D image
+    Max Intensity Projection of 3D image
 
-        Parameters
-        ----------
-        imgs : single 3D np.array or list of 3D np.arrays
+    Parameters
+    ----------
+    imgs : single 3D np.array or list of 3D np.arrays
 
-        titles : str, default = None
+    titles : str, default = None
 
-        Returns
-        -------
-        matplotlib figure and axis
+    Returns
+    -------
+    matplotlib figure and axis
     """
     if isinstance(imgs, list):
         for i, img in enumerate(imgs):
@@ -167,17 +167,17 @@ def plot_image_mip(imgs, titles=None, rows=1, axis=2, colorbar=False):
 
 def find_smalldim(imgs):
     """
-        Find smallest dimension of an image or list of images.
+    Find smallest dimension of an image or list of images.
 
-        Parameters
-        ----------
-        imgs : single 3D np.array or list of 3D np.arrays {
+    Parameters
+    ----------
+    imgs : single 3D np.array or list of 3D np.arrays {
 
-        titles : str, default = None
+    titles : str, default = None
 
-        Returns
-        -------
-        smallest_axis: int
+    Returns
+    -------
+    smallest_axis: int
     """
     if isinstance(imgs, list):
         img = imgs[0]
@@ -190,17 +190,17 @@ def find_smalldim(imgs):
 
 def plot_image_hist(imgs, rows=1, titles=None):
     """
-        Histogram
+    Histogram
 
-        Parameters
-        ----------
-        imgs : single 3D np.array or list of 3D np.arrays {
+    Parameters
+    ----------
+    imgs : single 3D np.array or list of 3D np.arrays {
 
-        titles : str, default = None
+    titles : str, default = None
 
-        Returns
-        -------
-        matplotlib figure and axis
+    Returns
+    -------
+    matplotlib figure and axis
     """
     if isinstance(imgs, list):
         l = len(imgs)
@@ -225,18 +225,18 @@ def plot_image_hist(imgs, rows=1, titles=None):
 
 def plot_image_pts(img, voxels, colorbar=False):
     """
-        Visualize a chunk around a voxel
+    Visualize a chunk around a voxel
 
-        Parameters
-        ----------
-        img : single 2D np.array
+    Parameters
+    ----------
+    img : single 2D np.array
 
-        voxels : np.array
-            voxel output from ngl_pipeline class
+    voxels : np.array
+        voxel output from ngl_pipeline class
 
-        Returns
-        -------
-        matplotlib figure and axis
+    Returns
+    -------
+    matplotlib figure and axis
     """
     fig, axes = plt.subplots()
 

@@ -7,6 +7,7 @@ Data Helper Methods
 -------------------
 
 .. autoapiclass:: NeuroglancerSession
+    :members:
 
 .. currentmodule:: brainlit.utils.upload_to_neuroglancer
 

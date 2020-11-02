@@ -105,7 +105,14 @@ class Test_generate_position_field:
         )
         velocity_field_resolution = 1
         # Indicates a 90 degree rotation to the right.
-        affine = np.array([[0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1],])
+        affine = np.array(
+            [
+                [0, 1, 0, 0],
+                [-1, 0, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1],
+            ]
+        )
 
         if deform_to == "template":
             expected_output = _lddmm_utilities._multiply_coords_by_affine(
@@ -191,7 +198,12 @@ class Test__transform_image:
             position_field_resolution=position_field_resolution,
         )
         expected_output = np.array(
-            [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0],]
+            [
+                [0, 0, 0, 0],
+                [0, 1, 1, 0],
+                [0, 1, 1, 0],
+                [0, 0, 0, 0],
+            ]
         )
         assert np.allclose(deformed_subject, expected_output)
 
@@ -250,7 +262,14 @@ class Test__transform_image:
 
         # Idiosyncratic extrapolation behavior is demonstrated with a nonzero gradient at the extrapolated edge.
 
-        subject = np.array([[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0],])
+        subject = np.array(
+            [
+                [0, 0, 0, 0],
+                [0, 1, 1, 0],
+                [0, 1, 1, 0],
+                [0, 0, 0, 0],
+            ]
+        )
         subject_resolution = 1
         output_resolution = 1
         output_shape = None
@@ -271,7 +290,12 @@ class Test__transform_image:
             position_field_resolution=position_field_resolution,
         )
         expected_output = np.array(
-            [[0, 0, 0, 0], [-1, 0, 1, 1], [-1, 0, 1, 1], [0, 0, 0, 0],]
+            [
+                [0, 0, 0, 0],
+                [-1, 0, 1, 1],
+                [-1, 0, 1, 1],
+                [0, 0, 0, 0],
+            ]
         )
 
         assert np.allclose(deformed_subject, expected_output)
@@ -281,13 +305,26 @@ class Test__transform_image:
         # Note: applying an affine indicating a clockwise-rotation to a position_field produces a position _ield rotated counter-clockwise.
         # The corresponding effect on the deformed_subject is a counter-clockwise rotation.
 
-        subject = np.array([[0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 1, 1],])
+        subject = np.array(
+            [
+                [0, 1, 0, 0],
+                [0, 1, 0, 0],
+                [0, 1, 0, 0],
+                [0, 1, 1, 1],
+            ]
+        )
         subject_resolution = 1
         output_resolution = 1
         output_shape = None
         position_field_resolution = subject_resolution
         # Indicates a 90 degree rotation to the right.
-        affine = np.array([[0, 1, 0], [-1, 0, 0], [0, 0, 1],])
+        affine = np.array(
+            [
+                [0, 1, 0],
+                [-1, 0, 0],
+                [0, 0, 1],
+            ]
+        )
         position_field = _lddmm_utilities._multiply_coords_by_affine(
             affine,
             _lddmm_utilities._compute_coords(subject.shape, position_field_resolution),
@@ -302,7 +339,12 @@ class Test__transform_image:
             position_field_resolution=position_field_resolution,
         )
         expected_output = np.array(
-            [[0, 0, 0, 1], [0, 0, 0, 1], [1, 1, 1, 1], [0, 0, 0, 0],]
+            [
+                [0, 0, 0, 1],
+                [0, 0, 0, 1],
+                [1, 1, 1, 1],
+                [0, 0, 0, 0],
+            ]
         )
 
         assert np.allclose(deformed_subject, expected_output)
@@ -317,7 +359,14 @@ Test lddmm_transform_image.
 class Test_lddmm_transform_image:
     def test_identity_position_fields(self, deform_to):
 
-        subject = np.array([[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0],])
+        subject = np.array(
+            [
+                [0, 0, 0, 0],
+                [0, 1, 1, 0],
+                [0, 1, 1, 0],
+                [0, 0, 0, 0],
+            ]
+        )
         subject_resolution = 1
         output_resolution = None
         output_shape = None
@@ -425,7 +474,9 @@ class Test_lddmm_register:
         target = np.copy(template)
 
         lddmm_register_kwargs = dict(
-            template=template, target=target, num_iterations=1,
+            template=template,
+            target=target,
+            num_iterations=1,
         )
 
         self._test_lddmm_register(**lddmm_register_kwargs)
@@ -451,7 +502,9 @@ class Test_lddmm_register:
         target = np.copy(template)
 
         lddmm_register_kwargs = dict(
-            template=template, target=target, num_iterations=1,
+            template=template,
+            target=target,
+            num_iterations=1,
         )
 
         self._test_lddmm_register(**lddmm_register_kwargs)
@@ -477,7 +530,9 @@ class Test_lddmm_register:
         target = np.copy(template)
 
         lddmm_register_kwargs = dict(
-            template=template, target=target, num_iterations=1,
+            template=template,
+            target=target,
+            num_iterations=1,
         )
 
         self._test_lddmm_register(**lddmm_register_kwargs)
@@ -494,7 +549,9 @@ class Test_lddmm_register:
         target = np.copy(template)
 
         lddmm_register_kwargs = dict(
-            template=template, target=target, num_affine_only_iterations=0,
+            template=template,
+            target=target,
+            num_affine_only_iterations=0,
         )
 
         self._test_lddmm_register(**lddmm_register_kwargs)
@@ -628,7 +685,9 @@ class Test_lddmm_register:
         target = rotate(template, 30)
 
         lddmm_register_kwargs = dict(
-            template=template, target=target, deformative_stepsize=0.5,
+            template=template,
+            target=target,
+            deformative_stepsize=0.5,
         )
 
         self._test_lddmm_register(**lddmm_register_kwargs)
@@ -691,7 +750,13 @@ class Test__transform_points:
         # Note: applying a leftward shift to the position_field is done by subtracting 1 from the appropriate dimension.
         # The corresponding effect on a deformed image is a shift to the right.
 
-        subject = np.array([[0, 1, 3], [4, 5, 6], [7, 8, 9],])
+        subject = np.array(
+            [
+                [0, 1, 3],
+                [4, 5, 6],
+                [7, 8, 9],
+            ]
+        )
         subject_resolution = 1
         position_field_resolution = subject_resolution
         position_field = _lddmm_utilities._compute_coords(
@@ -701,7 +766,13 @@ class Test__transform_points:
             -1,
         ]  # Shift to the left by 1.
         # The right column.
-        points = np.array([[-1, 1], [0, 1], [1, 1],])
+        points = np.array(
+            [
+                [-1, 1],
+                [0, 1],
+                [1, 1],
+            ]
+        )
 
         transformed_points = _transform_points(
             points=points,
@@ -709,7 +780,13 @@ class Test__transform_points:
             position_field_resolution=position_field_resolution,
         )
         # The middle column.
-        expected_output = np.array([[-1, 0], [0, 0], [1, 0],])
+        expected_output = np.array(
+            [
+                [-1, 0],
+                [0, 0],
+                [1, 0],
+            ]
+        )
         assert np.array_equal(transformed_points, expected_output)
 
     def test_rotational_position_field(self):
@@ -717,17 +794,35 @@ class Test__transform_points:
         # Note: applying an affine indicating a clockwise-rotation to a position_field produces a position _ield rotated counter-clockwise.
         # The corresponding effect on a deformed image is a counter-clockwise rotation.
 
-        subject = np.array([[0, 1, 0], [0, 1, 0], [0, 1, 1],])
+        subject = np.array(
+            [
+                [0, 1, 0],
+                [0, 1, 0],
+                [0, 1, 1],
+            ]
+        )
         subject_resolution = 1
         position_field_resolution = subject_resolution
         # Indicates a 90 degree rotation to the right.
-        affine = np.array([[0, 1, 0], [-1, 0, 0], [0, 0, 1],])
+        affine = np.array(
+            [
+                [0, 1, 0],
+                [-1, 0, 0],
+                [0, 0, 1],
+            ]
+        )
         position_field = _lddmm_utilities._multiply_coords_by_affine(
             affine,
             _lddmm_utilities._compute_coords(subject.shape, position_field_resolution),
         )
         # The middle column.
-        points = np.array([[-1, 0], [0, 0], [1, 0],])
+        points = np.array(
+            [
+                [-1, 0],
+                [0, 0],
+                [1, 0],
+            ]
+        )
 
         transformed_points = _transform_points(
             points=points,
@@ -735,7 +830,13 @@ class Test__transform_points:
             position_field_resolution=position_field_resolution,
         )
         # The middle row.
-        expected_output = np.array([[0, 1], [0, 0], [0, -1],])
+        expected_output = np.array(
+            [
+                [0, 1],
+                [0, 0],
+                [0, -1],
+            ]
+        )
         assert np.array_equal(transformed_points, expected_output)
 
 
