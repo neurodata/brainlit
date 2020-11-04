@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 from pyVaa3d.vaa3dWrapper import runVaa3dPlugin
 from skimage import io
 
-
 def plot_labels(labels, image_shape, name):
     labels_ind = np.nonzero(labels)
 
@@ -49,14 +48,10 @@ def swc_unpack(fname):
         skiprows=header_length,
         sep="\s"
     )
-      
-    labels = np.array(df[["x","y","z"]])
+     
+    # NOTE: The read-in order is [z,y,x] since the image is flipped.
+    labels = np.array(df[["z","y","x"]])
     return labels
-    
-def fix_labels(labels):
-    """ For some reason, the labels are flipped. This performs a flip that
-    will fix it. 
-    """
 
 #%% Grab volume from S3
 dir = "s3://open-neurodata/brainlit/brain1"
@@ -77,8 +72,8 @@ print(f"\n\nImage {fname} saved.")
 
 #%%
 
-# Change the path name to match a local file location
-img_name = "C:\\Users\\frede\\Documents\\Y4\\Y4_NDD\\brain1_demo_segments.tif"
+# Change the path name here to match a local file location
+img_name = "C:\\Users\\frede\\Documents\\Y4\\Y4_NDD\\brainlit\\brainlit\\algorithms\\vaa3d\\brain1_demo_segments.tif"
 
 # Check the README.md for procedure to install the Vaa3d plugin
 runVaa3dPlugin(inFile=img_name, pluginName="Vaa3D_Neuron2",
@@ -88,8 +83,8 @@ print("Algorithm successfully run! Please check the root folder for the .swc out
 
 #%%
 
-# Change the path name to match a local file location
-swc_name = "C:\\Users\\frede\\Documents\\Y4\\Y4_NDD\\brain1_demo_segments.tif_ini.swc"
+# Change the path name here to match a local file location
+swc_name = "C:\\Users\\frede\\Documents\\Y4\\Y4_NDD\\brainlit\\brainlit\\algorithms\\vaa3d\\brain1_demo_segments.tif_ini.swc"
 labels = swc_unpack(swc_name)
 print(labels)
 print(f"\n\n Labels successfully loaded from .swc file with {len(labels)} foreground labels.")
