@@ -158,4 +158,32 @@ def test_DupNodLoc():
     neuron.add_edge(3,6)
     #build spline tree using fit_spline_tree_invariant()
     with pytest.raises(ValueError):
-        spline_tree = neuron.fit_spline_tree_invariant()    
+        spline_tree = neuron.fit_spline_tree_invariant()
+
+def test_splNum():
+    """check resultant number of splines
+    """
+
+    neuron=GeometricGraph()
+    #add nodes
+    neuron.add_node(1,loc=np.array([100,100,200]))
+    neuron.add_node(2,loc=np.array([200,0,200]))
+    neuron.add_node(3,loc=np.array([200,300,200]))
+    neuron.add_node(4,loc=np.array([300,400,200]))
+    neuron.add_node(5,loc=np.array([100,500,200]))
+    #define soma
+    soma=[100,100,200]
+    #add edges
+    neuron.add_edge(2,1)
+    neuron.add_edge(2,3)
+    neuron.add_edge(3,4)
+    neuron.add_edge(3,5)
+    spline_tree = neuron.fit_spline_tree_invariant()
+    # expect to have 2 splines
+    if len(spline_tree.nodes) != 2:
+        raise ValueError("The total number of splines is incorrect.")
+    
+
+
+
+
