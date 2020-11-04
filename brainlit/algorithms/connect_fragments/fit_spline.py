@@ -64,7 +64,7 @@ class GeometricGraph(nx.Graph):
         sLOC=list(LOC for LOC,_ in itertools.groupby(LOC))
 
         if len(LOC) != len(sLOC):
-            raise ValueError("Duplicated node locations are found")
+            raise ValueError("Duplicate node locations are found")
 
 
         # check if the graph is edge-covering and a tree 
