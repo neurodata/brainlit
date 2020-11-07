@@ -112,24 +112,80 @@ def test_fit_spline_tree_invariant_bad_input():
 ##################
 
 
-# def test_splNum():
-#     """check resultant number of splines"""
+def test_splNum():
 
-#     neuron = GeometricGraph()
-#     # add nodes
-#     neuron.add_node(1, loc=np.array([100, 100, 200]))
-#     neuron.add_node(2, loc=np.array([200, 0, 200]))
-#     neuron.add_node(3, loc=np.array([200, 300, 200]))
-#     neuron.add_node(4, loc=np.array([300, 400, 200]))
-#     neuron.add_node(5, loc=np.array([100, 500, 200]))
-#     # define soma
-#     soma = [100, 100, 200]
-#     # add edges
-#     neuron.add_edge(2, 1)
-#     neuron.add_edge(2, 3)
-#     neuron.add_edge(3, 4)
-#     neuron.add_edge(3, 5)
-#     spline_tree = neuron.fit_spline_tree_invariant()
-#     # expect to have 2 splines
-#     if len(spline_tree.nodes) != 2:
-#         raise ValueError("The total number of splines is incorrect.")
+    # test the number of splines is correct
+    neuron = GeometricGraph()
+    # add nodes
+    neuron.add_node(1, loc=np.array([100, 100, 200]))
+    neuron.add_node(2, loc=np.array([200, 0, 200]))
+    neuron.add_node(3, loc=np.array([200, 300, 200]))
+    neuron.add_node(4, loc=np.array([300, 400, 200]))
+    neuron.add_node(5, loc=np.array([100, 500, 200]))
+    # add edges
+    neuron.add_edge(2, 1)
+    neuron.add_edge(2, 3)
+    neuron.add_edge(3, 4)
+    neuron.add_edge(3, 5)
+    spline_tree = neuron.fit_spline_tree_invariant()
+    # expect to have 2 splines
+    if len(spline_tree.nodes) != 2:
+        raise ValueError("The total number of splines is incorrect.")
+
+def test_CompareLen():
+    
+    # test when there exists one longest path
+    neuron_long1 = GeometricGraph()
+    # add nodes
+    neuron_long1.add_node(1, loc=np.array([100,   0, 200]))
+    neuron_long1.add_node(2, loc=np.array([100, 100, 200]))
+    neuron_long1.add_node(3, loc=np.array([  0, 200, 200]))
+    neuron_long1.add_node(4, loc=np.array([200, 300, 200]))
+    # add edges
+    neuron_long1.add_edge(1, 2)
+    neuron_long1.add_edge(2, 3)
+    neuron_long1.add_edge(2, 4)
+    spline_tree = neuron_long1.fit_spline_tree_invariant()
+    # collect all the paths in `PATHS`    
+    PATHS=[]
+    for node in spline_tree.nodes:
+        PATHS.append(spline_tree.nodes[node]["path"])
+    # check if node 4 is in the first spline
+    if 4 not in PATHS[0]:
+        raise ValueError("The longest path is not identified correctly.")
+
+    # test when there are multiple equally long paths
+    neuron_long4 = GeometricGraph()
+    # add nodes
+    neuron_long4.add_node(1, loc=np.array([   0,-100, 200]))
+    neuron_long4.add_node(2, loc=np.array([   0,   0, 200]))
+    neuron_long4.add_node(4, loc=np.array([ 100, 100, 200]))
+    neuron_long4.add_node(3, loc=np.array([-100,-100, 200]))
+    neuron_long4.add_node(6, loc=np.array([ 100,-100, 200]))
+    neuron_long4.add_node(5, loc=np.array([-100, 100, 200]))
+    # add edges
+    neuron_long4.add_edge(1, 2)
+    neuron_long4.add_edge(2, 5)
+    neuron_long4.add_edge(2, 6)
+    neuron_long4.add_edge(2, 4)
+    neuron_long4.add_edge(2, 3)
+    spline_tree = neuron_long4.fit_spline_tree_invariant()
+    # collect all the paths in `PATHS`    
+    PATHS=[]
+    for node in spline_tree.nodes:
+        PATHS.append(spline_tree.nodes[node]["path"])
+    # check: except the first spline (first edge is added first), all the equal-length splines are added according to the reverse order of the edge addition 
+    if 5 not in PATHS[0]:
+        raise ValueError("The splines are not added with ascending node numbers.")
+    elif 3 not in PATHS[1]:
+        raise ValueError("The splines are not added with ascending node numbers.")
+    elif 4 not in PATHS[2]:
+        raise ValueError("The splines are not added with ascending node numbers.")
+    elif 6 not in PATHS[3]:
+        raise ValueError("The splines are not added with ascending node numbers.")
+
+
+
+
+
+
