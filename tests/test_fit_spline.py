@@ -176,13 +176,13 @@ def test_CompareLen():
         PATHS.append(spline_tree.nodes[node]["path"])
     # check: except the first spline (first edge is added first), all the equal-length splines are added according to the reverse order of the edge addition 
     if 5 not in PATHS[0]:
-        raise ValueError("The splines are not added with ascending node numbers.")
+        raise ValueError("The splines are not added with the expected order.")
     elif 3 not in PATHS[1]:
-        raise ValueError("The splines are not added with ascending node numbers.")
+        raise ValueError("The splines are not added with the expected order.")
     elif 4 not in PATHS[2]:
-        raise ValueError("The splines are not added with ascending node numbers.")
+        raise ValueError("The splines are not added with the expected order.")
     elif 6 not in PATHS[3]:
-        raise ValueError("The splines are not added with ascending node numbers.")
+        raise ValueError("The splines are not added with the expected order.")
 
 
 
