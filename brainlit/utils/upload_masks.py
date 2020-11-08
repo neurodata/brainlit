@@ -65,7 +65,9 @@ def get_volume_info(
             return False
 
     p = Path(image_dir)
-    files = [i.parts for i in p.rglob(f"*.{channel}.{extension}")]
+    #Changed the way input files are parsed
+    #files = [i.parts for i in p.rglob(f"*.{channel}.{extension}")]
+    files = [i.parts for i in list(p.glob(f"*.{extension}"))]
     parent_dirs = len(p.parts)
 
     files_ordered = [
