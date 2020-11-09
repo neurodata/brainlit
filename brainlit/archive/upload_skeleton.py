@@ -3,7 +3,7 @@ from glob import glob
 import argparse
 import numpy as np
 from cloudvolume import CloudVolume, Skeleton, storage
-from .swc import swc2skeleton
+from brainlit.utils.swc import swc2skeleton
 import pandas as pd
 from pathlib import Path
 import tifffile as tf
