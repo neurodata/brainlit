@@ -24,6 +24,7 @@ jsonschema==3.2.0
 jupyter-client==6.1.2
 jupyter-core==4.6.3
 lazy-object-proxy==1.4.3
+m2r==0.2.1
 MarkupSafe==1.1.1
 mistune==0.8.4
 nbconvert==5.6.1
