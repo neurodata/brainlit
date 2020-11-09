@@ -3,7 +3,7 @@ from skimage.measure import label
 import scipy.ndimage as ndi
 import matplotlib.pyplot as plt
 from itertools import product
-
+from typing import List, Optional, Union, Tuple
 
 def gabor_filter(
     input,
