@@ -199,7 +199,7 @@ def test_spline():
     neuron.add_edge(2, 3)
     neuron.add_edge(2, 4)
     # first path parameters created by `splprep`
-    path=[1,2,3]
+    path=[1,2,4]
     x = np.zeros((len(path), 3))
     for row, node in enumerate(path):
         x[row, :] = neuron.nodes[node]["loc"]
@@ -215,15 +215,15 @@ def test_spline():
     spline_tree = neuron.fit_spline_tree_invariant()
     spline = spline_tree.nodes[0]["spline"]
     print("spline fit",spline)
-    u_fit = spline[1][0]
-    tck_fit = spline[0][0]
-    #if tck_scipy != tck_fit:
-    #    print("scipy:",tck_scipy)
-    #    print("fit:",tck_fit)
-    #    raise ValueError("tck value mismatch")
-    #if u_scipy != u_fit:
-    #    print("scipy",u_scipy,"fit",u_fit)
-    #    raise ValueError("u values mismatch")
+    u_fit = spline[1]
+    tck_fit = spline[0]
+    if tck_scipy != tck_fit:
+        print("scipy:",tck_scipy)
+        print("fit:",tck_fit)
+        raise ValueError("tck value mismatch")
+    if u_scipy != u_fit:
+        print("scipy",u_scipy,"fit",u_fit)
+        raise ValueError("u values mismatch")
 
 
 
