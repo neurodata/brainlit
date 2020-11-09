@@ -131,25 +131,26 @@ def test_splNum():
     spline_tree = neuron.fit_spline_tree_invariant()
     # expect to have 2 splines
     assert len(spline_tree.nodes) == 2
-    #if len(spline_tree.nodes) != 2:
+    # if len(spline_tree.nodes) != 2:
     #    raise ValueError("The total number of splines is incorrect.")
 
+
 def test_CompareLen():
-    
+
     # test when there exists one longest path
     neuron_long1 = GeometricGraph()
     # add nodes
-    neuron_long1.add_node(1, loc=np.array([100,   0, 200]))
+    neuron_long1.add_node(1, loc=np.array([100, 0, 200]))
     neuron_long1.add_node(2, loc=np.array([100, 100, 200]))
-    neuron_long1.add_node(3, loc=np.array([  0, 200, 200]))
+    neuron_long1.add_node(3, loc=np.array([0, 200, 200]))
     neuron_long1.add_node(4, loc=np.array([200, 300, 200]))
     # add edges
     neuron_long1.add_edge(1, 2)
     neuron_long1.add_edge(2, 3)
     neuron_long1.add_edge(2, 4)
     spline_tree = neuron_long1.fit_spline_tree_invariant()
-    # collect all the paths in `PATHS`    
-    PATHS=[]
+    # collect all the paths in `PATHS`
+    PATHS = []
     for node in spline_tree.nodes:
         PATHS.append(spline_tree.nodes[node]["path"])
     # check if node 4 is in the first spline
@@ -158,11 +159,11 @@ def test_CompareLen():
     # test when there are multiple equally long paths
     neuron_long4 = GeometricGraph()
     # add nodes
-    neuron_long4.add_node(1, loc=np.array([   0,-100, 200]))
-    neuron_long4.add_node(2, loc=np.array([   0,   0, 200]))
-    neuron_long4.add_node(4, loc=np.array([ 100, 100, 200]))
-    neuron_long4.add_node(3, loc=np.array([-100,-100, 200]))
-    neuron_long4.add_node(6, loc=np.array([ 100,-100, 200]))
+    neuron_long4.add_node(1, loc=np.array([0, -100, 200]))
+    neuron_long4.add_node(2, loc=np.array([0, 0, 200]))
+    neuron_long4.add_node(4, loc=np.array([100, 100, 200]))
+    neuron_long4.add_node(3, loc=np.array([-100, -100, 200]))
+    neuron_long4.add_node(6, loc=np.array([100, -100, 200]))
     neuron_long4.add_node(5, loc=np.array([-100, 100, 200]))
     # add edges
     neuron_long4.add_edge(1, 2)
@@ -171,32 +172,32 @@ def test_CompareLen():
     neuron_long4.add_edge(2, 4)
     neuron_long4.add_edge(2, 3)
     spline_tree = neuron_long4.fit_spline_tree_invariant()
-    # collect all the paths in `PATHS`    
-    PATHS=[]
+    # collect all the paths in `PATHS`
+    PATHS = []
     for node in spline_tree.nodes:
         PATHS.append(spline_tree.nodes[node]["path"])
-    # check: except the first spline (first edge is added first), all the equal-length splines are added according to the reverse order of the edge addition 
+    # check: except the first spline (first edge is added first), all the equal-length splines are added according to the reverse order of the edge addition
     assert 5 in PATHS[0]
     assert 3 in PATHS[1]
     assert 4 in PATHS[2]
     assert 6 in PATHS[3]
-    
+
 
 def test_spline():
 
     # Compare the spline parameters u and tck from `fit_spline_tree_invariant` and directly from `scipy.interpolate.splprep`
     neuron = GeometricGraph()
     # add nodes
-    neuron.add_node(1, loc=np.array([100,   0, 200]))
+    neuron.add_node(1, loc=np.array([100, 0, 200]))
     neuron.add_node(2, loc=np.array([100, 100, 200]))
-    neuron.add_node(3, loc=np.array([  0, 200, 200]))
+    neuron.add_node(3, loc=np.array([0, 200, 200]))
     neuron.add_node(4, loc=np.array([200, 300, 200]))
     # add edges
     neuron.add_edge(1, 2)
     neuron.add_edge(2, 3)
     neuron.add_edge(2, 4)
     # first path parameters created by `splprep`
-    path=[1,2,4]
+    path = [1, 2, 4]
     x = np.zeros((len(path), 3))
     for row, node in enumerate(path):
         x[row, :] = neuron.nodes[node]["loc"]
@@ -212,19 +213,6 @@ def test_spline():
     spline = spline_tree.nodes[0]["spline"]
     u_fit = spline[1]
     tck_fit = spline[0]
-    for n in range(0,len(tck_scipy),1):
-        np.testing.assert_array_equal(tck_scipy[n],tck_fit[n])
-    np.testing.assert_array_equal(u_scipy,u_fit)
-    
-
-
-
-
-
-
-
-
-
-
-
-
+    for n in range(0, len(tck_scipy), 1):
+        np.testing.assert_array_equal(tck_scipy[n], tck_fit[n])
+    np.testing.assert_array_equal(u_scipy, u_fit)
