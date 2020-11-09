@@ -140,16 +140,6 @@ class GeometricGraph(nx.Graph):
             u (): An array of the values of the parameter.
         """
 
-        # check if loc is defined and of numpy.ndarray class
-        for row, node in enumerate(path):
-            hasloc = self.nodes[node].get("loc")
-            if hasloc is None:
-                raise ValueError("Nodes are not defined under loc attribute")
-            elif type(hasloc) is not np.ndarray:
-                raise TypeError("loc is not a numpy.ndarray")
-            elif len(hasloc) != 3:
-                raise ValueError("loc is not 3-dimensional")
-
         x = np.zeros((len(path), 3))
 
         for row, node in enumerate(path):
@@ -195,6 +185,7 @@ class GeometricGraph(nx.Graph):
 
     def __find_main_branch(self, tree: nx.DiGraph, starting_length: float = 0):
         r"""Find the main branch in a directed graph.
+
         It is used in `fit_spline_tree_invariant` to identify the main branch
         in a neuron and group the collateral branches for later analysis.
         The main branch is defined as the longest possible path connecting the
@@ -204,6 +195,7 @@ class GeometricGraph(nx.Graph):
             :scale: 25%
             :alt: find_main_branch example
             Graphic example of `find_main_branch()` functionality.
+
         Arguments:
             tree: nx.DiGraph, a directed graph.
                 It is the result of nx.algorithms.traversal.depth_first_search.dfs_tree()
@@ -214,6 +206,7 @@ class GeometricGraph(nx.Graph):
                 the root of the current main branch. It must be real-valued, non-negative.
                 It is defaulted to `0` for the first main branch, that starts from the root of
                 the neuron.
+                
         Returns:
             main_branch: list, a list of nodes.
             collateral_branches: list, directed graphs of children trees.
@@ -288,16 +281,20 @@ class GeometricGraph(nx.Graph):
 
     def __path_length(self, path):
         r"""Compute the length of a path.
+
         Given a path ::math::`p = (r_1, \dots, r_N)`, where
         ::math::`r_k = [x_k, y_k, z_k], k = 1, \dots, N`, the length
         `l` of a path is computed as the sum of the lengths of the
         edges of the path. We can write:
+
         .. math::
             l = \sum_{k=2}^N \lVert r_k - r_{k-1} \rVert
+        
         Arguments:
             path: a list of nodes.
                 The integrity of the nodes is checked for at the beginning of
                 `fit_spline_tree_invariant`.
+
         Returns:
             length: float.
                 It is the length of the path.
