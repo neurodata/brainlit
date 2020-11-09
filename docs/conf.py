@@ -51,7 +51,7 @@ autoapi_add_toctree_entry = False
 autoapi_generate_api_docs = False
 
 # -- sphinxcontrib.rawfiles
-# rawfiles = ["CNAME"]
+rawfiles = ["CNAME"]
 
 # -- numpydoc
 # Below is needed to prevent errors
