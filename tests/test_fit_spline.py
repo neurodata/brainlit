@@ -1,6 +1,7 @@
 import pytest
 from brainlit.algorithms.connect_fragments.fit_spline import GeometricGraph
 import networkx as nx
+from scipy.interpolate import splprep
 import numpy as np
 
 
@@ -183,6 +184,50 @@ def test_CompareLen():
         raise ValueError("The splines are not added with the expected order.")
     elif 6 not in PATHS[3]:
         raise ValueError("The splines are not added with the expected order.")
+
+def test_spline():
+
+    # Compare the spline parameters u and tck from `fit_spline_tree_invariant` and directly from `scipy.interpolate.splprep`
+    neuron = GeometricGraph()
+    # add nodes
+    neuron.add_node(1, loc=np.array([100,   0, 200]))
+    neuron.add_node(2, loc=np.array([100, 100, 200]))
+    neuron.add_node(3, loc=np.array([  0, 200, 200]))
+    neuron.add_node(4, loc=np.array([200, 300, 200]))
+    # add edges
+    neuron.add_edge(1, 2)
+    neuron.add_edge(2, 3)
+    neuron.add_edge(2, 4)
+    # first path parameters created by `splprep`
+    path=[1,2,3]
+    x = np.zeros((len(path), 3))
+    for row, node in enumerate(path):
+        x[row, :] = neuron.nodes[node]["loc"]
+    m = x.shape[0]
+    diffs = np.diff(x, axis=0)
+    diffs = np.linalg.norm(diffs, axis=1)
+    diffs = np.cumsum(diffs)
+    diffs = np.concatenate(([0], diffs))
+    k = np.amin([m - 1, 5])
+    tck_scipy, u_scipy = splprep([x[:, 0], x[:, 1], x[:, 2]], u=diffs, k=k)
+    # first path created by `fit_spline_tree_invariant`
+    spline_tree = neuron.fit_spline_tree_invariant()
+    spline = spline_tree.nodes[0]["spline"]
+    u_fit = spline[1][0]
+    tck_fit = spline[0][0]
+    if tck_scipy != tck_fit:
+        print("scipy:",tck_scipy)
+        print("fit:",tck_fit)
+        raise ValueError("tck value mismatch")
+    #elif u_scipy != u_fit:
+    #    print(u_scipy,u_fit)
+    #    raise ValueError("u values mismatch")
+
+
+
+
+
+
 
 
 
