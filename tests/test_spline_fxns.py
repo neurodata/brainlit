@@ -1,5 +1,5 @@
 import numpy as np
-from brainlit.algorithms.generate_fragments import spline_fxns
+from brainlit.algorithms.trace_analysis import spline_fxns
 from pytest import approx, raises
 from scipy.interpolate import splprep, splev, BSpline
 
