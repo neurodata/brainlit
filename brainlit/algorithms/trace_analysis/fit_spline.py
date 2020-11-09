@@ -37,9 +37,9 @@ Geometric Graph class
 
 
 class GeometricGraph(nx.Graph):
-    """class for undirected graphs
-    Args:
-        nx (Graph): A Graph stores nodes and edges with optional data, or attributes.
+    r"""Class for undirected graphs.
+
+    It extends `nx.Graph`.
     """
 
     def __init__(self):
@@ -49,14 +49,16 @@ class GeometricGraph(nx.Graph):
         self.root = 1
 
     def fit_spline_tree_invariant(self):
-        """construct a spline tree based on the path lengths
+        r"""Construct a spline tree based on the path lengths.
+
         Raises:
             ValueError: check if every node is unigue in location
             ValueError: check if every node is assigned to at least one edge
             ValueError: check if the graph contains undirected cycle(s)
             ValueErorr: check if the graph has disconnected segment(s)
+
         Returns:
-            spline_tree (DiGraph): a parent tree with the longest path in the directed graph
+            spline_tree: nx.DiGraph a parent tree with the longest path in the directed graph
         """
 
         # check integrity of 'loc' attributes in the neuron
@@ -128,16 +130,22 @@ class GeometricGraph(nx.Graph):
         return spline_tree
 
     def __fit_spline_path(self, path):
-        """calculate the knots, B-spline coefficients, and the degree of the spline according to the path
-        Args:
-            path (list): a list of nodes
+        r"""Fit a B-Spline to a path.
+
+        Compute the knots, coefficients, and the degree of the
+        B-Spline fitting the path
+
+        Argumets:
+            path: list, a list of nodes.
+
         Raises:
             ValueError: Nodes should be defined under loc attribute
             TypeError: loc should be of numpy.ndarray class
             ValueError: loc should be 3-dimensional
+
         Returns:
-            tck (tuple): (t,c,k) a tuple containing the vector of knots, the B-spline coefficients, and the degree of the spline.
-            u (): An array of the values of the parameter.
+            tck: tuple, contains the vector of knots, the coefficients, and the degree of the B-Spline.
+            u: list, contains the values of the parameters where the B-Spline is evaluated.
         """
 
         x = np.zeros((len(path), 3))
@@ -166,9 +174,11 @@ class GeometricGraph(nx.Graph):
         return tck, u
 
     def __check_multiplicity(self, t):
-        """check multiplicity
-        Args:
-            t (list): the list to be checked
+        r"""Check multiplicity of elements in a list.
+
+        Arguments:
+            t: list, the list to be checked
+
         Raises:
             RuntimeError: when duplicates are found
         """
