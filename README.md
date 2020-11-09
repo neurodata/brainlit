@@ -12,25 +12,28 @@ This repository is a container of methods that Neurodata uses to expose their op
 
 ![Brainlight Features](https://github.com/neurodata/brainlit/blob/develop/docs/images/figure.png)
 
-- [Motivation](#motivation)
-- [Installation](#installation)
-  - [Environment](#environment)
-  - [Install from pypi](#install-from-pypi)
-  - [Install from source](#install-from-source)
-- [How to Use Brainlit](#how-to-use-brainlit)
-  - [Data Setup](#data-setup)
-  - [Create a Session](#create-a-session)
-- [Features](#features)
-  - [Registration](#registration)
-- [Core](#core)
-  - [Push/Pull Data](#push-and-pull-data)
-  - [Visualize](#visualize)
-  - [Manually Segment](#manually-segment)
-  - [Automatically Segment](#automatically-and-semi-automatically-segment)
-- [API reference](#api-reference)
-- [Tests](#tests)
-- [Contributing](#contributing)
-- [Credits](#credits)
+- [Brainlit](#brainlit)
+  - [Motivation](#motivation)
+  - [Installation](#installation)
+    - [Environment](#environment)
+      - [(optional, any python >= 3.7 environment will suffice)](#optional-any-python--38-environment-will-suffice)
+    - [Install from pypi](#install-from-pypi)
+    - [Install from source](#install-from-source)
+  - [How to use Brainlit](#how-to-use-brainlit)
+    - [Data setup](#data-setup)
+    - [Create a session](#create-a-session)
+  - [Features](#features)
+    - [Registration](#registration)
+  - [Core](#core)
+    - [(Push and Pull Data)](#push-and-pull-data)
+    - [Visualize](#visualize)
+    - [Manually Segment](#manually-segment)
+    - [Automatically and Semi-automatically Segment](#automatically-and-semi-automatically-segment)
+  - [API Reference](#api-reference)
+  - [Tests](#tests)
+  - [Common errors and troubleshooting](#common-errors-and-troubleshooting)
+  - [Contributing](#contributing)
+  - [Credits](#credits)
 
 ## Motivation
 
@@ -38,6 +41,13 @@ The repository originated as the project of a team in Joshua Vogelstein's class 
 The repository can now be considered a "holding bay" for code developed by Neurodata for collaborators and researchers to use.
 
 ## Installation
+
+### Operating Systems
+Brainlit is compatible with Mac, Windows, and Unix systems.
+
+#### Windows Linux Subsystem 2 
+For Windows 10 users that prefer Linux functionality without the speed sacrifice of a Virtual Machine, Brainlit can be installed and run on WSL2. See installation walkthrough [here.](docs/WSL2-install-instructions.md)
+
 
 ### Environment
 
@@ -56,6 +66,26 @@ The repository can now be considered a "holding bay" for code developed by Neuro
 - clone the repo: `git clone https://github.com/neurodata/brainlit.git`
 - cd into the repo: `cd brainlit`
 - install brainlit: `pip install -e .`
+
+### For Windows Users setting up a Conda environment:
+
+Users currently may run into an issue with installing dependencies on Python 3.8. There are a couple workarounds currently available:
+
+#### Use Python 3.7 - RECOMMENDED
+
+- Create a new environment using Python 3.7 instead: `conda create --name brainlit3.7 python=3.7`
+
+- Run `pip install -e .` This should successfully install the brainlit module for Conda on Windows.
+
+#### Other potential fixes
+
+Potentially, `gcc` is missing, which is necessary for wheel installation from Python 3.6 onwards.
+
+- Install [gcc for Windows](https://www.guru99.com/c-gcc-install.html) and run `pip install brainlit -e . --no-cache-dir`.
+
+Post-Python 3.6, windows handles wheels through the Microsoft Manifest Tool, it might be missing.
+
+- Add the [Microsoft Manifest Tool](https://docs.microsoft.com/en-us/windows/win32/sbscs/mt-exe) to the `PATH` variable.
 
 ## How to use Brainlit
 
@@ -150,6 +180,12 @@ The documentation can be found at [https://brainlight.readthedocs.io/en/latest/]
 
 Running tests can easily be done by moving to the root directory of the brainlit package and typing `pytest tests` or `python -m pytest tests`.  
 Running a specific test, such as `test_upload.py` can be done simply by `ptest tests/test_upload.py`.
+
+## Common errors and troubleshooting
+
+- [macOS Install/Run Issues](https://github.com/NeuroDataDesign/brainlit/blob/develop/docs/macOS_Install_%26_Run_Issues.md)
+
+- [AWS Credentials Issues](https://github.com/NeuroDataDesign/brainlit/blob/develop/docs/AWS_Credentials_Issues.md)
 
 ## Contributing
 
