@@ -16,7 +16,7 @@ def gabor_filter(
     mode: str = "reflect",
     cval: float = 0.0,
     truncate: float = 4.0,
-) -> Tuple[np.ndarray, np.ndarray]: 
+) -> Tuple[np.ndarray, np.ndarray]:
     """Multidimensional Gabor filter. A gabor filter
     is an elementwise product between a Gaussian
     and a complex exponential.
@@ -149,7 +149,7 @@ def gabor_filter(
     return result
 
 
-def getLargestCC(segmentation : np.ndarray) -> np.ndarray:
+def getLargestCC(segmentation: np.ndarray) -> np.ndarray:
     """Returns the largest connected component of a image
 
     Parameters
@@ -171,7 +171,7 @@ def getLargestCC(segmentation : np.ndarray) -> np.ndarray:
     return largestCC
 
 
-def removeSmallCCs(segmentation : np.ndarray, size : Union[int, float]) -> np.ndarray:
+def removeSmallCCs(segmentation: np.ndarray, size: Union[int, float]) -> np.ndarray:
     """Removes small connected components from an image
 
     Parameters
