@@ -206,7 +206,7 @@ class GeometricGraph(nx.Graph):
                 the root of the current main branch. It must be real-valued, non-negative.
                 It is defaulted to `0` for the first main branch, that starts from the root of
                 the neuron.
-                
+
         Returns:
             main_branch: list, a list of nodes.
             collateral_branches: list, directed graphs of children trees.
@@ -289,7 +289,7 @@ class GeometricGraph(nx.Graph):
 
         .. math::
             l = \sum_{k=2}^N \lVert r_k - r_{k-1} \rVert
-        
+
         Arguments:
             path: a list of nodes.
                 The integrity of the nodes is checked for at the beginning of
