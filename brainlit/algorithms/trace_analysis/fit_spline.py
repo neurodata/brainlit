@@ -19,9 +19,11 @@ Geometric Graph class
 
 
 class GeometricGraph(nx.Graph):
-    r"""Class for undirected graphs.
+    r""" The shape of the neurons are expressed and fitted with splines in this undirected graph class.
 
-    It extends `nx.Graph`.
+     The geometry of the neurons are projected on undirected graphs, based on which the trees of neurons consisted for splines is constructed.
+     It is required that each node has a loc attribute identifying that points location in space, and the location should be defined in 3-dimensional cartesian coordinates.
+     It extends `nx.Graph`.
     """
 
     def __init__(self):
