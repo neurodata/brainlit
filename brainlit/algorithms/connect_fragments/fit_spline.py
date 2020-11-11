@@ -12,24 +12,6 @@ from brainlit.utils.util import (
     check_iterable_nonnegative,
 )
 
-"""
-Function definitions
-"""
-
-
-def checkIfDuplicates_2(listOfElems):
-    """Check if given list contains any duplicates
-    Args:
-        listOfElems (set): Build an unordered collection of unique elements.
-    """
-    setOfElems = set()
-    for elem in listOfElems:
-        if elem in setOfElems:
-            return True
-        else:
-            setOfElems.add(elem)
-    return False
-
 
 """
 Geometric Graph class
@@ -175,23 +157,6 @@ class GeometricGraph(nx.Graph):
 
         return tck, u
 
-    def __check_multiplicity(self, t):
-        """check multiplicity
-        Args:
-            t (list): the list to be checked
-        Raises:
-            RuntimeError: when duplicates are found
-        """
-
-        knots = list(t.copy())
-        first = knots[0]
-        last = knots[-1]
-        indices_keep = (knots != first) & (knots != last)
-        knots = [i for (i, v) in zip(knots, indices_keep) if v]
-        dup = checkIfDuplicates_2(knots)
-        if dup:
-            print(t)
-            raise RuntimeError("Duplicates found in the above knot list")
 
     def __find_main_branch(self, tree: nx.DiGraph, starting_length: float = 0):
         r"""Find the main branch in a directed graph.
