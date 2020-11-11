@@ -145,12 +145,12 @@ class GeometricGraph(nx.Graph):
                 f"{orig-new} duplicate points removed in the trace segment",
                 category=UserWarning,
             )
-        m = x.shape[0]
+        path_length = x.shape[0]
         diffs = np.diff(x, axis=0)
         diffs = np.linalg.norm(diffs, axis=1)
         diffs = np.cumsum(diffs)
         diffs = np.concatenate(([0], diffs))
-        k = np.amin([m - 1, 5])
+        k = np.amin([path_length - 1, 5])
         tck, u = splprep([x[:, 0], x[:, 1], x[:, 2]], u=diffs, k=k)
 
         self.__check_multiplicity(tck[0])
