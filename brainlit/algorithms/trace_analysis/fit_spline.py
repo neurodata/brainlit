@@ -155,28 +155,6 @@ class GeometricGraph(nx.Graph):
 
         return tck, u
 
-<<<<<<< HEAD:brainlit/algorithms/connect_fragments/fit_spline.py
-=======
-    def __check_multiplicity(self, t):
-        r"""Check multiplicity of elements in a list.
-
-        Arguments:
-            t: list, the list to be checked
-
-        Raises:
-            RuntimeError: when duplicates are found
-        """
-
-        knots = list(t.copy())
-        first = knots[0]
-        last = knots[-1]
-        indices_keep = (knots != first) & (knots != last)
-        knots = [i for (i, v) in zip(knots, indices_keep) if v]
-        dup = checkIfDuplicates_2(knots)
-        if dup:
-            print(t)
-            raise RuntimeError("Duplicates found in the above knot list")
->>>>>>> e9aad8d1fd9ceb7aadd5a999e0b301fbc8b26cd9:brainlit/algorithms/trace_analysis/fit_spline.py
 
     def __find_main_branch(self, tree: nx.DiGraph, starting_length: float = 0):
         r"""Find the main branch in a directed graph.
