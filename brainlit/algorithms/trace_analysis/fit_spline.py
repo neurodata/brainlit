@@ -146,8 +146,7 @@ class GeometricGraph(nx.Graph):
                 category=UserWarning,
             )
         path_length = x.shape[0]
-        diffs = np.diff(x, axis=0)
-        diffs = np.linalg.norm(diffs, axis=1)
+        diffs = np.linalg.norm(np.diff(x, axis=0), axis=1)
         diffs = np.cumsum(diffs)
         diffs = np.concatenate(([0], diffs))
         k = np.amin([path_length - 1, 5])
