@@ -1,5 +1,5 @@
 import pytest
-from brainlit.algorithms.connect_fragments.fit_spline import GeometricGraph
+from brainlit.algorithms.trace_analysis.fit_spline import GeometricGraph
 import networkx as nx
 from scipy.interpolate import splprep
 import numpy as np
