@@ -152,7 +152,6 @@ class GeometricGraph(nx.Graph):
         k = np.amin([path_length - 1, 5])
         tck, u = splprep([x[:, 0], x[:, 1], x[:, 2]], u=diffs, k=k)
 
-        self.__check_multiplicity(tck[0])
 
         return tck, u
 
