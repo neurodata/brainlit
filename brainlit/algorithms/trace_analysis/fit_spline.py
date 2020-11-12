@@ -42,11 +42,53 @@ class GeometricGraph(nx.Graph):
     It extends `nx.Graph`.
     """
 
-    def __init__(self):
+    def __init__(self, df=None):
         super(GeometricGraph, self).__init__()
         self.segments = None
         self.cycle = None
         self.root = 1
+        if df is not None:
+            self.__init_from_df(df)
+
+    def __init_from_df(self, df_neuron):
+        """Converts dataframe of swc in voxel coordinates into a GeometricGraph
+
+        Parameters
+        ----------
+        df_neuron : :class:`pandas.DataFrame`
+            Indicies, coordinates, and parents of each node in the swc.
+        Returns
+        -------
+        G : :class:`brainlit.algorithms.trace_analysis.fit_spline.GeometricGraph`
+            Neuron from swc represented as GeometricGraph. Coordinates `x,y,z`
+            are accessible in the `loc` attribute.
+        """
+
+        # check that there are not duplicate nodes
+        dx = np.expand_dims(np.diff(df_neuron["x"].to_numpy()), axis=0).T
+        dy = np.expand_dims(np.diff(df_neuron["y"].to_numpy()), axis=0).T
+        dz = np.expand_dims(np.diff(df_neuron["z"].to_numpy()), axis=0).T
+        dr = np.concatenate((dx, dy, dz), axis=1)
+        if not all([any(du != 0) for du in dr]):
+            raise ValueError("cannot build GeometricGraph with duplicate nodes")
+
+        # build graph
+        for _, row in df_neuron.iterrows():
+            # extract id
+            id = int(row["sample"])
+
+            # add nodes
+            loc_x = row["x"]
+            loc_y = row["y"]
+            loc_z = row["z"]
+            loc = np.array([loc_x, loc_y, loc_z])
+            self.add_node(id, loc=loc)
+
+            # add edges
+            child = id
+            parent = int(row["parent"])
+            if parent > min(df_neuron["parent"]):
+                self.add_edge(parent, child)
 
     def fit_spline_tree_invariant(self):
         r"""Construct a spline tree based on the path lengths.
