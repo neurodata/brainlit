@@ -7,7 +7,13 @@ from cloudvolume import CloudVolume, view
 from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError
 from pathlib import Path
-from brainlit.utils.swc import read_s3, swc_to_voxel, df_to_graph, get_sub_neuron, graph_to_paths
+from brainlit.utils.swc import (
+    read_s3,
+    swc_to_voxel,
+    df_to_graph,
+    get_sub_neuron,
+    graph_to_paths,
+)
 from brainlit.algorithms.generate_fragments.tube_seg import tubes_from_paths
 import napari
 import warnings
