@@ -4,38 +4,34 @@ import tifffile as tf
 import networkx as nx
 from cloudvolume import CloudVolume
 import brainlit
-from brainlit.algorithms.trace_analysis.fit_spline import GeometricGraph
 from brainlit.utils import swc
 from brainlit.utils.session import NeuroglancerSession
-from pytest import raises
+
 from pathlib import Path
 
 top_level = Path(__file__).parents[1] / "data"
 input = (top_level / "data_octree").as_posix()
 url = (top_level / "test_upload").as_uri()
 url_seg = url + "_segments"
-mip = 0
-cv = CloudVolume(url_seg, mip=mip)
 url = url + "/serial"
 
 # read in s3 path to dataframe
-print(url_seg)
-df_s3 = swc.read_s3(url_seg, seg_id=2, mip=mip)
+df_s3 = swc.read_s3(url_seg, seg_id=2, mip=0)
 
 # read in swc file to dataframe
 swc_path = "./data/data_octree/consensus-swcs/2018-08-01_G-002_consensus.swc"
 df, offset, color, cc, branch = swc.read_swc(swc_path)
 
-# convert from dataframe to directed graph
-G = swc.df_to_geometric_graph(df_neuron=df)
-G_s3 = swc.df_to_geometric_graph(df_neuron=df_s3)
-
-# convert swc dataframe from spatial units to voxel units
-spacing = cv.scales[mip]["resolution"]
+# # convert swc dataframe from spatial units to voxel units
+spacing = np.array([0.29875923, 0.3044159, 0.98840415])
 origin = np.array([70093.276, 15071.596, 29306.737])
 
 df_voxel = swc.swc_to_voxel(df, spacing=spacing, origin=origin)
 df_voxel_s3 = swc.swc_to_voxel(df_s3, spacing=spacing, origin=np.array([0, 0, 0]))
+
+# convert from dataframe to directed graph
+G = swc.df_to_graph(df_voxel=df_voxel)
+G_s3 = swc.df_to_graph(df_voxel=df_voxel_s3)
 
 # convert directed graph into list of paths
 paths = swc.graph_to_paths(G)
@@ -143,74 +139,69 @@ def test_swc_to_voxel_nonnegative():
     assert np.greater_equal(np.abs(coord), np.zeros(coord.shape)).all()
 
 
-def test_df_to_graph_no_duplicates():
-    """test a GeometricGraph cannot have duplicate nodes"""
-    with raises(ValueError, match=r"cannot build GeometricGraph with duplicate nodes"):
-        swc.df_to_geometric_graph(df_neuron=df_voxel_s3)
-
-
 def test_df_to_graph_digraph():
-    """test if output is a GeometricGraph"""
-    assert isinstance(G, GeometricGraph)
+    """test if output is directed graph"""
+    assert isinstance(G, nx.DiGraph)
 
 
-def test_df_to_geometric_graph_nodes():
+def test_df_to_graph_nodes():
     """test if graph has correct number of nodes"""
     assert len(G.nodes) == len(df_voxel)
 
 
-def test_df_to_geometric_graph_coordinates():
-    """test if graph coordinates are same as that of df"""
-    coord_df = df[["x", "y", "z"]].values
+def test_df_to_graph_nodes():
+    """test if graph has correct number of nodes"""
+    assert len(G.nodes) == len(df_voxel)
 
-    locs_dict = nx.get_node_attributes(G, "loc")
-    locs = np.array([locs_dict[node] for node in G.nodes])
-    # x_dict = nx.get_node_attributes(G, "x")
-    # y_dict = nx.get_node_attributes(G, "y")
-    # z_dict = nx.get_node_attributes(G, "z")
 
-    # x = [x_dict[i] for i in G.nodes]
-    # y = [y_dict[i] for i in G.nodes]
-    # z = [z_dict[i] for i in G.nodes]
+def test_df_to_graph_coordinates():
+    """test if graph coordinates are same as that of df_voxel"""
+    coord_df = df_voxel[["x", "y", "z"]].values
 
-    # coord_graph = np.array([x, y, z]).T
+    x_dict = nx.get_node_attributes(G, "x")
+    y_dict = nx.get_node_attributes(G, "y")
+    z_dict = nx.get_node_attributes(G, "z")
 
-    assert np.array_equal(locs, coord_df)
+    x = [x_dict[i] for i in G.nodes]
+    y = [y_dict[i] for i in G.nodes]
+    z = [z_dict[i] for i in G.nodes]
+
+    coord_graph = np.array([x, y, z]).T
+
+    assert np.array_equal(coord_graph, coord_df)
 
 
 def test_df_s3_to_graph_coordinates():
     """test if graph coordinates are same as that of df_voxel"""
-    coord_df_s3 = df_s3[["x", "y", "z"]].values
+    coord_df_s3 = df_voxel_s3[["x", "y", "z"]].values
 
-    locs_dict = nx.get_node_attributes(G_s3, "loc")
-    locs = np.array([locs_dict[node] for node in G_s3.nodes])
-    # x_dict = nx.get_node_attributes(G_s3, "x")
-    # y_dict = nx.get_node_attributes(G_s3, "y")
-    # z_dict = nx.get_node_attributes(G_s3, "z")
+    x_dict = nx.get_node_attributes(G_s3, "x")
+    y_dict = nx.get_node_attributes(G_s3, "y")
+    z_dict = nx.get_node_attributes(G_s3, "z")
 
-    # x = [x_dict[i] for i in G_s3.nodes]
-    # y = [y_dict[i] for i in G_s3.nodes]
-    # z = [z_dict[i] for i in G_s3.nodes]
+    x = [x_dict[i] for i in G_s3.nodes]
+    y = [y_dict[i] for i in G_s3.nodes]
+    z = [z_dict[i] for i in G_s3.nodes]
 
-    # coord_graph_s3 = np.array([x, y, z]).T
+    coord_graph_s3 = np.array([x, y, z]).T
 
-    assert np.array_equal(locs, coord_df_s3)
+    assert np.array_equal(coord_graph_s3, coord_df_s3)
 
 
-def test_get_sub_neuron_geometric_graph():
-    """test if output is a GeometricGraph"""
+def test_get_sub_neuron_digraph():
+    """test if output is directed graph"""
     start = np.array([15312, 4400, 6448])
     end = np.array([15840, 4800, 6656])
     G_sub = swc.get_sub_neuron(G, bounding_box=(start, end))
-    assert isinstance(G_sub, GeometricGraph)
+    assert isinstance(G_sub, nx.DiGraph)
 
 
 def test_get_sub_s3_neuron_digraph():
-    """test if output is a GeometricGraph"""
+    """test if output is directed graph"""
     start = np.array([15312, 4400, 6448])
     end = np.array([15840, 4800, 6656])
     G_sub_s3 = swc.get_sub_neuron(G_s3, bounding_box=(start, end))
-    assert isinstance(G_sub_s3, GeometricGraph)
+    assert isinstance(G_sub_s3, nx.DiGraph)
 
 
 def test_get_sub_neuron_bounding_box():

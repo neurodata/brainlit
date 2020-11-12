@@ -5,7 +5,6 @@ import pandas as pd
 import networkx as nx
 from cloudvolume import CloudVolume, Skeleton
 from io import StringIO
-from brainlit.algorithms.trace_analysis.fit_spline import GeometricGraph
 
 
 def read_swc(path):
@@ -176,7 +175,8 @@ def bbox_vox(df):
 
 
 def read_s3(s3_path, seg_id, mip):
-    """Read a s3 bucket path to a skeleton object into a pandas dataframe.
+    """Read a s3 bucket path to a skeleton object
+    into a pandas dataframe.
 
     Parameters
     ----------
@@ -215,7 +215,10 @@ def read_s3(s3_path, seg_id, mip):
         sep=" "
         # delim_whitespace=True,
     )
-
+    res = cv.scales[mip]["resolution"]
+    df["x"] = np.round(df["x"] / res[0])
+    df["y"] = np.round(df["y"] / res[1])
+    df["z"] = np.round(df["z"] / res[2])
     return df
 
 
@@ -307,45 +310,37 @@ def swc_to_voxel(df, spacing, origin=np.array([0, 0, 0])):
     return df_voxel
 
 
-def df_to_geometric_graph(df_neuron):
-    """Converts dataframe of swc in voxel coordinates into a GeometricGraph
+def df_to_graph(df_voxel):
+    """Converts dataframe of swc in voxel coordinates into a directed graph
 
     Parameters
     ----------
-    df_neuron : :class:`pandas.DataFrame`
-        Indicies, coordinates, and parents of each node in the swc.
+    df_voxel : :class:`pandas.DataFrame`
+        Indicies, coordinates, and parents of each node in the swc. Coordinates
+        are in voxel units.
     Returns
     -------
-    G : :class:`brainlit.algorithms.trace_analysis.fit_spline.GeometricGraph`
-        Neuron from swc represented as GeometricGraph. Coordinates `x,y,z`
-        are accessible in the `loc` attribute.
+    G : :class:`networkx.classes.digraph.DiGraph`
+        Neuron from swc represented as directed graph. Coordinates x,y,z are
+        node attributes accessed by keys 'x','y','z' respectively.
     """
+    G = nx.DiGraph()
 
-    # check that there are not duplicate nodes
-    dx = np.expand_dims(np.diff(df_neuron["x"].to_numpy()), axis=0).T
-    dy = np.expand_dims(np.diff(df_neuron["y"].to_numpy()), axis=0).T
-    dz = np.expand_dims(np.diff(df_neuron["z"].to_numpy()), axis=0).T
-    dr = np.concatenate((dx, dy, dz), axis=1)
-    if not all([any(du != 0) for du in dr]):
-        raise ValueError("cannot build GeometricGraph with duplicate nodes")
-
-    # build graph
-    G = GeometricGraph()
-    for _, row in df_neuron.iterrows():
-        # extract id
+    # add nodes
+    for index, row in df_voxel.iterrows():
         id = int(row["sample"])
 
-        # add nodes
-        loc_x = row["x"]
-        loc_y = row["y"]
-        loc_z = row["z"]
-        loc = np.array([loc_x, loc_y, loc_z])
-        G.add_node(id, loc=loc)
+        G.add_node(id)
+        G.nodes[id]["x"] = int(row["x"])
+        G.nodes[id]["y"] = int(row["y"])
+        G.nodes[id]["z"] = int(row["z"])
 
-        # add edges
-        child = id
+    # add edges
+    for index, row in df_voxel.iterrows():
+        child = int(row["sample"])
         parent = int(row["parent"])
-        if parent > min(df_neuron["parent"]):
+
+        if parent > min(df_voxel["parent"]):
             G.add_edge(parent, child)
 
     return G
@@ -356,61 +351,56 @@ def get_sub_neuron(G, bounding_box):
 
     Parameters
     ----------
-    G : :class:`brainlit.algorithms.trace_analysis.fit_spline.GeometricGraph`
-        Neuron from swc represented as GeometricGraph. Coordinates `x,y,z`
-        are accessible in the `loc` attribute.
+    G : :class:`networkx.classes.digraph.DiGraph`
+        Neuron from swc represented as directed graph. Coordinates x,y,z are
+        node attributes accessed by keys 'x','y','z' respectively.
     bounding_box : tuple or list or None
         Defines a bounding box around a sub-region around the neuron. Length 2
-        tuple/list. First element is the coordinate of one corner (inclusive) and
-        second element is the coordinate of the opposite corner (exclusive).
-        Both coordinates are `numpy.array([x,y,z])` in voxel units.
+        tuple/list. First element is the coordinate of one corner (inclusive) and second element is the coordinate of the opposite corner (exclusive). Both coordinates are numpy.array([x,y,z])in voxel units.
     Returns
     -------
-    G_sub : :class:`brainlit.algorithms.trace_analysis.fit_sline.GeometricGraph`
-        Neuron from swc represented as GeometricGraph. Coordinates `x,y,z`
-        are accessible in the `loc` attribute.
+    G_sub : :class:`networkx.classes.digraph.DiGraph`
+        Neuron from swc represented as directed graph. Coordinates x,y,z are
+        node attributes accessed by keys 'x','y','z' respectively.
     """
-
     G_sub = G.copy()  # make copy of input G
-    G_digraph = nx.algorithms.traversal.depth_first_search.dfs_tree(G, source=G.root)
     start = bounding_box[0]
     end = bounding_box[1]
 
     # remove nodes that are not neighbors of nodes bounded by start and end
-    for node in list(G_digraph.nodes):
-        neighbors = list(G_digraph.successors(node)) + list(
-            G_digraph.predecessors(node)
-        )
+    for node in list(G_sub.nodes):
+        neighbors = list(G_sub.successors(node)) + list(G_sub.predecessors(node))
 
         remove = True
 
         for id in neighbors + [node]:
-            loc = G.nodes[id]["loc"]
-            x = loc[0]
-            y = loc[1]
-            z = loc[2]
+            x = G_sub.nodes[id]["x"]
+            y = G_sub.nodes[id]["y"]
+            z = G_sub.nodes[id]["z"]
 
             if x >= start[0] and y >= start[1] and z >= start[2]:
                 if x < end[0] and y < end[1] and z < end[2]:
                     remove = False
 
         if remove:
-            G_digraph.remove_node(node)
             G_sub.remove_node(node)
 
     # set origin to start of bounding box
     for id in list(G_sub.nodes):
-        G_sub.nodes[id]["loc"] = G_sub.nodes[id]["loc"] - start
+        G_sub.nodes[id]["x"] = G_sub.nodes[id]["x"] - start[0]
+        G_sub.nodes[id]["y"] = G_sub.nodes[id]["y"] - start[1]
+        G_sub.nodes[id]["z"] = G_sub.nodes[id]["z"] - start[2]
 
     return G_sub
 
 
 def graph_to_paths(G):
-    """Converts neuron represented as a GeometricGraph into a list of paths.
+    """Converts neuron represented as a directed graph with no cycles into a
+    list of paths.
 
     Parameters
     ----------
-    G : :class:`brainlit.algorithms.trace_analysis.fit_spline.GeometricGraph`
+    G : :class:`networkx.classes.digraph.DiGraph`
         Neuron from swc represented as directed graph. Coordinates x,y,z are
         node attributes accessed by keys 'x','y','z' respectively.
     Returns
@@ -419,18 +409,27 @@ def graph_to_paths(G):
         List of Nx3 numpy.array. Rows of the array are 3D coordinates in voxel
         units. Each array is one path.
     """
+    G_cp = G.copy()  # make copy of input G
+    branches = []
+    while len(G_cp.edges) != 0:  # iterate over branches
+        # get longest branch
+        longest = nx.algorithms.dag.dag_longest_path(G_cp)  # list of nodes on the path
+        branches.append(longest)
 
-    spline_tree = G.fit_spline_tree_invariant()
-    branches = spline_tree.nodes
+        # remove longest branch
+        for idx, e in enumerate(longest):
+            if idx < len(longest) - 1:
+                G_cp.remove_edge(longest[idx], longest[idx + 1])
 
     # convert branches into list of paths
     paths = []
     for branch in branches:
-        path_nodes = branches[branch]["path"]
         # get vertices in branch as n by 3 numpy.array; n = length of branches
-        path = np.zeros((len(path_nodes), 3), dtype=np.int64)
-        for idx, node in enumerate(path_nodes):
-            path[idx] = G.nodes[node]["loc"]
+        path = np.zeros((len(branch), 3), dtype=np.int64)
+        for idx, node in enumerate(branch):
+            path[idx, 0] = np.int64(G_cp.nodes[node]["x"])
+            path[idx, 1] = np.int64(G_cp.nodes[node]["y"])
+            path[idx, 2] = np.int64(G_cp.nodes[node]["z"])
 
         paths.append(path)
 

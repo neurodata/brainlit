@@ -7,12 +7,7 @@ from cloudvolume import CloudVolume, view
 from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError
 from pathlib import Path
-from brainlit.utils.swc import (
-    read_s3,
-    df_to_geometric_graph,
-    get_sub_neuron,
-    graph_to_paths,
-)
+from brainlit.utils.swc import read_s3, df_to_graph, get_sub_neuron, graph_to_paths
 from brainlit.algorithms.generate_fragments.tube_seg import tubes_from_paths
 import napari
 import warnings
@@ -130,7 +125,7 @@ class NeuroglancerSession:
             raise ValueError("Cannot get segments without segmentation data.")
 
         df = read_s3(self.url_segments, seg_id, self.mip)
-        G = df_to_geometric_graph(df)
+        G = df_to_graph(df)
         if bbox is not None:
             if isinstance(bbox, Bbox):
                 bbox = bbox.to_list()
