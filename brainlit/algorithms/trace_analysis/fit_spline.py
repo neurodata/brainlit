@@ -19,11 +19,11 @@ Geometric Graph class
 
 
 class GeometricGraph(nx.Graph):
-    r""" The shape of the neurons are expressed and fitted with splines in this undirected graph class.
+    r"""The shape of the neurons are expressed and fitted with splines in this undirected graph class.
 
-     The geometry of the neurons are projected on undirected graphs, based on which the trees of neurons consisted for splines is constructed.
-     It is required that each node has a loc attribute identifying that points location in space, and the location should be defined in 3-dimensional cartesian coordinates.
-     It extends `nx.Graph`.
+    The geometry of the neurons are projected on undirected graphs, based on which the trees of neurons consisted for splines is constructed.
+    It is required that each node has a loc attribute identifying that points location in space, and the location should be defined in 3-dimensional cartesian coordinates.
+    It extends `nx.Graph`.
     """
 
     def __init__(self):
@@ -151,9 +151,7 @@ class GeometricGraph(nx.Graph):
         k = np.amin([path_length - 1, 5])
         tck, u = splprep([x[:, 0], x[:, 1], x[:, 2]], u=TotalDist, k=k)
 
-
         return tck, u
-
 
     def __find_main_branch(self, tree: nx.DiGraph, starting_length: float = 0):
         r"""Find the main branch in a directed graph.
