@@ -12,24 +12,6 @@ from brainlit.utils.util import (
     check_iterable_nonnegative,
 )
 
-"""
-Function definitions
-"""
-
-
-def checkIfDuplicates_2(listOfElems):
-    """Check if given list contains any duplicates
-    Args:
-        listOfElems (set): Build an unordered collection of unique elements.
-    """
-    setOfElems = set()
-    for elem in listOfElems:
-        if elem in setOfElems:
-            return True
-        else:
-            setOfElems.add(elem)
-    return False
-
 
 """
 Geometric Graph class
@@ -37,8 +19,10 @@ Geometric Graph class
 
 
 class GeometricGraph(nx.Graph):
-    r"""Class for undirected graphs.
+    r"""The shape of the neurons are expressed and fitted with splines in this undirected graph class.
 
+    The geometry of the neurons are projected on undirected graphs, based on which the trees of neurons consisted for splines is constructed.
+    It is required that each node has a loc attribute identifying that points location in space, and the location should be defined in 3-dimensional cartesian coordinates.
     It extends `nx.Graph`.
     """
 
@@ -203,37 +187,13 @@ class GeometricGraph(nx.Graph):
                 f"{orig-new} duplicate points removed in the trace segment",
                 category=UserWarning,
             )
-        m = x.shape[0]
-        diffs = np.diff(x, axis=0)
-        diffs = np.linalg.norm(diffs, axis=1)
-        diffs = np.cumsum(diffs)
-        diffs = np.concatenate(([0], diffs))
-        k = np.amin([m - 1, 5])
-        tck, u = splprep([x[:, 0], x[:, 1], x[:, 2]], u=diffs, k=k)
-
-        self.__check_multiplicity(tck[0])
+        path_length = x.shape[0]
+        NodeDist = np.linalg.norm(np.diff(x, axis=0), axis=1)
+        TotalDist = np.concatenate(([0], np.cumsum(NodeDist)))
+        k = np.amin([path_length - 1, 5])
+        tck, u = splprep([x[:, 0], x[:, 1], x[:, 2]], u=TotalDist, k=k)
 
         return tck, u
-
-    def __check_multiplicity(self, t):
-        r"""Check multiplicity of elements in a list.
-
-        Arguments:
-            t: list, the list to be checked
-
-        Raises:
-            RuntimeError: when duplicates are found
-        """
-
-        knots = list(t.copy())
-        first = knots[0]
-        last = knots[-1]
-        indices_keep = (knots != first) & (knots != last)
-        knots = [i for (i, v) in zip(knots, indices_keep) if v]
-        dup = checkIfDuplicates_2(knots)
-        if dup:
-            print(t)
-            raise RuntimeError("Duplicates found in the above knot list")
 
     def __find_main_branch(self, tree: nx.DiGraph, starting_length: float = 0):
         r"""Find the main branch in a directed graph.

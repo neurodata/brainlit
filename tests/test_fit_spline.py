@@ -131,8 +131,6 @@ def test_splNum():
     spline_tree = neuron.fit_spline_tree_invariant()
     # expect to have 2 splines
     assert len(spline_tree.nodes) == 2
-    # if len(spline_tree.nodes) != 2:
-    #    raise ValueError("The total number of splines is incorrect.")
 
 
 def test_CompareLen():
