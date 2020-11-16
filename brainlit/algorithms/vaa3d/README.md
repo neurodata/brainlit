@@ -19,11 +19,17 @@
 
 ## Running APP2
 
-- See python script (will update later on some other notes)
+- The input to Vaa3D will require a `.tif` file. `skimage.io` can be used to save `.tif` files.
 
-- The current version has a problem where the labels are flipped along what appears to be y=x, will need to fix this.
+- To run APP2 in Vaa3D, use the `runVaa3dPlugin` with the plugin name `Vaa3D_Neuron2` and function name `app2`
 
-[![labels-flipped.png](https://i.postimg.cc/28D2139X/labels-flipped.png)](https://postimg.cc/4nWzM4gz)
+- The output of the Vaa3D run will be a `.swc` file in the same directory as the script.
+
+## Processing .swc file
+
+The output of Vaa3D is a dense `.swc` file which labels many voxels that are candidates for foreground pixels. Note that this does not match the format of the ground truth data, which is a linear interpolation of manually selected points. This means that the neuron is represented by a curve in 3-Space rather than a cylindrical volume. I used `skimage.morphology.skeletonize_3d` to do this. 
+
+- Note that when loading in the `.swc` file, the `x` and `z` dimensions will need to be swapped to correct a tranpose bug.
 
 # Experiment Plan
 
@@ -43,6 +49,8 @@ The labelsets that result from APP2 and Otsu Segmentation are known as dense lab
 
 NOTE: It would be prudent to mimic the processes done in the APP2 paper, Peng et. al. 2013, as they presented skeletonized outputs. It appears that V3D from an [earlier paper](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2857929/) has the ability to do skeletonization.
 
+`skimage.morphology.skeletonize` provides a preliminary solution to this. The results are not as clean as I expected, but it may also be due to the low resolution of the demo dataset.
+
 ### Comparison metrics
 
 Comparing `.swc` files will require a measure of distance.
@@ -57,3 +65,15 @@ Comparing `.swc` files will require a measure of distance.
   - Substantial Spatial Distance (SSD) further modifies this. It thresholds all of the distances first, keeping only those distances that are greater than 2 voxels. The percentage of "significant distances" is then calculated (kept/total).
 
 - Robustness. If the above is implemented successfully, we can move forward and attempt to replicate the APP2 paper's signal deletion test, where voxels' intensities are randomly set to 0 in the source image. This will test the robustness of the algorithm to reproduce reconstructions in low overall intensity images. We can then run the algorithms with a 30%, 50%, 70% deletion and observe how the distance metrics hold up. I will do a further review of whether or not this type of test is necessary, as robustness tests are done to ensure the wider applicability of the tracing algorithm on future datasets. However, such a test might not be necessary for Brainlit specifically, as our data is expected to be of a certain quality and format since all of the Janelia brains are scanned using the same modality.
+
+### Result Outputs
+
+The resulting outputs will be tabulated in a similar way as [Peng Et. Al. 2013](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3661058/). After computing the SSD scores, we can place them on a bar graph to compare. The Y-axis will be the SSD score, and the X-axis will be the different testing datasets, with multiple color bars and a legend to denote to each algorithm used.
+
+Deletion tests can be done in a similar way. However, it may be necessary to have an individual graph for each testing dataset for clarity. Y-axis will be SSD score, and X-axis will be deletion percentage. Multiple bar colors will be used alongside a legend to denote the algorithm used.
+
+Visualization comparisons will also be useful, such as selected viewing windows near branches or the soma. The mouselight datasets have traditionally been human-graded, thus having a human grader who is familiar with neuron morphology assess algorithm correctness can allow for additional qualitative analysis.
+
+### How do we expect the APP2 algorithm to perform?
+
+APP2 has been used as a single-neuron tracing algorithm. As such, it may perform poorly with multi-neuron datasets. The algorithm involves the detection of a soma using a Gray-Weighted Image Distance Transform. The maximally transformed point is the center of the soma. However, this means that there will only exist 1 soma, as there is only 1 maximally transformed point. The APP2 paper does not detail what occurs if there are multiple neurons, or what happens to segments that are disconnected. I expect APP2 to trace a single neuron successfully, however I am are unsure of the behavior for the other neurons populating the space. It could be the case that we may need multiple passes of APP2 to remove the traced neuron by zeroing its intensity information, and extracting each neuron one by one.
