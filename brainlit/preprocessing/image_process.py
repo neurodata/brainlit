@@ -4,6 +4,14 @@ import scipy.ndimage as ndi
 import matplotlib.pyplot as plt
 from itertools import product
 from typing import List, Optional, Union, Tuple
+from brainlit.utils.util import (
+    check_type,
+    check_iterable_type,
+    check_iterable_or_non_iterable_type,
+    numerical,
+)
+import collections
+import numbers
 
 
 def gabor_filter(
@@ -105,6 +113,14 @@ def gabor_filter(
     >>> ax2.imshow(result[0])
     >>> plt.show()
     """
+    check_type(input, (list, np.ndarray))
+    check_iterable_or_non_iterable_type(sigma, numerical)
+    check_iterable_or_non_iterable_type(phi, numerical)
+    check_type(frequency, numerical)
+    check_type(offset, numerical)
+    check_type(cval, numerical)
+    check_type(truncate, numerical)
+
     input = np.asarray(input)
 
     # Checks that dimensions of inputs are correct
@@ -164,6 +180,7 @@ def getLargestCC(segmentation: np.ndarray) -> np.ndarray:
 
     """
 
+    check_type(segmentation, (list, np.ndarray))
     labels = label(segmentation)
     if labels.max() == 0:
         raise ValueError("No connected components!")  # assume at least 1 CC
@@ -188,6 +205,9 @@ def removeSmallCCs(segmentation: np.ndarray, size: Union[int, float]) -> np.ndar
         segmentation with small connected components removed
 
     """
+    check_type(segmentation, (list, np.ndarray))
+    check_type(size, numerical)
+
     labels = label(segmentation, return_num=False)
 
     if labels.max() == 0:
