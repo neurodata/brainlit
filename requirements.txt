@@ -7,7 +7,7 @@ jupyter==1.0.0
 napari==0.3.7
 nilearn==0.6.2
 pandas==1.1.2
-pip-chill==1.0.0
+# pip-chill==1.0.0
 pyopenssl==19.1.0
 scikit-image==0.17.2
 simpleitk==2.0.0
