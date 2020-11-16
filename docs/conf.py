@@ -43,7 +43,7 @@ extensions = [
     "sphinx.ext.intersphinx",
 ]
 
-nbsphinx_kernel_name = "python3"
+nbsphinx_kernel_name = "docs"
 nbsphinx_allow_errors = True
 
 autoapi_dirs = ["../brainlit"]
