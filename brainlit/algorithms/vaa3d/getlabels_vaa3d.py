@@ -7,12 +7,14 @@ Created on Mon Sep 28 012:11:28 2020
 
 from brainlit.utils.session import NeuroglancerSession
 from brainlit.utils.swc import graph_to_paths
+from brainlit.viz.swc2voxel import skeletonize
 import numpy as np
 import pandas as pd
 import napari
 import matplotlib.pyplot as plt
 from pyVaa3d.vaa3dWrapper import runVaa3dPlugin
 from skimage import io
+from skimage.morphology import skeletonize_3d
 
 def plot_labels(labels, image_shape, name):
     labels_ind = np.nonzero(labels)
@@ -53,6 +55,18 @@ def swc_unpack(fname):
     labels = np.array(df[["z","y","x"]])
     return labels
 
+def labels_imagespace(img, swc_labels):
+    # Creates a binarized image with the swc labels
+    space = img * 0
+    for l in swc_labels:
+        x = int(l[0])
+        y = int(l[1])
+        z = int(l[2])
+        space[x][y][z] = 1
+        
+    return space
+
+
 #%% Grab volume from S3
 dir = "s3://open-neurodata/brainlit/brain1"
 dir_segments = "s3://open-neurodata/brainlit/brain1_segments"
@@ -84,10 +98,31 @@ print("Algorithm successfully run! Please check the root folder for the .swc out
 #%%
 
 # Change the path name here to match a local file location
-swc_name = "C:\\Users\\frede\\Documents\\Y4\\Y4_NDD\\brainlit\\brainlit\\algorithms\\vaa3d\\brain1_demo_segments.tif_ini.swc"
+
+# NOTE: The output of the algorithm will be 2 .swc files. The one with a coordinate such as " x82_y69_z74_app2 " is the correct one to load.
+# This file will be the one that has used GSDT (GWDT) which will produce a much cleaner result.
+swc_name = "C:\\Users\\frede\\Documents\\Y4\\Y4_NDD\\brainlit\\brainlit\\algorithms\\vaa3d\\brain1_demo_segments.tif_x82_y69_z74_app2.swc"
 labels = swc_unpack(swc_name)
 print(labels)
 print(f"\n\n Labels successfully loaded from .swc file with {len(labels)} foreground labels.")
+
+#%%
+''' 
+#No longer necessary 
+
+# Convert labels to be a binarization of the imagespace
+labels_img = labels_imagespace(img,labels)
+
+print("Skeletonizing...")
+# Skeletonize using skeletonize_3d
+skeleton_label_img = skeletonize_3d(labels_img)
+label_skeleton = np.transpose(np.nonzero(skeleton_label_img))
+print(label_skeleton)
+print(f"Skeletonizing done. \n Original label count: {len(labels)} \n New label count: {len(label_skeleton)}")
+
+fname_labels = "app2_skeleton_labels.tif"
+io.imsave(fname_labels,skeleton_label_img * 255)
+'''
 
 #%%
 G_sub = ngl_sess.get_segments(2, bbox)
