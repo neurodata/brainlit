@@ -166,18 +166,13 @@ def gabor_filter(
 
 
 def getLargestCC(segmentation: np.ndarray) -> np.ndarray:
-    """Returns the largest connected component of a image
+    """Returns the largest connected component of a image.
 
-    Parameters
-    ----------
-    segmentation : array-like
-        segmentation data of image or volume
+    Arguments:
+    segmentation : Segmentation data of image or volume.
 
-    Returns
-    -------
-    largeCC : array-like
-        segmentation with only largest connected component
-
+    Returns:
+    largeCC : Segmentation with only largest connected component.
     """
 
     check_type(segmentation, (list, np.ndarray))
@@ -189,21 +184,14 @@ def getLargestCC(segmentation: np.ndarray) -> np.ndarray:
 
 
 def removeSmallCCs(segmentation: np.ndarray, size: Union[int, float]) -> np.ndarray:
-    """Removes small connected components from an image
+    """Removes small connected components from an image.
 
-    Parameters
-    ----------
-    segmentation : array-like
-        segmentation data of image or volume
+    Parameters:
+    segmentation : Segmentation data of image or volume.
+    size : Maximum connected component size to remove.
 
-    size : scalar
-        maximize connected component size to remove
-
-    Returns
-    -------
-    largeCCs : array-like
-        segmentation with small connected components removed
-
+    Returns:
+    largeCCs : Segmentation with small connected components removed.
     """
     check_type(segmentation, (list, np.ndarray))
     check_type(size, numerical)
