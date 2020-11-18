@@ -23,7 +23,9 @@
 
 - To run APP2 in Vaa3D, use the `runVaa3dPlugin` with the plugin name `Vaa3D_Neuron2` and function name `app2`
 
-- The output of the Vaa3D run will be a `.swc` file in the same directory as the script.
+- The output of the Vaa3D run will be a `.swc` file in the same directory as the input image file
+
+- Note that there will be 2 `.swc` file outputs, one with an `_ini` in the name and one with a coordinate, for example `_x82_y42_z29`. The latter is the proper label output, which will be sparse enough to match the manually labeled traces.
 
 ## Processing .swc file
 
@@ -43,13 +45,17 @@ EDIT: There is actually a benchmarking dataset with the proper ground truth labe
 
 The primary goal is to compare APP2 to an existing ground-truth solution. I will also compare the results that come out of an algorithm in `adaptive_thresh.py` under the `generate_fragments` directory as a means of presenting a comparison to an existing algorithm. From preliminary testing, the Otsu segmentation algorithm has decent performance on the small demo dataset that I tried. It may be necessary to investigate the algorithm's behavior on a larger scale dataset to determine if it is usable.
 
-### Further processing - Labels Skeletonization
+### Further processing - Labels Skeletonization - NO LONGER NECESSARY
 
 The labelsets that result from APP2 and Otsu Segmentation are known as dense labelsets. These annotate every voxel that the algorithms have determined are part of a neuron. The problem resides in this high density. The ground truth is a series of hand-labeled points, which is then linearly interpolated to form a rough skeleton of the neuron path. The outputs of APP2 and Otsu will need to be skeletonized to create a similar structure to that of the ground truth labels. This will ensure that the neuron traces have a similar density.
 
 NOTE: It would be prudent to mimic the processes done in the APP2 paper, Peng et. al. 2013, as they presented skeletonized outputs. It appears that V3D from an [earlier paper](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2857929/) has the ability to do skeletonization.
 
 `skimage.morphology.skeletonize` provides a preliminary solution to this. The results are not as clean as I expected, but it may also be due to the low resolution of the demo dataset.
+
+### Further processing - Labels resampling (already included in APP2 algorithm)
+
+To prepare the labels for comparison metric,s a resampling process must be done so that individual labels are at least 1 micron or 1 voxel away from each other (depending on the density and modality) and at a fixed distance from each other. This will ensure a roughly uniform quality of trace across the neuron. However, APP2 already includes the resampling process. If resampling is needed, one can apply the resampling through the Vaa3D application under `/plugin/neuron_utilities/resample_swc`.
 
 ### Comparison metrics
 
