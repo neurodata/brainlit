@@ -84,7 +84,7 @@ def get_volume_info(
     
     #Updated image size line
     #img_size = np.squeeze(tf.imread(str(p / "default.0.tif"))).T.shape
-    img_size = np.squeeze(tf.imread(str(p / files[1][parent_dirs]))).T.shape
+    img_size = np.squeeze(tf.imread(str(p / files[0][parent_dirs]))).T.shape
 
     #Altering location of transform.txt file
     #transform = open(str(p / "transform.txt"), "r")
@@ -524,8 +524,8 @@ def upload_segments(input_path, precomputed_path, num_mips):
         layer_type="segmentation",
     )
     #Changed swc_dir path
-    #swc_dir = Path(input_path) / "consensus-swcs"
-    swc_dir = Path(input_path) / "Manual-GT"
+    swc_dir = Path(input_path) / "consensus-swcs"
+    #swc_dir = Path(input_path) / "Manual-GT"
     #Changed origin parameter to (0,0,0)
     #segments, segids = create_skel_segids(str(swc_dir), origin)
     segments, segids = create_skel_segids(str(swc_dir), (0,0,0))

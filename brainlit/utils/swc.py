@@ -496,9 +496,14 @@ def swc2skeleton(swc_file, origin=None):
     # space can be 'physical' or 'voxel'
     skel.space = "physical"
     # hard coding parsing the id from the filename
-    idx = swc_file.find("G")
+    #idx = swc_file.find("G")
+    idx1 = swc_file.find("_")
+    idx2 = swc_file.find(".")
 
-    skel.id = int(swc_file[idx + 2 : idx + 5])
+
+    #Changed for getting better titles for uploading benchmarking swc data
+    #skel.id = int(swc_file[idx + 2 : idx + 5])
+    skel.id = swc_file[idx1+1 : idx2]
 
     # hard coding changing  data type of vertex_types
     skel.extra_attributes[-1]["data_type"] = "float32"
