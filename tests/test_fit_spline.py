@@ -1,8 +1,17 @@
 import pytest
 from brainlit.algorithms.trace_analysis.fit_spline import GeometricGraph
+from brainlit.utils import swc
 import networkx as nx
 from scipy.interpolate import splprep
 import numpy as np
+from pathlib import Path
+import pandas as pd
+
+top_level = Path(__file__).parents[1] / "data"
+input = (top_level / "data_octree").as_posix()
+url = (top_level / "test_upload").as_uri()
+url_seg = url + "_segments"
+url = url + "/serial"
 
 
 ##############
@@ -108,9 +117,33 @@ def test_fit_spline_tree_invariant_bad_input():
         neuron_disconnected_segments.fit_spline_tree_invariant()
 
 
+def test_init_from_bad_df():
+    d = {
+        "sample": [1, 2],
+        "structure": [0, 0],
+        "x": [1, 1],
+        "y": [2, 2],
+        "z": [3, 3],
+        "r": [1, 1],
+        "parent": [-1, 1],
+    }
+    df = pd.DataFrame(data=d)
+    print(df)
+    with pytest.raises(
+        ValueError, match="cannot build GeometricGraph with duplicate nodes"
+    ):
+        GeometricGraph(df=df)
+
+
 ##################
 ### validation ###
 ##################
+
+
+def test_init_from_df():
+    df_s3 = swc.read_s3(url_seg, seg_id=2, mip=0)
+    G = GeometricGraph(df=df_s3)
+    assert isinstance(G, GeometricGraph)
 
 
 def test_splNum():
