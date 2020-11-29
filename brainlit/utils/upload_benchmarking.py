@@ -88,15 +88,17 @@ def get_volume_info(
 
     #Altering location of transform.txt file
     #transform = open(str(p / "transform.txt"), "r")
-    transform_path = (Path().resolve().parents[2] / "data" / "data_octree")
-    transform = open(str(Path(transform_path) / "transform.txt"), "r")
-    vox_size = [
-        float(s[4:].rstrip("\n")) * (0.5 ** (num_resolutions - 1))
-        for s in transform.readlines()
-        if "s" in s
-    ]
+    #transform_path = (Path().resolve().parents[2] / "data" / "data_octree")
+    #transform = open(str(Path(transform_path) / "transform.txt"), "r")
+    #vox_size = [
+    #    float(s[4:].rstrip("\n")) * (0.5 ** (num_resolutions - 1))
+    #    for s in transform.readlines()
+    #    if "s" in s
+    #]
     #transform = open(str(p / "transform.txt"), "r")
-    origin = [int(o[4:].rstrip("\n")) / 1000 for o in transform.readlines() if "o" in o]
+    vox_size = (330,330,100)
+    origin = (0,0,0)
+    #origin = [int(o[4:].rstrip("\n")) / 1000 for o in transform.readlines() if "o" in o]
     return files_ordered, paths_bin, vox_size, img_size, origin
 
 
@@ -105,6 +107,7 @@ def create_cloud_volume(
     img_size: Sequence[int],
     voxel_size: Sequence[Union[int, float]],
     num_resolutions: int,
+    #making chunk size same as image size
     chunk_size: Optional[Sequence[int]] = None,
     parallel: Optional[bool] = False,
     layer_type: Optional[str] = "image",
@@ -128,7 +131,7 @@ def create_cloud_volume(
     """
     # defaults
     if chunk_size is None:
-        chunk_size = [int(i / 4) for i in img_size]  # /2 took 42 hrs
+        chunk_size = [int(i / 1) for i in img_size]  # /2 took 42 hrs
     if dtype is None:
         if layer_type == "image":
             dtype = "uint16"
@@ -166,13 +169,14 @@ def create_cloud_volume(
         resolution=voxel_size,  # Voxel scaling, units are in nanometers
         voxel_offset=[0, 0, 0],  # x,y,z offset in voxels from the origin
         chunk_size=chunk_size,  # units are voxels
-        volume_size=[i * 2 ** (num_resolutions - 1) for i in img_size],
+        volume_size = chunk_size
+        #volume_size=[i * 2 ** (num_resolutions - 1) for i in img_size],
     )
     vol = CloudVolume(precomputed_path, info=info, parallel=parallel)
-    [
-        vol.add_scale((2 ** i, 2 ** i, 2 ** i), chunk_size=chunk_size)
-        for i in range(num_resolutions)
-    ]
+    #[
+    #    vol.add_scale((2 ** i, 2 ** i, 2 ** i), chunk_size=chunk_size)
+    #    for i in range(num_resolutions)
+    #]
     if commit_info:
         vol.commit_info()
     if layer_type == "image" or layer_type == "annotation":
@@ -219,7 +223,8 @@ def get_data_ranges(
     print(bin_path)
     for idx, i in enumerate(bin_path):
         print(i)
-        scale_factor = 2 ** (tree_level - idx - 1)
+        #scale_factor = 2 ** (tree_level - idx - 1)
+        scale_factor = 1
         x_curr += int(i[2]) * chunk_size[0] * scale_factor
         y_curr += int(i[1]) * chunk_size[1] * scale_factor
         # flip z axis so chunks go anterior to posterior
@@ -527,8 +532,9 @@ def upload_segments(input_path, precomputed_path, num_mips):
     swc_dir = Path(input_path) / "consensus-swcs"
     #swc_dir = Path(input_path) / "Manual-GT"
     #Changed origin parameter to (0,0,0)
-    #segments, segids = create_skel_segids(str(swc_dir), origin)
-    segments, segids = create_skel_segids(str(swc_dir), (0,0,0))
+    print(origin)
+    segments, segids = create_skel_segids(str(swc_dir), origin)
+    #segments, segids = create_skel_segids(str(swc_dir), (0,0,0))
     for skel in segments:
         vols[0].skeleton.upload(skel)
 
