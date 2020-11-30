@@ -7,14 +7,12 @@ Created on Mon Sep 28 012:11:28 2020
 
 from brainlit.utils.session import NeuroglancerSession
 from brainlit.utils.swc import graph_to_paths
-from brainlit.viz.swc2voxel import skeletonize
 import numpy as np
 import pandas as pd
 import napari
 import matplotlib.pyplot as plt
 from pyVaa3d.vaa3dWrapper import runVaa3dPlugin
 from skimage import io
-from skimage.morphology import skeletonize_3d
 
 def plot_labels(labels, image_shape, name):
     labels_ind = np.nonzero(labels)
@@ -42,7 +40,6 @@ def swc_unpack(fname):
             #line = file.readline().split()
             skip_header = False
         header_length += 1    
-    print(header_length)
     # read coordinates
     df = pd.read_table(
         fname,
@@ -66,7 +63,6 @@ def labels_imagespace(img, swc_labels):
         
     return space
 
-
 #%% Grab volume from S3
 dir = "s3://open-neurodata/brainlit/brain1"
 dir_segments = "s3://open-neurodata/brainlit/brain1_segments"
@@ -88,7 +84,8 @@ print(f"\n\nImage {fname} saved.")
 
 # Change the path name here to match a local file location
 img_name = "C:\\Users\\frede\\Documents\\Y4\\Y4_NDD\\brainlit\\brainlit\\algorithms\\vaa3d\\brain1_demo_segments.tif"
-
+#img_name = "C:\\Users\\frede\\Documents\\Y4\\Y4_NDD\\datasets\\benchmarking_datasets_test_6-gfp.tif"
+img = io.imread(img_name)
 # Check the README.md for procedure to install the Vaa3d plugin
 runVaa3dPlugin(inFile=img_name, pluginName="Vaa3D_Neuron2",
                    funcName="app2")
@@ -102,6 +99,8 @@ print("Algorithm successfully run! Please check the root folder for the .swc out
 # NOTE: The output of the algorithm will be 2 .swc files. The one with a coordinate such as " x82_y69_z74_app2 " is the correct one to load.
 # This file will be the one that has used GSDT (GWDT) which will produce a much cleaner result.
 swc_name = "C:\\Users\\frede\\Documents\\Y4\\Y4_NDD\\brainlit\\brainlit\\algorithms\\vaa3d\\brain1_demo_segments.tif_x82_y69_z74_app2.swc"
+#swc_name = "C:\\Users\\frede\\Documents\\Y4\\Y4_NDD\\datasets\\benchmarking_datasets_test_6-gfp.tif_x223_y48_z32_app2.swc"
+
 labels = swc_unpack(swc_name)
 print(labels)
 print(f"\n\n Labels successfully loaded from .swc file with {len(labels)} foreground labels.")
