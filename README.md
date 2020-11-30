@@ -1,8 +1,9 @@
 # Brainlit
-
+[![DOI](https://zenodo.org/badge/237507496.svg)](https://zenodo.org/badge/latestdoi/237507496)
 [![Python](https://img.shields.io/badge/python-3.7-blue.svg)]()
 [![Build Status](https://travis-ci.com/neurodata/brainlit.svg?branch=master)](https://travis-ci.com/neurodata/brainlit)
 [![PyPI version](https://badge.fury.io/py/brainlit.svg)](https://badge.fury.io/py/brainlit)
+[![Downloads](https://img.shields.io/pypi/dw/brainlit)](https://img.shields.io/pypi/dw/brainlit)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![codecov](https://codecov.io/gh/neurodata/brainlit/branch/master/graph/badge.svg)](https://codecov.io/gh/neurodata/brainlit)
 ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/bvarjavand/brainlit)
