@@ -53,8 +53,13 @@ class GeometricGraph(nx.Graph):
         dy = np.expand_dims(np.diff(df_neuron["y"].to_numpy()), axis=0).T
         dz = np.expand_dims(np.diff(df_neuron["z"].to_numpy()), axis=0).T
         dr = np.concatenate((dx, dy, dz), axis=1)
-        if not all([any(du != 0) for du in dr]):
-            raise ValueError("cannot build GeometricGraph with duplicate nodes")
+        duplicate_check = np.array([any(du != 0) for i, du in enumerate(dr)])
+        if not all(duplicate_check):
+            raise ValueError(
+                "cannot build GeometricGraph with duplicate nodes {}".format(
+                    np.where(duplicate_check == False)[0]
+                )
+            )
 
         # build graph
         for _, row in df_neuron.iterrows():

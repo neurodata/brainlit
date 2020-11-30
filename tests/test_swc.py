@@ -149,11 +149,6 @@ def test_df_to_graph_nodes():
     assert len(G.nodes) == len(df_voxel)
 
 
-def test_df_to_graph_nodes():
-    """test if graph has correct number of nodes"""
-    assert len(G.nodes) == len(df_voxel)
-
-
 def test_df_to_graph_coordinates():
     """test if graph coordinates are same as that of df_voxel"""
     coord_df = df_voxel[["x", "y", "z"]].values

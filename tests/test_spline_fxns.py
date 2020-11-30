@@ -354,3 +354,47 @@ def test_speed():
 
     speed, deriv = spline_fxns.speed(xx, t, c, k, aux_outputs=True)
     assert speed == approx(expected_speed, abs=1e-1) and deriv == approx(dC, abs=1e0)
+
+
+def test_torsion_straight_ling():
+    # test results in more complex case
+    xx = np.linspace(-np.pi, np.pi)
+    L = len(xx)
+    X = xx
+    Y = xx
+    Z = xx
+    dX = np.ones(L)
+    dY = np.ones(L)
+    dZ = np.ones(L)
+    ddX = np.zeros(L)
+    ddY = np.zeros(L)
+    ddZ = np.zeros(L)
+    dddX = np.zeros(L)
+    dddY = np.zeros(L)
+    dddZ = np.zeros(L)
+
+    C = np.array([X, Y, Z])
+    dC = np.array([dX, dY, dZ]).T
+    ddC = np.array([ddX, ddY, ddZ]).T
+    dddC = np.array([dddX, dddY, dddZ]).T
+
+    tck, _ = splprep(C, u=xx, k=5)
+    t = tck[0]
+    c = tck[1]
+    k = tck[2]
+    torsion = spline_fxns.torsion(xx, t, c, k, aux_outputs=False)
+
+    expected_cross = np.cross(dC, ddC)
+    expected_num = np.diag((expected_cross @ dddC.T))
+    expected_denom = np.linalg.norm(expected_cross, axis=1) ** 2
+    expected_torsion = np.nan_to_num(expected_num / expected_denom)
+
+    assert torsion == approx(expected_torsion, abs=1e-1)
+
+    torsion, deriv, dderiv, ddderiv = spline_fxns.torsion(xx, t, c, k, aux_outputs=True)
+    assert (
+        torsion == approx(expected_torsion, abs=1e-1)
+        and deriv == approx(dC, abs=1e0)
+        and dderiv == approx(ddC, abs=1e0)
+        and ddderiv == approx(dddC, abs=1.5e0)
+    )
