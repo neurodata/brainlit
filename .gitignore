@@ -62,7 +62,4 @@ docs/_build/
 target/
 
 # Experiment data cache
-data/poster_reproduction/curvatures/
-data/poster_reproduction/segments/
-data/poster_reproduction/segments_swc/
-data/poster_reproduction/torsions/
+data/poster_reproduction/
