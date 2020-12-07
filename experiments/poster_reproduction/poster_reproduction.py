@@ -13,8 +13,9 @@ import json
 import matplotlib.pyplot as plt
 
 # EXTRACT DATA DIR FROM RELATIVE NOTEBOOK PATH
+brain = "brain1"
 root_dir = data_dir = Path(__file__).parents[2]
-data_dir = os.path.join(root_dir, "data/poster_reproduction")
+data_dir = os.path.join(root_dir, "data/poster_reproduction/{}".format(brain))
 experiment_dir = os.path.join(root_dir, "experiments/poster_reproduction")
 segments_dir = os.path.join(data_dir, "segments")
 segments_swc_dir = os.path.join(data_dir, "segments_swc")
@@ -23,7 +24,7 @@ curvatures_dir = os.path.join(data_dir, "curvatures")
 torsions_dir = os.path.join(data_dir, "torsions")
 print(segments_dir)
 
-url_segments = "s3://open-neurodata/brainlit/brain1_segments"
+url_segments = "s3://open-neurodata/brainlit/{}_segments".format(brain)
 
 
 class controlled_read_s3:
@@ -53,7 +54,10 @@ for i in np.arange(0, max_id):
 
         string_id = str(i).zfill(3)
         swc_path = os.path.join(
-            segments_swc_dir, "2018-08-01_G-{}_consensus.swc".format(string_id)
+            segments_swc_dir,
+            "{}_G-{}_consensus.swc".format(
+                "2018-08-01" if brain == "brain1" else "2018-12-01", string_id
+            ),
         )
         df_swc_offset_neuron, _, _, _ = swc.read_swc_offset(swc_path)
 
@@ -115,21 +119,31 @@ seg_lengths = np.concatenate(seg_lengths)
 mean_curvatures = np.concatenate(mean_curvatures)
 mean_torsions = np.concatenate(mean_torsions)
 
-print(np.where(np.isnan(mean_torsions) == 0))
+(curvatures_shape, curvatures_loc, curvatures_scale) = scipy.stats.powerlaw.fit(
+    mean_curvatures
+)
+print(curvatures_shape, curvatures_loc, curvatures_scale)
 
-nonzero_mean_curvatures_masked = np.ma.masked_equal(mean_curvatures, 0)
+
+nonzero_mean_curvatures_masked = np.ma.masked_less(
+    mean_curvatures, np.finfo(np.float64).eps
+)
 nonzero_mean_curvatures = nonzero_mean_curvatures_masked.compressed()
 nonzero_mean_curvatures_seg_lengths = seg_lengths[
     nonzero_mean_curvatures_masked.mask == 0
 ]
-nonzero_mean_torsions_masked = np.ma.masked_equal(mean_torsions, 0)
+nonzero_mean_torsions_masked = np.ma.masked_less(
+    mean_torsions, np.finfo(np.float64).eps
+)
 nonzero_mean_torsions = nonzero_mean_torsions_masked.compressed()
 nonzero_mean_torsions_seg_lengths = seg_lengths[nonzero_mean_torsions_masked.mask == 0]
 
-log_mean_curvatures = np.log(nonzero_mean_curvatures)
-log_mean_torsions = np.log(np.abs(nonzero_mean_torsions))
-log_curvatures_seg_lengths = np.log(nonzero_mean_curvatures_seg_lengths)
-log_torsions_seg_lengths = np.log(nonzero_mean_torsions_seg_lengths)
+log_mean_curvatures = np.log10(nonzero_mean_curvatures)
+log_mean_torsions = np.log10(np.abs(nonzero_mean_torsions))
+print(min(np.abs(nonzero_mean_torsions)))
+print(min(log_mean_torsions))
+log_curvatures_seg_lengths = np.log10(nonzero_mean_curvatures_seg_lengths)
+log_torsions_seg_lengths = np.log10(nonzero_mean_torsions_seg_lengths)
 
 log_slope_curvatures, log_intercept_curvatures, _, _, _ = scipy.stats.linregress(
     log_curvatures_seg_lengths, log_mean_curvatures
@@ -167,58 +181,158 @@ print(
     torsions_p_value,
 )
 
-fig = plt.figure(figsize=(12, 8))
+fig = plt.figure(figsize=(15, 6))
 axes = fig.subplots(1, 2)
-
-# ax = axes[0, 0]
-# ax.scatter(np.log(np.concatenate(seg_lengths)), np.log(np.concatenate(mean_curvatures)))
-# ax.set_title("Curvature")
-# ax.set_xlabel(r"$\log_{e}$ segment length ($\mu m$)")
-# ax.set_ylabel(r"$\log_{e}$ mean curvature")
-
-# ax = axes[0, 1]
-# ax.scatter(np.log(np.concatenate(seg_lengths)), np.log(np.concatenate(mean_torsions)))
-# ax.set_title("Torsion")
-# ax.set_xlabel(r"$\log_{e}$ segment length ($\mu m$)")
-# ax.set_ylabel(r"$\log_{e}$ mean torsion")
+GRAY = "#999999"
+TITLE_TYPE_SETTINGS = {"fontname": "Arial", "size": 18}
+SUP_TITLE_TYPE_SETTINGS = {"fontname": "Arial", "size": 22}
+plt.rc("font", family="Arial", size=16)
 
 ax = axes[0]
+ax.spines["bottom"].set_color(GRAY)
+ax.spines["top"].set_color(GRAY)
+ax.spines["right"].set_color(GRAY)
+ax.spines["left"].set_color(GRAY)
+ax.tick_params(axis="both", colors=GRAY, labelsize="large")
+
 ax.scatter(
-    log_curvatures_seg_lengths, log_mean_curvatures, label="Segment mean curvature"
+    log_curvatures_seg_lengths,
+    log_mean_curvatures,
+    alpha=0.2,
+    label="Segment",
+    color="#377eb8",
 )
 ax.plot(
     log_curvatures_seg_lengths,
     log_curvatures_fit,
-    "r",
-    label=r"$y={}x {}{}, r^2={}$".format(
+    color="#e41a1c",
+    lw=2,
+    label=r"$y={}x {}{}$".format(
         log_slope_curvatures,
         "+" if np.sign(log_intercept_curvatures) >= 0 else "-",
         np.abs(log_intercept_curvatures),
-        np.around(curvatures_pearson_r ** 2, decimals=2),
     ),
 )
 ax.set_title("Curvature")
-ax.set_xlabel(r"$\log$ segment length ($\mu m$)")
-ax.set_ylabel(r"$\log$ mean curvature")
-ax.legend()
+ax.set_xlabel(r"$\log$ segment length ($\mu m$)", **TITLE_TYPE_SETTINGS)
+ax.set_ylabel(r"$\log$ mean curvature", **TITLE_TYPE_SETTINGS)
+leg = ax.legend(loc=4)
+leg.get_frame().set_edgecolor(GRAY)
 
 ax = axes[1]
-ax.scatter(log_torsions_seg_lengths, log_mean_torsions, label="Segment mean torsion")
+ax.spines["bottom"].set_color(GRAY)
+ax.spines["top"].set_color(GRAY)
+ax.spines["right"].set_color(GRAY)
+ax.spines["left"].set_color(GRAY)
+ax.tick_params(axis="both", colors=GRAY, labelsize="large")
+
+ax.scatter(
+    log_torsions_seg_lengths,
+    log_mean_torsions,
+    alpha=0.2,
+    label="Segment",
+    color="#377eb8",
+)
 ax.plot(
     log_torsions_seg_lengths,
     log_torsions_fit,
-    "r",
-    label=r"$y={}x {}{}, r^2={}$".format(
+    color="#e41a1c",
+    lw=2,
+    label=r"$y={}x {}{}$".format(
         log_slope_torsions,
         "+" if np.sign(log_intercept_torsions) >= 0 else "-",
         np.abs(log_intercept_torsions),
-        np.around(torsions_pearson_r ** 2, decimals=2),
     ),
 )
 ax.set_title("Torsion")
-ax.set_xlabel(r"$\log$ segment length ($\mu m$)")
-ax.set_ylabel(r"$\log$ mean absolute torsion")
+ax.set_xlabel(r"$\log$ segment length ($\mu m$)", **TITLE_TYPE_SETTINGS)
+ax.set_ylabel(r"$\log$ mean absolute torsion", **TITLE_TYPE_SETTINGS)
+leg = ax.legend(loc=4)
+leg.get_frame().set_edgecolor(GRAY)
+
+fig.suptitle("Brain 1")
+
+plt.savefig(os.path.join(experiment_dir, "{}_results_s0.eps".format(brain)))
+plt.savefig(os.path.join(experiment_dir, "{}_results_s0.jpg".format(brain)))
+
+fig = plt.figure(figsize=(15, 6))
+axes = fig.subplots(1, 2)
+
+ax = axes[0]
+ax.spines["bottom"].set_color(GRAY)
+ax.spines["top"].set_color(GRAY)
+ax.spines["right"].set_color(GRAY)
+ax.spines["left"].set_color(GRAY)
+ax.tick_params(axis="both", colors=GRAY, labelsize="large")
+
+ax.scatter(
+    np.log10(seg_lengths), mean_curvatures, alpha=0.2, label="Segment", color="#377eb8"
+)
+min_log_length = min(log_curvatures_seg_lengths)
+max_log_length = max(log_curvatures_seg_lengths)
+log_xx = np.linspace(min_log_length, max_log_length)
+ax.plot(
+    log_xx,
+    [
+        10 ** (log_intercept_curvatures + log_slope_curvatures * (u - min_log_length))
+        if u > min_log_length
+        else 0
+        for u in log_xx
+    ],
+    color="#e41a1c",
+    lw=2,
+    label=r"$10^{%.2fx %s%.2f}$"
+    % (
+        log_slope_curvatures,
+        "+" if np.sign(log_intercept_curvatures) >= 0 else "-",
+        np.abs(log_intercept_curvatures),
+    ),
+)
+ax.set_title("Curvature")
+ax.set_xlabel(r"$\log$ segment length ($\mu m$)", **TITLE_TYPE_SETTINGS)
+ax.set_ylabel(r"mean curvature", **TITLE_TYPE_SETTINGS)
 ax.legend()
 
-plt.savefig(os.path.join(experiment_dir, "results.eps"))
-plt.savefig(os.path.join(experiment_dir, "results.jpg"))
+ax = axes[1]
+ax.spines["bottom"].set_color(GRAY)
+ax.spines["top"].set_color(GRAY)
+ax.spines["right"].set_color(GRAY)
+ax.spines["left"].set_color(GRAY)
+ax.tick_params(axis="both", colors=GRAY, labelsize="large")
+
+ax.scatter(
+    np.log10(seg_lengths),
+    np.abs(mean_torsions),
+    alpha=0.2,
+    label="Segment",
+    color="#377eb8",
+)
+min_log_length = min(log_torsions_seg_lengths)
+max_log_length = max(log_torsions_seg_lengths)
+log_xx = np.linspace(min_log_length, max_log_length)
+ax.plot(
+    log_xx,
+    [
+        10 ** (log_intercept_torsions + log_slope_torsions * (u - min_log_length))
+        if u > min_log_length
+        else 0
+        for u in log_xx
+    ],
+    color="#e41a1c",
+    lw=2,
+    label=r"$10^{%.2fx %s%.2f}$"
+    % (
+        log_slope_torsions,
+        "+" if np.sign(log_intercept_torsions) >= 0 else "-",
+        np.abs(log_intercept_torsions),
+    ),
+)
+ax.set_title("Torsion")
+ax.set_xlabel(r"$\log$ segment length ($\mu m$)", **TITLE_TYPE_SETTINGS)
+ax.set_ylabel(r"mean absolute torsion", **TITLE_TYPE_SETTINGS)
+ax.legend()
+
+fig.suptitle("Brain 1")
+
+plt.savefig(os.path.join(experiment_dir, "{}_results_semilog_s0.eps".format(brain)))
+plt.savefig(os.path.join(experiment_dir, "{}_results_semilog_s0.jpg".format(brain)))

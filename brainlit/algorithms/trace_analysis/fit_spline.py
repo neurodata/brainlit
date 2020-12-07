@@ -196,7 +196,7 @@ class GeometricGraph(nx.Graph):
         NodeDist = np.linalg.norm(np.diff(x, axis=0), axis=1)
         TotalDist = np.concatenate(([0], np.cumsum(NodeDist)))
         k = np.amin([path_length - 1, 5])
-        tck, u = splprep([x[:, 0], x[:, 1], x[:, 2]], u=TotalDist, k=k)
+        tck, u = splprep([x[:, 0], x[:, 1], x[:, 2]], u=TotalDist, k=k, s=0)
 
         return tck, u
 
