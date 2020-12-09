@@ -11,6 +11,9 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)  
 This repository is a container of methods that Neurodata uses to expose their open-source code while it is in the process of being merged with larger scientific libraries such as scipy, scikit-image, or scikit-learn. Additionally, methods for computational neuroscience on brains too specific for a general scientific library can be found here, such as image registration software tuned specifically for large brain volumes.
 
+## Documentation
+[![Netlify Status](https://api.netlify.com/api/v1/badges/daad6ab0-1d47-4685-b6ab-ecc487a01ba7/deploy-status)](https://app.netlify.com/sites/brainlit/deploys)
+
 ![Brainlight Features](https://github.com/neurodata/brainlit/blob/develop/docs/images/figure.png)
 
 - [Brainlit](#brainlit)
@@ -30,7 +33,6 @@ This repository is a container of methods that Neurodata uses to expose their op
     - [Visualize](#visualize)
     - [Manually Segment](#manually-segment)
     - [Automatically and Semi-automatically Segment](#automatically-and-semi-automatically-segment)
-  - [API Reference](#api-reference)
   - [Tests](#tests)
   - [Common errors and troubleshooting](#common-errors-and-troubleshooting)
   - [Contributing](#contributing)
@@ -171,11 +173,6 @@ Brainlit includes a lightweight manual segmentation pipeline. This allows collab
 ### Automatically and Semi-automatically Segment
 
 Similar to the above pipeline, segmentations can be automatically or semi-automatically generated and pushed to a separate channel for viewing. [Interactive demo](https://github.com/neurodata/brainlit/blob/master/docs/notebooks/pipelines/seg_pipeline_demo.ipynb).
-
-## API Reference
-
-[![Documentation Status](https://readthedocs.org/projects/brainlight/badge/?version=latest)](https://brainlight.readthedocs.io/en/latest/?badge=latest)
-The documentation can be found at [https://brainlight.readthedocs.io/en/latest/](https://brainlight.readthedocs.io/en/latest/).
 
 ## Tests
 
