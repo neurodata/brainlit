@@ -12,7 +12,7 @@
 This repository is a container of methods that Neurodata uses to expose their open-source code while it is in the process of being merged with larger scientific libraries such as scipy, scikit-image, or scikit-learn. Additionally, methods for computational neuroscience on brains too specific for a general scientific library can be found here, such as image registration software tuned specifically for large brain volumes.
 
 ## Documentation
-[![Netlify Status](https://api.netlify.com/api/v1/badges/daad6ab0-1d47-4685-b6ab-ecc487a01ba7/deploy-status)](https://app.netlify.com/sites/brainlit/deploys)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/daad6ab0-1d47-4685-b6ab-ecc487a01ba7/deploy-status)](https://brainlit.neurodata.io)
 
 ![Brainlight Features](https://github.com/neurodata/brainlit/blob/develop/docs/images/figure.png)
 
