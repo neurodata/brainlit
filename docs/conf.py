@@ -45,6 +45,7 @@ extensions = [
 
 nbsphinx_kernel_name = "docs"
 nbsphinx_allow_errors = True
+
 autoapi_dirs = ["../brainlit"]
 autoapi_add_toctree_entry = False
 autoapi_generate_api_docs = False
