@@ -174,7 +174,7 @@ def bbox_vox(df):
     return start, end
 
 
-def read_s3(s3_path, seg_id, mip, benchmark):
+def read_s3(s3_path, seg_id, mip, benchmark: Optional[bool] = False):
     """Read a s3 bucket path to a skeleton object
     into a pandas dataframe.
 
@@ -186,8 +186,8 @@ def read_s3(s3_path, seg_id, mip, benchmark):
         The segement number to pull
     mip : int
         The resolution to use for scaling
-    benchmark: bool
-        True if benchmarking data, false if not
+    benchmark: bool, Optional
+        True if benchmarking data, false is default
 
     Returns
     -------
