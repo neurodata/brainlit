@@ -13,7 +13,7 @@ import json
 import matplotlib.pyplot as plt
 
 # EXTRACT DATA DIR FROM RELATIVE NOTEBOOK PATH
-brain = "brain1"
+brain = "brain2"
 root_dir = data_dir = Path(__file__).parents[2]
 data_dir = os.path.join(root_dir, "data/poster_reproduction/{}".format(brain))
 experiment_dir = os.path.join(root_dir, "experiments/poster_reproduction")
@@ -117,12 +117,8 @@ for i in np.arange(0, max_id):
 
 seg_lengths = np.concatenate(seg_lengths)
 mean_curvatures = np.concatenate(mean_curvatures)
+print(max(mean_curvatures))
 mean_torsions = np.concatenate(mean_torsions)
-
-(curvatures_shape, curvatures_loc, curvatures_scale) = scipy.stats.powerlaw.fit(
-    mean_curvatures
-)
-print(curvatures_shape, curvatures_loc, curvatures_scale)
 
 
 nonzero_mean_curvatures_masked = np.ma.masked_less(
@@ -198,7 +194,7 @@ ax.tick_params(axis="both", colors=GRAY, labelsize="large")
 ax.scatter(
     log_curvatures_seg_lengths,
     log_mean_curvatures,
-    alpha=0.2,
+    marker=".",
     label="Segment",
     color="#377eb8",
 )
@@ -229,7 +225,7 @@ ax.tick_params(axis="both", colors=GRAY, labelsize="large")
 ax.scatter(
     log_torsions_seg_lengths,
     log_mean_torsions,
-    alpha=0.2,
+    marker=".",
     label="Segment",
     color="#377eb8",
 )
@@ -250,7 +246,7 @@ ax.set_ylabel(r"$\log$ mean absolute torsion", **TITLE_TYPE_SETTINGS)
 leg = ax.legend(loc=4)
 leg.get_frame().set_edgecolor(GRAY)
 
-fig.suptitle("Brain 1")
+fig.suptitle("Brain 2")
 
 plt.savefig(os.path.join(experiment_dir, "{}_results_s0.eps".format(brain)))
 plt.savefig(os.path.join(experiment_dir, "{}_results_s0.jpg".format(brain)))
@@ -266,7 +262,7 @@ ax.spines["left"].set_color(GRAY)
 ax.tick_params(axis="both", colors=GRAY, labelsize="large")
 
 ax.scatter(
-    np.log10(seg_lengths), mean_curvatures, alpha=0.2, label="Segment", color="#377eb8"
+    np.log10(seg_lengths), mean_curvatures, marker=".", label="Segment", color="#377eb8"
 )
 min_log_length = min(log_curvatures_seg_lengths)
 max_log_length = max(log_curvatures_seg_lengths)
@@ -303,7 +299,7 @@ ax.tick_params(axis="both", colors=GRAY, labelsize="large")
 ax.scatter(
     np.log10(seg_lengths),
     np.abs(mean_torsions),
-    alpha=0.2,
+    marker=".",
     label="Segment",
     color="#377eb8",
 )
@@ -332,7 +328,58 @@ ax.set_xlabel(r"$\log$ segment length ($\mu m$)", **TITLE_TYPE_SETTINGS)
 ax.set_ylabel(r"mean absolute torsion", **TITLE_TYPE_SETTINGS)
 ax.legend()
 
-fig.suptitle("Brain 1")
+fig.suptitle("Brain 2")
 
 plt.savefig(os.path.join(experiment_dir, "{}_results_semilog_s0.eps".format(brain)))
 plt.savefig(os.path.join(experiment_dir, "{}_results_semilog_s0.jpg".format(brain)))
+
+# fig = plt.figure()
+# log_seg_lengths = np.log10(seg_lengths)
+# log_seg_lengths_within_mask = np.ma.masked_inside(log_seg_lengths, 1.75, 2.25)
+# log_seg_lengths_within = log_seg_lengths_within_mask.compressed()
+# mean_curvatures_within = mean_curvatures[log_seg_lengths_within_mask.mask == True]
+# print(max(mean_curvatures_within))
+# plt.hist(mean_curvatures_within, bins=50)
+# plt.show()
+
+# fig = plt.figure()
+# log_seg_lengths = np.log10(seg_lengths)
+# zero_curvatures_log_seg_lengths = log_seg_lengths[np.where(mean_curvatures > 1e-16)[0]]
+# plt.hist(zero_curvatures_log_seg_lengths)
+# plt.xlabel(r"$\log$ segment length ($\mu m$)", **TITLE_TYPE_SETTINGS)
+# plt.ylabel("Number of segments (total = %d)" % len(seg_lengths))
+# plt.title("curvature > 0")
+# plt.show()
+
+# min_log_length = min(log_seg_lengths)
+# max_log_lengh = max(log_seg_lengths)
+# bin_lims = np.linspace(min_log_length, max_log_length)
+# l_bins = len(bin_lims) - 1
+# r_zero_curvatures = []
+# r_zero_torsions = []
+# for i in np.arange(l_bins):
+#     within_bin_log_lengths_mask = np.ma.masked_inside(
+#         log_seg_lengths, bin_lims[i], bin_lims[i + 1]
+#     )
+#     # within_bin_log_lengths_mask = np.ma.masked_less_equal(log_seg_lengths, bin_lims[i+1])
+#     within_bin_curvatures = mean_curvatures[within_bin_log_lengths_mask.mask == 1]
+#     within_bin_torsions = np.abs(mean_torsions)[within_bin_log_lengths_mask.mask == 1]
+#     zero_within_bin_curvatures = len(np.where(within_bin_curvatures < 1e-16)[0])
+#     zero_within_bin_torsions = len(np.where(within_bin_torsions < 1e-16)[0])
+#     r_zero_curvatures_bin = zero_within_bin_curvatures / len(within_bin_curvatures)
+#     r_zero_torsions_bin = zero_within_bin_torsions / len(within_bin_torsions)
+#     r_zero_curvatures.append(r_zero_curvatures_bin)
+#     r_zero_torsions.append(r_zero_torsions_bin)
+
+# print(len(np.where(mean_curvatures < 1e-16)[0])/len(mean_curvatures))
+# print(len(np.where(np.abs(mean_torsions) < 1e-16)[0])/len(mean_torsions))
+
+# fig = plt.figure()
+# ax = fig.subplots(1, 1)
+# ax.plot(bin_lims[:-1] + np.diff(bin_lims) / 2, r_zero_curvatures, label="curvatures")
+# ax.plot(bin_lims[:-1] + np.diff(bin_lims) / 2, r_zero_torsions, label="torsions")
+# ax.legend()
+# ax.set_ylim([0, 1.05])
+# ax.set_xlabel(r"$\log$ segment length ($\mu m$)", **TITLE_TYPE_SETTINGS)
+# ax.set_ylabel(r"$P(y=0|X = x)$")
+# plt.show()
