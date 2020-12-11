@@ -14,7 +14,7 @@ import contextlib
 import tifffile as tf
 from pathlib import Path
 from brainlit.utils.swc import swc2skeleton_benchmarking
-from mouselight_code.src.benchmarking_params import (
+from brainlit.utils.benchmarking_params import (
     brain_offsets,
     vol_offsets,
     scales,
