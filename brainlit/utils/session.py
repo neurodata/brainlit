@@ -94,6 +94,7 @@ class NeuroglancerSession:
             raise ValueError(f"{v_id} should be between 0 and {len(seg)}.")
 
         vertex = seg[v_id]
+        voxel = vertex.astype(int)
         voxel = np.round(
             np.divide(vertex, self.cv_segments.scales[self.mip]["resolution"])
         ).astype(int)
@@ -110,12 +111,18 @@ class NeuroglancerSession:
         self.url_segments = seg_url
         self.cv_segments = CloudVolume(self.url_segments, parallel=False)
 
-    def get_segments(self, seg_id: int, bbox: Optional[Bounds] = None) -> nx.Graph:
+    def get_segments(
+        self,
+        seg_id: int,
+        bbox: Optional[Bounds] = None,
+        benchmark: Optional[bool] = False,
+    ) -> nx.Graph:
         """Get a graph of a segmentation annotation within a bounding box.
 
         Arguments:
             seg_id  The segement to pull.
             bbox: The bounding box object, default None. If None, uses entire volume.
+            benchmark: Optional, default False. If True (relevant for benchmarking data), S3 file isn't rounded.
 
         Returns:
             G: A networkx subgraph from the specified segment and bounding box.
@@ -124,7 +131,7 @@ class NeuroglancerSession:
         if self.cv_segments is None:
             raise ValueError("Cannot get segments without segmentation data.")
 
-        df = read_s3(self.url_segments, seg_id, self.mip)
+        df = read_s3(self.url_segments, seg_id, self.mip, benchmark)
         G = df_to_graph(df)
         if bbox is not None:
             if isinstance(bbox, Bbox):
@@ -235,7 +242,9 @@ class NeuroglancerSession:
             bounds = Bbox(lower, higher)
         if expand:
             bounds = bounds.expand_to_chunk_size(self.chunk_size)
+
         vox_in_img_list = np.array(voxel_list) - bounds.to_list()[:3]
+
         img = self.pull_bounds_img(bounds)
         return img, bounds, vox_in_img_list
 
@@ -287,6 +296,7 @@ class NeuroglancerSession:
         Returns:
             img: Volume pulled according to the bounding box.
         """
+
         if isinstance(bounds, Bbox):
             bounds = bounds.to_list()
         check_iterable_type(bounds, (int, np.integer))

@@ -174,7 +174,7 @@ def bbox_vox(df):
     return start, end
 
 
-def read_s3(s3_path, seg_id, mip):
+def read_s3(s3_path, seg_id, mip, benchmark):
     """Read a s3 bucket path to a skeleton object
     into a pandas dataframe.
 
@@ -186,6 +186,8 @@ def read_s3(s3_path, seg_id, mip):
         The segement number to pull
     mip : int
         The resolution to use for scaling
+    benchmark: bool
+        True if benchmarking data, false if not
 
     Returns
     -------
@@ -215,10 +217,16 @@ def read_s3(s3_path, seg_id, mip):
         sep=" "
         # delim_whitespace=True,
     )
-    res = cv.scales[mip]["resolution"]
-    df["x"] = np.round(df["x"] / res[0])
-    df["y"] = np.round(df["y"] / res[1])
-    df["z"] = np.round(df["z"] / res[2])
+
+    # check if swc is benchmarking data
+    if benchmark == True:
+        df = df
+    else:
+        res = cv.scales[mip]["resolution"]
+        df["x"] = np.round(df["x"] / res[0])
+        df["y"] = np.round(df["y"] / res[1])
+        df["z"] = np.round(df["z"] / res[2])
+
     return df
 
 
@@ -540,9 +548,10 @@ def swc2skeleton_benchmarking(swc_file, origin=None):
     # physical units
     # space can be 'physical' or 'voxel'
     skel.space = "physical"
+    # skel.space = "voxel"
 
     # parsing file-name for skel.id (specific to benchmarking data)
-    idx1 = swc_file.find("_")
+    idx1 = swc_file.find("_", swc_file.find("_") + 1)  # finding second occurence of "_"
     idx2 = swc_file.find(".")
     skel.id = swc_file[idx1 + 1 : idx2]
 
@@ -552,12 +561,12 @@ def swc2skeleton_benchmarking(swc_file, origin=None):
         {"id": "vertex_color", "data_type": "float32", "num_components": 4}
     )
     # add offset to vertices
-    # and shift by origin
     skel.vertices += offset
-    if origin is not None:
-        skel.vertices -= origin
+    # and shift by origin
+    skel.vertices -= origin
+    ## Note: divide by scale factor occurs in the upload_benchmarking script
     # convert from microns to nanometers
-    # skel.vertices *= 1000
+    skel.vertices *= 1000
     skel.vertex_color = np.zeros((skel.vertices.shape[0], 4), dtype="float32")
     skel.vertex_color[:, :] = color
 
