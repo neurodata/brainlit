@@ -6,7 +6,7 @@ from cloudvolume import CloudVolume
 import brainlit
 from brainlit.utils import swc
 from brainlit.utils.session import NeuroglancerSession
-
+import pytest
 from pathlib import Path
 
 top_level = Path(__file__).parents[1] / "data"
@@ -284,3 +284,44 @@ def test_generate_BFS_subgraph_df():
     """test if subgraph matches nodes and edges"""
     G_sub, tree = swc.get_bfs_subgraph(G, 100, 50, df_voxel)
     assert set(G_sub.nodes) == set(tree.nodes)
+
+
+def test_ssd_bad_inputs():
+    """test if the inputs are both 2D arrays so sklearn pairwise dist can work"""
+    integer = 0
+    vector = [0, 0]
+    array = [[0, 0]]
+    none_list = []
+    with pytest.raises(
+        ValueError, match=r"Expected 2D array, got scalar array instead"
+    ):
+        swc.ssd(integer, integer)
+    with pytest.raises(ValueError, match=r"Expected 2D array, got 1D array instead"):
+        swc.ssd(vector, none_list)
+    with pytest.raises(ValueError, match=r"Expected 2D array, got 1D array instead"):
+        swc.ssd(array, none_list)
+    with pytest.raises(ValueError, match=r"Expected 2D array, got 1D array instead"):
+        swc.ssd(vector, array)
+    with pytest.raises(ValueError, match=r"Expected 2D array, got 1D array instead"):
+        swc.ssd(array, vector)
+
+
+def test_ssd_outputs():
+    """test if SSD returns the proper values"""
+    zero = [[0, 0]]
+    a = [[0, 0], [1, 1]]
+    b = [[1, 1], [0, 0]]
+    c = [[0, 0], [1, 1], [2, 2]]
+    d = [[0, 0], [np.sqrt(2), np.sqrt(2)]]
+    e = [[0, 0], [np.sqrt(2), np.sqrt(2)], [np.sqrt(8), np.sqrt(8)]]
+    f = [[10, 10], [20, 20], [30, 30], [40, 40]]
+    # SSD with Self = 0
+    assert swc.ssd(a, a) == 0
+    # Insignificant distances, 0
+    assert swc.ssd(a, b) == 0
+    assert swc.ssd(a, c) == 0
+    assert swc.ssd(c, e) == 0
+    # Significant distances
+    assert swc.ssd(zero, d) == 2
+    assert swc.ssd(zero, e) == 3
+    assert swc.ssd(c, f) == 24.041630560342618

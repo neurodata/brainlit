@@ -3,6 +3,7 @@ from pathlib import Path
 import re
 import pandas as pd
 import networkx as nx
+from sklearn.metrics import pairwise_distances_argmin_min
 from cloudvolume import CloudVolume, Skeleton
 from io import StringIO
 
@@ -512,3 +513,26 @@ def swc2skeleton(swc_file, origin=None):
     skel.vertex_color[:, :] = color
 
     return skel
+
+
+def ssd(pts1, pts2):
+    """Compute significant spatial distance metric between two traces as defined in APP1.
+    Args:
+        pts1 (np.array): array containing coordinates of points of trace 1. shape: npoints x ndims
+        pts2 (np.array): array containing coordinates of points of trace 1. shape: npoints x ndims
+    Returns:
+        [float]: significant spatial distance as defined by APP1
+    """
+    _, dists1 = pairwise_distances_argmin_min(pts1, pts2)
+    dists1 = dists1[dists1 >= 2]
+    _, dists2 = pairwise_distances_argmin_min(pts2, pts1)
+    dists2 = dists2[dists2 >= 2]
+    # If there are is no significant distance between the 2 sets
+    if len(dists1) == 0 and len(dists2) == 0:
+        ssd = 0
+    # Else, calculate the mean
+    else:
+        dists = np.concatenate([dists1, dists2])
+        ssd = np.mean(dists)
+
+    return ssd
