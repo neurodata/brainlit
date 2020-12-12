@@ -94,7 +94,6 @@ class NeuroglancerSession:
             raise ValueError(f"{v_id} should be between 0 and {len(seg)}.")
 
         vertex = seg[v_id]
-        voxel = vertex.astype(int)
         voxel = np.round(
             np.divide(vertex, self.cv_segments.scales[self.mip]["resolution"])
         ).astype(int)
@@ -115,23 +114,24 @@ class NeuroglancerSession:
         self,
         seg_id: int,
         bbox: Optional[Bounds] = None,
-        benchmark: Optional[bool] = False,
+        rounding: Optional[bool] = True,
     ) -> nx.Graph:
         """Get a graph of a segmentation annotation within a bounding box.
 
         Arguments:
             seg_id  The segement to pull.
             bbox: The bounding box object, default None. If None, uses entire volume.
-            benchmark: Optional, default False. If True (relevant for benchmarking data), S3 file isn't rounded.
+            rounding: Optional, default True. Whether you want S3 file to be rounded or not.
 
         Returns:
             G: A networkx subgraph from the specified segment and bounding box.
         """
         check_type(seg_id, int)
+        check_type(rounding, bool)
         if self.cv_segments is None:
             raise ValueError("Cannot get segments without segmentation data.")
 
-        df = read_s3(self.url_segments, seg_id, self.mip, benchmark)
+        df = read_s3(self.url_segments, seg_id, self.mip, rounding)
         G = df_to_graph(df)
         if bbox is not None:
             if isinstance(bbox, Bbox):

@@ -175,7 +175,7 @@ def bbox_vox(df):
     return start, end
 
 
-def read_s3(s3_path, seg_id, mip, benchmark: Optional[bool] = False):
+def read_s3(s3_path, seg_id, mip, rounding: Optional[bool] = True):
     """Read a s3 bucket path to a skeleton object
     into a pandas dataframe.
 
@@ -219,10 +219,8 @@ def read_s3(s3_path, seg_id, mip, benchmark: Optional[bool] = False):
         # delim_whitespace=True,
     )
 
-    # check if swc is benchmarking data
-    if benchmark == True:
-        df = df
-    else:
+    # round swc files when reading
+    if rounding == True:
         res = cv.scales[mip]["resolution"]
         df["x"] = np.round(df["x"] / res[0])
         df["y"] = np.round(df["y"] / res[1])
