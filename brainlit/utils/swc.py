@@ -215,6 +215,10 @@ def read_s3(s3_path, seg_id, mip):
         sep=" "
         # delim_whitespace=True,
     )
+    # res = cv.scales[mip]["resolution"]
+    # df["x"] = np.round(df["x"] / res[0])
+    # df["y"] = np.round(df["y"] / res[1])
+    # df["z"] = np.round(df["z"] / res[2])
     return df
 
 
