@@ -22,7 +22,7 @@ Pipeline to run
 
 ## Registration
 
-GPU-accelerated registration pipeline using [LDDMM](https://link.springer.com/article/10.1023/B:VISI.0000043755.93987.aa) implemented by [ardent](https://github.com/neurodata/ardent) providing
+GPU-accelerated registration pipeline using [LDDMM](https://link.springer.com/article/10.1023/B:VISI.0000043755.93987.aa) providing
 
 1. Registration of volumes to
    1. [Allen CCFv3 2017](http://atlas.brain-map.org)

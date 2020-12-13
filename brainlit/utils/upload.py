@@ -55,12 +55,12 @@ def get_volume_info(
         tiff_dims: (x,y,z) voxel dimensions for a single tiff image.
     """
     check_type(image_dir, str)
-    check_type(num_resolutions, int)
-    check_type(channel, int)
+    check_type(num_resolutions, (int, np.integer))
+    check_type(channel, (int, np.integer))
     check_type(extension, str)
     if num_resolutions < 1:
         raise ValueError(f"Number of resolutions should be > 0, not {num_resolutions}")
-    check_type(channel, int)
+    check_type(channel, (int, np.integer))
     if channel < 0:
         raise ValueError(f"Channel should be >= 0, not {channel}")
     check_type(extension, str)
@@ -171,7 +171,7 @@ def create_cloud_volume(
     check_precomputed(precomputed_path)
     check_size(img_size, allow_float=False)
     check_size(voxel_size)
-    check_type(num_resolutions, int)
+    check_type(num_resolutions, (int, np.integer))
     if num_resolutions < 1:
         raise ValueError(f"Number of resolutions should be > 0, not {num_resolutions}")
     check_size(chunk_size)
@@ -309,13 +309,15 @@ def upload_volumes(
     """
     check_type(input_path, str)
     check_precomputed(precomputed_path)
-    check_type(num_mips, int)
+    check_type(num_mips, (int, np.integer))
     if num_mips < 1:
         raise ValueError(f"Number of resolutions should be > 0, not {num_mips}")
     check_type(parallel, bool)
+
     check_type(chosen, int)
     check_type(benchmarking, bool)
     check_iterable_type(continue_upload, int)
+
     if chosen < -1 or chosen >= num_mips:
         raise ValueError(f"{chosen} should be -1, or between 0 and {num_mips-1}")
 
@@ -473,7 +475,7 @@ def upload_segments(
     """
     check_type(input_path, str)
     check_precomputed(precomputed_path)
-    check_type(num_mips, int)
+    check_type(num_mips, (int, np.integer))
     if num_mips < 1:
         raise ValueError(f"Number of resolutions should be > 0, not {num_mips}")
 
