@@ -12,4 +12,4 @@ PySide2==5.15.1
 pyopenssl==19.1.0
 scikit-image==0.17.2
 simpleitk==2.0.0
-# wincertstore==0.2
+wincertstore==0.2
