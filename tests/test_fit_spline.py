@@ -141,7 +141,7 @@ def test_init_from_bad_df():
 
 
 def test_init_from_df():
-    df_s3 = swc.read_s3(url_seg, seg_id=2, mip=0)
+    df_s3 = swc.read_s3(url_seg, seg_id=2, mip=0, rounding=False)
     G = GeometricGraph(df=df_s3)
     assert isinstance(G, GeometricGraph)
 
