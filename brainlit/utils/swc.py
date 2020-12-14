@@ -479,7 +479,7 @@ def get_bfs_subgraph(G, node_id, depth, df=None):
     return G_sub, tree
 
 
-def swc2skeleton(swc_file, origin=None):
+def swc2skeleton(swc_file, benchmarking: Optional[bool] = False, origin=None):
     """Converts swc file into Skeleton object
     Arguments:
         swc_file {str} -- path to SWC file
@@ -504,7 +504,14 @@ def swc2skeleton(swc_file, origin=None):
     # hard coding parsing the id from the filename
     idx = swc_file.find("G")
 
-    skel.id = int(swc_file[idx + 2 : idx + 5])
+    if benchmarking == True:
+        idx1 = swc_file.find(
+            "_", swc_file.find("_") + 1
+        )  # finding second occurence of "_"
+        idx2 = swc_file.find(".")
+        skel.id = swc_file[idx1 + 1 : idx2]
+    else:
+        skel.id = int(swc_file[idx + 2 : idx + 5])
 
     # hard coding changing  data type of vertex_types
     skel.extra_attributes[-1]["data_type"] = "float32"
@@ -516,54 +523,6 @@ def swc2skeleton(swc_file, origin=None):
     skel.vertices += offset
     if origin is not None:
         skel.vertices -= origin
-    # convert from microns to nanometers
-    skel.vertices *= 1000
-    skel.vertex_color = np.zeros((skel.vertices.shape[0], 4), dtype="float32")
-    skel.vertex_color[:, :] = color
-
-    return skel
-
-
-def swc2skeleton_benchmarking(swc_file, origin=None):
-    """Converts swc file into Skeleton object
-
-    Arguments:
-        swc_file {str} -- path to SWC file
-    Keyword Arguments:
-        origin {numpy array with shape (3,1)} -- origin of coordinate frame in microns, (default: None assumes (0,0,0) origin)
-    Returns:
-        skel {cloudvolume.Skeleton} -- Skeleton object of given SWC file
-    """
-    with open(swc_file, "r") as f:
-        contents = f.read()
-    # get every line that starts with a hashtag
-    comments = [i.split(" ") for i in contents.split("\n") if i.startswith("#")]
-    offset = np.array([float(j) for i in comments for j in i[2:] if "OFFSET" in i])
-    color = [float(j) for i in comments for j in i[2].split(",") if "COLOR" in i]
-    # set alpha to 0.0 so skeleton  is opaque
-    color.append(0.0)
-    color = np.array(color, dtype="float32")
-    skel = Skeleton.from_swc(contents)
-    # physical units
-    # space can be 'physical' or 'voxel'
-    skel.space = "physical"
-    # skel.space = "voxel"
-
-    # parsing file-name for skel.id (specific to benchmarking data)
-    idx1 = swc_file.find("_", swc_file.find("_") + 1)  # finding second occurence of "_"
-    idx2 = swc_file.find(".")
-    skel.id = swc_file[idx1 + 1 : idx2]
-
-    # hard coding changing  data type of vertex_types
-    skel.extra_attributes[-1]["data_type"] = "float32"
-    skel.extra_attributes.append(
-        {"id": "vertex_color", "data_type": "float32", "num_components": 4}
-    )
-    # add offset to vertices
-    skel.vertices += offset
-    # and shift by origin
-    skel.vertices -= origin
-    ## Note: divide by scale factor occurs in the upload_benchmarking script
     # convert from microns to nanometers
     skel.vertices *= 1000
     skel.vertex_color = np.zeros((skel.vertices.shape[0], 4), dtype="float32")

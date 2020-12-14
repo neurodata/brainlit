@@ -14,7 +14,6 @@ import contextlib
 import tifffile as tf
 from pathlib import Path
 from brainlit.utils.swc import swc2skeleton
-from brainlit.utils.swc import swc2skeleton_benchmarking
 from brainlit.utils.benchmarking_params import (
     brain_offsets,
     vol_offsets,
@@ -452,12 +451,8 @@ def create_skel_segids(
     skeletons = []
     segids = []
     for i in tqdm(files, desc="converting swcs to neuroglancer format..."):
-        if benchmarking == True:
-            skeletons.append(swc2skeleton_benchmarking(i, origin=origin))
-            segids.append(skeletons[-1].id)
-        else:
-            skeletons.append(swc2skeleton(i, origin=origin))
-            segids.append(skeletons[-1].id)
+        skeletons.append(swc2skeleton(i, benchmarking, origin=origin))
+        segids.append(skeletons[-1].id)
     return skeletons, segids
 
 
@@ -478,11 +473,6 @@ def upload_segments(
     check_type(num_mips, (int, np.integer))
     if num_mips < 1:
         raise ValueError(f"Number of resolutions should be > 0, not {num_mips}")
-
-    # (_, _, vox_size, img_size, origin) = get_volume_info(
-    #    input_path,
-    #    num_mips,
-    # )
 
     if benchmarking == True:
         # Getting swc scaling parameters
