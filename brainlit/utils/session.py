@@ -140,10 +140,10 @@ class NeuroglancerSession:
         df = read_s3(self.url_segments, seg_id, self.mip, rounding)
         if rounding == False:
             G = df_to_graph(df)
-        else:        
+        else:
             df_voxel = swc_to_voxel(df, spacing=self.scales, origin=np.array([0, 0, 0]))
             G = df_to_graph(df_voxel)
-            
+
         if bbox is not None:
             if isinstance(bbox, Bbox):
                 bbox = bbox.to_list()
