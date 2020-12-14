@@ -154,7 +154,11 @@ class NeuroglancerSession:
         return G
 
     def create_tubes(
-        self, seg_id: Union[int, float], bbox: Bounds, radius: Optional[int] = None
+        self,
+        seg_id: Union[int, float],
+        bbox: Bounds,
+        radius: Optional[int] = None,
+        rounding: Optional[bool] = True,
     ):
         """Creates voxel-wise foreground/background labels associated with a particular neuron trace,
         within a given bounding box of voxel coordinates.
@@ -163,6 +167,7 @@ class NeuroglancerSession:
             seg_id: The id of the .swc file.
             bbox: The bounding box to draw tubes within.
             radius: Euclidean distance threshold used to draw tubes, default None = 1 px thick.
+            rounding: Optional, bool, default is True. False if no swc rounding.
 
         Returns:
             labels: A volume within the bounding box, with 1 on tubes and 0 elsewhere.
@@ -175,7 +180,7 @@ class NeuroglancerSession:
             if radius <= 0:
                 raise ValueError("Radius must be positive.")
 
-        G = self.get_segments(seg_id, bbox)
+        G = self.get_segments(seg_id, bbox, rounding)
         paths = graph_to_paths(G)
         if isinstance(bbox, Bbox):
             bbox = bbox.to_list()

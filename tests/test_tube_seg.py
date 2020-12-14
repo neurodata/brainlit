@@ -257,7 +257,7 @@ def test_tubes_from_paths():
     """Tests that, given valid paths, valid tubes are created."""
     sess = NeuroglancerSession(url, 0, url_seg)
     img, bbox, verts = sess.pull_voxel(2, 300, radius=5)  # A valid bbox with data.
-    G = sess.get_segments(2, bbox)
+    G = sess.get_segments(2, bbox, rounding=False)
     bbox = bbox.to_list()
     paths = graph_to_paths(G)  # valid paths
     size = np.subtract(bbox[3:], bbox[:3])
