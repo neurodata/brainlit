@@ -187,8 +187,8 @@ def read_s3(s3_path, seg_id, mip, rounding: Optional[bool] = True):
         The segement number to pull
     mip : int
         The resolution to use for scaling
-    benchmark: bool, Optional
-        True if benchmarking data, false is default
+    rounding: bool, Optional
+        True is default, false if swc shouldn't be rounded
 
     Returns
     -------
