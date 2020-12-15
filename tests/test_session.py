@@ -258,9 +258,11 @@ def test_create_tubes(session):
     """Tests that create_tubes returns valid tubes."""
     sess, seg_id, v_id = session
     img, bbox, verts = sess.pull_voxel(
-        seg_id, v_id, radius=5, 
+        seg_id,
+        v_id,
+        radius=5,
     )  # A valid bbox with data.
-    tubes = sess.create_tubes(seg_id, bbox, rounding = False)
+    tubes = sess.create_tubes(seg_id, bbox)
     assert (tubes != 0).any()
 
 

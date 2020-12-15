@@ -138,12 +138,8 @@ class NeuroglancerSession:
         if self.cv_segments is None:
             raise ValueError("Cannot get segments without segmentation data.")
         df = read_s3(self.url_segments, seg_id, self.mip, rounding)
-
-        if rounding == False:
-            G = df_to_graph(df)
-        else:
-            df_voxel = swc_to_voxel(df, spacing=self.scales, origin=np.array([0, 0, 0]))
-            G = df_to_graph(df_voxel)
+        # df_voxel = swc_to_voxel(df, spacing=self.scales, origin=np.array([0, 0, 0]))
+        G = df_to_graph(df)
 
         if bbox is not None:
             if isinstance(bbox, Bbox):
@@ -158,7 +154,7 @@ class NeuroglancerSession:
         seg_id: Union[int, float],
         bbox: Bounds,
         radius: Optional[int] = None,
-        rounding: Optional[bool] = True,
+        # rounding: Optional[bool] = True,
     ):
         """Creates voxel-wise foreground/background labels associated with a particular neuron trace,
         within a given bounding box of voxel coordinates.
@@ -180,7 +176,8 @@ class NeuroglancerSession:
             if radius <= 0:
                 raise ValueError("Radius must be positive.")
 
-        G = self.get_segments(seg_id, bbox, rounding)
+        G = self.get_segments(seg_id, bbox)
+        # G = self.get_segments(seg_id, bbox, rounding)
         paths = graph_to_paths(G)
         if isinstance(bbox, Bbox):
             bbox = bbox.to_list()
