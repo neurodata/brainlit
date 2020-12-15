@@ -154,7 +154,6 @@ class NeuroglancerSession:
         seg_id: Union[int, float],
         bbox: Bounds,
         radius: Optional[int] = None,
-        # rounding: Optional[bool] = True,
     ):
         """Creates voxel-wise foreground/background labels associated with a particular neuron trace,
         within a given bounding box of voxel coordinates.
@@ -177,7 +176,6 @@ class NeuroglancerSession:
                 raise ValueError("Radius must be positive.")
 
         G = self.get_segments(seg_id, bbox)
-        # G = self.get_segments(seg_id, bbox, rounding)
         paths = graph_to_paths(G)
         if isinstance(bbox, Bbox):
             bbox = bbox.to_list()
