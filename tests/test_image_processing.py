@@ -20,18 +20,6 @@ def test_Bresenham3D_bad_input():
         Bresenham3D(x1, y1, z1, x2, y2 + 0.5, z2)
     with raises(TypeError):
         Bresenham3D(x1, y1, z1, x2, y2, z2 + 0.5)
-    with raises(TypeError):
-        Bresenham3D("x1", y1, z1, x2, y2, z2)
-    with raises(TypeError):
-        Bresenham3D(x1, True, z1, x2, y2, z2)
-    with raises(TypeError):
-        Bresenham3D(x1, y1, False, x2, y2, z2)
-    with raises(TypeError):
-        Bresenham3D(x1, y1, z1, "x2", y2, z2)
-    with raises(TypeError):
-        Bresenham3D(x1, y1, z1, x2, True, z2)
-    with raises(TypeError):
-        Bresenham3D(x1, y1, z1, x2, y2, False)
         
 ####################
 #### validation ####
