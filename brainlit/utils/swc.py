@@ -5,6 +5,7 @@ import pandas as pd
 import networkx as nx
 from sklearn.metrics import pairwise_distances_argmin_min
 from cloudvolume import CloudVolume, Skeleton
+from typing import Optional, List, Union, Tuple
 from io import StringIO
 
 
@@ -175,7 +176,7 @@ def bbox_vox(df):
     return start, end
 
 
-def read_s3(s3_path, seg_id, mip):
+def read_s3(s3_path, seg_id, mip, rounding: Optional[bool] = True):
     """Read a s3 bucket path to a skeleton object
     into a pandas dataframe.
 
@@ -187,6 +188,8 @@ def read_s3(s3_path, seg_id, mip):
         The segement number to pull
     mip : int
         The resolution to use for scaling
+    rounding: bool, Optional
+        True is default, false if swc shouldn't be rounded
 
     Returns
     -------
@@ -216,10 +219,14 @@ def read_s3(s3_path, seg_id, mip):
         sep=" "
         # delim_whitespace=True,
     )
-    # res = cv.scales[mip]["resolution"]
-    # df["x"] = np.round(df["x"] / res[0])
-    # df["y"] = np.round(df["y"] / res[1])
-    # df["z"] = np.round(df["z"] / res[2])
+
+    # round swc files when reading
+    if rounding == True:
+        res = cv.scales[mip]["resolution"]
+        df["x"] = np.round(df["x"] / res[0])
+        df["y"] = np.round(df["y"] / res[1])
+        df["z"] = np.round(df["z"] / res[2])
+
     return df
 
 
@@ -473,9 +480,8 @@ def get_bfs_subgraph(G, node_id, depth, df=None):
     return G_sub, tree
 
 
-def swc2skeleton(swc_file, origin=None):
+def swc2skeleton(swc_file, benchmarking: Optional[bool] = False, origin=None):
     """Converts swc file into Skeleton object
-
     Arguments:
         swc_file {str} -- path to SWC file
     Keyword Arguments:
@@ -499,7 +505,14 @@ def swc2skeleton(swc_file, origin=None):
     # hard coding parsing the id from the filename
     idx = swc_file.find("G")
 
-    skel.id = int(swc_file[idx + 2 : idx + 5])
+    if benchmarking == True:
+        idx1 = swc_file.find(
+            "_", swc_file.find("_") + 1
+        )  # finding second occurence of "_"
+        idx2 = swc_file.find(".")
+        skel.id = swc_file[idx1 + 1 : idx2]
+    else:
+        skel.id = int(swc_file[idx + 2 : idx + 5])
 
     # hard coding changing  data type of vertex_types
     skel.extra_attributes[-1]["data_type"] = "float32"

@@ -3,6 +3,10 @@ import joblib
 from pathlib import Path
 from tqdm import tqdm
 import numpy as np
+from collections.abc import Iterable
+import numbers
+
+numerical = (numbers.Number, np.float)
 
 
 @contextlib.contextmanager
@@ -36,6 +40,13 @@ def check_type(input, types):
 def check_iterable_type(input, types):
     if not all(isinstance(i, types) for i in input):
         raise TypeError((f"{input} elements should be {types}."))
+
+
+def check_iterable_or_non_iterable_type(input, types):
+    if isinstance(input, Iterable):
+        check_iterable_type(input, types)
+    else:
+        check_type(input, types)
 
 
 def check_iterable_positive(input):

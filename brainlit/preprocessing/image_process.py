@@ -3,19 +3,28 @@ from skimage.measure import label
 import scipy.ndimage as ndi
 import matplotlib.pyplot as plt
 from itertools import product
+from typing import List, Optional, Union, Tuple
+from brainlit.utils.util import (
+    check_type,
+    check_iterable_type,
+    check_iterable_or_non_iterable_type,
+    numerical,
+)
+import collections
+import numbers
 
 
 def gabor_filter(
-    input,
-    sigma,
-    phi,
-    frequency,
-    offset=0.0,
-    output=None,
-    mode="reflect",
-    cval=0.0,
-    truncate=4.0,
-):
+    input: np.ndarray,
+    sigma: Union[float, List[float]],
+    phi: Union[float, List[float]],
+    frequency: float,
+    offset: float = 0.0,
+    output: Optional[Union[np.ndarray, np.dtype, None]] = None,
+    mode: str = "reflect",
+    cval: float = 0.0,
+    truncate: float = 4.0,
+) -> Tuple[np.ndarray, np.ndarray]:
     """Multidimensional Gabor filter. A gabor filter
     is an elementwise product between a Gaussian
     and a complex exponential.
@@ -104,6 +113,14 @@ def gabor_filter(
     >>> ax2.imshow(result[0])
     >>> plt.show()
     """
+    check_type(input, (list, np.ndarray))
+    check_iterable_or_non_iterable_type(sigma, numerical)
+    check_iterable_or_non_iterable_type(phi, numerical)
+    check_type(frequency, numerical)
+    check_type(offset, numerical)
+    check_type(cval, numerical)
+    check_type(truncate, numerical)
+
     input = np.asarray(input)
 
     # Checks that dimensions of inputs are correct
@@ -148,21 +165,17 @@ def gabor_filter(
     return result
 
 
-def getLargestCC(segmentation):
-    """Returns the largest connected component of a image
+def getLargestCC(segmentation: np.ndarray) -> np.ndarray:
+    """Returns the largest connected component of a image.
 
-    Parameters
-    ----------
-    segmentation : array-like
-        segmentation data of image or volume
+    Arguments:
+    segmentation : Segmentation data of image or volume.
 
-    Returns
-    -------
-    largeCC : array-like
-        segmentation with only largest connected component
-
+    Returns:
+    largeCC : Segmentation with only largest connected component.
     """
 
+    check_type(segmentation, (list, np.ndarray))
     labels = label(segmentation)
     if labels.max() == 0:
         raise ValueError("No connected components!")  # assume at least 1 CC
@@ -170,23 +183,19 @@ def getLargestCC(segmentation):
     return largestCC
 
 
-def removeSmallCCs(segmentation, size):
-    """Removes small connected components from an image
+def removeSmallCCs(segmentation: np.ndarray, size: Union[int, float]) -> np.ndarray:
+    """Removes small connected components from an image.
 
-    Parameters
-    ----------
-    segmentation : array-like
-        segmentation data of image or volume
+    Parameters:
+    segmentation : Segmentation data of image or volume.
+    size : Maximum connected component size to remove.
 
-    size : scalar
-        maximize connected component size to remove
-
-    Returns
-    -------
-    largeCCs : array-like
-        segmentation with small connected components removed
-
+    Returns:
+    largeCCs : Segmentation with small connected components removed.
     """
+    check_type(segmentation, (list, np.ndarray))
+    check_type(size, numerical)
+
     labels = label(segmentation, return_num=False)
 
     if labels.max() == 0:
