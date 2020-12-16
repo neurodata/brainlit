@@ -1,10 +1,11 @@
 from brainlit.utils.util import check_type
 
+
 def Bresenham3D(x1, y1, z1, x2, y2, z2):
     """Takes two coordinates and gives the set of coordinates that connects them with a straight line
-    
+
     Adapted from https://www.geeksforgeeks.org/bresenhams-algorithm-for-3-d-line-drawing/
-    
+
     Arguments:
         x1 {int} -- first x coodinate
         y1 {int} -- first y coodinate
@@ -12,7 +13,7 @@ def Bresenham3D(x1, y1, z1, x2, y2, z2):
         x2 {int} -- second x coodinate
         y2 {int} -- second y coodinate
         z2 {int} -- second z coodinate
-    
+
     Returns:
         [list] -- list of x coordinate connecting the points
         [list] -- list of y coordinate connecting the points
@@ -24,7 +25,7 @@ def Bresenham3D(x1, y1, z1, x2, y2, z2):
     check_type(x2, int)
     check_type(y2, int)
     check_type(z2, int)
-    
+
     xlist = []
     xlist.append(x1)
     ylist = []
