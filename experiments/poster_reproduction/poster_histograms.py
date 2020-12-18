@@ -142,9 +142,9 @@ mean_torsions = np.concatenate(mean_torsions)
 fig = plt.figure(figsize=(21, 7))
 axes = fig.subplots(1, 2)
 GRAY = "#999999"
-TITLE_TYPE_SETTINGS = {"fontname": "Arial", "size": 18}
-SUP_TITLE_TYPE_SETTINGS = {"fontname": "Arial", "size": 22}
-plt.rc("font", family="Arial", size=16)
+TITLE_TYPE_SETTINGS = {"fontname": "Arial", "size": 20}
+SUP_TITLE_TYPE_SETTINGS = {"fontname": "Arial", "size": 24}
+plt.rc("font", family="Arial", size=20)
 
 log_seg_lengths = np.log10(seg_lengths)
 min_log_seg_length = min(log_seg_lengths)
@@ -172,15 +172,11 @@ zero_log_dens = zero_kde.score_samples(xx)
 nonzero_log_dens = nonzero_kde.score_samples(xx)
 # ax.hist(zero_curvatures_log_seg_lengths, density=True)
 # ax.hist(nonzero_curvatures_log_seg_lengths, density=True)
-zero_norm_pdf = (
-    np.exp(zero_log_dens) * len(zero_curvatures_log_seg_lengths) / len(seg_lengths)
-)
-
-nonzero_norm_pdf = (
-    np.exp(nonzero_log_dens)
-    * len(nonzero_curvatures_log_seg_lengths)
-    / len(seg_lengths)
-)
+alpha_zero_curvatures = len(zero_curvatures_log_seg_lengths) / len(seg_lengths)
+alpha_nonzero_curvatures = len(nonzero_curvatures_log_seg_lengths) / len(seg_lengths)
+print(alpha_zero_curvatures, alpha_nonzero_curvatures)
+zero_norm_pdf = alpha_zero_curvatures * np.exp(zero_log_dens)
+nonzero_norm_pdf = alpha_nonzero_curvatures * np.exp(nonzero_log_dens)
 
 # ax.plot(xx.squeeze(), zero_norm_pdf, label=r"$c=0$")
 ax.fill_between(xx.squeeze(), 0, zero_norm_pdf, alpha=0.7, label=r"$\mathcal{k} = 0$")
@@ -189,22 +185,21 @@ ax.fill_between(
     xx.squeeze(), 0, nonzero_norm_pdf, alpha=0.7, label=r"$\mathcal{k} > 0$"
 )
 
-mask = np.array([
-    False if zero_ > nonzero_ else True
-    for zero_, nonzero_ in zip(zero_norm_pdf, nonzero_norm_pdf)
-])
-print(mask)
+mask = np.array(
+    [
+        False if zero_ > nonzero_ else True
+        for zero_, nonzero_ in zip(zero_norm_pdf, nonzero_norm_pdf)
+    ]
+)
 ids = np.where(mask == True)[0]
-print(ids)
 xx_dashed = xx.squeeze()[ids]
 zero_norm_pdf_dashed = zero_norm_pdf[ids]
-print(xx_dashed)
 ax.plot(xx_dashed.squeeze(), zero_norm_pdf_dashed, "--")
 
 
-ax.set_title("Curvature")
-ax.set_xlabel(r"$\log$ segment length ($\mu m$)", **TITLE_TYPE_SETTINGS)
-ax.set_ylabel(r"pdf", **TITLE_TYPE_SETTINGS)
+ax.set_title(r"Curvature ($\alpha = %.2f$)" % alpha_zero_curvatures)
+ax.set_xlabel(r"$\log$ segment length ($\mu m$)", fontsize=24)
+ax.set_ylabel(r"pdf", fontsize=24)
 leg = ax.legend(loc=1)
 leg.get_frame().set_edgecolor(GRAY)
 ax.set_xticks([1, 2, 3, 4])
@@ -228,32 +223,30 @@ zero_log_dens = zero_kde.score_samples(xx)
 nonzero_log_dens = nonzero_kde.score_samples(xx)
 # ax.hist(zero_torsions_log_seg_lengths, density=True)
 # ax.hist(nonzero_torsions_log_seg_lengths, density=True)
-zero_norm_pdf = (
-    np.exp(zero_log_dens) * len(zero_torsions_log_seg_lengths) / len(seg_lengths)
-)
-nonzero_norm_pdf = (
-    np.exp(nonzero_log_dens) * len(nonzero_torsions_log_seg_lengths) / len(seg_lengths)
-)
+alpha_zero_torsions = len(zero_torsions_log_seg_lengths) / len(seg_lengths)
+alpha_nonzero_torsions = len(nonzero_torsions_log_seg_lengths) / len(seg_lengths)
+print(alpha_zero_torsions, alpha_nonzero_torsions)
+zero_norm_pdf = alpha_zero_torsions * np.exp(zero_log_dens)
+nonzero_norm_pdf = alpha_nonzero_torsions * np.exp(nonzero_log_dens)
 # ax.plot(xx.squeeze(), zero_norm_pdf, label=r"$c=0$")
 ax.fill_between(xx.squeeze(), 0, zero_norm_pdf, alpha=0.7, label=r"$\tau = 0$")
 # ax.plot(xx.squeeze(), nonzero_norm_pdf, label=r"$c=0$")
 ax.fill_between(xx.squeeze(), 0, nonzero_norm_pdf, alpha=0.7, label=r"$\tau > 0$")
 
-mask = np.array([
-    False if zero_ > nonzero_ else True
-    for zero_, nonzero_ in zip(zero_norm_pdf, nonzero_norm_pdf)
-])
-print(mask)
+mask = np.array(
+    [
+        False if zero_ > nonzero_ else True
+        for zero_, nonzero_ in zip(zero_norm_pdf, nonzero_norm_pdf)
+    ]
+)
 ids = np.where(mask == True)[0]
-print(ids)
 xx_dashed = xx.squeeze()[ids]
 zero_norm_pdf_dashed = zero_norm_pdf[ids]
-print(xx_dashed)
 ax.plot(xx_dashed.squeeze(), zero_norm_pdf_dashed, "--")
 
-ax.set_title("Torsion")
-ax.set_xlabel(r"$\log$ segment length ($\mu m$)", **TITLE_TYPE_SETTINGS)
-ax.set_ylabel(r"pdf", **TITLE_TYPE_SETTINGS)
+ax.set_title(r"Torsion ($\alpha = %.2f$)" % alpha_zero_torsions)
+ax.set_xlabel(r"$\log$ segment length ($\mu m$)", fontsize=24)
+ax.set_ylabel(r"pdf", fontsize=24)
 leg = ax.legend(loc=1)
 leg.get_frame().set_edgecolor(GRAY)
 ax.set_xticks([1, 2, 3, 4])
