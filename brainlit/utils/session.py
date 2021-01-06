@@ -116,23 +116,31 @@ class NeuroglancerSession:
         self.url_segments = seg_url
         self.cv_segments = CloudVolume(self.url_segments, parallel=False)
 
-    def get_segments(self, seg_id: int, bbox: Optional[Bounds] = None) -> nx.Graph:
+    def get_segments(
+        self,
+        seg_id: int,
+        bbox: Optional[Bounds] = None,
+        rounding: Optional[bool] = True,
+    ) -> nx.Graph:
         """Get a graph of a segmentation annotation within a bounding box.
 
         Arguments:
             seg_id  The segement to pull.
             bbox: The bounding box object, default None. If None, uses entire volume.
+            rounding: Optional, default True. Whether you want S3 file to be rounded or not.
 
         Returns:
             G: A networkx subgraph from the specified segment and bounding box.
         """
+
         check_type(seg_id, (int, np.integer))
+        check_type(rounding, bool)
         if self.cv_segments is None:
             raise ValueError("Cannot get segments without segmentation data.")
+        df = read_s3(self.url_segments, seg_id, self.mip, rounding)
+        # df_voxel = swc_to_voxel(df, spacing=self.scales, origin=np.array([0, 0, 0]))
+        G = df_to_graph(df)
 
-        df = read_s3(self.url_segments, seg_id, self.mip)
-        df_voxel = swc_to_voxel(df, spacing=self.scales, origin=np.array([0, 0, 0]))
-        G = df_to_graph(df_voxel)
         if bbox is not None:
             if isinstance(bbox, Bbox):
                 bbox = bbox.to_list()
@@ -142,7 +150,10 @@ class NeuroglancerSession:
         return G
 
     def create_tubes(
-        self, seg_id: Union[int, float], bbox: Bounds, radius: Optional[int] = None
+        self,
+        seg_id: Union[int, float],
+        bbox: Bounds,
+        radius: Optional[int] = None,
     ):
         """Creates voxel-wise foreground/background labels associated with a particular neuron trace,
         within a given bounding box of voxel coordinates.
@@ -151,6 +162,7 @@ class NeuroglancerSession:
             seg_id: The id of the .swc file.
             bbox: The bounding box to draw tubes within.
             radius: Euclidean distance threshold used to draw tubes, default None = 1 px thick.
+            rounding: Optional, bool, default is True. False if no swc rounding.
 
         Returns:
             labels: A volume within the bounding box, with 1 on tubes and 0 elsewhere.
@@ -242,7 +254,9 @@ class NeuroglancerSession:
             bounds = Bbox(lower, higher)
         if expand:
             bounds = bounds.expand_to_chunk_size(self.chunk_size)
+
         vox_in_img_list = np.array(voxel_list) - bounds.to_list()[:3]
+
         img = self.pull_bounds_img(bounds)
         return img, bounds, vox_in_img_list
 
@@ -294,6 +308,7 @@ class NeuroglancerSession:
         Returns:
             img: Volume pulled according to the bounding box.
         """
+
         if isinstance(bounds, Bbox):
             bounds = bounds.to_list()
         check_iterable_type(bounds, (int, np.integer))
