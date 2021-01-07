@@ -286,25 +286,213 @@ torsions = torsions[~masked_d_from_root.mask]
 # # ax.plot(xx.squeeze(), nonzero_norm_pdf, label=r"$c=0$")
 # ax.fill_between(xx.squeeze(), 0, nonzero_norm_pdf, alpha=0.7, label=r"$\tau > 0$")
 
-mask = np.array(
-    [
-        False if zero_ > nonzero_ else True
-        for zero_, nonzero_ in zip(zero_norm_pdf, nonzero_norm_pdf)
-    ]
+# mask = np.array(
+#     [
+#         False if zero_ > nonzero_ else True
+#         for zero_, nonzero_ in zip(zero_norm_pdf, nonzero_norm_pdf)
+#     ]
+# )
+# ids = np.where(mask == True)[0]
+# xx_dashed = xx.squeeze()[ids]
+# zero_norm_pdf_dashed = zero_norm_pdf[ids]
+# ax.plot(xx_dashed.squeeze(), zero_norm_pdf_dashed, "--")
+
+# ax.set_title(r"Torsion ($\alpha = %.2f$)" % alpha_zero_torsions)
+# ax.set_xlabel(r"$\log$ segment length ($\mu m$)", fontsize=24)
+# ax.set_ylabel(r"pdf", fontsize=24)
+# leg = ax.legend(loc=1)
+# leg.get_frame().set_edgecolor(GRAY)
+# ax.set_xticks([1, 2, 3, 4])
+
+
+# fig.suptitle("Brain 1")
+# plt.savefig(os.path.join(experiment_dir, "{}_histograms.jpg".format(brain)))
+# plt.savefig(os.path.join(experiment_dir, "{}_histograms.eps".format(brain)))
+# plt.show()
+
+###################################################################################
+
+fig = plt.figure(figsize=(21, 7))
+axes = fig.subplots(1, 2)
+GRAY = "#999999"
+TITLE_TYPE_SETTINGS = {"fontname": "Arial", "size": 20}
+SUP_TITLE_TYPE_SETTINGS = {"fontname": "Arial", "size": 24}
+plt.rc("font", family="Arial", size=20)
+
+# log_seg_lengths = np.log10(seg_lengths)
+log_d_from_root = np.log10(d_from_root)
+L = len(log_d_from_root)
+min_log_d_from_root = min(log_d_from_root)
+max_log_d_from_root = max(log_d_from_root)
+xx = np.linspace(min_log_d_from_root, max_log_d_from_root, 1000)[:, np.newaxis]
+
+ax = axes[0]
+ax.spines["bottom"].set_color(GRAY)
+ax.spines["top"].set_color(GRAY)
+ax.spines["right"].set_color(GRAY)
+ax.spines["left"].set_color(GRAY)
+ax.tick_params(axis="both", colors=GRAY, labelsize="large")
+
+zero_curvatures_log_d_from_root = log_d_from_root[np.where(curvatures < 1e-16)[0]]
+nonzero_curvatures_log_d_from_root = log_d_from_root[np.where(curvatures > 1e-16)[0]]
+bins = 2048
+# compute histogram of zero-curvatures
+torch_zero_curvatures_log_d_from_root = torch.from_numpy(zero_curvatures_log_d_from_root).to(device)
+zero_curvatures_hist_min = torch.min(torch_zero_curvatures_log_d_from_root)
+zero_curvatures_hist_max = torch.max(torch_zero_curvatures_log_d_from_root)
+zero_curvatures_hist_bin_edges = torch.arange(
+    zero_curvatures_hist_min,
+    zero_curvatures_hist_max,
+    (zero_curvatures_hist_max - zero_curvatures_hist_min)/bins)
+
+zero_curvatures_hist = torch.histc(
+    torch_zero_curvatures_log_d_from_root,
+    bins=bins,
+    min=zero_curvatures_hist_min,
+    max=zero_curvatures_hist_max,
 )
-ids = np.where(mask == True)[0]
-xx_dashed = xx.squeeze()[ids]
-zero_norm_pdf_dashed = zero_norm_pdf[ids]
-ax.plot(xx_dashed.squeeze(), zero_norm_pdf_dashed, "--")
+# compute histogram of non-zero-curvatures (uses GPU)
+torch_nonzero_curvatures_log_d_from_root = torch.from_numpy(nonzero_curvatures_log_d_from_root).to(device)
+nonzero_curvatures_hist_min = torch.min(torch_nonzero_curvatures_log_d_from_root)
+nonzero_curvatures_hist_max = torch.max(torch_nonzero_curvatures_log_d_from_root)
+nonzero_curvatures_hist_bin_edges = torch.arange(
+    nonzero_curvatures_hist_min,
+    nonzero_curvatures_hist_max,
+    (nonzero_curvatures_hist_max - nonzero_curvatures_hist_min) / bins,
+)
+nonzero_curvatures_hist = torch.histc(
+    torch_nonzero_curvatures_log_d_from_root,
+    bins=bins,
+    min=nonzero_curvatures_hist_min,
+    max=nonzero_curvatures_hist_max
+)
+# zero_kde = KernelDensity(kernel="gaussian", bandwidth=0.1).fit(
+#     zero_curvatures_log_d_from_root[:, np.newaxis]
+# )
+# print("done KDE zero curvatures")
+# nonzero_kde = KernelDensity(kernel="gaussian", bandwidth=0.25).fit(
+#     nonzero_curvatures_log_d_from_root[:, np.newaxis]
+# )
+# print("done KDE non-zero curvatures")
+# zero_log_dens = zero_kde.score_samples(xx)
+# nonzero_log_dens = nonzero_kde.score_samples(xx)
+# ax.hist(zero_curvatures_log_seg_lengths, density=True)
+# ax.hist(nonzero_curvatures_log_seg_lengths, density=True)
+alpha_zero_curvatures = len(zero_curvatures_log_d_from_root) / L
+alpha_nonzero_curvatures = len(nonzero_curvatures_log_d_from_root) / L
+print(alpha_zero_curvatures, alpha_nonzero_curvatures)
+# zero_norm_pdf = alpha_zero_curvatures * np.exp(zero_log_dens)
+# nonzero_norm_pdf = alpha_nonzero_curvatures * np.exp(nonzero_log_dens)
 
-ax.set_title(r"Torsion ($\alpha = %.2f$)" % alpha_zero_torsions)
-ax.set_xlabel(r"$\log$ segment length ($\mu m$)", fontsize=24)
+# # ax.plot(xx.squeeze(), zero_norm_pdf, label=r"$c=0$")
+# ax.fill_between(xx.squeeze(), 0, zero_norm_pdf, alpha=0.7, label=r"$\mathcal{k} = 0$")
+# # ax.plot(xx.squeeze(), nonzero_norm_pdf, label=r"$c=0$")
+# ax.fill_between(
+#     xx.squeeze(), 0, nonzero_norm_pdf, alpha=0.7, label=r"$\mathcal{k} > 0$"
+# )
+ax.bar(zero_curvatures_hist_bin_edges.cpu().numpy(), zero_curvatures_hist.cpu().numpy() / L, label=r"$\mathcal{k} = 0$", alpha=0.5)
+ax.bar(nonzero_curvatures_hist_bin_edges.cpu().numpy(), nonzero_curvatures_hist.cpu().numpy() / L, label=r"$\mathcal{k} > 0$", alpha=0.5)
+
+# mask = np.array(
+#     [
+#         False if zero_ > nonzero_ else True
+#         for zero_, nonzero_ in zip(zero_norm_pdf, nonzero_norm_pdf)
+#     ]
+# )
+# ids = np.where(mask == True)[0]
+# xx_dashed = xx.squeeze()[ids]
+# zero_norm_pdf_dashed = zero_norm_pdf[ids]
+# ax.plot(xx_dashed.squeeze(), zero_norm_pdf_dashed, "--")
+
+
+ax.set_title(r"Curvature ($\alpha = %.4f$)" % alpha_zero_curvatures)
+ax.set_xlabel(r"$\log$ distance from root ($\mu m$)", fontsize=24)
 ax.set_ylabel(r"pdf", fontsize=24)
-leg = ax.legend(loc=1)
+leg = ax.legend(loc=2)
 leg.get_frame().set_edgecolor(GRAY)
-ax.set_xticks([1, 2, 3, 4])
+# ax.set_xticks([1, 2, 3, 4])
 
+ax = axes[1]
+ax.spines["bottom"].set_color(GRAY)
+ax.spines["top"].set_color(GRAY)
+ax.spines["right"].set_color(GRAY)
+ax.spines["left"].set_color(GRAY)
+ax.tick_params(axis="both", colors=GRAY, labelsize="large")
+
+zero_torsions_log_d_from_root = log_d_from_root[np.where(torsions < 1e-16)[0]]
+nonzero_torsions_log_d_from_root = log_d_from_root[np.where(torsions > 1e-16)[0]]
+bins = 1024
+# compute histogram of zero-torsions
+torch_zero_torsions_log_d_from_root = torch.from_numpy(zero_torsions_log_d_from_root).to(device)
+zero_torsions_hist_min = torch.min(torch_zero_torsions_log_d_from_root)
+zero_torsions_hist_max = torch.max(torch_zero_torsions_log_d_from_root)
+zero_torsions_hist_bin_edges = torch.arange(
+    zero_torsions_hist_min,
+    zero_torsions_hist_max,
+    (zero_torsions_hist_max - zero_torsions_hist_min)/bins)
+
+zero_torsions_hist = torch.histc(
+    torch_zero_torsions_log_d_from_root,
+    bins=bins,
+    min=zero_torsions_hist_min,
+    max=zero_torsions_hist_max,
+)
+# compute histogram of non-zero-torsions (uses GPU)
+torch_nonzero_torsions_log_d_from_root = torch.from_numpy(nonzero_torsions_log_d_from_root).to(device)
+nonzero_torsions_hist_min = torch.min(torch_nonzero_torsions_log_d_from_root)
+nonzero_torsions_hist_max = torch.max(torch_nonzero_torsions_log_d_from_root)
+nonzero_torsions_hist_bin_edges = torch.arange(
+    nonzero_torsions_hist_min,
+    nonzero_torsions_hist_max,
+    (nonzero_torsions_hist_max - nonzero_torsions_hist_min) / bins,
+)
+nonzero_torsions_hist = torch.histc(
+    torch_nonzero_torsions_log_d_from_root,
+    bins=bins,
+    min=nonzero_torsions_hist_min,
+    max=nonzero_torsions_hist_max
+)
+# zero_kde = KernelDensity(kernel="gaussian", bandwidth=0.1).fit(
+#     zero_torsions_log_d_from_root[:, np.newaxis]
+# )
+# nonzero_kde = KernelDensity(kernel="gaussian", bandwidth=0.25).fit(
+#     nonzero_torsions_log_d_from_root[:, np.newaxis]
+# )
+# zero_log_dens = zero_kde.score_samples(xx)
+# nonzero_log_dens = nonzero_kde.score_samples(xx)
+# # ax.hist(zero_torsions_log_seg_lengths, density=True)
+# # ax.hist(nonzero_torsions_log_seg_lengths, density=True)
+alpha_zero_torsions = len(zero_torsions_log_d_from_root) / L
+alpha_nonzero_torsions = len(nonzero_torsions_log_d_from_root) / L
+print(alpha_zero_torsions, alpha_nonzero_torsions)
+# zero_norm_pdf = alpha_zero_torsions * np.exp(zero_log_dens)
+# nonzero_norm_pdf = alpha_nonzero_torsions * np.exp(nonzero_log_dens)
+# # ax.plot(xx.squeeze(), zero_norm_pdf, label=r"$c=0$")
+# ax.fill_between(xx.squeeze(), 0, zero_norm_pdf, alpha=0.7, label=r"$\tau = 0$")
+# # ax.plot(xx.squeeze(), nonzero_norm_pdf, label=r"$c=0$")
+# ax.fill_between(xx.squeeze(), 0, nonzero_norm_pdf, alpha=0.7, label=r"$\tau > 0$")
+ax.bar(zero_torsions_hist_bin_edges.cpu().numpy(), zero_torsions_hist.cpu().numpy() / L, label=r"$\tau = 0$", alpha=0.5)
+ax.bar(nonzero_torsions_hist_bin_edges.cpu().numpy(), nonzero_torsions_hist.cpu().numpy() / L, label=r"$\tau > 0$", alpha=0.5)
+
+# mask = np.array(
+#     [
+#         False if zero_ > nonzero_ else True
+#         for zero_, nonzero_ in zip(zero_norm_pdf, nonzero_norm_pdf)
+#     ]
+# )
+# ids = np.where(mask == True)[0]
+# xx_dashed = xx.squeeze()[ids]
+# zero_norm_pdf_dashed = zero_norm_pdf[ids]
+# ax.plot(xx_dashed.squeeze(), zero_norm_pdf_dashed, "--")
+
+ax.set_title(r"Torsion ($\alpha = %.4f$)" % alpha_zero_torsions)
+ax.set_xlabel(r"$\log$ distance from root ($\mu m$)", fontsize=24)
+ax.set_ylabel(r"pdf", fontsize=24)
+leg = ax.legend(loc=2)
+leg.get_frame().set_edgecolor(GRAY)
+# ax.set_xticks([1, 2, 3, 4])
 
 fig.suptitle("Brain 1")
-plt.savefig(os.path.join(experiment_dir, "{}_histograms.jpg".format(brain)))
-plt.savefig(os.path.join(experiment_dir, "{}_histograms.eps".format(brain)))
+plt.savefig(os.path.join(experiment_dir, "{}_histograms_from_root.jpg".format(brain)))
+plt.savefig(os.path.join(experiment_dir, "{}_histograms_from_root.eps".format(brain)))
+plt.show()

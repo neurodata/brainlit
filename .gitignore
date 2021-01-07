@@ -65,5 +65,4 @@ target/
 data/poster_reproduction/
 
 # Poster reproduction results
-expriments/poster_reproduction/**.jpg
-expriments/poster_reproduction/**.eps
+expriments/poster_reproduction/figures

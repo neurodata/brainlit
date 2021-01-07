@@ -248,8 +248,8 @@ leg.get_frame().set_edgecolor(GRAY)
 
 fig.suptitle("Brain 1")
 
-plt.savefig(os.path.join(experiment_dir, "{}_linear_regression.eps".format(brain)))
-plt.savefig(os.path.join(experiment_dir, "{}_linear_regression.jpg".format(brain)))
+plt.savefig(os.path.join(experiment_dir, "{}_results_s0.eps".format(brain)))
+plt.savefig(os.path.join(experiment_dir, "{}_results_s0.jpg".format(brain)))
 
 # fig = plt.figure(figsize=(15, 6))
 # axes = fig.subplots(1, 2)

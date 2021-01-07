@@ -23,7 +23,7 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
 # EXTRACT DATA DIR FROM RELATIVE NOTEBOOK PATH
-brain = "brain1"
+brain = "brain2"
 root_dir = data_dir = Path(os.path.join(os.getcwd(), __file__)).parents[2]
 data_dir = os.path.join(root_dir, "data/poster_reproduction/{}".format(brain))
 experiment_dir = os.path.join(root_dir, "experiments/poster_reproduction")
@@ -102,6 +102,7 @@ for i in np.arange(0, max_id):
                 m = len(_curvatures)
                 # print(node["starting_length"])
                 d_from_root.append(node["starting_length"] + np.arange(0, m))
+                # d_from_root.append(np.arange(0, m)/node["seg_length"])
                 torsions.append(_torsions)
                 curvatures.append(_curvatures)
 
@@ -175,136 +176,131 @@ assert len(np.where(d_from_root < 1e-16)[0]) == 0
 curvatures = curvatures[~masked_d_from_root.mask]
 torsions = torsions[~masked_d_from_root.mask]
 
-# f = lambda x, a, k, u: [a*xx**(-k) if xx > u else 0 for xx in x]
-# (a, k, u), _ = scipy.optimize.curve_fit(f, seg_lengths, mean_curvatures, bounds=([0, 0, 5], [np.inf, np.inf, 15]))
-# print(a, k, u)
-# slope_curvatures, intercept_curvatures, _, _, _ = scipy.stats.linregress(
-#     seg_lengths, mean_curvatures
-# )
-# print(slope_curvatures, intercept_curvatures)
-# # a, loc, scale = scipy.stats.powerlaw.fit(mean_curvatures)
-# # print(a, loc, scale)
-# xx = np.linspace(1, int(1e4), 3000)
-# # plt.plot(xx, scipy.stats.powerlaw(a, loc, scale).pdf(xx))
-# plt.plot(xx, f(xx, a, k, u), xx, xx*slope_curvatures + intercept_curvatures)
-# plt.scatter(seg_lengths, mean_curvatures, color="g", marker=".", alpha=0.2)
-# plt.ylim([-0.5, 2])
-# # plt.xscale("log")
-# plt.show()
-
-# fig = plt.figure(figsize=(21, 7))
-# axes = fig.subplots(1, 2)
-# GRAY = "#999999"
-# TITLE_TYPE_SETTINGS = {"fontname": "Arial", "size": 20}
-# SUP_TITLE_TYPE_SETTINGS = {"fontname": "Arial", "size": 24}
-# plt.rc("font", family="Arial", size=20)
-
-# log_seg_lengths = np.log10(seg_lengths)
-# min_log_seg_length = min(log_seg_lengths)
-# max_log_seg_length = max(log_seg_lengths)
-# xx = np.linspace(min_log_seg_length, max_log_seg_length, 1000)[:, np.newaxis]
-
-# ax = axes[0]
-# ax.spines["bottom"].set_color(GRAY)
-# ax.spines["top"].set_color(GRAY)
-# ax.spines["right"].set_color(GRAY)
-# ax.spines["left"].set_color(GRAY)
-# ax.tick_params(axis="both", colors=GRAY, labelsize="large")
-
-# zero_curvatures_log_seg_lengths = log_seg_lengths[np.where(mean_curvatures < 1e-16)[0]]
-# nonzero_curvatures_log_seg_lengths = log_seg_lengths[
-#     np.where(mean_curvatures > 1e-16)[0]
-# ]
-# zero_kde = KernelDensity(kernel="gaussian", bandwidth=0.1).fit(
-#     zero_curvatures_log_seg_lengths[:, np.newaxis]
-# )
-# nonzero_kde = KernelDensity(kernel="gaussian", bandwidth=0.25).fit(
-#     nonzero_curvatures_log_seg_lengths[:, np.newaxis]
-# )
-# zero_log_dens = zero_kde.score_samples(xx)
-# nonzero_log_dens = nonzero_kde.score_samples(xx)
-# # ax.hist(zero_curvatures_log_seg_lengths, density=True)
-# # ax.hist(nonzero_curvatures_log_seg_lengths, density=True)
-# alpha_zero_curvatures = len(zero_curvatures_log_seg_lengths) / len(seg_lengths)
-# alpha_nonzero_curvatures = len(nonzero_curvatures_log_seg_lengths) / len(seg_lengths)
-# print(alpha_zero_curvatures, alpha_nonzero_curvatures)
-# zero_norm_pdf = alpha_zero_curvatures * np.exp(zero_log_dens)
-# nonzero_norm_pdf = alpha_nonzero_curvatures * np.exp(nonzero_log_dens)
-
-# # ax.plot(xx.squeeze(), zero_norm_pdf, label=r"$c=0$")
-# ax.fill_between(xx.squeeze(), 0, zero_norm_pdf, alpha=0.7, label=r"$\mathcal{k} = 0$")
-# # ax.plot(xx.squeeze(), nonzero_norm_pdf, label=r"$c=0$")
-# ax.fill_between(
-#     xx.squeeze(), 0, nonzero_norm_pdf, alpha=0.7, label=r"$\mathcal{k} > 0$"
-# )
-
-# mask = np.array(
-#     [
-#         False if zero_ > nonzero_ else True
-#         for zero_, nonzero_ in zip(zero_norm_pdf, nonzero_norm_pdf)
-#     ]
-# )
-# ids = np.where(mask == True)[0]
-# xx_dashed = xx.squeeze()[ids]
-# zero_norm_pdf_dashed = zero_norm_pdf[ids]
-# ax.plot(xx_dashed.squeeze(), zero_norm_pdf_dashed, "--")
-
-
-# ax.set_title(r"Curvature ($\alpha = %.2f$)" % alpha_zero_curvatures)
-# ax.set_xlabel(r"$\log$ segment length ($\mu m$)", fontsize=24)
-# ax.set_ylabel(r"pdf", fontsize=24)
-# leg = ax.legend(loc=1)
-# leg.get_frame().set_edgecolor(GRAY)
-# ax.set_xticks([1, 2, 3, 4])
-
-# ax = axes[1]
-# ax.spines["bottom"].set_color(GRAY)
-# ax.spines["top"].set_color(GRAY)
-# ax.spines["right"].set_color(GRAY)
-# ax.spines["left"].set_color(GRAY)
-# ax.tick_params(axis="both", colors=GRAY, labelsize="large")
-
-# zero_torsions_log_seg_lengths = log_seg_lengths[np.where(mean_torsions < 1e-16)[0]]
-# nonzero_torsions_log_seg_lengths = log_seg_lengths[np.where(mean_torsions > 1e-16)[0]]
-# zero_kde = KernelDensity(kernel="gaussian", bandwidth=0.1).fit(
-#     zero_torsions_log_seg_lengths[:, np.newaxis]
-# )
-# nonzero_kde = KernelDensity(kernel="gaussian", bandwidth=0.25).fit(
-#     nonzero_torsions_log_seg_lengths[:, np.newaxis]
-# )
-# zero_log_dens = zero_kde.score_samples(xx)
-# nonzero_log_dens = nonzero_kde.score_samples(xx)
-# # ax.hist(zero_torsions_log_seg_lengths, density=True)
-# # ax.hist(nonzero_torsions_log_seg_lengths, density=True)
-# alpha_zero_torsions = len(zero_torsions_log_seg_lengths) / len(seg_lengths)
-# alpha_nonzero_torsions = len(nonzero_torsions_log_seg_lengths) / len(seg_lengths)
-# print(alpha_zero_torsions, alpha_nonzero_torsions)
-# zero_norm_pdf = alpha_zero_torsions * np.exp(zero_log_dens)
-# nonzero_norm_pdf = alpha_nonzero_torsions * np.exp(nonzero_log_dens)
-# # ax.plot(xx.squeeze(), zero_norm_pdf, label=r"$c=0$")
-# ax.fill_between(xx.squeeze(), 0, zero_norm_pdf, alpha=0.7, label=r"$\tau = 0$")
-# # ax.plot(xx.squeeze(), nonzero_norm_pdf, label=r"$c=0$")
-# ax.fill_between(xx.squeeze(), 0, nonzero_norm_pdf, alpha=0.7, label=r"$\tau > 0$")
-
-mask = np.array(
-    [
-        False if zero_ > nonzero_ else True
-        for zero_, nonzero_ in zip(zero_norm_pdf, nonzero_norm_pdf)
-    ]
+nonzero_curvatures_masked = np.ma.masked_less(
+    curvatures, 1e-16
 )
-ids = np.where(mask == True)[0]
-xx_dashed = xx.squeeze()[ids]
-zero_norm_pdf_dashed = zero_norm_pdf[ids]
-ax.plot(xx_dashed.squeeze(), zero_norm_pdf_dashed, "--")
+nonzero_curvatures = nonzero_curvatures_masked.compressed()
+nonzero_curvatures_d_from_root = d_from_root[
+    nonzero_curvatures_masked.mask == 0
+]
+nonzero_torsions_masked = np.ma.masked_less(
+    torsions, 1e-16
+)
+nonzero_torsions = nonzero_torsions_masked.compressed()
+nonzero_torsions_d_from_root = d_from_root[nonzero_torsions_masked.mask == 0]
 
-ax.set_title(r"Torsion ($\alpha = %.2f$)" % alpha_zero_torsions)
-ax.set_xlabel(r"$\log$ segment length ($\mu m$)", fontsize=24)
-ax.set_ylabel(r"pdf", fontsize=24)
-leg = ax.legend(loc=1)
+log_curvatures = np.log10(nonzero_curvatures)
+log_torsions = np.log10(np.abs(nonzero_torsions))
+# print(min(np.abs(nonzero_torsions)))
+# print(min(log_torsions))
+log_curvatures_d_from_root = np.log10(nonzero_curvatures_d_from_root)
+log_torsions_d_from_root = np.log10(nonzero_torsions_d_from_root)
+
+log_slope_curvatures, log_intercept_curvatures, _, _, _ = scipy.stats.linregress(
+    log_curvatures_d_from_root, log_curvatures
+)
+log_slope_curvatures = np.around(log_slope_curvatures, decimals=2)
+log_intercept_curvatures = np.around(log_intercept_curvatures, decimals=2)
+log_curvatures_fit = (
+    log_slope_curvatures * log_curvatures_d_from_root + log_intercept_curvatures
+)
+curvatures_pearson_r, curvatures_p_value = scipy.stats.pearsonr(
+    log_curvatures, log_curvatures_fit
+)
+print(
+    log_slope_curvatures,
+    log_intercept_curvatures,
+    curvatures_pearson_r ** 2,
+    curvatures_p_value,
+)
+
+log_slope_torsions, log_intercept_torsions, _, _, _ = scipy.stats.linregress(
+    log_torsions_d_from_root, log_torsions
+)
+log_slope_torsions = np.around(log_slope_torsions, decimals=2)
+log_intercept_torsions = np.around(log_intercept_torsions, decimals=2)
+log_torsions_fit = (
+    log_slope_torsions * log_torsions_d_from_root + log_intercept_torsions
+)
+torsions_pearson_r, torsions_p_value = scipy.stats.pearsonr(
+    log_torsions, log_torsions_fit
+)
+print(
+    log_slope_torsions,
+    log_intercept_torsions,
+    torsions_pearson_r ** 2,
+    torsions_p_value,
+)
+
+fig = plt.figure(figsize=(22, 8))
+axes = fig.subplots(1, 2)
+GRAY = "#999999"
+TITLE_TYPE_SETTINGS = {"fontname": "Arial", "size": 20}
+SUP_TITLE_TYPE_SETTINGS = {"fontname": "Arial", "size": 24}
+plt.rc("font", family="Arial", size=20)
+
+ax = axes[0]
+ax.spines["bottom"].set_color(GRAY)
+ax.spines["top"].set_color(GRAY)
+ax.spines["right"].set_color(GRAY)
+ax.spines["left"].set_color(GRAY)
+ax.tick_params(axis="both", colors=GRAY, labelsize="large")
+
+ax.scatter(
+    log_curvatures_d_from_root,
+    log_curvatures,
+    marker=".",
+    label="Segment",
+    color="#377eb8",
+)
+ax.plot(
+    log_curvatures_d_from_root,
+    log_curvatures_fit,
+    color="#e41a1c",
+    lw=2,
+    label=r"$y={}x {}{}$".format(
+        log_slope_curvatures,
+        "+" if np.sign(log_intercept_curvatures) >= 0 else "-",
+        np.abs(log_intercept_curvatures),
+    ),
+)
+ax.set_title("Curvature")
+ax.set_xlabel(r"$\log$ distance from segment root ($\mu m$)", fontsize=22)
+ax.set_ylabel(r"$\log$ curvature", fontsize=22)
+leg = ax.legend(loc=4)
 leg.get_frame().set_edgecolor(GRAY)
-ax.set_xticks([1, 2, 3, 4])
 
+ax = axes[1]
+ax.spines["bottom"].set_color(GRAY)
+ax.spines["top"].set_color(GRAY)
+ax.spines["right"].set_color(GRAY)
+ax.spines["left"].set_color(GRAY)
+ax.tick_params(axis="both", colors=GRAY, labelsize="large")
 
-fig.suptitle("Brain 1")
-plt.savefig(os.path.join(experiment_dir, "{}_histograms.jpg".format(brain)))
-plt.savefig(os.path.join(experiment_dir, "{}_histograms.eps".format(brain)))
+ax.scatter(
+    log_torsions_d_from_root,
+    log_torsions,
+    marker=".",
+    label="Segment",
+    color="#377eb8",
+)
+ax.plot(
+    log_torsions_d_from_root,
+    log_torsions_fit,
+    color="#e41a1c",
+    lw=2,
+    label=r"$y={}x {}{}$".format(
+        log_slope_torsions,
+        "+" if np.sign(log_intercept_torsions) >= 0 else "-",
+        np.abs(log_intercept_torsions),
+    ),
+)
+ax.set_title("Torsion")
+ax.set_xlabel(r"$\log$ distance from segment root ($\mu m$)", fontsize=22)
+ax.set_ylabel(r"$\log$ absolute torsion", fontsize=22)
+leg = ax.legend(loc=4)
+leg.get_frame().set_edgecolor(GRAY)
+
+fig.suptitle("Brain 2")
+plt.savefig(os.path.join(experiment_dir, "{}_linear_regression_from_root.eps".format(brain)))
+plt.savefig(os.path.join(experiment_dir, "{}_linear_regression_from_root.jpg".format(brain)))
