@@ -20,6 +20,7 @@ for brain in brains:
         os.makedirs(os.path.join(data_dir, brain_name))
     seg_dir = os.path.join(brain_dir, "segments_swc")
     trace_data_dir = os.path.join(brain_dir, "trace_data")
+    figures_dir = os.path.join(brain_dir, "figure")
     if not os.path.exists(seg_dir):
         os.makedirs(seg_dir)
     if not os.path.exists(trace_data_dir):
