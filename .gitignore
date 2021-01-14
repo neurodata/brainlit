@@ -61,9 +61,6 @@ docs/_build/
 # PyBuilder
 target/
 
-# Experiment data cache
-data/poster_reproduction/
-
 # Poster reproduction results
 experiments/axon_geometry/figures/
 experiments/axon_geometry/data/
