@@ -28,8 +28,8 @@ class controlled_read_s3:
 
 def generate_brain_trace_data(brain: str):
     root_dir = data_dir = Path(__file__).parents[2]
-    data_dir = os.path.join(root_dir, "data/poster_reproduction/{}".format(brain))
-    experiment_dir = os.path.join(root_dir, "experiments/poster_reproduction")
+    data_dir = os.path.join(root_dir, "data/axon_geometry/{}".format(brain))
+    experiment_dir = os.path.join(root_dir, "experiments/axon_geometry")
     segments_dir = os.path.join(data_dir, "segments")
     segments_swc_dir = os.path.join(data_dir, "segments_swc")
     # splines_dir = os.path.join(data_dir, "splines")
