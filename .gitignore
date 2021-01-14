@@ -65,4 +65,5 @@ target/
 data/poster_reproduction/
 
 # Poster reproduction results
-expriments/poster_reproduction/figures
+experiments/axon_geometry/figures/
+experiments/axon_geometry/data/
