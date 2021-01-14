@@ -49,21 +49,15 @@ def generate_brain_trace_data(brain: str):
     # trace_data = []
     for i in np.arange(0, max_id):
         i = int(i)
-        with controlled_read_s3():
-            segment_path = os.path.join(segments_dir, "{}.csv".format(i))
-            if os.path.exists(segment_path) is False:
-                df_neuron = swc.read_s3(url_segments, seg_id=i, mip=0)
-                df_neuron.to_csv(segment_path)
-            # else:
-            #     df_neuron = pd.read_csv(segment_path)
 
-            string_id = str(i).zfill(3)
-            swc_path = os.path.join(
-                segments_swc_dir,
-                "{}_G-{}_consensus.swc".format(
-                    "2018-08-01" if brain == "brain1" else "2018-12-01", string_id
-                ),
-            )
+        string_id = str(i).zfill(3)
+        swc_path = os.path.join(
+            segments_swc_dir,
+            "{}_G-{}_consensus.swc".format(
+                "2018-08-01" if brain == "brain1" else "2018-12-01", string_id
+            ),
+        )
+        if os.path.exists(swc_path):
             df_swc_offset_neuron, _, _, _ = swc.read_swc_offset(swc_path)
 
             # curvature_path = os.path.join(curvatures_dir, "{}.npy".format(i))
