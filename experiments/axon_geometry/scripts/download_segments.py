@@ -4,9 +4,10 @@ from botocore.client import Config
 import os
 from pathlib import Path
 
-cwd = Path(os.getcwd())
-exp_dir = cwd.parents[0]
+cwd = Path(os.path.abspath(__file__))
+exp_dir = cwd.parents[1]
 data_dir = os.path.join(exp_dir, "data")
+print(f"Downloading segments to {data_dir}")
 
 # Make data directory
 if not os.path.exists(data_dir):
