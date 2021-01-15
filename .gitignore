@@ -60,3 +60,8 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# experiments/axon_geometry
+experiments/axon_geometry/.ipynb_checkpoints/
+experiments/axon_geometry/figures/
+experiments/axon_geometry/data/
