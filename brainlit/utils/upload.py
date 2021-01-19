@@ -14,6 +14,13 @@ import contextlib
 import tifffile as tf
 from pathlib import Path
 from brainlit.utils.swc import swc2skeleton
+from brainlit.utils.benchmarking_params import (
+    brain_offsets,
+    vol_offsets,
+    scales,
+    type_to_date,
+)
+
 import time
 from tqdm.auto import tqdm
 from brainlit.utils.util import (
@@ -31,6 +38,7 @@ def get_volume_info(
     num_resolutions: int,
     channel: Optional[int] = 0,
     extension: Optional[str] = "tif",
+    benchmarking: Optional[bool] = False,
 ) -> Tuple[List, List, List, Tuple, List]:
     """Get filepaths along the octree-format image directory
 
@@ -66,7 +74,12 @@ def get_volume_info(
             return False
 
     p = Path(image_dir)
-    files = [i.parts for i in p.rglob(f"*.{channel}.{extension}")]
+
+    if benchmarking == True:
+        files = [i.parts for i in list(p.glob(f"*.{extension}"))]
+    else:
+        files = [i.parts for i in p.rglob(f"*.{channel}.{extension}")]
+
     parent_dirs = len(p.parts)
 
     files_ordered = [
@@ -81,15 +94,34 @@ def get_volume_info(
         for j, filepath in enumerate(resolution):
             files_ordered[i][j] = str(Path(*filepath))
 
-    img_size = np.squeeze(tf.imread(str(p / "default.0.tif"))).T.shape
-    transform = open(str(p / "transform.txt"), "r")
-    vox_size = [
-        float(s[4:].rstrip("\n")) * (0.5 ** (num_resolutions - 1))
-        for s in transform.readlines()
-        if "s" in s
-    ]
-    transform = open(str(p / "transform.txt"), "r")
-    origin = [int(o[4:].rstrip("\n")) / 1000 for o in transform.readlines() if "o" in o]
+    if benchmarking == True:
+        img_size = np.squeeze(tf.imread(str(p / files[0][parent_dirs]))).T.shape
+        vox_size = img_size
+
+        # Getting scaling parameters
+        f = p.parts[4].split("_")
+        image = f[0]
+        date = type_to_date[image]
+        num = int(f[1])
+        scale = scales[date]
+        brain_offset = brain_offsets[date]
+        vol_offset = vol_offsets[date][num]
+        origin = np.add(brain_offset, vol_offset)
+
+    else:
+
+        img_size = np.squeeze(tf.imread(str(p / "default.0.tif"))).T.shape
+        transform = open(str(p / "transform.txt"), "r")
+        vox_size = [
+            float(s[4:].rstrip("\n")) * (0.5 ** (num_resolutions - 1))
+            for s in transform.readlines()
+            if "s" in s
+        ]
+        transform = open(str(p / "transform.txt"), "r")
+        origin = [
+            int(o[4:].rstrip("\n")) / 1000 for o in transform.readlines() if "o" in o
+        ]
+
     return files_ordered, paths_bin, vox_size, img_size, origin
 
 
@@ -256,6 +288,8 @@ def upload_volumes(
     num_mips: int,
     parallel: bool = False,
     chosen: int = -1,
+    benchmarking: Optional[bool] = False,
+    continue_upload: Optional[Tuple[int, int]] = (0, 0),
 ):
     """Uploads image data from local to a precomputed path.
 
@@ -267,6 +301,10 @@ def upload_volumes(
         num_mips: The number of resolutions to upload.
         parallel: Whether to upload in parallel. Default is False.
         chosen: If not -1, uploads only that specific mip. Default is -1.
+        benchmarking: For scaling purposes, true if uploading benchmarking data. Default is False.
+        continue_upload: Used to continue an upload. Default (0, 0).
+            The tuple (layer_idx, iter) containing layer index and iter to start from.
+
     """
     check_type(input_path, str)
     check_precomputed(precomputed_path)
@@ -274,27 +312,47 @@ def upload_volumes(
     if num_mips < 1:
         raise ValueError(f"Number of resolutions should be > 0, not {num_mips}")
     check_type(parallel, bool)
-    check_type(chosen, (int, np.integer))
+
+    check_type(chosen, int)
+    check_type(benchmarking, bool)
+    check_iterable_type(continue_upload, int)
+
     if chosen < -1 or chosen >= num_mips:
         raise ValueError(f"{chosen} should be -1, or between 0 and {num_mips-1}")
 
-    (files_ordered, paths_bin, vox_size, img_size, _) = get_volume_info(
-        input_path,
-        num_mips,
-    )
     if chosen != -1:
         commit_info = False
     else:
         commit_info = True
-    vols = create_cloud_volume(
-        precomputed_path,
-        img_size,
-        vox_size,
-        num_mips,
-        parallel=parallel,
-        layer_type="image",
-        commit_info=commit_info,
-    )
+
+    if benchmarking == True:
+        (files_ordered, bin_paths, vox_size, img_size, _) = get_volume_info(
+            input_path, num_mips, benchmarking=True
+        )
+        vols = create_cloud_volume(
+            precomputed_path,
+            img_size,
+            vox_size,
+            num_mips,
+            chunk_size=[int(i) for i in img_size],
+            parallel=parallel,
+            layer_type="image",
+            commit_info=commit_info,
+        )
+    else:
+        (files_ordered, bin_paths, vox_size, img_size, _) = get_volume_info(
+            input_path,
+            num_mips,
+        )
+        vols = create_cloud_volume(
+            precomputed_path,
+            img_size,
+            vox_size,
+            num_mips,
+            parallel=parallel,
+            layer_type="image",
+            commit_info=commit_info,
+        )
 
     num_procs = min(
         math.floor(
@@ -302,58 +360,81 @@ def upload_volumes(
         ),
         cpu_count(),
     )
+
+    # skip already uploaded layers
+    vols2 = vols[continue_upload[0] :]
+    files_ordered2 = files_ordered[continue_upload[0] :]
+    bin_paths2 = bin_paths[continue_upload[0] :]
+    # skip already uploaded files on current layer
+    files_ordered2[0] = files_ordered2[0][continue_upload[1] :]
+    bin_paths2[0] = bin_paths2[0][continue_upload[1] :]
+
     start = time.time()
     if chosen == -1:
-        for mip, vol in enumerate(vols):
+        for mip, vol in enumerate(vols2):
             try:
                 with tqdm_joblib(
                     tqdm(
-                        desc="Creating precomputed volume",
-                        total=len(files_ordered[mip]),
+                        desc=f"Creating precomputed volume at layer index {mip+continue_upload[0]}",
+                        total=len(files_ordered2[mip]),
                     )
                 ) as progress_bar:
                     Parallel(num_procs, timeout=1800)(
                         delayed(process)(
                             f,
                             b,
-                            vols[mip],
+                            vols2[mip],
                         )
-                        for f, b in zip(files_ordered[mip], paths_bin[mip])
+                        for f, b in zip(
+                            files_ordered2[mip],
+                            bin_paths2[mip],
+                        )
                     )
-                print(f"\nFinished mip {mip}, took {time.time()-start} seconds")
+                print(
+                    f"\nFinished layer index {mip+continue_upload[0]}, took {time.time()-start} seconds"
+                )
                 start = time.time()
             except Exception as e:
                 print(e)
-                print("timed out on a slice. moving on to the next step of pipeline")
+                print(
+                    f"timed out on a chunk on layer index {mip+continue_upload[0]}. moving on to the next step of pipeline"
+                )
     else:
         try:
             with tqdm_joblib(
                 tqdm(
-                    desc="Creating precomputed volume", total=len(files_ordered[chosen])
+                    desc=f"Creating precomputed volume at mip {chosen}",
+                    total=len(files_ordered[chosen][continue_upload[1] :]),
                 )
             ) as progress_bar:
-                Parallel(num_procs, timeout=1800)(
+                Parallel(num_procs, timeout=1800, verbose=0)(
                     delayed(process)(
                         f,
                         b,
                         vols[chosen],
                     )
-                    for f, b in zip(files_ordered[chosen], paths_bin[chosen])
+                    for f, b in zip(
+                        files_ordered[chosen][continue_upload[1] :],
+                        bin_paths[chosen][continue_upload[1] :],
+                    )
                 )
-            print(f"\nFinished mip {chosen}, took {time.time()-start} seconds")
+            print(f"\nFinished layer index {chosen}, took {time.time()-start} seconds")
         except Exception as e:
             print(e)
-            print("timed out on a slice. moving on to the next step of pipeline")
+            print(f"timed out on a chunk on layer index {chosen}.")
 
 
 def create_skel_segids(
-    swc_dir: str, origin: Sequence[Union[int, float]]
+    swc_dir: str,
+    origin: Sequence[Union[int, float]],
+    benchmarking: Optional[bool] = False,
 ) -> Tuple[Skeleton, List[int]]:
     """Create skeletons to be uploaded as precomputed format
 
     Arguments:
         swc_dir: Path to consensus swc files.
         origin: x,y,z coordinate of coordinate frame in space in mircons.
+        benchmarking: Optional, scales swc benchmarking data.
 
     Returns:
         skeletons: .swc skeletons to be pushed to bucket.
@@ -361,6 +442,7 @@ def create_skel_segids(
     """
     check_type(swc_dir, str)
     check_size(origin)
+    check_type(benchmarking, bool)
 
     p = Path(swc_dir)
     files = [str(i) for i in p.glob("*.swc")]
@@ -369,18 +451,22 @@ def create_skel_segids(
     skeletons = []
     segids = []
     for i in tqdm(files, desc="converting swcs to neuroglancer format..."):
-        skeletons.append(swc2skeleton(i, origin=origin))
+        skeletons.append(swc2skeleton(i, benchmarking, origin=origin))
         segids.append(skeletons[-1].id)
     return skeletons, segids
 
 
-def upload_segments(input_path, precomputed_path, num_mips):
+def upload_segments(
+    input_path, precomputed_path, num_mips, benchmarking: Optional[bool] = False
+):
     """Uploads segmentation data from local to precomputed path.
 
     Arguments:
         input_path: The filepath to the root directory of the octree data with consensus-swcs folder.
         precomputed_path: CloudVolume precomputed path or url.
         num_mips: The number of resolutions to upload (for info file).
+        benchmarking: Optional, scales swc benchmarking data.
+
     """
     check_type(input_path, str)
     check_precomputed(precomputed_path)
@@ -388,20 +474,39 @@ def upload_segments(input_path, precomputed_path, num_mips):
     if num_mips < 1:
         raise ValueError(f"Number of resolutions should be > 0, not {num_mips}")
 
-    (_, _, vox_size, img_size, origin) = get_volume_info(
-        input_path,
-        num_mips,
-    )
+    if benchmarking == True:
+        # Getting swc scaling parameters
+        f = Path(input_path).parts[4].split("_")
+        image = f[0]
+        date = type_to_date[image]
+        scale = scales[date]
+        (_, _, vox_size, img_size, origin) = get_volume_info(
+            input_path,
+            num_mips,
+            benchmarking=True,
+        )
+        chunk_size = [int(i) for i in img_size]
+    else:
+        (_, _, vox_size, img_size, origin) = get_volume_info(
+            input_path,
+            num_mips,
+        )
+        chunk_size = None
+
     vols = create_cloud_volume(
         precomputed_path,
         img_size,
         vox_size,
         num_mips,
         layer_type="segmentation",
+        chunk_size=chunk_size,
     )
+
     swc_dir = Path(input_path) / "consensus-swcs"
-    segments, segids = create_skel_segids(str(swc_dir), origin)
+    segments, segids = create_skel_segids(str(swc_dir), origin, benchmarking)
     for skel in segments:
+        if benchmarking == True:
+            skel.vertices /= scale  # Dividing vertices by scale factor
         vols[0].skeleton.upload(skel)
 
 
