@@ -17,7 +17,7 @@ url = str((top_level / "test_upload"))
 url_seg = "file://" + url + "_segments"
 #url_seg = "../data/test_upload_segments/"
 url = url + "/serial"
-swc_path = "../data/data_octree/consensus-swcs/2018-08-01_G-002_consensus.swc"
+swc_path = "./data/data_octree/consensus-swcs/2018-08-01_G-002_consensus.swc"
 
 #url_seg = 's3://open-neurodata/brainlit/brain1_segments'
 seg_id = 2
