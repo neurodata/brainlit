@@ -12,9 +12,10 @@ from brainlit.utils.util import (
 )
 from sklearn.metrics import pairwise_distances_argmin_min
 
+
 class NeuronTrace:
     """Neuron Trace class to handle neuron traces as swcs and s3 skeletons
-    
+
     Arguments
     ---------
         path : str
@@ -27,7 +28,7 @@ class NeuronTrace:
             If s3 is provided, specifies if it should be rounded, default True
         read_offset: bool
             If swc is provided, whether offset should be read from file, default False
-            
+
     Attributes
     ----------
         path : str
@@ -43,7 +44,7 @@ class NeuronTrace:
         mip : None,int
             If s3 bucket path is provided, the resolution to use for scaling
     """
- 
+
     def __init__(self, path, seg_id=None, mip=None, rounding=True, read_offset=False):
         self.path = path
         self.input_type = None
@@ -53,73 +54,75 @@ class NeuronTrace:
         self.mip = mip
         self.rounding = rounding
 
-        
         check_type(path, str)
-        check_type(seg_id,(type(None),int))
-        check_type(mip,(type(None),int))
-        check_type(read_offset,bool)
-        check_type(rounding,bool)
-        if (seg_id == None and type(mip) == int) or (type(seg_id) == int and mip == None):
-            raise ValueError("For 'swc' do not input mip or seg_id, and for 'skel', provide both mip and seg_id")
-        
-        #first check if it is a skel
-        if seg_id!=None and mip!=None:
+        check_type(seg_id, (type(None), int))
+        check_type(mip, (type(None), int))
+        check_type(read_offset, bool)
+        check_type(rounding, bool)
+        if (seg_id == None and type(mip) == int) or (
+            type(seg_id) == int and mip == None
+        ):
+            raise ValueError(
+                "For 'swc' do not input mip or seg_id, and for 'skel', provide both mip and seg_id"
+            )
+
+        # first check if it is a skel
+        if seg_id != None and mip != None:
             cv = CloudVolume(path, mip=mip)
             skeleton = cv.skeleton.get(seg_id)
             if type(skeleton) is Skeleton:
-                self.input_type = 'skel'
-              
-        #else, check if it is a swc by checking if file exists/extension is .swc
-        elif os.path.isfile(self.path) and os.path.splitext(path)[-1].lower() == '.swc':
-            self.input_type = 'swc'
-                  
-        #if it is not a swc or skeleton, raise error
-        if self.input_type != 'swc' and self.input_type != 'skel':
-            raise ValueError("Did not input 'swc' filepath or 'skel' url")
-        
-        #next, convert to a dataframe
-        if self.input_type == 'swc'and read_offset == False:
-            df, offset, color, cc, branch = self._read_swc(self.path)
-            args = [offset,color,cc,branch]
-            self.df = df
-            self.args = args
-            
-        elif self.input_type == 'swc'and read_offset == True:
-            df, color, cc, branch = self._read_swc_offset(path)
-            args = [None,color,cc,branch]
-            self.df = df
-            self.args = args
-            
-        elif self.input_type == 'skel':
-            df = self._read_s3(path,seg_id,mip,rounding)
-            (self.path,seg_id, mip)
-            self.df = df
-            
+                self.input_type = "skel"
 
-#public methods
+        # else, check if it is a swc by checking if file exists/extension is .swc
+        elif os.path.isfile(self.path) and os.path.splitext(path)[-1].lower() == ".swc":
+            self.input_type = "swc"
+
+        # if it is not a swc or skeleton, raise error
+        if self.input_type != "swc" and self.input_type != "skel":
+            raise ValueError("Did not input 'swc' filepath or 'skel' url")
+
+        # next, convert to a dataframe
+        if self.input_type == "swc" and read_offset == False:
+            df, offset, color, cc, branch = self._read_swc(self.path)
+            args = [offset, color, cc, branch]
+            self.df = df
+            self.args = args
+
+        elif self.input_type == "swc" and read_offset == True:
+            df, color, cc, branch = self._read_swc_offset(path)
+            args = [None, color, cc, branch]
+            self.df = df
+            self.args = args
+
+        elif self.input_type == "skel":
+            df = self._read_s3(path, seg_id, mip, rounding)
+            (self.path, seg_id, mip)
+            self.df = df
+
+    # public methods
     def get_df_arguments(self):
-        """ Gets arguments for df - offset, color, cc, branch
-        
+        """Gets arguments for df - offset, color, cc, branch
+
         Returns
         -------
             self.args : list
                 list of arguments for df, if found - offset, color, cc, branch
         """
         return self.args
-            
+
     def get_df(self):
-        """ Gets the dataframe providing indices, coordinates, and parents of each node
-        
+        """Gets the dataframe providing indices, coordinates, and parents of each node
+
         Returns
         -------
             self.df : :class:`pandas.DataFrame`
                 dataframe providing indices, coordinates, and parents of each node
         """
         return self.df
-    
-    def get_skel(self,benchmarking=False,origin=None):
-        """ Gets a skeleton version of dataframe, if swc input is provided
-        
+
+    def get_skel(self, benchmarking=False, origin=None):
+        """Gets a skeleton version of dataframe, if swc input is provided
+
         Arguments
         ----------
             origin : None, numpy array with shape (3,1) (default = None)
@@ -131,20 +134,20 @@ class NeuronTrace:
             skel : cloudvolume.Skeleton
                 Skeleton object of given SWC file
         """
-        check_type(origin,(type(None),np.ndarray))
-        check_type(benchmarking,bool)
+        check_type(origin, (type(None), np.ndarray))
+        check_type(benchmarking, bool)
         if type(origin) == np.ndarray:
             check_size(origin)
-        
-        if self.input_type == 'swc':
-            skel = self._swc2skeleton(self.path,benchmarking,origin)
+
+        if self.input_type == "swc":
+            skel = self._swc2skeleton(self.path, benchmarking, origin)
             return skel
-        elif self.input_type == 'skel':
+        elif self.input_type == "skel":
             cv = CloudVolume(self.path, mip=self.mip)
             skel = cv.skeleton.get(self.seg_id)
             return skel
-        
-    def get_df_voxel(self,spacing,origin=np.array([0, 0, 0])):
+
+    def get_df_voxel(self, spacing, origin=np.array([0, 0, 0])):
         """Converts coordinates in pd.DataFrame from spatial units to voxel units
 
         Arguments
@@ -160,15 +163,15 @@ class NeuronTrace:
             Indicies, coordinates, and parents of each node in the swc. Coordinates
             are in voxel units.
         """
-        check_type(spacing,np.ndarray)
+        check_type(spacing, np.ndarray)
         check_size(spacing)
-        check_type(origin,np.ndarray)
+        check_type(origin, np.ndarray)
         check_size(origin)
-            
+
         df_voxel = self._df_in_voxel(self.df, spacing, origin)
         return df_voxel
-        
-    def get_graph(self,spacing=None,origin=None):
+
+    def get_graph(self, spacing=None, origin=None):
         """Converts dataframe in either spatial or voxel coordinates into a directed graph.
         Will convert to voxel coordinates if spacing is specified.
 
@@ -180,35 +183,35 @@ class NeuronTrace:
         origin : None, :class:`numpy.array` (default = None)
             Origin of the spatial coordinate, if converting to voxels. Default is None.
             Assumed to be np.array([x,y,z])
-            
+
         Returns
         -------
         G : :class:`networkx.classes.digraph.DiGraph`
             Neuron from swc represented as directed graph. Coordinates x,y,z are
             node attributes accessed by keys 'x','y','z' respectively.
         """
-        check_type(spacing,(type(None),np.ndarray))
+        check_type(spacing, (type(None), np.ndarray))
         if type(spacing) == np.ndarray:
             check_size(spacing)
-        check_type(origin,(type(None),np.ndarray))
+        check_type(origin, (type(None), np.ndarray))
         if type(origin) == np.ndarray:
             check_size(origin)
-        
-        #if origin isn't specified but spacing is, set origin to np.array([0, 0, 0])
+
+        # if origin isn't specified but spacing is, set origin to np.array([0, 0, 0])
         if type(spacing) == np.ndarray and origin is None:
             origin = np.array([0, 0, 0])
-        
-        #voxel conversion option
+
+        # voxel conversion option
         if type(spacing) == np.ndarray:
             df_voxel = self._df_in_voxel(self.df, spacing, origin)
             G = self._df_to_graph(df_voxel)
-        
-        #no voxel conversion option
+
+        # no voxel conversion option
         else:
             G = self._df_to_graph(self.df)
         return G
 
-    def get_paths(self,spacing=None,origin=None):
+    def get_paths(self, spacing=None, origin=None):
         """Converts dataframe in either spatial or voxel coordinates into a list of paths.
         Will convert to voxel coordinates if spacing is specified.
 
@@ -220,37 +223,39 @@ class NeuronTrace:
         origin : None, :class:`numpy.array`
             Origin of the spatial coordinate, if converting to voxels. Default is None.
             Assumed to be np.array([x,y,z])
-        
+
         Returns
         -------
         paths : list
             List of Nx3 numpy.array. Rows of the array are 3D coordinates in voxel
             units. Each array is one path.
         """
-        
-        check_type(spacing,(type(None),np.ndarray))
+
+        check_type(spacing, (type(None), np.ndarray))
         if type(spacing) == np.ndarray:
             check_size(spacing)
-        check_type(origin,(type(None),np.ndarray))
+        check_type(origin, (type(None), np.ndarray))
         if type(origin) == np.ndarray:
             check_size(origin)
-        
-        #if origin isn't specified but spacing is, set origin to np.array([0, 0, 0])
+
+        # if origin isn't specified but spacing is, set origin to np.array([0, 0, 0])
         if type(spacing) == np.ndarray and origin is None:
             origin = np.array([0, 0, 0])
-        
-        #voxel conversion option
+
+        # voxel conversion option
         if type(spacing) == np.ndarray:
             df_voxel = self._df_in_voxel(self.df, spacing, origin)
             G = self._df_to_graph(df_voxel)
-            
-        #no voxel conversion option
+
+        # no voxel conversion option
         else:
             G = self._df_to_graph(self.df)
         paths = self._graph_to_paths(G)
         return paths
-    
-    def generate_df_subset(self, vox_in_img_list,subneuron_start = None, subneuron_end = None):
+
+    def generate_df_subset(
+        self, vox_in_img_list, subneuron_start=None, subneuron_end=None
+    ):
         """Read a new subset dataframe in coordinates in img spacing.
         Specify specific range of vertices from dataframe if desired
 
@@ -271,86 +276,88 @@ class NeuronTrace:
             Indicies, coordinates (in img spacing) and parents of each node.
             Coordinates are in spatial units.
         """
-        check_type(vox_in_img_list,list)
-        check_type(subneuron_start,(type(None),int))
-        check_type(subneuron_end,(type(None),int))
-        
-        if (subneuron_start == None and type(subneuron_end) == int) or (type(subneuron_start) == int and subneuron_end == None):
-            raise ValueError("Provide both starting and ending vertices to use for the subneuron")
-        
-        
-        #no subneuron range specified
+        check_type(vox_in_img_list, list)
+        check_type(subneuron_start, (type(None), int))
+        check_type(subneuron_end, (type(None), int))
+
+        if (subneuron_start == None and type(subneuron_end) == int) or (
+            type(subneuron_start) == int and subneuron_end == None
+        ):
+            raise ValueError(
+                "Provide both starting and ending vertices to use for the subneuron"
+            )
+
+        # no subneuron range specified
         df = self.df
 
-        #subneuron range specified
+        # subneuron range specified
         if subneuron_start != None and subneuron_end != None:
             subneuron_df = self.df[subneuron_start:subneuron_end]
             df = subneuron_df
-            
-        df_new =self._generate_df_subset(df,vox_in_img_list)
-        
+
+        df_new = self._generate_df_subset(df, vox_in_img_list)
+
         return df_new
-            
-    def get_bfs_subgraph(self,node_id,depth,df=None,spacing=None,origin=None):
+
+    def get_bfs_subgraph(self, node_id, depth, df=None, spacing=None, origin=None):
         """
-        Creates a spanning subgraph from a seed node and parent graph using BFS.
+         Creates a spanning subgraph from a seed node and parent graph using BFS.
 
-       Arguments
-        ----------
-        node_id : int
-            The id of the node to use as a seed.
-            If df is not None this become the node index.
-        depth : int
-            The max depth for BFS to traven in each direction.
-        df : None, DataFrame (default = None)
-            Dataframe storing indices.
-            In some cases indexing by row number is preferred.
-        spacing : None, :class:`numpy.array` (default = None)
-            Conversion factor (spatial units/voxel). Assumed to be np.array([x,y,z]).
-            Provided if graph should convert to voxel coordinates first.  Default is None.
-        origin : :class:`numpy.array`
-            Origin of the spatial coordinate, if converting to voxels. Default is None.
-            Assumed to be np.array([x,y,z])
+        Arguments
+         ----------
+         node_id : int
+             The id of the node to use as a seed.
+             If df is not None this become the node index.
+         depth : int
+             The max depth for BFS to traven in each direction.
+         df : None, DataFrame (default = None)
+             Dataframe storing indices.
+             In some cases indexing by row number is preferred.
+         spacing : None, :class:`numpy.array` (default = None)
+             Conversion factor (spatial units/voxel). Assumed to be np.array([x,y,z]).
+             Provided if graph should convert to voxel coordinates first.  Default is None.
+         origin : :class:`numpy.array`
+             Origin of the spatial coordinate, if converting to voxels. Default is None.
+             Assumed to be np.array([x,y,z])
 
-        Returns
-        -------
-        G_sub : :class:`networkx.classes.digraph.DiGraph`
-            Subgraph
+         Returns
+         -------
+         G_sub : :class:`networkx.classes.digraph.DiGraph`
+             Subgraph
 
-        tree : DiGraph
-            The tree returned by BFS.
+         tree : DiGraph
+             The tree returned by BFS.
         """
 
-        check_type(node_id,(list,int))
-        check_type(depth,int)
-        check_type(df,(type(None),pd.core.frame.DataFrame))
-        
-        check_type(spacing,(type(None),np.ndarray))
+        check_type(node_id, (list, int))
+        check_type(depth, int)
+        check_type(df, (type(None), pd.core.frame.DataFrame))
+
+        check_type(spacing, (type(None), np.ndarray))
         if type(spacing) == np.ndarray:
             check_size(spacing)
-        check_type(origin,(type(None),np.ndarray))
+        check_type(origin, (type(None), np.ndarray))
         if type(origin) == np.ndarray:
             check_size(origin)
-        
-        #if origin isn't specified but spacing is, set origin to np.array([0, 0, 0])
+
+        # if origin isn't specified but spacing is, set origin to np.array([0, 0, 0])
         if type(spacing) == np.ndarray and origin is None:
             origin = np.array([0, 0, 0])
-        
-        #voxel conversion option
+
+        # voxel conversion option
         if type(spacing) == np.ndarray:
             df_voxel = self._df_in_voxel(self.df, spacing, origin)
             G = self._df_to_graph(df_voxel)
-       
-        #no voxel conversion option
+
+        # no voxel conversion option
         else:
             G = self._df_to_graph(self.df)
-            
-        G_sub, tree = self._get_bfs_subgraph(G,node_id,depth,df)
-            
+
+        G_sub, tree = self._get_bfs_subgraph(G, node_id, depth, df)
+
         return G_sub, tree
 
-    
-    def get_sub_neuron(self,bounding_box,spacing=None,origin=None):
+    def get_sub_neuron(self, bounding_box, spacing=None, origin=None):
         """Returns sub-neuron with node coordinates bounded by start and end
 
         Arguments
@@ -372,50 +379,50 @@ class NeuronTrace:
             Neuron from swc represented as directed graph. Coordinates x,y,z are
             node attributes accessed by keys 'x','y','z' respectively.
         """
-                   
-        check_type(bounding_box,(tuple,list))
-        
+
+        check_type(bounding_box, (tuple, list))
+
         if len(bounding_box) != 2:
-            raise ValueError('Bounding box must be length 2')
-        check_type(spacing,(type(None),np.ndarray))
-        
-        check_type(spacing,(type(None),np.ndarray))
+            raise ValueError("Bounding box must be length 2")
+        check_type(spacing, (type(None), np.ndarray))
+
+        check_type(spacing, (type(None), np.ndarray))
         if type(spacing) == np.ndarray:
             check_size(spacing)
-        check_type(origin,(type(None),np.ndarray))
+        check_type(origin, (type(None), np.ndarray))
         if type(origin) == np.ndarray:
             check_size(origin)
-        
-        #if origin isn't specified but spacing is, set origin to np.array([0, 0, 0])
+
+        # if origin isn't specified but spacing is, set origin to np.array([0, 0, 0])
         if type(spacing) == np.ndarray and origin is None:
             origin = np.array([0, 0, 0])
-        
-        #voxel conversion option
+
+        # voxel conversion option
         if type(spacing) == np.ndarray:
             df_voxel = self._df_in_voxel(self.df, spacing, origin)
             G = self._df_to_graph(df_voxel)
-       
-        #no voxel conversion option
+
+        # no voxel conversion option
         else:
             G = self._df_to_graph(self.df)
-  
-        G_sub = self._get_sub_neuron(G,bounding_box)
-        
+
+        G_sub = self._get_sub_neuron(G, bounding_box)
+
         return G_sub
-        
+
     @staticmethod
-    def ssd(pts1,pts2):
+    def ssd(pts1, pts2):
         """Compute significant spatial distance metric between two traces as defined in APP1.
         Args:
             pts1 (np.array): array containing coordinates of points of trace 1. shape: npoints x ndims
             pts2 (np.array): array containing coordinates of points of trace 1. shape: npoints x ndims
         Returns:
             [float]: significant spatial distance as defined by APP1
-         
+
         """
-        check_type(pts1,np.ndarray)
-        check_type(pts2,np.ndarray)
-        
+        check_type(pts1, np.ndarray)
+        check_type(pts2, np.ndarray)
+
         _, dists1 = pairwise_distances_argmin_min(pts1, pts2)
         dists1 = dists1[dists1 >= 2]
         _, dists2 = pairwise_distances_argmin_min(pts2, pts1)
@@ -429,9 +436,9 @@ class NeuronTrace:
             ssd = np.mean(dists)
 
         return ssd
-        
-#private methods
-    def _read_swc(self,path):
+
+    # private methods
+    def _read_swc(self, path):
         """
         Read a single swc file
 
@@ -493,8 +500,7 @@ class NeuronTrace:
         )
         return df, offset, color, cc, branch
 
-
-    def _read_swc_offset(self,path):
+    def _read_swc_offset(self, path):
         df, offset, color, cc, branch = self._read_swc(path)
         df["x"] = df["x"] + offset[0]
         df["y"] = df["y"] + offset[1]
@@ -502,7 +508,7 @@ class NeuronTrace:
 
         return df, color, cc, branch
 
-    def _read_s3(self,s3_path, seg_id, mip, rounding = True):
+    def _read_s3(self, s3_path, seg_id, mip, rounding=True):
         """Read a s3 bucket path to a skeleton object
         into a pandas dataframe.
 
@@ -555,8 +561,7 @@ class NeuronTrace:
 
         return df
 
-
-    def _generate_df_subset(self,swc_df, vox_in_img_list):
+    def _generate_df_subset(self, swc_df, vox_in_img_list):
         """Read a new subset of swc dataframe in coordinates in img spacing.
 
         Parameters
@@ -583,8 +588,7 @@ class NeuronTrace:
 
         return df_new
 
-
-    def _space_to_voxel(self,spatial_coord, spacing, origin=np.array([0, 0, 0])):
+    def _space_to_voxel(self, spatial_coord, spacing, origin=np.array([0, 0, 0])):
         """Converts coordinate from spatial units to voxel units.
 
         Parameters
@@ -606,8 +610,7 @@ class NeuronTrace:
         voxel_coord = voxel_coord.astype(np.int64)
         return voxel_coord
 
-
-    def _df_in_voxel(self,df, spacing, origin=np.array([0, 0, 0])):
+    def _df_in_voxel(self, df, spacing, origin=np.array([0, 0, 0])):
         """Converts coordinates in pd.DataFrame representing swc from spatial units
         to voxel units
 
@@ -643,8 +646,7 @@ class NeuronTrace:
 
         return df_voxel
 
-
-    def _df_to_graph(self,df_voxel):
+    def _df_to_graph(self, df_voxel):
         """Converts dataframe of swc in voxel coordinates into a directed graph
 
         Parameters
@@ -678,7 +680,6 @@ class NeuronTrace:
                 G.add_edge(parent, child)
 
         return G
-
 
     def _get_sub_neuron(self, G, bounding_box):
         """Returns sub-neuron with node coordinates bounded by start and end
@@ -727,8 +728,7 @@ class NeuronTrace:
 
         return G_sub
 
-
-    def _graph_to_paths(self,G):
+    def _graph_to_paths(self, G):
         """Converts neuron represented as a directed graph with no cycles into a
         list of paths.
 
@@ -747,7 +747,9 @@ class NeuronTrace:
         branches = []
         while len(G_cp.edges) != 0:  # iterate over branches
             # get longest branch
-            longest = nx.algorithms.dag.dag_longest_path(G_cp)  # list of nodes on the path
+            longest = nx.algorithms.dag.dag_longest_path(
+                G_cp
+            )  # list of nodes on the path
             branches.append(longest)
 
             # remove longest branch
@@ -769,8 +771,7 @@ class NeuronTrace:
 
         return np.array(paths, dtype="object")
 
-
-    def _get_bfs_subgraph(self,G, node_id, depth, df=None):
+    def _get_bfs_subgraph(self, G, node_id, depth, df=None):
         """
         Creates a spanning subgraph from a seed node and parent graph using BFS.
 
@@ -805,8 +806,7 @@ class NeuronTrace:
         G_sub = nx.subgraph(G, list(tree.nodes))
         return G_sub, tree
 
-
-    def _swc2skeleton(self,swc_file, benchmarking=False, origin=None):
+    def _swc2skeleton(self, swc_file, benchmarking=False, origin=None):
         """Converts swc file into Skeleton object
         Arguments:
             swc_file {str} -- path to SWC file
