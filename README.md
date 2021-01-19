@@ -1,7 +1,7 @@
 # Brainlit
 [![DOI](https://zenodo.org/badge/237507496.svg)](https://zenodo.org/badge/latestdoi/237507496)
 [![Python](https://img.shields.io/badge/python-3.7-blue.svg)]()
-[![CircleCI](https://circleci.com/gh/neurodata/brainlit/tree/master.svg?style=svg)](https://circleci.com/gh/neurodata/brainlit/tree/master)
+[![CircleCI](https://circleci.com/gh/neurodata/brainlit/tree/develop.svg?style=svg)](https://circleci.com/gh/neurodata/brainlit/tree/develop)
 [![PyPI version](https://badge.fury.io/py/brainlit.svg)](https://badge.fury.io/py/brainlit)
 [![Downloads](https://img.shields.io/pypi/dw/brainlit)](https://img.shields.io/pypi/dw/brainlit)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
