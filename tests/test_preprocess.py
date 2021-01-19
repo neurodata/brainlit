@@ -5,6 +5,7 @@ from brainlit.preprocessing.image_process import (
     getLargestCC,
     removeSmallCCs,
 )
+from brainlit.preprocessing.preprocess import center, contrast_normalize
 from numpy.testing import (
     assert_equal,
     assert_allclose,
@@ -142,6 +143,20 @@ def test_removeSmallCCs_valid_input():
 ############################
 ### functionality checks ###
 ############################
+
+
+def test_center():
+    arr = np.array([1, 2, 6])
+    centered = center(arr)
+    answer = np.array([-2, -1, 3])
+    assert_array_equal(centered, answer)
+
+
+def test_contrast_normalize():
+    arr = np.array([1, 5])
+    normalized = contrast_normalize(arr)
+    answer = np.array([-1, 1])
+    assert_array_equal(normalized, answer)
 
 
 def test_gaussian_truncate():
