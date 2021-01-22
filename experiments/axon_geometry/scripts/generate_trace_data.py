@@ -15,15 +15,20 @@ import matplotlib.pyplot as plt
 from sklearn.neighbors import KernelDensity
 
 
-def generate_brain_trace_data(brain: str):
+def generate_brain_trace_data(brain: str, spacing: int):
     cwd = Path(os.getcwd())
     exp_dir = cwd.parents[0]
     data_dir = os.path.join(exp_dir, "data")
     brain_dir = os.path.join(data_dir, brain)
     segments_swc_dir = os.path.join(brain_dir, "segments_swc")
     trace_data_dir = os.path.join(brain_dir, "trace_data")
+    trace_data_dir = os.path.join(trace_data_dir, str(spacing))
+    if not os.path.exists(trace_data_dir):
+        os.makedirs(trace_data_dir)
 
     max_id = 300
+    print(f"Trace directory: {trace_data_dir}")
+    print(f"Spacing: {spacing} microns")
     for i in np.arange(0, max_id):
         i = int(i)
         string_id = str(i).zfill(3)
@@ -55,7 +60,7 @@ def generate_brain_trace_data(brain: str):
                 # evaluate segment length (in um)
                 seg_length = u_um[-1] - u_um[0]
                 # resample points at 1um
-                uu = np.arange(u_um[0], u_um[-1] + 0.9, 1)
+                uu = np.arange(u_um[0], u_um[-1] + 0.9, spacing)
                 # evaluate mean curvature of the segment
                 _curvature = curvature(uu, t, c, k)
                 mean_curvature = np.mean(_curvature)
@@ -76,4 +81,5 @@ def generate_brain_trace_data(brain: str):
 
 
 for brain in ["brain1", "brain2"]:
-    generate_brain_trace_data(brain)
+    generate_brain_trace_data(brain, 1)
+    generate_brain_trace_data(brain, 14)
