@@ -80,6 +80,8 @@ def generate_brain_trace_data(brain: str, spacing: int):
             np.save(trace_data_path, trace_data)
 
 
+# spacing of 1um is for autocorrelation plot
+# spacing of 14um is for regression plots
 for brain in ["brain1", "brain2"]:
     generate_brain_trace_data(brain, 1)
     generate_brain_trace_data(brain, 14)
