@@ -16,8 +16,8 @@ from sklearn.neighbors import KernelDensity
 
 
 def generate_brain_trace_data(brain: str, spacing: int):
-    cwd = Path(os.getcwd())
-    exp_dir = cwd.parents[0]
+    cwd = Path(os.path.abspath(__file__))
+    exp_dir = cwd.parents[1]
     data_dir = os.path.join(exp_dir, "data")
     brain_dir = os.path.join(data_dir, brain)
     segments_swc_dir = os.path.join(brain_dir, "segments_swc")
