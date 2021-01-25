@@ -60,7 +60,7 @@ def generate_brain_trace_data(brain: str, spacing: int):
                 # evaluate segment length (in um)
                 seg_length = u_um[-1] - u_um[0]
                 # resample points at specified spacing
-                uu = np.arange(u_um[0], u_um[-1] , spacing)
+                uu = np.arange(u_um[0], u_um[-1], spacing)
                 # evaluate mean curvature of the segment
                 _curvature = curvature(uu, t, c, k)
                 mean_curvature = np.mean(_curvature)
