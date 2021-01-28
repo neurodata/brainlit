@@ -65,7 +65,7 @@ def generate_brain_trace_data(brain: str, spacing: int):
                 _curvature = curvature(uu, t, c, k)
                 mean_curvature = np.mean(_curvature)
                 # evaluate mean torsion of the segment
-                _torsion = torsion(uu, t, c, k)
+                _torsion = np.abs(torsion(uu, t, c, k))
                 mean_torsion = np.mean(_torsion)
 
                 trace_data[j] = {
