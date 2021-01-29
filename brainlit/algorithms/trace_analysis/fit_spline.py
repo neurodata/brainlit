@@ -178,15 +178,6 @@ class GeometricGraph(nx.Graph):
 
         for row, node in enumerate(path):
             x[row, :] = self.nodes[node]["loc"]
-        orig = x.shape[0]
-        x = [xi for i, xi in enumerate(x) if i == 0 or (xi != x[i - 1, :]).any()]
-        x = np.stack(x, axis=0)
-        new = x.shape[0]
-        if orig != new:
-            warnings.warn(
-                f"{orig-new} duplicate points removed in the trace segment",
-                category=UserWarning,
-            )
         path_length = x.shape[0]
         NodeDist = np.linalg.norm(np.diff(x, axis=0), axis=1)
         TotalDist = np.concatenate(([0], np.cumsum(NodeDist)))
