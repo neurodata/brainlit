@@ -144,7 +144,7 @@ class GeometricGraph(nx.Graph):
                 curr_spline_num, path=main_branch, starting_length=tree[2]
             )
             spline_tree.add_edge(parent_num, curr_spline_num)
-            if len(collateral_branches)==0 and len(stack)==0:
+            if len(collateral_branches) == 0 and len(stack) == 0:
                 break
             else:
                 for tree in collateral_branches:
