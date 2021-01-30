@@ -15,15 +15,20 @@ import matplotlib.pyplot as plt
 from sklearn.neighbors import KernelDensity
 
 
-def generate_brain_trace_data(brain: str):
-    cwd = Path(os.getcwd())
-    exp_dir = cwd.parents[0]
+def generate_brain_trace_data(brain: str, spacing: int):
+    cwd = Path(os.path.abspath(__file__))
+    exp_dir = cwd.parents[1]
     data_dir = os.path.join(exp_dir, "data")
     brain_dir = os.path.join(data_dir, brain)
     segments_swc_dir = os.path.join(brain_dir, "segments_swc")
     trace_data_dir = os.path.join(brain_dir, "trace_data")
+    trace_data_dir = os.path.join(trace_data_dir, str(spacing))
+    if not os.path.exists(trace_data_dir):
+        os.makedirs(trace_data_dir)
 
     max_id = 300
+    print(f"Trace directory: {trace_data_dir}")
+    print(f"Spacing: {spacing} microns")
     for i in np.arange(0, max_id):
         i = int(i)
         string_id = str(i).zfill(3)
@@ -54,13 +59,13 @@ def generate_brain_trace_data(brain: str):
 
                 # evaluate segment length (in um)
                 seg_length = u_um[-1] - u_um[0]
-                # resample points at 1um
-                uu = np.arange(u_um[0], u_um[-1] + 0.9, 1)
+                # resample points at specified spacing
+                uu = np.arange(u_um[0], u_um[-1], spacing)
                 # evaluate mean curvature of the segment
                 _curvature = curvature(uu, t, c, k)
                 mean_curvature = np.mean(_curvature)
                 # evaluate mean torsion of the segment
-                _torsion = torsion(uu, t, c, k)
+                _torsion = np.abs(torsion(uu, t, c, k))
                 mean_torsion = np.mean(_torsion)
 
                 trace_data[j] = {
@@ -75,5 +80,8 @@ def generate_brain_trace_data(brain: str):
             np.save(trace_data_path, trace_data)
 
 
+# spacing of 1um is for autocorrelation plot
+# spacing of 14um is for regression plots
 for brain in ["brain1", "brain2"]:
-    generate_brain_trace_data(brain)
+    generate_brain_trace_data(brain, 1)
+    generate_brain_trace_data(brain, 14)
