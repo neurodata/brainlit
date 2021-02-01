@@ -536,7 +536,7 @@ def ssd(pts1, pts2):
     """Compute significant spatial distance metric between two traces as defined in APP1.
     Args:
         pts1 (np.array): array containing coordinates of points of trace 1. shape: npoints x ndims
-        pts2 (np.array): array containing coordinates of points of trace 1. shape: npoints x ndims
+        pts2 (np.array): array containing coordinates of points of trace 2. shape: npoints x ndims
     Returns:
         [float]: significant spatial distance as defined by APP1
     """
@@ -553,3 +553,26 @@ def ssd(pts1, pts2):
         ssd = np.mean(dists)
 
     return ssd
+
+def ssd_one_way(pts1, pts2):
+    """Compute significant spatial distance metric between two traces as defined in APP1.
+    Args:
+        pts1 (np.array): array containing coordinates of points of trace 1. shape: npoints x ndims
+        pts2 (np.array): array containing coordinates of points of trace 2. shape: npoints x ndims
+        Note: One-way, Trace 1 << Trace 2, we are testing if trace 1 is contained within trace 2
+    Returns:
+        [float]: significant spatial distance as defined by APP1
+    """
+    
+    _, dists1 = pairwise_distances_argmin_min(pts1, pts2)
+    dists1 = dists1[dists1 >= 2]
+
+    # If there are is no significant distance between the 2 sets
+    if len(dists1) == 0:
+        ssd = 0
+    # Else, calculate the mean
+    else:
+        ssd = np.mean(dists1)
+        
+    return ssd
+
