@@ -223,12 +223,27 @@ def test_spline():
     neuron.add_node(2, loc=np.array([100, 100, 200]))
     neuron.add_node(3, loc=np.array([0, 200, 200]))
     neuron.add_node(4, loc=np.array([200, 300, 200]))
+    neuron.add_node(5, loc=np.array([300, 300, 200]))
+    neuron.add_node(6, loc=np.array([400, 300, 200]))
+    neuron.add_node(7, loc=np.array([400, 500, 200]))
+    neuron.add_node(8, loc=np.array([250, 400, 200]))
+    neuron.add_node(9, loc=np.array([150, 350, 200]))
+    neuron.add_node(10, loc=np.array([100, 400, 200]))
+    neuron.add_node(11, loc=np.array([200, 400, 200]))
     # add edges
     neuron.add_edge(1, 2)
     neuron.add_edge(2, 3)
     neuron.add_edge(2, 4)
+    neuron.add_edge(4, 5)
+    neuron.add_edge(5, 6)
+    neuron.add_edge(5, 7)
+    neuron.add_edge(5, 8)
+    neuron.add_edge(4, 9)
+    neuron.add_edge(9, 10)
+    neuron.add_edge(9, 11)
+
     # first path parameters created by `splprep`
-    path = [1, 2, 4]
+    path = [1, 2, 4, 5, 7]
     x = np.zeros((len(path), 3))
     for row, node in enumerate(path):
         x[row, :] = neuron.nodes[node]["loc"]
