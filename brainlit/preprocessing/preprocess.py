@@ -43,7 +43,7 @@ def contrast_normalize(data, centered=False):
     return data
 
 
-def whiten(data, window_size, step_size, centered=False, epsilon=1e-5, type="PCA"):
+def whiten(img, window_size, step_size, centered=False, epsilon=1e-5, type="PCA"):
     """Performs PCA or ZCA whitening on an array. This preprocessing step is described
     in _[1].
 
@@ -88,13 +88,13 @@ def whiten(data, window_size, step_size, centered=False, epsilon=1e-5, type="PCA
     if len(window_size) != len(step_size):
         raise ValueError("Dimensions do not match")
 
-    if data.ndim != len(window_size):
+    if img.ndim != len(window_size):
         raise ValueError("Dimensions do not match")
 
     if not centered:
-        data = center(data)
+        img = center(img)
 
-    data_padded, pad_size = window_pad(data, window_size, step_size)
+    data_padded, pad_size = window_pad(img, window_size, step_size)
     data_vectorized = vectorize_img(data_padded, window_size, step_size)
 
     c = np.cov(data_vectorized)
@@ -165,12 +165,12 @@ def window_pad(img, window_size, step_size):
     return img_padded, pad_size
 
 
-def undo_pad(data, pad_size):
+def undo_pad(img, pad_size):
     """Remove padding fromt edges of images
 
     Parameters
     ----------
-    data : array-like
+    img : array-like
         padded image
 
     pad_size : array-like
@@ -178,23 +178,23 @@ def undo_pad(data, pad_size):
 
     Returns
     -------
-    data : array-like
+    img : array-like
         unpadded image
 
     """
-    if pad_size.ndim == 1 and data.ndim != 1:
+    if pad_size.ndim == 1 and img.ndim != 1:
         raise ValueError("Dimensions do not match")
 
-    if data.ndim != pad_size.shape[0]:
+    if img.ndim != pad_size.shape[0]:
         raise ValueError("Dimensions do not match")
 
     start = pad_size[:, 0].astype(int)
-    end = (data.shape - pad_size[:, 1]).astype(int)
+    end = (img.shape - pad_size[:, 1]).astype(int)
     coords = list(zip(start, end))
     slices = tuple(slice(coord[0], coord[1]) for coord in coords)
-    data = data[slices]
+    img = img[slices]
 
-    return data
+    return img
 
 
 def vectorize_img(img, window_size, step_size):
@@ -244,12 +244,12 @@ def vectorize_img(img, window_size, step_size):
     return vectorized
 
 
-def imagize_vector(data, orig_shape, window_size, step_size):
+def imagize_vector(img, orig_shape, window_size, step_size):
     """Reshapes a vectorized image back to its original shape.
 
     Parameters
     ----------
-    data : array-like
+    img : array-like
         vectorized image
 
     orig_shape : tuple
@@ -293,7 +293,7 @@ def imagize_vector(data, orig_shape, window_size, step_size):
         slices = tuple(slice(coord[0], coord[1]) for coord in coords)
 
         imagized_temp = np.zeros(orig_shape)
-        imagized_temp = data[:, step_num].reshape(window_size)
+        imagized_temp = img[:, step_num].reshape(window_size)
         stacked = np.stack((imagized[slices], imagized_temp), axis=-1)
         imagized[slices] = np.true_divide(stacked.sum(d), (stacked != 0).sum(d))
         imagized[slices] = np.nan_to_num(imagized[slices])
