@@ -3,7 +3,7 @@ from glob import glob
 import argparse
 import numpy as np
 from cloudvolume import CloudVolume, Skeleton, storage
-from brainlit.utils.swc import swc2skeleton
+from brainlit.utils.Neuron_trace import NeuronTrace
 import pandas as pd
 from pathlib import Path
 import tifffile as tf
@@ -102,7 +102,10 @@ def create_skel_segids(swc_dir, origin):
     skeletons = []
     segids = []
     for i in tqdm(files, desc="converting swcs to neuroglancer format..."):
-        skeletons.append(swc2skeleton(i, origin=origin))
+        swc_trace = NeuronTrace(path=i)
+        skel = swc_trace.get_skel(benchmarking,origin=np.asarray(origin))
+        
+        skeletons.append(skel)
         segids.append(skeletons[-1].id)
     return skeletons, segids
 

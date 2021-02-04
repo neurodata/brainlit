@@ -230,7 +230,6 @@ class NeuronTrace:
             List of Nx3 numpy.array. Rows of the array are 3D coordinates in voxel
             units. Each array is one path.
         """
-
         check_type(spacing, (type(None), np.ndarray))
         if type(spacing) == np.ndarray:
             check_size(spacing)
@@ -250,7 +249,9 @@ class NeuronTrace:
         # no voxel conversion option
         else:
             G = self._df_to_graph(self.df)
+            
         paths = self._graph_to_paths(G)
+        
         return paths
 
     def generate_df_subset(
@@ -354,8 +355,10 @@ class NeuronTrace:
             G = self._df_to_graph(self.df)
 
         G_sub, tree = self._get_bfs_subgraph(G, node_id, depth, df)
+        
+        paths = self._graph_to_paths(G_sub)
 
-        return G_sub, tree
+        return G_sub, tree, paths
 
     def get_sub_neuron(self, bounding_box, spacing=None, origin=None):
         """Returns sub-neuron with node coordinates bounded by start and end
@@ -409,7 +412,62 @@ class NeuronTrace:
         G_sub = self._get_sub_neuron(G, bounding_box)
 
         return G_sub
+    
+    def get_sub_neuron_paths(self, bounding_box, spacing=None, origin=None):
+        """Returns sub-neuron with node coordinates bounded by start and end
 
+        Arguments
+        ----------
+        bounding_box : tuple or list or None
+            Defines a bounding box around a sub-region around the neuron. Length 2
+            tuple/list. First element is the coordinate of one corner (inclusive)
+            and second element is the coordinate of the opposite corner (exclusive).
+            Both coordinates are numpy.array([x,y,z])in voxel units.
+        spacing : None, :class:`numpy.array` (default = None)
+            Conversion factor (spatial units/voxel). Assumed to be np.array([x,y,z]).
+            Provided if graph should convert to voxel coordinates first.  Default is None.
+        origin : :class:`numpy.array`
+            Origin of the spatial coordinate, if converting to voxels. Default is None.
+            Assumed to be np.array([x,y,z])
+        Returns
+        -------
+        paths : list
+            List of Nx3 numpy.array. Rows of the array are 3D coordinates in voxel
+            units. Each array is one path.
+        """
+
+        check_type(bounding_box, (tuple, list))
+
+        if len(bounding_box) != 2:
+            raise ValueError("Bounding box must be length 2")
+        check_type(spacing, (type(None), np.ndarray))
+
+        check_type(spacing, (type(None), np.ndarray))
+        if type(spacing) == np.ndarray:
+            check_size(spacing)
+        check_type(origin, (type(None), np.ndarray))
+        if type(origin) == np.ndarray:
+            check_size(origin)
+
+        # if origin isn't specified but spacing is, set origin to np.array([0, 0, 0])
+        if type(spacing) == np.ndarray and origin is None:
+            origin = np.array([0, 0, 0])
+
+        # voxel conversion option
+        if type(spacing) == np.ndarray:
+            df_voxel = self._df_in_voxel(self.df, spacing, origin)
+            G = self._df_to_graph(df_voxel)
+
+        # no voxel conversion option
+        else:
+            G = self._df_to_graph(self.df)
+
+        G_sub = self._get_sub_neuron(G, bounding_box)
+        
+        paths = self._graph_to_paths(G_sub)
+
+        return paths
+        
     @staticmethod
     def ssd(pts1, pts2):
         """Compute significant spatial distance metric between two traces as defined in APP1.

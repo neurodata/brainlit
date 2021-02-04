@@ -7,13 +7,7 @@ from cloudvolume import CloudVolume, view
 from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError
 from pathlib import Path
-from brainlit.utils.swc import (
-    read_s3,
-    swc_to_voxel,
-    df_to_graph,
-    get_sub_neuron,
-    graph_to_paths,
-)
+from brainlit.utils.Neuron_trace import NeuronTrace
 from brainlit.algorithms.generate_fragments.tube_seg import tubes_from_paths
 import napari
 import warnings
@@ -137,17 +131,21 @@ class NeuroglancerSession:
         check_type(rounding, bool)
         if self.cv_segments is None:
             raise ValueError("Cannot get segments without segmentation data.")
-        df = read_s3(self.url_segments, seg_id, self.mip, rounding)
-        # df_voxel = swc_to_voxel(df, spacing=self.scales, origin=np.array([0, 0, 0]))
-        G = df_to_graph(df)
+        s3_trace = NeuronTrace(self.url_segments,seg_id,self.mip,rounding)
+    
+        G = s3_trace.get_graph()
+        paths = s3_trace.get_paths()
+        
 
         if bbox is not None:
             if isinstance(bbox, Bbox):
                 bbox = bbox.to_list()
             check_iterable_type(bbox, (int, np.integer))
             check_iterable_nonnegative(bbox)
-            G = get_sub_neuron(G, [bbox[:3], bbox[3:]])
-        return G
+            G = s3_trace.get_sub_neuron([bbox[:3], bbox[3:]])
+            paths = s3_trace.get_sub_neuron_paths([bbox[:3], bbox[3:]])
+            
+        return [G, paths]
 
     def create_tubes(
         self,
@@ -175,8 +173,11 @@ class NeuroglancerSession:
             if radius <= 0:
                 raise ValueError("Radius must be positive.")
 
-        G = self.get_segments(seg_id, bbox)
-        paths = graph_to_paths(G)
+        #s3_trace = NeuronTrace(self.url_segments,seg_id,self.mip,rounding)
+        #paths = s3_trace.get_paths(bbox)
+        G_paths = self.get_segments(seg_id, bbox)
+        paths = G_paths[1]
+
         if isinstance(bbox, Bbox):
             bbox = bbox.to_list()
         check_iterable_type(bbox, (int, np.integer))

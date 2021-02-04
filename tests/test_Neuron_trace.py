@@ -377,7 +377,6 @@ def test_get_sub_neuron():
             spacing=np.asarray([1, 2, 3]),
             origin=np.asarray([1, 2]),
         )
-
     # test if bounding box produces correct number of nodes and edges
     # swc
     try:
@@ -419,6 +418,46 @@ def test_get_sub_neuron():
     sub_neuron_s3 = test_s3.get_sub_neuron(bounding_box=[[1, 2, 4], [1, 2, 3]])
     assert isinstance(sub_neuron_swc, nx.DiGraph)
     assert isinstance(sub_neuron_s3, nx.DiGraph)
+
+def test_get_sub_neuron_paths():
+
+    # test 'bounding_box' arg is a tuple or list
+    with pytest.raises(TypeError):
+        test_swc.get_sub_neuron_paths(bounding_box=1)
+
+    # test if 'bounding_box' arg is tuple or list, length is 2
+    with pytest.raises(ValueError, match="Bounding box must be length 2"):
+        test_swc.get_sub_neuron_paths(bounding_box=[[1, 2, 4], [1, 2, 3], [4, 5, 6]])
+
+    # test 'spacing' arg must either be NoneType or numpy.ndarray
+    with pytest.raises(TypeError):
+        test_swc.get_sub_neuron_paths(bounding_box=[[1, 2, 4], [1, 2, 3]], spacing="asdf")
+
+    # test if 'spacing' is type numpy.ndarray, it must be shape (3,1)
+    with pytest.raises(ValueError):
+        test_swc.get_sub_neuron_paths(
+            bounding_box=[[1, 2, 4], [1, 2, 3]], spacing=np.asarray([1, 2])
+        )
+
+    # test 'origin' arg must either be NoneType or numpy.ndarray
+    with pytest.raises(TypeError):
+        test_swc.get_sub_neuron_paths(
+            bounding_box=[[1, 2, 4], [1, 2, 3]], spacing=np.asarray([1, 2, 3]), origin=1
+        )
+
+    # test if 'origin' is type numpy.ndarray, it must be shape (3,1)
+    with pytest.raises(ValueError):
+        test_swc.get_sub_neuron_paths(
+            bounding_box=[[1, 2, 4], [1, 2, 3]],
+            spacing=np.asarray([1, 2, 3]),
+            origin=np.asarray([1, 2]),
+        )
+    
+    # test if output is paths
+    sub_neuron_swc = test_swc.get_sub_neuron_paths(bounding_box=[[1, 2, 4], [1, 2, 3]])
+    sub_neuron_s3 = test_s3.get_sub_neuron_paths(bounding_box=[[1, 2, 4], [1, 2, 3]])
+    assert isinstance(sub_neuron_swc, np.ndarray)
+    assert isinstance(sub_neuron_s3, np.ndarray)
 
 
 def test_ssd():

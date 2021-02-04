@@ -2,7 +2,7 @@ import numpy as np
 import brainlit
 import scipy
 import scipy.stats
-from brainlit.utils import swc
+from brainlit.utils.Neuron_trace import NeuronTrace
 from cloudvolume.exceptions import SkeletonDecodeError
 from brainlit.algorithms.trace_analysis.fit_spline import GeometricGraph
 from brainlit.algorithms.trace_analysis.spline_fxns import curvature, torsion
@@ -39,7 +39,9 @@ def generate_brain_trace_data(brain: str, spacing: int):
             ),
         )
         if os.path.exists(seg_swc_path) is True:
-            df_swc_offset_neuron, _, _, _ = swc.read_swc_offset(seg_swc_path)
+            swc_trace = NeuronTrace(path=seg_swc_path)
+            df_swc_offset_neuron = swc_trace.get_df()
+            #df_swc_offset_neuron, _, _, _ = swc.read_swc_offset(seg_swc_path)
             print("Loaded segment {}".format(i))
             G = GeometricGraph(df=df_swc_offset_neuron)
             print("Initialized GeometricGraph")
