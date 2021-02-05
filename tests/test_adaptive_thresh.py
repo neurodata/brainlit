@@ -38,5 +38,15 @@ def test_get_img_T1():
     assert img_T1_255.GetPixelIDTypeAsString() == "8-bit unsigned integer"
 
 
-# def test_thres_from_gmm():
-#    d
+def test_thres_from_gmm():
+    # define two groups of Gaussian distribution points with distinct mean values
+    G1 = np.round(np.random.normal(loc=40, scale=10, size=(499,1)))
+    G2 = np.round(np.random.normal(loc=220, scale=10, size=(499,1)))
+    # the minimum value of the high-mean Gaussian distribution determines the threshold
+    thre_predicted = np.nanmin(G2)
+    # construct a 3D image with the two groups of points
+    img = np.append(np.concatenate((G1,G2)),np.array([[0.],[255.]])).reshape((10,10,10))
+    # calculate the threshold with `thres_from_gmm`
+    thre = thres_from_gmm(img)
+    #print(flat_array)
+    assert thre == thre_predicted
