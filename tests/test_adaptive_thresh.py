@@ -55,15 +55,19 @@ def test_thres_from_gmm():
 
 
 def test_gmm_seg():
+    # define two groups of Gaussian distribution points with distinct mean values
     G1 = np.append(
         np.round(np.random.normal(loc=40, scale=10, size=(499, 1))), np.array([0])
     )
     G2 = np.append(
         np.round(np.random.normal(loc=220, scale=10, size=(499, 1))), np.array([255])
     )
+    # construct a 3D image with the two groups of points
     img = np.concatenate((G1, G2)).reshape((10, 10, 10))
+    # 1s should be labeled to the positions where G2 population are located
     labels_predicted = np.concatenate(
         ((G1 - G1).astype(int), (G2 / G2).astype(int))
     ).reshape((10, 10, 10))
+    # the seed is located at a randomly selected point within G2 distribution
     labels = gmm_seg(img, (9, 9, 6))
     np.testing.assert_array_equal(labels, labels_predicted)
