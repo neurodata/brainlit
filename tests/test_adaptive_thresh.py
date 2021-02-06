@@ -40,13 +40,30 @@ def test_get_img_T1():
 
 def test_thres_from_gmm():
     # define two groups of Gaussian distribution points with distinct mean values
-    G1 = np.round(np.random.normal(loc=40, scale=10, size=(499,1)))
-    G2 = np.round(np.random.normal(loc=220, scale=10, size=(499,1)))
+    G1 = np.round(np.random.normal(loc=40, scale=10, size=(499, 1)))
+    G2 = np.round(np.random.normal(loc=220, scale=10, size=(499, 1)))
     # the minimum value of the high-mean Gaussian distribution determines the threshold
     thre_predicted = np.nanmin(G2)
     # construct a 3D image with the two groups of points
-    img = np.append(np.concatenate((G1,G2)),np.array([[0.],[255.]])).reshape((10,10,10))
+    img = np.append(np.concatenate((G1, G2)), np.array([[0.0], [255.0]])).reshape(
+        (10, 10, 10)
+    )
     # calculate the threshold with `thres_from_gmm`
     thre = thres_from_gmm(img)
-    #print(flat_array)
+    # print(flat_array)
     assert thre == thre_predicted
+
+
+def test_gmm_seg():
+    G1 = np.append(
+        np.round(np.random.normal(loc=40, scale=10, size=(499, 1))), np.array([0])
+    )
+    G2 = np.append(
+        np.round(np.random.normal(loc=220, scale=10, size=(499, 1))), np.array([255])
+    )
+    img = np.concatenate((G1, G2)).reshape((10, 10, 10))
+    labels_predicted = np.concatenate(
+        ((G1 - G1).astype(int), (G2 / G2).astype(int))
+    ).reshape((10, 10, 10))
+    labels = gmm_seg(img, (9, 9, 6))
+    np.testing.assert_array_equal(labels, labels_predicted)
