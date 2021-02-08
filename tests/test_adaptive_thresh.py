@@ -54,20 +54,28 @@ def test_thres_from_gmm():
     assert thre == thre_predicted
 
 
-#def test_connected_threshold():
+# def test_connected_threshold():
 
 
 def test_otsu():
-    G1 = np.append(np.round(np.random.normal(loc=40, scale=10, size=(499,1))),np.array([0]))
-    G2 = np.append(np.round(np.random.normal(loc=220, scale=10, size=(499,1))),np.array([255]))
-    img = np.concatenate((G1,G2)).reshape((10,10,10))
+    G1 = np.append(
+        np.round(np.random.normal(loc=40, scale=10, size=(499, 1))), np.array([0])
+    )
+    G2 = np.append(
+        np.round(np.random.normal(loc=220, scale=10, size=(499, 1))), np.array([255])
+    )
+    img = np.concatenate((G1, G2)).reshape((10, 10, 10))
     # seed inside
-    labels = otsu(img,(9,1,6))
-    labels_predicted = np.concatenate(((G1 - G1).astype(int), (G2 / G2).astype(int))).reshape((10, 10, 10))
+    labels = otsu(img, (9, 1, 6))
+    labels_predicted = np.concatenate(
+        ((G1 - G1).astype(int), (G2 / G2).astype(int))
+    ).reshape((10, 10, 10))
     np.testing.assert_array_equal(labels, labels_predicted)
     # seed outside
-    labels = otsu(img,(1,1,3))
-    labels_predicted = np.concatenate(((G1 + (255-G1)).astype(int), (G2 - G2).astype(int))).reshape((10, 10, 10))
+    labels = otsu(img, (1, 1, 3))
+    labels_predicted = np.concatenate(
+        ((G1 + (255 - G1)).astype(int), (G2 - G2).astype(int))
+    ).reshape((10, 10, 10))
     np.testing.assert_array_equal(labels, labels_predicted)
 
 
