@@ -16,6 +16,7 @@ from sklearn.neighbors import KernelDensity
 import networkx as nx
 from scipy.cluster.hierarchy import dendrogram
 
+
 def node_height(G, node):
     predecessors = list(G.predecessors(node))
     L = len(predecessors)
@@ -56,49 +57,6 @@ def generate_brain_trace_data(brain: str, spacing: int):
             print("Initialized GeometricGraph")
             spline_tree = G.fit_spline_tree_invariant()
             print("Computed splines")
-            
-            # nodes = spline_tree.nodes()
-            # leaves = set(n for n in nodes if spline_tree.out_degree(n) == 0)
-            # inner_nodes = [n for n in nodes if spline_tree.out_degree(n) > 0]
-
-            # Compute the size of each subtree
-            # subtree = dict((n, [n]) for n in leaves)
-            # for u in inner_nodes:
-            #     children = set()
-            #     node_list = list(spline_tree.successors(u))
-            #     while len(node_list) > 0:
-            #         v = node_list.pop(0)
-            #         children.add(v)
-            #         node_list += list(spline_tree.successors(v))
-
-            #     subtree[u] = sorted(children & leaves)
-
-            # inner_nodes.sort(key=lambda n: len(subtree[n])) # <-- order inner nodes ascending by subtree size, root is last
-
-            # Construct the linkage matrix
-            # leaves = sorted(leaves)
-            # index  = dict((tuple([n]), i) for i, n in enumerate(leaves))
-            # Z = []
-            # k = len(leaves)
-            # for i, n in enumerate(inner_nodes):
-            #     children = list(spline_tree.successors(n))
-            #     x = children[0]
-            #     for y in children[1:]:
-            #         z = tuple(subtree[x] + subtree[y])
-            #         i, j = index[tuple(subtree[x])], index[tuple(subtree[y])]
-            #         Z.append([i, j, float(len(subtree[n])), len(z)]) # <-- float is required by the dendrogram function
-            #         index[z] = k
-            #         subtree[z] = list(z)
-            #         x = z
-            #         k += 1
-
-            # Visualize
-            # dendrogram(Z, labels=leaves)
-            # plt.title(f"{brain} | seg_id = {string_id}")
-            # plt.savefig(os.path.join(exp_dir, "figures", "spline_trees", brain, f"{string_id}.eps"))
-            # plt.savefig(os.path.join(exp_dir, "figures", "spline_trees", brain, f"{string_id}.jpg"))
-            # plt.close()
-            # print("Saved image")
 
             trace_data_path = os.path.join(trace_data_dir, f"{i}.npy")
             trace_data = np.empty(len(spline_tree.nodes), dtype="object")
