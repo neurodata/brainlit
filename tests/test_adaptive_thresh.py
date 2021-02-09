@@ -50,7 +50,6 @@ def test_thres_from_gmm():
     )
     # calculate the threshold with `thres_from_gmm`
     thre = thres_from_gmm(img)
-    # print(flat_array)
     assert thre == thre_predicted
 
 
