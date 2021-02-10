@@ -4,7 +4,7 @@ cloud-volume==1.6.0
 codecov==2.1.11
 compressed-segmentation==1.0.0
 coverage==5.0.3
-cryptography==3.2
+cryptography==3.3.2
 cycler==0.10.0
 dask==2.10.1
 decorator==4.4.1
