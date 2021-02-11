@@ -61,12 +61,11 @@ def test_Bresenham3D():
     assert t_y == ylist
     assert t_z == zlist
 
-
     # example 4
-    [x1, y1, z1, x2, y2, z2] = [ 0, -3, 0, 0, -5, 0]
-    xlist = [ 0, 0, 0]
+    [x1, y1, z1, x2, y2, z2] = [0, -3, 0, 0, -5, 0]
+    xlist = [0, 0, 0]
     ylist = [-3, -4, -5]
-    zlist = [ 0, 0, 0]
+    zlist = [0, 0, 0]
     t_x, t_y, t_z = Bresenham3D(x1, y1, z1, x2, y2, z2)
     assert t_x == xlist
     assert t_y == ylist
