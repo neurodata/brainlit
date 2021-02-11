@@ -13,6 +13,18 @@ from networkx.readwrite import json_graph
 import json
 import matplotlib.pyplot as plt
 from sklearn.neighbors import KernelDensity
+import networkx as nx
+from scipy.cluster.hierarchy import dendrogram
+
+
+def node_height(G, node):
+    predecessors = list(G.predecessors(node))
+    L = len(predecessors)
+    assert L == 1 or L == 0
+    if L == 0:
+        return 0
+    else:
+        return 1 + node_height(G, predecessors[0])
 
 
 def generate_brain_trace_data(brain: str, spacing: int):
@@ -46,10 +58,21 @@ def generate_brain_trace_data(brain: str, spacing: int):
             spline_tree = G.fit_spline_tree_invariant()
             print("Computed splines")
 
-            trace_data_path = os.path.join(trace_data_dir, "{}.npy".format(i))
+            trace_data_path = os.path.join(trace_data_dir, f"{i}.npy")
             trace_data = np.empty(len(spline_tree.nodes), dtype="object")
             for j, node in enumerate(spline_tree.nodes):
+                if j == 0:
+                    main_branch = spline_tree.nodes[node]
                 spline = spline_tree.nodes[node]
+                spline_height = node_height(spline_tree, node)
+                if spline_height == 0:
+                    spline_class = "axon"
+                else:
+                    successors = spline_tree.successors(node)
+                    if len(list(successors)) == 0:
+                        spline_class = "terminal"
+                    else:
+                        spline_class = "collateral"
                 starting_length = spline["starting_length"]
                 path = spline["path"]
                 tck, u_um = spline["spline"]
@@ -69,6 +92,8 @@ def generate_brain_trace_data(brain: str, spacing: int):
                 mean_torsion = np.mean(_torsion)
 
                 trace_data[j] = {
+                    "height": spline_height,
+                    "class": spline_class,
                     "seg_length": seg_length,
                     "starting_length": starting_length,
                     "mean_curvature": mean_curvature,
