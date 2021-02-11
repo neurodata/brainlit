@@ -189,7 +189,7 @@ def level_set_seg(
     seg = sitk.Image(img_T1_255.GetSize(), sitk.sitkUInt8)
     seg.CopyInformation(img_T1_255)
     seg[seed] = 1
-    seg = sitk.BinaryDilate(seg, [1]*seg.GetDimension())
+    seg = sitk.BinaryDilate(seg, [1] * seg.GetDimension())
 
     stats = sitk.LabelStatisticsImageFilter()
     stats.Execute(img_T1_255, seg)
@@ -251,7 +251,7 @@ def connected_threshold(img, seed, lower_threshold=None, upper_threshold=255):
     # seg[seed] = 1
     for s in seed:
         seg[s] = 1
-    seg = sitk.BinaryDilate(seg, [1]*seg.GetDimension())
+    seg = sitk.BinaryDilate(seg, [1] * seg.GetDimension())
 
     if lower_threshold == None:
         lower_threshold = thres_from_gmm(img)
@@ -316,7 +316,7 @@ def confidence_connected_threshold(
     # seg[seed] = 1
     for s in seed:
         seg[s] = 1
-    seg = sitk.BinaryDilate(seg, [1]*seg.GetDimension())
+    seg = sitk.BinaryDilate(seg, [1] * seg.GetDimension())
 
     seg_con = sitk.ConfidenceConnected(
         img_T1_255,
@@ -370,7 +370,7 @@ def neighborhood_connected_threshold(
     seg.CopyInformation(img_T1)
     for s in seed:
         seg[s] = 1
-    seg = sitk.BinaryDilate(seg, [1]*seg.GetDimension())
+    seg = sitk.BinaryDilate(seg, [1] * seg.GetDimension())
 
     if lower_threshold == None:
         lower_threshold = thres_from_gmm(img)
