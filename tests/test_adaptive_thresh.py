@@ -53,22 +53,31 @@ def test_thres_from_gmm():
     assert thre == thre_predicted
 
 
-#def test_level_set_seg():
+# def test_level_set_seg():
 #    G1 = np.append(np.round(np.random.normal(loc=40, scale=10, size=(499,1))),np.array([0]))
 #    G2 = np.append(np.round(np.random.normal(loc=220, scale=10, size=(499,1))),np.array([255]))
 #    img = np.concatenate((G1,G2)).reshape((10,10,10))
 #    labels = level_set_seg(img,(1,0,1))
-    
 
 
 def test_connected_threshold():
-    G1 = np.full((4,4),255)
-    G2 = np.full((4,4),200)
-    G3 = np.full((4,4),100)
-    G4 = np.full((4,4),0)
-    img = np.concatenate((G1,G2,G3,G4)).reshape(4,4,4)
-    labels = connected_threshold(img,[(0,0,0)], lower_threshold=150)
-    labels_predicted = np.concatenate(((G1/G1).astype(int),(G2/G2).astype(int),G3-G3,G4-G4)).reshape(4,4,4)
+    # create an image with 4 layers of gray scales
+    G1 = np.full((4, 4), 255)
+    G2 = np.full((4, 4), 200)
+    G3 = np.full((4, 4), 100)
+    G4 = np.full((4, 4), 0)
+    img = np.concatenate((G1, G2, G3, G4)).reshape(4, 4, 4)
+    # seed at the first layer and give a lower_threshold
+    labels = connected_threshold(img, [(0, 0, 0)], lower_threshold=150)
+    labels_predicted = np.concatenate(
+        ((G1 / G1).astype(int), (G2 / G2).astype(int), G3 - G3, G4 - G4)
+    ).reshape(4, 4, 4)
+    np.testing.assert_array_equal(labels, labels_predicted)
+    # seed at the first layer without giving a lower_threshold
+    labels = connected_threshold(img, [(0, 0, 0)])
+    labels_predicted = np.concatenate(
+        ((G1 / G1).astype(int), (G2 / G2).astype(int), G3 - G3, G4 - G4)
+    ).reshape(4, 4, 4)
     np.testing.assert_array_equal(labels, labels_predicted)
 
 
