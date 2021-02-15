@@ -157,7 +157,7 @@ def window_pad(img, window_size, step_size):
     num_steps = np.floor(np.divide(shp, step_size))
     final_loc = np.multiply(num_steps, step_size) + np.floor(np.divide(window_size, 2))
 
-    pad_size[:, 1] = final_loc - shp + np.ones(len(shp)) #add 1
+    pad_size[:, 1] = final_loc - shp + np.ones(len(shp))  # add 1
     pad_width = [pad_size[dim, :].astype(int).tolist() for dim in range(d)]
 
     img_padded = np.pad(img, pad_width, mode="edge")
