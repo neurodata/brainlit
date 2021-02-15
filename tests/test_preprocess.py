@@ -324,6 +324,53 @@ def test_contrast_normalize():
     assert_array_equal(normalized, answer)
 
 
+def test_window_pad():  # come back to
+    img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    window_size = np.array([3, 3])
+    step_size = np.array([2, 2])
+    padded = window_pad(img, window_size, step_size)
+    print(padded)
+    answer = np.array(
+        [
+            [1, 1, 2, 3, 3],
+            [1, 1, 2, 3, 3],
+            [4, 4, 5, 6, 6],
+            [7, 7, 8, 9, 9],
+            [7, 7, 8, 9, 9],
+        ]
+    )
+    pad_size = np.array([[1, 1], [1, 1]])  # [[top,bottom], [left, right]]
+    assert_equal(padded, (answer, pad_size))
+
+
+def test_undo_pad():
+    img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    pad_size = np.array([[0, 1], [0, 1]])  # [[top, bottom], [left, right]]
+    unpadded = undo_pad(img, pad_size)
+    answer = np.array([[1, 2], [4, 5]])
+    assert_array_equal(unpadded, answer)
+
+
+def test_vectorize_img():
+    img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    window_size = np.array([2, 2])
+    step_size = np.array([1, 1])
+    vectorized = vectorize_img(img, window_size, step_size)
+    answer = np.array([[1, 2, 4, 5], [2, 3, 5, 6], [4, 5, 7, 8], [5, 6, 8, 9]])
+    assert_array_equal(vectorized, answer)
+
+
+def test_imagize_vector():
+    """2d example using the same example as test_vectorize_img."""
+    img = np.array([[1, 2, 4, 5], [2, 3, 5, 6], [4, 5, 7, 8], [5, 6, 8, 9]])
+    orig_shape = (3, 3)
+    window_size = np.array([2, 2])
+    step_size = np.array([1, 1])
+    imagized = imagize_vector(img, orig_shape, window_size, step_size)
+    answer = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    assert_array_equal(imagized, answer)
+
+
 def test_gaussian_truncate():
     """Tests that Gaussian filters can be truncated at different widths."""
     arr = np.zeros((100, 100), float)
