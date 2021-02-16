@@ -81,6 +81,21 @@ def test_connected_threshold():
     np.testing.assert_array_equal(labels, labels_predicted)
 
 
+def test_confidence_connected_threshold():
+    # create a data set featured with Gaussian distribution
+    G1 = np.append(
+        np.round(np.random.normal(loc=125, scale=25, size=(62498, 1))),
+        np.array([0, 255]),
+    )
+    # the data is distributed in the image by the order of each pixel's intensity
+    img = np.sort(G1).reshape(250, 250).astype(int)
+    # if we set multiplier to be 2.5, we are expected to connect around 99% of the pixels
+    labels = confidence_connected_threshold(
+        img, [(124, 127)], multiplier=2.5, num_iter=180
+    )
+    assert sum(sum(labels.astype(float))) / 62500 > 0.98
+
+
 def test_otsu():
     G1 = np.append(
         np.round(np.random.normal(loc=40, scale=10, size=(499, 1))), np.array([0])
