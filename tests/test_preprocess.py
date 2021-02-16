@@ -60,12 +60,12 @@ def test_whiten_bad_inputs():
             type="PCA",
         )
 
-    # test img.dnim != len(window_size)
+    # test img.ndim != len(window_size)
     with pytest.raises(ValueError):
         whiten(
             img=np.ones((5, 5)),
             window_size=np.array([3, 3, 3]),
-            step_size=np.array([3, 3]),
+            step_size=np.array([3, 3, 3]),
             centered=False,
             epsilon=1e-5,
             type="PCA",
@@ -102,12 +102,12 @@ def test_window_pad_bad_inputs():
             step_size=np.array([3, 3, 3]),
         )
 
-    # test img.dnim != len(window_size)
+    # test img.ndim != len(window_size)
     with pytest.raises(ValueError):
         window_pad(
             img=np.ones((5, 5)),
             window_size=np.array([3, 3, 3]),
-            step_size=np.array([3, 3]),
+            step_size=np.array([3, 3, 3]),
         )
 
 
@@ -140,7 +140,7 @@ def test_vectorize_img_bad_inputs():
             step_size=np.array([3, 3, 3]),
         )
 
-    # test img.dnim != len(window_size)
+    # test img.ndim != len(window_size)
     with pytest.raises(ValueError):
         vectorize_img(
             img=np.ones((5, 5)),
@@ -324,12 +324,11 @@ def test_contrast_normalize():
     assert_array_equal(normalized, answer)
 
 
-def test_window_pad():  # come back to
+def test_window_pad():
     img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     window_size = np.array([3, 3])
     step_size = np.array([2, 2])
     padded = window_pad(img, window_size, step_size)
-    print(padded)
     answer = np.array(
         [
             [1, 1, 2, 3, 3],
