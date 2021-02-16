@@ -5,7 +5,6 @@ import networkx as nx
 from cloudvolume import CloudVolume, Skeleton
 import brainlit
 from brainlit.utils.Neuron_trace import NeuronTrace
-from brainlit.utils import swc
 from brainlit.utils.session import NeuroglancerSession
 import pytest
 from pathlib import Path
@@ -331,17 +330,21 @@ def test_get_bfs_subgraph():
         )
 
     # test if subgraph matches nodes and edges
-    G_sub, tree = test_swc.get_bfs_subgraph(100, 50)
+    G_sub, tree, paths = test_swc.get_bfs_subgraph(node_id=100, depth=50)
     assert set(G_sub.nodes) == set(tree.nodes)
-    G_sub, tree = test_swc.get_bfs_subgraph(100, 50, test_s3.get_df())
+    G_sub, tree, paths = test_swc.get_bfs_subgraph(
+        node_id=100, depth=50, df=test_s3.get_df()
+    )
     assert set(G_sub.nodes) == set(tree.nodes)
 
-    # test if outputs are directed graphs
-    G_sub_s3, tree_s3 = test_swc.get_bfs_subgraph(100, 50)
+    # test if outputs are directed graphs and paths
+    G_sub_s3, tree_s3, paths_s3 = test_swc.get_bfs_subgraph(100, 50)
     assert isinstance(G_sub, nx.DiGraph)
     assert isinstance(tree, nx.DiGraph)
+    assert isinstance(paths_s3, np.ndarray)
     assert isinstance(G_sub_s3, nx.DiGraph)
     assert isinstance(tree_s3, nx.DiGraph)
+    assert isinstance(paths_s3, np.ndarray)
 
 
 def test_get_sub_neuron():
@@ -419,6 +422,7 @@ def test_get_sub_neuron():
     assert isinstance(sub_neuron_swc, nx.DiGraph)
     assert isinstance(sub_neuron_s3, nx.DiGraph)
 
+
 def test_get_sub_neuron_paths():
 
     # test 'bounding_box' arg is a tuple or list
@@ -431,7 +435,9 @@ def test_get_sub_neuron_paths():
 
     # test 'spacing' arg must either be NoneType or numpy.ndarray
     with pytest.raises(TypeError):
-        test_swc.get_sub_neuron_paths(bounding_box=[[1, 2, 4], [1, 2, 3]], spacing="asdf")
+        test_swc.get_sub_neuron_paths(
+            bounding_box=[[1, 2, 4], [1, 2, 3]], spacing="asdf"
+        )
 
     # test if 'spacing' is type numpy.ndarray, it must be shape (3,1)
     with pytest.raises(ValueError):
@@ -452,8 +458,8 @@ def test_get_sub_neuron_paths():
             spacing=np.asarray([1, 2, 3]),
             origin=np.asarray([1, 2]),
         )
-    
-    # test if output is paths
+
+    # test if output for paths is type numpy.ndarray
     sub_neuron_swc = test_swc.get_sub_neuron_paths(bounding_box=[[1, 2, 4], [1, 2, 3]])
     sub_neuron_s3 = test_s3.get_sub_neuron_paths(bounding_box=[[1, 2, 4], [1, 2, 3]])
     assert isinstance(sub_neuron_swc, np.ndarray)
@@ -474,22 +480,22 @@ def test_ssd():
         NeuronTrace.ssd(zero, pt2_bad)
 
     # test if the inputs are both 2D arrays so sklearn pairwise dist can work
-    integer = 0
-    vector = [0, 0]
-    array = [[0, 0]]
-    none_list = []
+    integer = np.asarray(0)
+    vector = np.asarray([0, 0])
+    array = np.asarray([[0, 0]])
+    none_list = np.asarray([])
     with pytest.raises(
         ValueError, match=r"Expected 2D array, got scalar array instead"
     ):
-        swc.ssd(integer, integer)
+        NeuronTrace.ssd(integer, integer)
     with pytest.raises(ValueError, match=r"Expected 2D array, got 1D array instead"):
-        swc.ssd(vector, none_list)
+        NeuronTrace.ssd(vector, none_list)
     with pytest.raises(ValueError, match=r"Expected 2D array, got 1D array instead"):
-        swc.ssd(array, none_list)
+        NeuronTrace.ssd(array, none_list)
     with pytest.raises(ValueError, match=r"Expected 2D array, got 1D array instead"):
-        swc.ssd(vector, array)
+        NeuronTrace.ssd(vector, array)
     with pytest.raises(ValueError, match=r"Expected 2D array, got 1D array instead"):
-        swc.ssd(array, vector)
+        NeuronTrace.ssd(array, vector)
 
     # test ssd outputs
     a = np.asarray([[0, 0], [1, 1]])

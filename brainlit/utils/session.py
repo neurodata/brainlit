@@ -131,11 +131,10 @@ class NeuroglancerSession:
         check_type(rounding, bool)
         if self.cv_segments is None:
             raise ValueError("Cannot get segments without segmentation data.")
-        s3_trace = NeuronTrace(self.url_segments,seg_id,self.mip,rounding)
-    
+        s3_trace = NeuronTrace(self.url_segments, seg_id, self.mip, rounding)
+
         G = s3_trace.get_graph()
         paths = s3_trace.get_paths()
-        
 
         if bbox is not None:
             if isinstance(bbox, Bbox):
@@ -144,7 +143,7 @@ class NeuroglancerSession:
             check_iterable_nonnegative(bbox)
             G = s3_trace.get_sub_neuron([bbox[:3], bbox[3:]])
             paths = s3_trace.get_sub_neuron_paths([bbox[:3], bbox[3:]])
-            
+
         return [G, paths]
 
     def create_tubes(
@@ -173,8 +172,8 @@ class NeuroglancerSession:
             if radius <= 0:
                 raise ValueError("Radius must be positive.")
 
-        #s3_trace = NeuronTrace(self.url_segments,seg_id,self.mip,rounding)
-        #paths = s3_trace.get_paths(bbox)
+        # s3_trace = NeuronTrace(self.url_segments,seg_id,self.mip,rounding)
+        # paths = s3_trace.get_paths(bbox)
         G_paths = self.get_segments(seg_id, bbox)
         paths = G_paths[1]
 

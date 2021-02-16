@@ -43,7 +43,7 @@ class NeuronTrace:
             If s3 bucket path is provided, the segment number to pull
         mip : None,int
             If s3 bucket path is provided, the resolution to use for scaling
-    
+
     Example
     ----------
     >>> swc_path = "../../../../Manual-GT/8-01_test_1-5/8-01_test_1/tree_2.swc"
@@ -53,7 +53,7 @@ class NeuronTrace:
 
     >>> swc_trace = NeuronTrace(swc_path)
     >>> s3_trace = NeuronTrace(s3_path,seg_id,mip)
-    
+
     """
 
     def __init__(self, path, seg_id=None, mip=None, rounding=True, read_offset=False):
@@ -118,7 +118,7 @@ class NeuronTrace:
         -------
             self.args : list
                 list of arguments for df, if found - offset, color, cc, branch
-                
+
         Example
         -------
         >>> swc_trace.get_df_arguments()
@@ -133,7 +133,7 @@ class NeuronTrace:
         -------
             self.df : :class:`pandas.DataFrame`
                 dataframe providing indices, coordinates, and parents of each node
-        
+
         Example
         -------
         >>> swc_trace.get_df()
@@ -166,7 +166,7 @@ class NeuronTrace:
         --------
             skel : cloudvolume.Skeleton
                 Skeleton object of given SWC file
-                
+
         Example
         -------
         >>> swc_trace.get_skel(benchmarking=True)
@@ -200,7 +200,7 @@ class NeuronTrace:
         df_voxel : :class:`pandas.DataFrame`
             Indicies, coordinates, and parents of each node in the swc. Coordinates
             are in voxel units.
-            
+
         Example
         -------
         >>> swc_trace.get_df_voxel(spacing=np.asarray([2,2,2]))
@@ -217,8 +217,8 @@ class NeuronTrace:
             151    152    0    24    8    -4    1.0    151
             152    153    6    24    8    -4    1.0    152
             153 rows × 7 columns
-            
-            
+
+
         """
         check_type(spacing, np.ndarray)
         check_size(spacing)
@@ -246,7 +246,7 @@ class NeuronTrace:
         G : :class:`networkx.classes.digraph.DiGraph`
             Neuron from swc represented as directed graph. Coordinates x,y,z are
             node attributes accessed by keys 'x','y','z' respectively.
-            
+
         Example
         -------
         >>> swc_trace.get_graph()
@@ -291,7 +291,7 @@ class NeuronTrace:
         paths : list
             List of Nx3 numpy.array. Rows of the array are 3D coordinates in voxel
             units. Each array is one path.
-            
+
         Example
         -------
         >>> swc_trace.get_paths()[0][1:10]
@@ -324,9 +324,9 @@ class NeuronTrace:
         # no voxel conversion option
         else:
             G = self._df_to_graph(self.df)
-            
+
         paths = self._graph_to_paths(G)
-        
+
         return paths
 
     def generate_df_subset(
@@ -351,7 +351,7 @@ class NeuronTrace:
         df : :class:`pandas.DataFrame`
             Indicies, coordinates (in img spacing) and parents of each node.
             Coordinates are in spatial units.
-            
+
         Example
         -------
         >>> #swc input, subneuron_start and subneuron_end specified
@@ -366,7 +366,7 @@ class NeuronTrace:
         >>> vox_in_img_list_2 = list([my_list,my_list,my_list])
 
         >>>swc_trace.generate_df_subset(vox_in_img_list_2,subneuron_start,subneuron_end)
-        
+
         >>> sample    structure    x    y    z    r    parent
                 5    6    0    10    10    10    1.0    5
                 6    7    0    10    10    10    1.0    6
@@ -423,13 +423,22 @@ class NeuronTrace:
 
          tree : DiGraph
              The tree returned by BFS.
-             
+
+         paths : list
+            List of Nx3 numpy.array. Rows of the array are 3D coordinates in voxel
+            units. Each array is one path.
+
         Example
         -------
         >>> #swc input, specify node_id and depth
         >>> swc_trace.get_bfs_subgraph(node_id=11,depth=2)
-        >>>(<networkx.classes.digraph.DiGraph at 0x7f81a8390190>,
-            <networkx.classes.digraph.DiGraph at 0x7f81a8413fa0>)
+        >>>(<networkx.classes.digraph.DiGraph at 0x7f7f2ce65670>,
+            <networkx.classes.digraph.DiGraph at 0x7f7f2ce65370>,
+            array([array([[4727, 4440, 3849],
+                        [4732, 4442, 3850],
+                        [4739, 4455, 3849]]),
+                        array([[4732, 4442, 3850],
+                        [4749, 4439, 3856]])], dtype=object))
         """
 
         check_type(node_id, (list, int))
@@ -457,7 +466,7 @@ class NeuronTrace:
             G = self._df_to_graph(self.df)
 
         G_sub, tree = self._get_bfs_subgraph(G, node_id, depth, df)
-        
+
         paths = self._graph_to_paths(G_sub)
 
         return G_sub, tree, paths
@@ -483,7 +492,7 @@ class NeuronTrace:
         G_sub : :class:`networkx.classes.digraph.DiGraph`
             Neuron from swc represented as directed graph. Coordinates x,y,z are
             node attributes accessed by keys 'x','y','z' respectively.
-            
+
         Example
         -------
         >>> bounding_box=[[1,2,4],[1,2,3]]
@@ -522,7 +531,7 @@ class NeuronTrace:
         G_sub = self._get_sub_neuron(G, bounding_box)
 
         return G_sub
-    
+
     def get_sub_neuron_paths(self, bounding_box, spacing=None, origin=None):
         """Returns sub-neuron with node coordinates bounded by start and end
 
@@ -544,7 +553,7 @@ class NeuronTrace:
         paths : list
             List of Nx3 numpy.array. Rows of the array are 3D coordinates in voxel
             units. Each array is one path.
-            
+
         Example
         -------
         >>> bounding_box=[[1,2,4],[1,2,3]]
@@ -552,7 +561,7 @@ class NeuronTrace:
         >>> #swc input, no spacing and origin
         >>> swc_trace.get_sub_neuron_paths(bounding_box)
         >>> array([], dtype=object)
-        
+
         """
 
         check_type(bounding_box, (tuple, list))
@@ -582,11 +591,11 @@ class NeuronTrace:
             G = self._df_to_graph(self.df)
 
         G_sub = self._get_sub_neuron(G, bounding_box)
-        
+
         paths = self._graph_to_paths(G_sub)
 
         return paths
-        
+
     @staticmethod
     def ssd(pts1, pts2):
         """Compute significant spatial distance metric between two traces as defined in APP1.
@@ -595,16 +604,15 @@ class NeuronTrace:
             pts2 (np.array): array containing coordinates of points of trace 1. shape: npoints x ndims
         Returns:
             [float]: significant spatial distance as defined by APP1
-        
+
         Example
         -------
         >>> pts1 = swc_trace.get_paths()[0][1:10]
         >> pts2 = swc_trace.get_paths()[0][11:20]
 
         >>> NeuronTrace.ssd(pts1,pts2)
-        
+
         >>>6.247937554557103
-        """
 
         """
         check_type(pts1, np.ndarray)

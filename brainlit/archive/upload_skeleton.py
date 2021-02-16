@@ -103,8 +103,8 @@ def create_skel_segids(swc_dir, origin):
     segids = []
     for i in tqdm(files, desc="converting swcs to neuroglancer format..."):
         swc_trace = NeuronTrace(path=i)
-        skel = swc_trace.get_skel(benchmarking,origin=np.asarray(origin))
-        
+        skel = swc_trace.get_skel(benchmarking, origin=np.asarray(origin))
+
         skeletons.append(skel)
         segids.append(skeletons[-1].id)
     return skeletons, segids
