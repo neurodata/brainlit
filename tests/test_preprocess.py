@@ -5,7 +5,15 @@ from brainlit.preprocessing.image_process import (
     getLargestCC,
     removeSmallCCs,
 )
-from brainlit.preprocessing.preprocess import center, contrast_normalize
+from brainlit.preprocessing.preprocess import (
+    center,
+    contrast_normalize,
+    whiten,
+    window_pad,
+    undo_pad,
+    vectorize_img,
+    imagize_vector,
+)
 from numpy.testing import (
     assert_equal,
     assert_allclose,
@@ -18,6 +26,163 @@ from numpy.testing import (
 ####################
 ### input checks ###
 ####################
+
+
+def test_whiten_bad_inputs():
+    # test window_size.ndim > 1 or step_size.ndim > 1
+    with pytest.raises(ValueError):
+        whiten(
+            img=np.ones((5, 5)),
+            window_size=np.ones((5, 5)),
+            step_size=np.array([3, 3]),
+            centered=False,
+            epsilon=1e-5,
+            type="PCA",
+        )
+    with pytest.raises(ValueError):
+        whiten(
+            img=np.ones((5, 5)),
+            window_size=np.array([3, 3]),
+            step_size=np.ones((5, 5)),
+            centered=False,
+            epsilon=1e-5,
+            type="PCA",
+        )
+
+    # test len(window_size) != len(step_size)
+    with pytest.raises(ValueError):
+        whiten(
+            img=np.ones((5, 5)),
+            window_size=np.array([3, 3]),
+            step_size=np.array([3, 3, 3]),
+            centered=False,
+            epsilon=1e-5,
+            type="PCA",
+        )
+
+    # test img.ndim != len(window_size)
+    with pytest.raises(ValueError):
+        whiten(
+            img=np.ones((5, 5)),
+            window_size=np.array([3, 3, 3]),
+            step_size=np.array([3, 3, 3]),
+            centered=False,
+            epsilon=1e-5,
+            type="PCA",
+        )
+
+    # test 'type' must be string ('PCA' or 'ZCA')
+    with pytest.raises(ValueError):
+        whiten(
+            img=np.ones((5, 5)),
+            window_size=np.array([3, 3]),
+            step_size=np.array([3, 3]),
+            centered=False,
+            epsilon=1e-5,
+            type="nonsensical",
+        )
+
+
+def test_window_pad_bad_inputs():
+    # test window_size.ndim > 1 or step_size.ndim > 1
+    with pytest.raises(ValueError):
+        window_pad(
+            img=np.ones((5, 5)), window_size=np.ones((5, 5)), step_size=np.array([3, 3])
+        )
+    with pytest.raises(ValueError):
+        window_pad(
+            img=np.ones((5, 5)), window_size=np.array([3, 3]), step_size=np.ones((5, 5))
+        )
+
+    # test len(window_size) != len(step_size)
+    with pytest.raises(ValueError):
+        window_pad(
+            img=np.ones((5, 5)),
+            window_size=np.array([3, 3]),
+            step_size=np.array([3, 3, 3]),
+        )
+
+    # test img.ndim != len(window_size)
+    with pytest.raises(ValueError):
+        window_pad(
+            img=np.ones((5, 5)),
+            window_size=np.array([3, 3, 3]),
+            step_size=np.array([3, 3, 3]),
+        )
+
+
+def test_undo_pad_bad_inputs():
+    # test pad_size.ndim == 1 and img.ndim != 1
+    with pytest.raises(ValueError):
+        undo_pad(img=np.ones((5, 5)), pad_size=np.ones((5)))
+
+    # test img.ndim != pad_size.shape[0]
+    with pytest.raises(ValueError):
+        undo_pad(img=np.ones((5, 5)), pad_size=np.ones((5, 5)))
+
+
+def test_vectorize_img_bad_inputs():
+    # test window_size.ndim > 1 or step_size.ndim > 1
+    with pytest.raises(ValueError):
+        vectorize_img(
+            img=np.ones((5, 5)), window_size=np.ones((5, 5)), step_size=np.array([3, 3])
+        )
+    with pytest.raises(ValueError):
+        vectorize_img(
+            img=np.ones((5, 5)), window_size=np.array([3, 3]), step_size=np.ones((5, 5))
+        )
+
+    # test len(window_size) != len(step_size)
+    with pytest.raises(ValueError):
+        vectorize_img(
+            img=np.ones((5, 5)),
+            window_size=np.array([3, 3]),
+            step_size=np.array([3, 3, 3]),
+        )
+
+    # test img.ndim != len(window_size)
+    with pytest.raises(ValueError):
+        vectorize_img(
+            img=np.ones((5, 5)),
+            window_size=np.array([3, 3, 3]),
+            step_size=np.array([3, 3]),
+        )
+
+
+def test_imagize_vector_bad_inputs():
+    # test window_size.ndim > 1 or step_size.ndim > 1
+    with pytest.raises(ValueError):
+        imagize_vector(
+            img=np.ones((5, 5)),
+            orig_shape=np.array([3, 3]),
+            window_size=np.ones((5, 5)),
+            step_size=np.array([3, 3]),
+        )
+    with pytest.raises(ValueError):
+        imagize_vector(
+            img=np.ones((5, 5)),
+            orig_shape=np.array([3, 3]),
+            window_size=np.array([3, 3]),
+            step_size=np.ones((5, 5)),
+        )
+
+    # test len(window_size) != len(step_size)
+    with pytest.raises(ValueError):
+        imagize_vector(
+            img=np.ones((5, 5)),
+            orig_shape=np.array([3, 3]),
+            window_size=np.array([3, 3]),
+            step_size=np.array([3, 3, 3]),
+        )
+
+    # test len(orig_shape) != len(window_size)
+    with pytest.raises(ValueError):
+        imagize_vector(
+            img=np.ones((5, 5)),
+            orig_shape=np.array([3, 3, 3]),
+            window_size=np.array([3, 3]),
+            step_size=np.array([3, 3]),
+        )
 
 
 def test_gabor_filter_bad_inputs():
@@ -157,6 +322,52 @@ def test_contrast_normalize():
     normalized = contrast_normalize(arr)
     answer = np.array([-1, 1])
     assert_array_equal(normalized, answer)
+
+
+def test_window_pad():
+    img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    window_size = np.array([3, 3])
+    step_size = np.array([2, 2])
+    padded = window_pad(img, window_size, step_size)
+    answer = np.array(
+        [
+            [1, 1, 2, 3, 3],
+            [1, 1, 2, 3, 3],
+            [4, 4, 5, 6, 6],
+            [7, 7, 8, 9, 9],
+            [7, 7, 8, 9, 9],
+        ]
+    )
+    pad_size = np.array([[1, 1], [1, 1]])  # [[top,bottom], [left, right]]
+    assert_equal(padded, (answer, pad_size))
+
+
+def test_undo_pad():
+    img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    pad_size = np.array([[0, 1], [0, 1]])  # [[top, bottom], [left, right]]
+    unpadded = undo_pad(img, pad_size)
+    answer = np.array([[1, 2], [4, 5]])
+    assert_array_equal(unpadded, answer)
+
+
+def test_vectorize_img():
+    img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    window_size = np.array([2, 2])
+    step_size = np.array([1, 1])
+    vectorized = vectorize_img(img, window_size, step_size)
+    answer = np.array([[1, 2, 4, 5], [2, 3, 5, 6], [4, 5, 7, 8], [5, 6, 8, 9]])
+    assert_array_equal(vectorized, answer)
+
+
+def test_imagize_vector():
+    """2d example using the same example as test_vectorize_img."""
+    img = np.array([[1, 2, 4, 5], [2, 3, 5, 6], [4, 5, 7, 8], [5, 6, 8, 9]])
+    orig_shape = (3, 3)
+    window_size = np.array([2, 2])
+    step_size = np.array([1, 1])
+    imagized = imagize_vector(img, orig_shape, window_size, step_size)
+    answer = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    assert_array_equal(imagized, answer)
 
 
 def test_gaussian_truncate():
