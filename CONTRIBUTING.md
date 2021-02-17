@@ -33,3 +33,4 @@ or you can run pytest on a single test file by
  - [ ] Run an autoformatter. We use black and would like for you to format all files using black. You can run the following lines to format your files.
 ```pip install black```
 ```black path/to/module.py```
+ - [ ] Remove cell output from notebooks. Either do this manually or with [nbstripout](https://github.com/kynan/nbstripout).
