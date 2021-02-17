@@ -11,7 +11,7 @@ NUM_RES = 1
 @pytest.fixture
 def volume_info(num_res=NUM_RES, channel=0):
     """Pytest fixture that gets parameters that many upload.py methods use."""
-    top_level = Path(__file__).parents[1] / "data"
+    top_level = Path(__file__).parents[3] / "data"
     (
         ordered_files,
         bin_paths,
@@ -32,7 +32,7 @@ def volume_info(num_res=NUM_RES, channel=0):
 @pytest.fixture
 def paths():
     """Gets common paths for tests running uploads"""
-    top_level = Path(__file__).parents[1] / "data"
+    top_level = Path(__file__).parents[3] / "data"
     input = top_level / "data_octree"
     return top_level, input
 
@@ -44,7 +44,7 @@ def paths():
 
 def test_get_volume_info_bad_inputs():
     """Tests that errors are raised when bad inputs are given to upload.get_volume_info."""
-    p = str(Path(__file__).parents[1] / "data")
+    p = str(Path(__file__).parents[3] / "data")
     n = 1
     c = 0
     e = "tif"
