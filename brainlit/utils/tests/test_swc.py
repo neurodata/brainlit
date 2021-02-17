@@ -9,7 +9,7 @@ from brainlit.utils.session import NeuroglancerSession
 import pytest
 from pathlib import Path
 
-top_level = Path(__file__).parents[1] / "data"
+top_level = Path(__file__).parents[3] / "data"
 input = (top_level / "data_octree").as_posix()
 url = (top_level / "test_upload").as_uri()
 url_seg = url + "_segments"
