@@ -75,8 +75,6 @@ def test_get_df_arguments():
     # test if output is list
     assert isinstance(test_swc.get_df_arguments(), list)
     assert isinstance(test_s3.get_df_arguments(), list)
-    
-    
 
 
 def test_get_df():
