@@ -8,6 +8,7 @@ from brainlit.utils.Neuron_trace import NeuronTrace
 from brainlit.utils.session import NeuroglancerSession
 import pytest
 from pathlib import Path
+import networkx.algorithms.isomorphism as iso
 
 top_level = Path(__file__).parents[3] / "data"
 input = (top_level / "data_octree").as_posix()
@@ -183,6 +184,11 @@ def test_get_graph():
     # test if 'origin' is type numpy.ndarray, it must be shape (3,1)
     with pytest.raises(ValueError):
         test_swc.get_graph(spacing=np.asarray([0, 1, 2]), origin=np.asarray([0, 1]))
+        
+    #test if origin isn't specified but spacing is, origin set to np.array([0, 0, 0])
+    G1 = test_swc.get_graph(spacing=np.asarray([0, 1, 2]))
+    G2 = test_swc.get_graph(spacing=np.asarray([0, 1, 2]),origin=np.array([0, 0, 0]))
+    assert nx.is_isomorphic(G1, G2) == True
 
     # test if graph coordinates are same as that of df_voxel
     df_voxel = test_swc.get_df_voxel(
@@ -191,6 +197,7 @@ def test_get_graph():
     df_voxel_s3 = test_s3.get_df_voxel(
         spacing=np.asarray([1, 2, 3]), origin=np.asarray([1, 2, 3])
     )
+    
     # swc
     G = test_swc.get_graph(spacing=np.asarray([1, 2, 3]), origin=np.asarray([1, 2, 3]))
     coord_df = df_voxel[["x", "y", "z"]].values
@@ -380,6 +387,8 @@ def test_get_sub_neuron():
             spacing=np.asarray([1, 2, 3]),
             origin=np.asarray([1, 2]),
         )
+        
+    
     # test if bounding box produces correct number of nodes and edges
     # swc
     try:
@@ -458,10 +467,19 @@ def test_get_sub_neuron_paths():
             spacing=np.asarray([1, 2, 3]),
             origin=np.asarray([1, 2]),
         )
+    
+    #test whether voxel conversion option is covered
+    start = np.array([-600.273315, 2171.536082 , -1835.069744])
+    end = np.array([-562.945041,2197.964079, -1819.749479])
+    
+    paths1 = test_swc.get_sub_neuron_paths(bounding_box=(start,end))
+    paths2 = test_swc.get_sub_neuron_paths(bounding_box=(start,end),spacing=np.asarray([1, 2, 3]),origin=np.asarray([1, 2, 3]))
+    
+    assert paths1 != paths2
 
     # test if output for paths is type numpy.ndarray
-    sub_neuron_swc = test_swc.get_sub_neuron_paths(bounding_box=[[1, 2, 4], [1, 2, 3]])
-    sub_neuron_s3 = test_s3.get_sub_neuron_paths(bounding_box=[[1, 2, 4], [1, 2, 3]])
+    sub_neuron_swc = test_swc.get_sub_neuron_paths(bounding_box=[[1, 2, 3], [1, 2, 3]])
+    sub_neuron_s3 = test_s3.get_sub_neuron_paths(bounding_box=[[1, 2, 3], [1, 2, 3]])
     assert isinstance(sub_neuron_swc, np.ndarray)
     assert isinstance(sub_neuron_s3, np.ndarray)
 

@@ -46,7 +46,7 @@ class NeuronTrace:
 
     Example
     ----------
-    >>> swc_path = "../../../../Manual-GT/8-01_test_1-5/8-01_test_1/tree_2.swc"
+    >>> swc_path = "./data/data_octree/consensus-swcs/2018-08-01_G-002_consensus.swc"
     >>> s3_path = "s3://open-neurodata/brainlit/brain1_segments"
     >>> seg_id = 11
     >>> mip = 2
