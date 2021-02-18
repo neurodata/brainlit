@@ -15,7 +15,7 @@ from brainlit.algorithms.generate_fragments.tube_seg import tubes_seg
 
 @pytest.fixture
 def vars_local():
-    top_level = Path(__file__).parents[1] / "data"
+    top_level = Path(__file__).parents[3] / "data"
     input = (top_level / "data_octree").as_posix()
     url = (top_level / "test_upload").as_uri()
     url_segments = url + "_segments"
@@ -49,7 +49,7 @@ def test_session_incomplete_urls(vars_local):
     """Tests that initializing a NeuroglancerSession on data without segmentation or annotation channels is valid and raises a warning."""
     input, url, url_seg, mip, _, _ = vars_local
     path = (
-        Path(__file__).parents[1] / "data" / "test_upload" / "serial"
+        Path(__file__).parents[3] / "data" / "test_upload" / "serial"
     ).as_uri()  # does not have segments or annotation
     with pytest.warns(UserWarning):
         sess = NeuroglancerSession(path)
