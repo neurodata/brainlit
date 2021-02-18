@@ -14,6 +14,7 @@ feather-format==0.4.1
 install-qt-binding==0.0.8
 jupyter==1.0.0
 napari==0.3.7
+nbstripout
 nilearn==0.6.2
 pandas==1.1.2
 PySide2==5.15.1
