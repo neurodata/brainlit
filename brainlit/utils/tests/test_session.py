@@ -248,10 +248,15 @@ def test_set_url_segments(vars_local):
 def test_get_segments(session):
     """Tests that getting segments returns a valid graph."""
     sess, seg_id, v_id = session
-    G = sess.get_segments(seg_id)
-    G_sub = sess.get_segments(seg_id, (0, 0, 0, 20, 20, 20))
+    G_paths = sess.get_segments(seg_id)
+    G = G_paths[0]
+    paths = G_paths[1]
+    G_sub_paths = sess.get_segments(seg_id, (0, 0, 0, 20, 20, 20))
+    G_sub = G_sub_paths[0]
+    paths_sub = G_sub_paths[1]
     assert G != G_sub
     assert isinstance(G, nx.Graph) and isinstance(G_sub, nx.Graph)
+    assert isinstance(paths, np.ndarray) and isinstance(paths_sub, np.ndarray)
 
 
 def test_create_tubes(session):

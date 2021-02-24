@@ -1,6 +1,6 @@
 import pytest
 from brainlit.algorithms.trace_analysis.fit_spline import GeometricGraph
-from brainlit.utils import swc
+from brainlit.utils.Neuron_trace import NeuronTrace
 import networkx as nx
 from scipy.interpolate import splprep
 import numpy as np
@@ -141,7 +141,8 @@ def test_init_from_bad_df():
 
 
 def test_init_from_df():
-    df_s3 = swc.read_s3(url_seg, seg_id=2, mip=0, rounding=False)
+    s3_trace = NeuronTrace(path=url_seg, seg_id=2, mip=0, rounding=False)
+    df_s3 = s3_trace.get_df()
     G = GeometricGraph(df=df_s3)
     assert isinstance(G, GeometricGraph)
 

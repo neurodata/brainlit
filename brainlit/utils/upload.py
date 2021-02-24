@@ -13,7 +13,7 @@ import contextlib
 
 import tifffile as tf
 from pathlib import Path
-from brainlit.utils.swc import swc2skeleton
+from brainlit.utils.Neuron_trace import NeuronTrace
 from brainlit.utils.benchmarking_params import (
     brain_offsets,
     vol_offsets,
@@ -451,7 +451,10 @@ def create_skel_segids(
     skeletons = []
     segids = []
     for i in tqdm(files, desc="converting swcs to neuroglancer format..."):
-        skeletons.append(swc2skeleton(i, benchmarking, origin=origin))
+        swc_trace = NeuronTrace(path=i)
+        skel = swc_trace.get_skel(benchmarking, origin=np.asarray(origin))
+
+        skeletons.append(skel)
         segids.append(skeletons[-1].id)
     return skeletons, segids
 
