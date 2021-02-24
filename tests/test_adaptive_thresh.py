@@ -96,6 +96,31 @@ def test_confidence_connected_threshold():
     assert sum(sum(labels.astype(float))) / 62500 > 0.98
 
 
+def test_neighborhood_connected_threshold():
+    # define an image with 2D Gaussian distribution
+    Gx = np.array([])
+    for x in range(0, 7):
+        Gx = np.insert(Gx, x, np.exp(-((x - 3) ** 2) / (2 * (3 ** 2))))
+
+    Gxy = np.zeros((7, 7))
+
+    for x in range(0, 7):
+        for y in range(0, 7):
+            Gxy[x, y] = (Gx[x]) * (Gx[y])
+
+    img = 255 * (Gxy / Gxy.max())
+    # pick the central pixel as the seed and threshold at 200
+    lower_threshold = 200
+    seed = (3, 3)
+    labels = neighborhood_connected_threshold(
+        img, [seed], lower_threshold=lower_threshold
+    )
+    # all the neighbor pixels within radius=(1,1,1) should fit in the threshold
+    labels_predicted = np.zeros((7, 7))
+    labels_predicted[3, 3] = 1
+    np.testing.assert_array_equal(labels, labels_predicted)
+
+
 def test_otsu():
     G1 = np.append(
         np.round(np.random.normal(loc=40, scale=10, size=(499, 1))), np.array([0])
