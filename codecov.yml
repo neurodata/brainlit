@@ -19,8 +19,8 @@ coverage:
 # --------------
 # which folders/files to ignore
 ignore:
-  - "test_*.py"
-  - "*__init__.py"
+  - *tests*
+  - *__init__.py
 
 # Pull request comments:
 # ----------------------
