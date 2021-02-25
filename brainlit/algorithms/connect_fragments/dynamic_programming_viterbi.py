@@ -183,50 +183,42 @@ class viterbi_algorithm:
         connection_mat = self.connection_mat
 
         # lbl1 is a line, lbl2 is a soma or blob
-        points = self.end_points[lbl1]
-        nonline_lbl = lbl2
+        line_pts = self.end_points[lbl1]
+        blob_lbl = lbl2
 
         lowest_cost = np.inf
 
-        label_nonline = labels == nonline_lbl
+        label_nonline = labels == blob_lbl
         # for all endpoints of the line
-        for point in points:
-            if nonline_lbl in self.somas.keys():
-                coords = self.somas[nonline_lbl]
+        for endpt in line_pts:
+            if blob_lbl in self.somas.keys():
+                # Soma is represented as a single point in space,
+                # cast as a list with 1 tuple object
+                coords = [self.somas[blob_lbl]]
             else:
                 coords = np.argwhere(
                     label_nonline ^ ndi.morphology.binary_erosion(label_nonline)
                 )
-                self.soma_locs[nonline_lbl] = coords
+                self.soma_locs[blob_lbl] = coords
 
-            dists = np.linalg.norm(np.subtract(coords, point))
-            min_dist_ind = np.argmin(dists)
-            #nonline_point = coords[min_dist_ind, :]
+            dists = np.linalg.norm(np.subtract(coords, endpt))
             dist_cost = np.amin(dists)
             
-            # evaluate only by distances
+            # find minimum based on distance cost
             if dist_cost < lowest_cost:
                 lowest_cost = dist_cost
-                #point_lowest = point
-                #nonline_point_lowest = nonline_point
+                endpt_lowest = endpt
+                blob_lowest = coords[np.argmin(dists)]
 
-        '''
         # set connection_mat points
-        connection_mat[0][lbl1, lbl2, :] = point_lowest
-        if labels[point_lowest[0], point_lowest[1], point_lowest[2]] != lbl1:
+        connection_mat[0][lbl1, lbl2, :] = endpt_lowest
+        if labels[endpt_lowest] != lbl1:
             raise ValueError(
-                f"Lowest cost point: {point_lowest} has label {labels[point_lowest[0], point_lowest[1], point_lowest[2]]}, not {lbl1}"
+                f"Lowest cost point: {endpt_lowest} has label {labels[endpt_lowest]}, not {lbl1}"
             )
-        connection_mat[1][lbl1, lbl2, :] = nonline_point_lowest
-        if (
-            labels[
-                nonline_point_lowest[0],
-                nonline_point_lowest[1],
-                nonline_point_lowest[2],
-            ]
-            != lbl2
-        ):
+        connection_mat[1][lbl1, lbl2, :] = blob_lowest
+        if (labels[blob_lowest] != lbl2):
             raise ValueError("Error in setting connection_mat")
-        '''
-        return lowest_cost#, point_lowest, nonline_point_lowest
+
+        return lowest_cost, endpt_lowest, blob_lowest
 
