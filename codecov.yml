@@ -2,7 +2,7 @@
 # https://docs.codecov.io/docs/codecov-yaml
 
 # Check if this file is valid by running in bash: 
-# curl -X POST --data-binary @.codecov.yml https://codecov.io/validate
+# curl --data-binary @codecov.yml https://codecov.io/validate
 
 # Coverage configuration
 # ----------------------
