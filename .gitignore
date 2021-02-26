@@ -58,6 +58,9 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# Documentation notebook data
+docs/notebooks/utils/data
+
 # PyBuilder
 target/
 
