@@ -49,7 +49,7 @@ jobs:
           # This assumes pytest is installed via the install-package step above
           command: |
             . venv/bin/activate
-            pytest --cov=brainlit tests/
+            pytest --cov=brainlit brainlit/
             black --check --diff ./brainlit ./tests
             codecov
 
