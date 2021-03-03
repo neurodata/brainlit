@@ -31,7 +31,7 @@ s3 = boto3.resource("s3", config=Config(signature_version=UNSIGNED))
 bucket = s3.Bucket("open-neurodata")
 for brain in brains:
     brain_name = "brain%d" % brain
-    prefix = os.path.join("brainlit", "axon_geometry", brain_name, "segments_swc")
+    prefix = "brainlit/axon_geometry/" + brain_name + "/segments_swc"
     brain_dir = os.path.join(data_dir, brain_name)
     seg_dir = os.path.join(brain_dir, "segments_swc")
     seg_count = 0
