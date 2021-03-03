@@ -53,11 +53,72 @@ def test_thres_from_gmm():
     assert thre == thre_predicted
 
 
-# def test_level_set_seg():
-#    G1 = np.append(np.round(np.random.normal(loc=40, scale=10, size=(499,1))),np.array([0]))
-#    G2 = np.append(np.round(np.random.normal(loc=220, scale=10, size=(499,1))),np.array([255]))
-#    img = np.concatenate((G1,G2)).reshape((10,10,10))
-#    labels = level_set_seg(img,(1,0,1))
+def test_fast_marching_seg():
+    Gx = np.array([])
+    for x in range(0, 101):
+        Gx = np.insert(Gx, x, np.exp(-((x - 50) ** 2) / (2 * (2 ** 2))))
+
+    img = np.repeat([Gx], repeats=30, axis=0)
+    seed = (50, 15)
+    stopping_value = 150
+    sigma = 0.5
+    _, img_T1_255 = get_img_T1(img)
+    feature_img = sitk.GradientMagnitudeRecursiveGaussian(img_T1_255, sigma=sigma)
+    speed_img = sitk.BoundedReciprocal(feature_img)
+    fm_filter = sitk.FastMarchingBaseImageFilter()
+    fm_filter.SetTrialPoints([seed])
+    fm_filter.SetStoppingValue(stopping_value)
+    fm_img = fm_filter.Execute(speed_img)
+    fm_img = sitk.Cast(sitk.RescaleIntensity(fm_img), sitk.sitkUInt8)
+    labels_predicted = sitk.GetArrayFromImage(fm_img)
+    labels_predicted = (~labels_predicted.astype(bool)).astype(int)
+    labels = fast_marching_seg(img, seed, sigma=sigma)
+    np.testing.assert_array_equal(labels, labels_predicted)
+
+
+def test_level_set_seg():
+    Gx = np.array([])
+    for x in range(0, 101):
+        Gx = np.insert(Gx, x, np.exp(-((x - 50) ** 2) / (2 * (2 ** 2))))
+
+    img = np.repeat([Gx], repeats=30, axis=0)
+    seed = (50, 15)
+    lower_threshold = None
+    upper_threshold = None
+    factor = 2
+    max_rms_error = 0.02
+    num_iter = 1000
+    curvature_scaling = 0.5
+    propagation_scaling = 1
+    _, img_T1_255 = get_img_T1(img)
+    seg = sitk.Image(img_T1_255.GetSize(), sitk.sitkUInt8)
+    seg.CopyInformation(img_T1_255)
+    seg[seed] = 1
+    seg = sitk.BinaryDilate(seg, [1] * seg.GetDimension())
+    stats = sitk.LabelStatisticsImageFilter()
+    stats.Execute(img_T1_255, seg)
+
+    if lower_threshold == None:
+        lower_threshold = stats.GetMean(1) - factor * stats.GetSigma(1)
+    if upper_threshold == None:
+        upper_threshold = stats.GetMean(1) + factor * stats.GetSigma(1)
+
+    init_ls = sitk.SignedMaurerDistanceMap(
+        seg, insideIsPositive=True, useImageSpacing=True
+    )
+
+    lsFilter = sitk.ThresholdSegmentationLevelSetImageFilter()
+    lsFilter.SetLowerThreshold(lower_threshold)
+    lsFilter.SetUpperThreshold(upper_threshold)
+    lsFilter.SetMaximumRMSError(max_rms_error)
+    lsFilter.SetNumberOfIterations(num_iter)
+    lsFilter.SetCurvatureScaling(curvature_scaling)
+    lsFilter.SetPropagationScaling(propagation_scaling)
+    lsFilter.ReverseExpansionDirectionOn()
+    ls = lsFilter.Execute(init_ls, sitk.Cast(img_T1_255, sitk.sitkFloat32))
+    labels_predicted = sitk.GetArrayFromImage(ls > 0)
+    labels = level_set_seg(img, seed, lower_threshold=None, upper_threshold=None)
+    np.testing.assert_array_equal(labels, labels_predicted)
 
 
 def test_connected_threshold():
