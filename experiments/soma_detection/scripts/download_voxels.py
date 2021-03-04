@@ -41,7 +41,7 @@ for brain in brains:
             np.save(tmp_npy, img, allow_pickle=True)
 
             with open(tmp_npy, 'rb') as data:
-                blob_name = f"soma-detection/{seg_id}.npy"
+                blob_name = f"soma-detection/{brain_name}_{seg_id}.npy"
                 blob_client = blob_service_client.get_blob_client(
                     container=container_name, blob=blob_name
                 )
