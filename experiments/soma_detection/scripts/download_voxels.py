@@ -9,6 +9,7 @@ from azure.storage.blob import BlobServiceClient
 import numpy as np
 import json
 import time
+import pandas as pd
 
 cwd = Path(os.path.abspath(__file__))
 exp_dir = cwd.parents[1]
@@ -26,6 +27,7 @@ connect_str = az_secret["AZURE_STORAGE_CONNECTION_STRING"]
 container_name = "datasets"
 blob_service_client = BlobServiceClient.from_connection_string(connect_str)
 
+d = []
 for brain in brains:
     brain_name = "brain%d" % brain
 
@@ -42,7 +44,11 @@ for brain in brains:
         seg_id = os.path.basename(seg_obj.key)
         if seg_id != "info":
             radius = 150
-            print(f"Pulling volume around root {seg_id} of radius {radius}...", end="", flush=True)
+            print(
+                f"Pulling volume around root {seg_id} of radius {radius}...",
+                end="",
+                flush=True,
+            )
             t0 = time.time()
             img, bbox, vox = ngl_sess.pull_voxel(int(seg_id), 0, radius)
             t1 = time.time()
@@ -72,11 +78,22 @@ for brain in brains:
                     container=container_name, blob=blob_name
                 )
                 blob_client.upload_blob(data, overwrite=True)
+            d.append(
+                {
+                    "seg_id": seg_id,
+                    "channel": "image",
+                    "label": True,
+                    "filepath": blob_name,
+                    "intensity": np.sum(img.flatten()),
+                }
+            )
             t1 = time.time()
             dt = np.around(t1 - t0, decimals=3)
             print(f"done in {dt}s")
 
-            print(f"Uploading neighbor volume to AzureBlobStorage...", end="", flush=True)
+            print(
+                f"Uploading neighbor volume to AzureBlobStorage...", end="", flush=True
+            )
             t0 = time.time()
             np.save(tmp_npy, neigh_img, allow_pickle=True)
             with open(tmp_npy, "rb") as data:
@@ -85,6 +102,18 @@ for brain in brains:
                     container=container_name, blob=blob_name
                 )
                 blob_client.upload_blob(data, overwrite=True)
+            d.append(
+                {
+                    "seg_id": seg_id,
+                    "channel": "image",
+                    "label": False,
+                    "filepath": blob_name,
+                    "intensity": np.sum(neigh_img.flatten()),
+                }
+            )
             t1 = time.time()
             dt = np.around(t1 - t0, decimals=3)
             print(f"done in {dt}s")
+
+dataset = pd.DataFrame(d)
+dataset.to_csv(os.path.join(data_dir, "dataset.csv"))
