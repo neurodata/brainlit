@@ -54,15 +54,20 @@ def test_thres_from_gmm():
 
 
 def test_fast_marching_seg():
+    # create an image comprised of repeated 1D Gaussian distribution with mean value at 50th pixel and standard deviation of 2 pixels
     Gx = np.array([])
     for x in range(0, 101):
         Gx = np.insert(Gx, x, np.exp(-((x - 50) ** 2) / (2 * (2 ** 2))))
 
     img = np.repeat([Gx], repeats=30, axis=0)
+    # place a seed in the region of mean value
     seed = (50, 15)
+    # input default settings of the fast_marching_seg function
     stopping_value = 150
     sigma = 0.5
+    # convert image format to comply with SimpleITK
     _, img_T1_255 = get_img_T1(img)
+    # explicitly applying SimpleITK filters accordingly as in the fast_marching_seg function
     feature_img = sitk.GradientMagnitudeRecursiveGaussian(img_T1_255, sigma=sigma)
     speed_img = sitk.BoundedReciprocal(feature_img)
     fm_filter = sitk.FastMarchingBaseImageFilter()
@@ -71,18 +76,23 @@ def test_fast_marching_seg():
     fm_img = fm_filter.Execute(speed_img)
     fm_img = sitk.Cast(sitk.RescaleIntensity(fm_img), sitk.sitkUInt8)
     labels_predicted = sitk.GetArrayFromImage(fm_img)
+    # the prediceted labels is obtained by explicitly running the fast_marching function
     labels_predicted = (~labels_predicted.astype(bool)).astype(int)
+    # acquire labels by employing the fast_marching_seg function
     labels = fast_marching_seg(img, seed, sigma=sigma)
     np.testing.assert_array_equal(labels, labels_predicted)
 
 
 def test_level_set_seg():
+    # create an image comprised of repeated 1D Gaussian distribution with mean value at 50th pixel and standard deviation of 2 pixels
     Gx = np.array([])
     for x in range(0, 101):
         Gx = np.insert(Gx, x, np.exp(-((x - 50) ** 2) / (2 * (2 ** 2))))
 
     img = np.repeat([Gx], repeats=30, axis=0)
+    # place a seed in the region of mean value
     seed = (50, 15)
+    # input default settings of the fast_marching_seg function
     lower_threshold = None
     upper_threshold = None
     factor = 2
@@ -90,7 +100,9 @@ def test_level_set_seg():
     num_iter = 1000
     curvature_scaling = 0.5
     propagation_scaling = 1
+    # convert image format to comply with SimpleITK
     _, img_T1_255 = get_img_T1(img)
+    # explicitly applying SimpleITK filters accordingly and run default threshold algorithms as in the level_seg_set function
     seg = sitk.Image(img_T1_255.GetSize(), sitk.sitkUInt8)
     seg.CopyInformation(img_T1_255)
     seg[seed] = 1
@@ -116,7 +128,9 @@ def test_level_set_seg():
     lsFilter.SetPropagationScaling(propagation_scaling)
     lsFilter.ReverseExpansionDirectionOn()
     ls = lsFilter.Execute(init_ls, sitk.Cast(img_T1_255, sitk.sitkFloat32))
+    # the prediceted labels is obtained by explicitly running the level_set_seg function
     labels_predicted = sitk.GetArrayFromImage(ls > 0)
+    # acquire labels by employing level_set_seg function
     labels = level_set_seg(img, seed, lower_threshold=None, upper_threshold=None)
     np.testing.assert_array_equal(labels, labels_predicted)
 
@@ -128,14 +142,16 @@ def test_connected_threshold():
     G3 = np.full((4, 4), 100)
     G4 = np.full((4, 4), 0)
     img = np.concatenate((G1, G2, G3, G4)).reshape(4, 4, 4)
-    # seed at the first layer and give a lower_threshold
+    # seed at the first layer with the highest gray level and give a lower_threshold
     labels = connected_threshold(img, [(0, 0, 0)], lower_threshold=150)
+    # because the gray levels are arranged in a sequantial order, gray level above the threshold should be all labeled 1, otherwise 0
     labels_predicted = np.concatenate(
         ((G1 / G1).astype(int), (G2 / G2).astype(int), G3 - G3, G4 - G4)
     ).reshape(4, 4, 4)
     np.testing.assert_array_equal(labels, labels_predicted)
     # seed at the first layer without giving a lower_threshold
     labels = connected_threshold(img, [(0, 0, 0)])
+    # since no threshold is given, the default is to use thres_from_gmm to determine the threshold (200 in this case)
     labels_predicted = np.concatenate(
         ((G1 / G1).astype(int), (G2 / G2).astype(int), G3 - G3, G4 - G4)
     ).reshape(4, 4, 4)
