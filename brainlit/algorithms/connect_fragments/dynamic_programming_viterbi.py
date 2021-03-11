@@ -108,8 +108,8 @@ class viterbi_algorithm:
             skel = morphology.skeletonize_3d(mask)
 
             coords_mask = np.argwhere(mask)
-
             coords_skel = np.argwhere(skel)
+            
             if len(coords_skel) < 4:
                 coords = coords_mask
             else:
@@ -194,7 +194,6 @@ class viterbi_algorithm:
                 coords = np.argwhere(
                     label_nonline ^ ndi.morphology.binary_erosion(label_nonline)
                 )
-                self.somas[blob] = coords
 
             dists = np.linalg.norm(np.subtract(coords, endpt),axis=1)
             dist_cost = np.amin(dists)
@@ -228,11 +227,11 @@ class viterbi_algorithm:
         # Need to check about this
         #int_cost = (mu1 ** 2 - 2 * mu1 * np.mean(ints)) / self.sigma
         
-        int_cost = np.mean(ints)
+        int_cost = 1/(np.mean(ints)+1)
         
         return int_cost
     
-    def compute_all_dists(self, somas):
+    def compute_all_dists(self):
         for lbl1 in range(1, self.num_components + 1):
             for lbl2 in range(lbl1, self.num_components + 1):
                 if lbl2 == lbl1:
@@ -278,7 +277,7 @@ class viterbi_algorithm:
                         f"Negative cost between {lbl1} to {lbl2} from: dist - {dist}, intensity - {int_cost}"
                     )
 
-        for soma in somas:
+        for soma in self.somas.keys():
             # Going from soma to anything else is impossible, 
             # as we want to connect foreground to somas
             self.cost_mat_dist[soma, :] = np.inf
@@ -286,10 +285,16 @@ class viterbi_algorithm:
             # Soma to soma is 0
             self.cost_mat_dist[soma, soma] = 0
             self.cost_mat_int[soma, soma] = 0
+            # Connection from soma outwards should be 0'd
+            self.connection_mat[0][soma, :] = [0,0,0]
+            self.connection_mat[1][soma, :] = [0,0,0]
+
+            self.connection_mat[0][soma, :] = [0,0,0]
+            self.connection_mat[1][soma, :] = [0,0,0]
 
 
         for lbl1 in range(1, self.num_components + 1):
-            if lbl1 in somas:
+            if lbl1 in self.somas.keys():
                 denom = 0
             else:
                 denom = logsumexp(-1 * self.cost_mat_dist[lbl1, 1:])

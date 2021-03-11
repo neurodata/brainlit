@@ -43,14 +43,12 @@ def testLineToBlob():
 def testPathIntensityCost():
     # Currently a stub, need to double-check what the proper form of the 
     # intensity score should be
-    assert(0 == alg2.line_int((9,9,0),(12,12,0),2,3))
+    assert(1 == alg2.line_int((9,9,0),(12,12,0),2,3))
     
 def testConnections():
     # Test if we are getting the correct connections
-    alg.compute_all_dists(alg.somas)
+    alg.compute_all_dists()
     c = alg.connection_mat
-    print(alg.connection_mat[0][3][1])
-    print(alg.connection_mat[1][3][1])
     
     # 1 to x, x to 1
     np.testing.assert_equal(c[0][1][2], [0,2,0])
@@ -89,7 +87,6 @@ def testConnections():
     
     # SOMA CONNECTIONS
     # 5 to x, x to 5 
-    # NOTE: All of the following 5 to x fail currently.
     np.testing.assert_equal(c[0][1][5], [0,2,0])
     np.testing.assert_equal(c[1][1][5], [9,9,0])
     np.testing.assert_equal(c[0][5][1], [0,0,0])
@@ -111,6 +108,16 @@ def testConnections():
     np.testing.assert_equal(c[0][5][2], [0,0,0])
     np.testing.assert_equal(c[1][5][2], [0,0,0])
     
+    # Cost matrix checks
+    for i in range(5):
+        for j in range(5):
+            if i in alg.somas.keys():
+                assert(np.inf == alg.cost_mat_dist[i,j])
+                assert(np.inf == alg.cost_mat_int[i,j])
+            elif i == j:
+                assert(np.inf == alg.cost_mat_dist[i,j])
+                assert(np.inf == alg.cost_mat_int[i,j])
+
     # For manual debugging purposes
     connect_points = set()
     for i in range(1):
@@ -119,7 +126,25 @@ def testConnections():
                 if not (np.equal([0,0,0], c[i][j][k])).all():
                     connect_points.add(tuple(c[i][j][k]))
 
-
+def testEndpoints():
+    alg3.frags_to_lines_le_skel([2])
+    # Labels 1 and 3 are lines for this 100x100 example
+    
+    ids1 = map(id, np.array(alg3.end_points[1]))
+    ids3 = map(id, np.array(alg3.end_points[3]))
+    
+    # Check if both endpoints are found
+    # Note that the manually typed endpoints were identified visually
+    # in this simple example.
+    assert(id(np.array([1,1,0])) in ids1)
+    assert(id(np.array([48,48,0])) in ids1)
+    
+    assert(id(np.array([51,51,0])) in ids3)
+    assert(id(np.array([97,97,0])) in ids3)
+    
+    
+    print("Endpoints Tests: ", alg3.end_points)
+    
 ''' Setting up the image environment '''
 
 def grid_gen(grid_id=10):
@@ -146,7 +171,7 @@ def grid_gen(grid_id=10):
         #grid[:,:,1] = grid[:,:,0] 
         # Label the components
         labels, num = measure.label(grid, return_num=True)
-        plt.imshow(labels[:,:,0])
+
         # We'll have the bottom-right corner, which is labeled 5, be the soma
         somas = {5:[(9,9,0)]}
     
@@ -183,10 +208,33 @@ def grid_gen(grid_id=10):
         #grid[:,:,1] = grid[:,:,0] 
         # Label the components
         labels, num = measure.label(grid, return_num=True)
-        plt.imshow(labels[:,:,0])
+
         # We'll have the bottom-right corner, which is labeled 4, be the soma
         somas = {4:[(19,19,0)]}
+        
+    if grid_id == 100:
+        ''' Generates a 100x100x2 grid with 2 labels along the diagonal'''
+        ''' and one soma '''
+        # 100x100x2 image, with 1 color channel greyscale
+        grid = np.zeros((100,100,2))
+        labels = np.zeros((100,100,2))
+        # Create some diagonal lines
+        for i in range(1,49):
+            grid[i,i,0] = 200
+        
+        # Create some diagonal lines
+        for i in range(51,98):
+            grid[i,i,0] = 175
+        # Label a soma
+        grid[10,30,0] = 255
+        # Add this back in later. For simplicity, only the 0th layer of grid has labels
+        #grid[:,:,1] = grid[:,:,0] 
+        # Label the components
+        labels, num = measure.label(grid, return_num=True)
+        somas = {2:[(10,30,0)]}
     
+    plt.figure()
+    plt.imshow(labels[:,:,0])
     return grid, labels, num, somas
 
 img, lbls, _ , somas = grid_gen(10)
@@ -204,8 +252,8 @@ img2, lbls2, _ , somas2 = grid_gen(20)
 alg2 = viterbi_algorithm(img2, lbls2, somas2, [1,1,1])
 
 # I tried doing spectral embedding, the endpoints produced were not correct
-alg2.frags_to_lines_le_skel([1,4])
-print(alg2.end_points)
+#alg2.frags_to_lines_le_skel([1,4])
+#print("Endpoints Tests: ", alg2.end_points)
 
 # For the timebeing, manually do the endpoints
 # NOTE: no endpoints for 1 or 4 because they are blobs
@@ -214,8 +262,13 @@ endpoints2[2] = ((1,1,0),(9,9,0))
 endpoints2[3] = ((12,12,0),(15,15,0))
 alg2.end_points = endpoints2
 
+# 100x100 example for endpoints
+img3, lbls3, somas3 , _ = grid_gen(100)
+alg3 = viterbi_algorithm(img3, lbls3, somas3, [1,1,1])
+
 testInit()
 testLineToLine()
 testLineToBlob()
 testPathIntensityCost()
 testConnections()
+testEndpoints()
