@@ -53,7 +53,6 @@ def generate_brain_trace_data(brain: str, spacing: int):
         if os.path.exists(seg_swc_path) is True:
             swc_trace = NeuronTrace(path=seg_swc_path)
             df_swc_offset_neuron = swc_trace.get_df()
-            #df_swc_offset_neuron, _, _, _ = swc.read_swc_offset(seg_swc_path)
             print("Loaded segment {}".format(i))
             G = GeometricGraph(df=df_swc_offset_neuron)
             print("Initialized GeometricGraph")
