@@ -57,6 +57,95 @@ class viterbi_algorithm:
         self.not_lines = None
         self.sigma = 1/20
     
+    def viterbi_frag(self, start_lbl, K, somas):
+        """Run Viterbi algorithm on image that has been masked into connected components.
+        Args:
+            start_lbl (int): starting component
+            K (int): number of iterations
+            somas (list): list of components that are cell bodies
+        Returns:
+            [type]: [description]
+        """
+
+        # Initialize dictionary of paths
+        # Start at state 0
+        # Dictionary value:
+        #   - First element of tuple is the state
+        #   - Second is a tuple that contains path length and path to it
+        paths_k = {start_lbl: (0, [start_lbl])}
+
+        all_paths = []
+
+        for step in tqdm(np.arange(K)):
+            all_paths.append(paths_k)
+
+            paths_k, closest_state = self.viterbi_frag_next_layer(
+                paths_k,
+                somas,
+            )
+
+        sort_paths = sorted(paths_k.items(), key=lambda x: x[1][0])
+        top_paths = [entry[1] for entry in sort_paths[:1]]
+        return top_paths[0], all_paths
+    
+    def viterbi_frag_next_layer(self, paths_k, somas):
+        num_components = self.num_components
+
+        # This dictionary will store the paths for the next level
+        paths_k1 = {}
+        # Init closest state and cost to that state
+        closest_state = -1
+        closest_state_len = np.inf
+        # For each possible current state
+        for state in range(1, num_components + 1):
+            shortest_path = []
+            shortest_length = np.Inf
+            # For each possible previous state
+            for prev_state in paths_k.keys():
+                path = paths_k[prev_state][1].copy()
+                # Calculate the cost to traverse
+                length = paths_k[prev_state][0] + self.path_cost(
+                    prev_state, state, path, somas
+                )
+
+                path.append(state)
+
+                if length < shortest_length:
+                    shortest_length = length
+                    shortest_path = path
+                    
+            if shortest_length < closest_state_len:
+                closest_state = state
+                closest_state_len = shortest_length
+                
+            paths_k1[state] = (shortest_length, shortest_path)
+
+        return paths_k1, closest_state
+    
+    def path_cost(self, prev_state, state, path, somas):
+        cost_dist = self.cost_mat_dist[prev_state, state]
+        cost_int = self.cost_mat_int[prev_state, state]
+        '''
+        if self.path_has_connection([prev_state, state], path):
+            cost_int = 0
+        '''
+        
+        total_cost = cost_dist + cost_int
+
+        return total_cost
+    
+    '''
+    def path_has_connection(self,connection,path):
+        l = len(connection)
+        if l > len(path):
+            return False
+
+        for i in range(len(path) - l + 1):
+            if path[i : i + l] == connection:
+                return True
+        return False
+    '''
+    
     def compute_bounds(self, label, pad):
         """ Currently zmin and zmax are hardcoded as 0,1 for this simple image """
         """compute coordinates of bounding box around a masked object, with given padding
