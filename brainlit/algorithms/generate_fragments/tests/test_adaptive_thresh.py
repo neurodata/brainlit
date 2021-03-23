@@ -42,13 +42,13 @@ def test_thres_from_gmm():
     # define two groups of Gaussian distribution points with distinct mean values
     Good1 = False
     Good2 = False
-    # to ensure the random number does not fall below 0 (the min value of an 8-bit image)
+    # to ensure the random number does not fall below 0 (the minimum value of an 8-bit image)
     while Good1 == False:
         G1 = np.round(np.random.normal(loc=40, scale=10, size=(499, 1)))
         if min(G1) > 0:
             Good1 = True
 
-    # to ensure the random number does not exceed 255 (the max value of an 8-bit image)
+    # to ensure the random number does not exceed 255 (the maximum value of an 8-bit image)
     while Good2 == False:
         G2 = np.round(np.random.normal(loc=220, scale=10, size=(499, 1)))
         if max(G2) < 255:
