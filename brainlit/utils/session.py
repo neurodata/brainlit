@@ -131,7 +131,9 @@ class NeuroglancerSession:
         check_type(rounding, bool)
         if self.cv_segments is None:
             raise ValueError("Cannot get segments without segmentation data.")
-        s3_trace = Neuron_trace.NeuronTrace(self.url_segments, seg_id, self.mip, rounding)
+        s3_trace = Neuron_trace.NeuronTrace(
+            self.url_segments, seg_id, self.mip, rounding
+        )
 
         G = s3_trace.get_graph()
         paths = s3_trace.get_paths()
@@ -181,7 +183,9 @@ class NeuroglancerSession:
             bbox = bbox.to_list()
         check_iterable_type(bbox, (int, np.integer))
         check_iterable_nonnegative(bbox)
-        labels = tube_seg.tubes_from_paths(np.subtract(bbox[3:], bbox[:3]), paths, radius)
+        labels = tube_seg.tubes_from_paths(
+            np.subtract(bbox[3:], bbox[:3]), paths, radius
+        )
         return labels
 
     def pull_voxel(
