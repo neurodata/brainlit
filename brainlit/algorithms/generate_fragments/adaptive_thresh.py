@@ -4,7 +4,6 @@ import SimpleITK as sitk
 from sklearn.mixture import GaussianMixture
 import numpy as np
 
-
 def get_seed(voxel):
     """
     Get a seed point for the center of a brain volume.
