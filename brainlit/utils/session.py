@@ -7,8 +7,8 @@ from cloudvolume import CloudVolume, view
 from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError
 from pathlib import Path
-import brainlit.utils.Neuron_trace
-import brainlit.algorithms.generate_fragments.tube_seg
+from brainlit.utils import Neuron_trace
+from brainlit.algorithms.generate_fragments import tube_seg
 import napari
 import warnings
 import networkx as nx
