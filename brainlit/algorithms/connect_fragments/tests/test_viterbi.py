@@ -30,15 +30,34 @@ def testLineToLine():
     assert(np.sqrt((6-7)**2+(5-7)**2) == alg.line_line_dist(4,3)[0])
     with pytest.raises(ValueError):
         alg.line_line_dist(2,2)
+
+
+def testLineToLine3D():
+    # Compare the output of line_line_dist with manually computed distances
+    assert(np.sqrt((3-96)**2+(0-99)**2+(0-99)**2) == alg1_3D.line_line_dist(1,3)[0])
+    assert(np.sqrt((96-3)**2+(99-0)**2+(99-0)**2) == alg1_3D.line_line_dist(3,1)[0])
+
+    with pytest.raises(ValueError):
+        alg1_3D.line_line_dist(2,2)
     
 def testLineToBlob():
-    # Compare the output of line_line_dist with manually computed distances
+    # Compare the output of line-blob dist with manually computed distances
+    
+    # To a soma
     assert(np.sqrt((8-9)**2+(7-9)**2) == alg.line_blob_dist(4,5)[0])
 
-    # Should go from an endpoint to the closest position on the blob
+    # Should go from an endpoint to the closest position on the big blob
     assert(np.sqrt((9-3)**2+(9-15)**2) == alg2.line_blob_dist(2,1)[0])
     with pytest.raises(ValueError):
         alg.line_blob_dist(2,2)
+        
+def testLineToBlob3D():
+    print( alg2_3D.line_blob_dist(1,3))
+    # Should go from an endpoint to the closest position on the blob
+    assert(np.sqrt((4-21)**2+(0-21)**2+(0-21)**2) == alg2_3D.line_blob_dist(1,3)[0])
+    with pytest.raises(ValueError):
+        alg2_3D.line_blob_dist(2,2)
+
 
 def testPathIntensityCost():
     # Currently a stub, need to double-check what the proper form of the 
@@ -149,11 +168,21 @@ def testEndpoints():
 
 def testViterbi():
     alg.compute_all_dists()
-    top_path, all_paths = alg.viterbi_frag(1, K=4, somas=alg.somas)
-    
+    top_path, sorted_paths = alg.viterbi_frag(1, K=4, somas=alg.somas)
+    print("------- PATHS -------")
+    print(sorted_paths)
+    print("----- BEST PATH -----")
     print(top_path)
-    print(all_paths)
     
+    c = alg.connection_mat
+    path_lbls = top_path[1]
+    for i in range(len(path_lbls)-1):
+        from_lbl = path_lbls[i]
+        to_lbl = path_lbls[i+1]
+        
+        print(f"From {from_lbl} to {to_lbl}: {c[0][from_lbl][to_lbl]}, {c[1][from_lbl][to_lbl]}")
+
+
 ''' Setting up the image environment '''
 
 def grid_gen(grid_id=10):
@@ -278,6 +307,64 @@ def grid_gen(grid_id=10):
     plt.imshow(labels[:,:,0])
     return grid, labels, num, somas
 
+def grid_gen3D(grid_id=10):
+    if grid_id == 100:
+        grid = np.zeros((100,100,100))
+        labels = np.zeros((100,100,100))
+        grid[0,0,0] = 255
+        grid[1,0,0] = 255
+        grid[2,0,0] = 255
+        grid[3,0,0] = 255
+        
+        grid[99,99,99] = 255
+        grid[98,99,99] = 255
+        grid[97,99,99] = 255
+        grid[96,99,99] = 255
+        
+        # Mark a soma
+        grid[0,0,99] = 255
+        
+        somas = {2:(0,0,99)}
+        labels, num = measure.label(grid, return_num=True)
+    
+    if grid_id == 25:
+        grid = np.zeros((25,25,25))
+        labels = np.zeros((25,25,25))
+        
+        # Create a line
+        for i in range(0,5):
+            grid[i,0,0] = 255
+        
+        # Create a cube for a blob
+        for i in range(20,25):
+            for j in range(20,25):
+                for k in range(20,25):
+                    grid[i,i,i] = 255
+                    grid[i,i,i] = 255
+                    grid[i,i,i] = 255
+                    grid[i,i,i] = 255
+                    grid[i,i,i] = 255
+        
+        # Remove the corners to make it more blob-like
+        grid[20,20,20] = 0
+        grid[20,24,20] = 0
+        grid[20,20,24] = 0
+        grid[20,24,24] = 0
+        grid[24,20,24] = 0
+        grid[24,20,20] = 0
+        grid[24,20,24] = 0
+        grid[24,24,24] = 0 
+        grid[24,24,24] = 0
+        
+        # Mark a soma
+        grid[0,0,24] = 255
+        
+        somas = {2:(0,0,24)}
+        
+        labels, num = measure.label(grid, return_num=True)
+    
+    return grid, labels, num, somas
+    
 img, lbls, _ , somas = grid_gen(10)
 plt.figure()
 plt.imshow(img[:,:,0])
@@ -306,14 +393,30 @@ endpoints2[3] = ((12,12,0),(15,15,0))
 alg2.end_points = endpoints2
 
 # 100x100 example for endpoints
-img3, lbls3, somas3 , _ = grid_gen(100)
+img3, lbls3, _, somas3 = grid_gen(100)
 alg3 = viterbi_algorithm(img3, lbls3, somas3, [1,1,1])
+
+img1_3D, lbls1_3D, _, somas1_3D = grid_gen3D(100)
+alg1_3D = viterbi_algorithm(img1_3D, lbls1_3D, somas1_3D, [1,1,1])
+endpts1_3D = {}
+endpts1_3D[1] = ((0,0,0),(3,0,0))
+endpts1_3D[3] = ((99,99,99),(96,99,99))
+alg1_3D.end_points = endpts1_3D
+
+img2_3D, lbls2_3D, _, somas2_3D,= grid_gen3D(25)
+alg2_3D = viterbi_algorithm(img2_3D, lbls2_3D, somas2_3D, [1,1,1])
+endpts2_3D = {}
+endpts2_3D[1] = ((0,0,0),(4,0,0))
+alg2_3D.end_points = endpts2_3D
 
 testInit()
 testLineToLine()
+testLineToLine3D()
 testLineToBlob()
+testLineToBlob3D()
 testPathIntensityCost()
 testConnections()
 testEndpoints()
 testViterbi()
+
 #print(lbls)

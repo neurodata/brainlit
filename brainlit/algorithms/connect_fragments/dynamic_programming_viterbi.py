@@ -260,7 +260,7 @@ class viterbi_algorithm:
         """
         Args:
             lbl1 ([type]): [line component]
-            lbl2 ([type]): [soma component]
+            lbl2 ([type]): [soma/blob component]
         """
         if lbl1 == lbl2:
             raise ValueError(f"Cannot compute distance between {lbl1} and {lbl2}")
