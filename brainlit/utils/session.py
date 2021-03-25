@@ -7,8 +7,8 @@ from cloudvolume import CloudVolume, view
 from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError
 from pathlib import Path
-from brainlit.utils.Neuron_trace import NeuronTrace
-from brainlit.algorithms.generate_fragments.tube_seg import tubes_from_paths
+import brainlit.utils.Neuron_trace
+import brainlit.algorithms.generate_fragments.tube_seg
 import napari
 import warnings
 import networkx as nx
@@ -131,7 +131,9 @@ class NeuroglancerSession:
         check_type(rounding, bool)
         if self.cv_segments is None:
             raise ValueError("Cannot get segments without segmentation data.")
-        s3_trace = NeuronTrace(self.url_segments, seg_id, self.mip, rounding)
+        s3_trace = Neuron_trace.NeuronTrace(
+            self.url_segments, seg_id, self.mip, rounding
+        )
 
         G = s3_trace.get_graph()
         paths = s3_trace.get_paths()
@@ -181,7 +183,9 @@ class NeuroglancerSession:
             bbox = bbox.to_list()
         check_iterable_type(bbox, (int, np.integer))
         check_iterable_nonnegative(bbox)
-        labels = tubes_from_paths(np.subtract(bbox[3:], bbox[:3]), paths, radius)
+        labels = tube_seg.tubes_from_paths(
+            np.subtract(bbox[3:], bbox[:3]), paths, radius
+        )
         return labels
 
     def pull_voxel(
