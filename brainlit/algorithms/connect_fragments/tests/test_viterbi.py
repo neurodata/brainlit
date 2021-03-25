@@ -45,6 +45,8 @@ def testPathIntensityCost():
     # intensity score should be
     assert(1 == alg2.line_int((9,9,0),(12,12,0),2,3))
     
+    print(alg.line_int((0,2,0),(3,3,0),1,3))
+    
 def testConnections():
     # Test if we are getting the correct connections
     alg.compute_all_dists()
@@ -144,6 +146,13 @@ def testEndpoints():
     
     
     print("Endpoints Tests: ", alg3.end_points)
+
+def testViterbi():
+    alg.compute_all_dists()
+    top_path, all_paths = alg.viterbi_frag(1, K=4, somas=alg.somas)
+    
+    print(top_path)
+    print(all_paths)
     
 ''' Setting up the image environment '''
 
@@ -165,12 +174,44 @@ def grid_gen(grid_id=10):
         grid[6,5,0] = 255
         grid[7,7,0] = 255
         grid[7,8,0] = 255
-        grid[9,9,0] = 255
+        grid[9,9,0] = 255 # Soma
         
         # Add this back in later. For simplicity, only the 0th layer of grid has labels
         #grid[:,:,1] = grid[:,:,0] 
         # Label the components
         labels, num = measure.label(grid, return_num=True)
+
+        # Create intensity data
+        grid[0,9,0] = 255 # Frag
+        
+        grid[0,0,0] = 150 # Frag
+        grid[0,1,0] = 150 # Frag
+        grid[0,2,0] = 150 # Frag
+        
+        grid[1,2,0] = 150
+        grid[1,3,0] = 150
+        grid[2,3,0] = 175
+                
+        grid[3,3,0] = 200 # Frag
+        grid[4,3,0] = 200 # Frag
+        grid[5,3,0] = 200 # Frag
+        grid[5,4,0] = 200 # Frag
+        grid[6,4,0] = 200 # Frag
+        grid[6,5,0] = 200 # Frag
+        
+        grid[6,6,0] = 215 
+        grid[7,6,0] = 215 
+
+        grid[7,7,0] = 225 # Frag
+        grid[7,8,0] = 225 # Frag
+        
+        
+        grid[8,8,0] = 240
+        grid[8,9,0] = 250
+
+        grid[9,9,0] = 255 # Soma        
+        
+        
 
         # We'll have the bottom-right corner, which is labeled 5, be the soma
         somas = {5:[(9,9,0)]}
@@ -208,7 +249,7 @@ def grid_gen(grid_id=10):
         #grid[:,:,1] = grid[:,:,0] 
         # Label the components
         labels, num = measure.label(grid, return_num=True)
-
+        
         # We'll have the bottom-right corner, which is labeled 4, be the soma
         somas = {4:[(19,19,0)]}
         
@@ -238,6 +279,8 @@ def grid_gen(grid_id=10):
     return grid, labels, num, somas
 
 img, lbls, _ , somas = grid_gen(10)
+plt.figure()
+plt.imshow(img[:,:,0])
 alg = viterbi_algorithm(img, lbls, somas, [1,1,1])
 # For the timebeing, manually do the endpoints
 # NOTE: no endpoints for 2 or 5 because they are "blobs"
@@ -272,3 +315,5 @@ testLineToBlob()
 testPathIntensityCost()
 testConnections()
 testEndpoints()
+testViterbi()
+#print(lbls)

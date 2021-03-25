@@ -71,12 +71,12 @@ class viterbi_algorithm:
         # Start at state 0
         # Dictionary value:
         #   - First element of tuple is the state
-        #   - Second is a tuple that contains path length and path to it
+        #   - Second is a tuple that contains path length and path to state
         paths_k = {start_lbl: (0, [start_lbl])}
 
         all_paths = []
 
-        for step in tqdm(np.arange(K)):
+        for step in np.arange(K):
             all_paths.append(paths_k)
 
             paths_k, closest_state = self.viterbi_frag_next_layer(
@@ -86,7 +86,7 @@ class viterbi_algorithm:
 
         sort_paths = sorted(paths_k.items(), key=lambda x: x[1][0])
         top_paths = [entry[1] for entry in sort_paths[:1]]
-        return top_paths[0], all_paths
+        return top_paths[0], sort_paths
     
     def viterbi_frag_next_layer(self, paths_k, somas):
         num_components = self.num_components
@@ -125,26 +125,28 @@ class viterbi_algorithm:
     def path_cost(self, prev_state, state, path, somas):
         cost_dist = self.cost_mat_dist[prev_state, state]
         cost_int = self.cost_mat_int[prev_state, state]
-        '''
-        if self.path_has_connection([prev_state, state], path):
-            cost_int = 0
-        '''
-        
-        total_cost = cost_dist + cost_int
 
+        if self.path_has_connection([prev_state, state], path):
+            cost_int = np.inf
+ 
+        total_cost = cost_dist + cost_int
+        print(prev_state, state)
+        print(f"{cost_dist} + {cost_int} = {total_cost}");
         return total_cost
     
-    '''
+
     def path_has_connection(self,connection,path):
         l = len(connection)
+        
+        # If the path is < 2 nodes long
         if l > len(path):
             return False
 
         for i in range(len(path) - l + 1):
             if path[i : i + l] == connection:
+                print("Connection duplicate")
                 return True
         return False
-    '''
     
     def compute_bounds(self, label, pad):
         """ Currently zmin and zmax are hardcoded as 0,1 for this simple image """
@@ -301,6 +303,7 @@ class viterbi_algorithm:
         return lowest_cost, endpt_lowest, blob_lowest
 
     def line_int(self, loc1, loc2, lbl1, lbl2):
+
         # Use bresenham3D to "draw" a line in 3D
         xlist, ylist, zlist = Bresenham3D(
             loc1[0], loc1[1], loc1[2], loc2[0], loc2[1], loc2[2]
@@ -310,7 +313,7 @@ class viterbi_algorithm:
 
         # remove first and last voxels, which are part of foreground
         ints = ints[1:-1]
-
+        #print(lbl1,lbl2,ints)
         mu1 = 2  # np.mean(image[labels == lbl1])
 
         # Need to check about this
@@ -323,43 +326,50 @@ class viterbi_algorithm:
     def compute_all_dists(self):
         for lbl1 in range(1, self.num_components + 1):
             for lbl2 in range(lbl1, self.num_components + 1):
+                
+                skip_connection = False
+                
                 if lbl2 == lbl1:
                     continue
                 
                 if lbl1 in self.end_points.keys() and lbl2 in self.end_points.keys():
                     # Line to line
                     dist, loc1, loc2 = self.line_line_dist(lbl1, lbl2)
+                    int_cost = self.line_int(loc1, loc2, lbl1, lbl2)
                     
                 # One of them is a blob
                 elif lbl1 in self.end_points.keys():
                     # lbl1 to soma (lbl2)
                     dist, loc1, loc2 = self.line_blob_dist(lbl1, lbl2)
+                    int_cost = self.line_int(loc1, loc2, lbl1, lbl2)
+
                 elif lbl2 in self.end_points.keys():
                     # lbl2 to soma (lbl1)
                     dist, loc2, loc1 = self.line_blob_dist(lbl2, lbl1)
-                
+                    int_cost = self.line_int(loc1, loc2, lbl1, lbl2)
+
                 # Both are blobs
                 else:
-                    continue
+                    dist = np.inf
+                    int_cost = np.inf
+                    skip_connection = True
                     
                 # Distance cost is symmetric
                 self.cost_mat_dist[lbl1, lbl2] = dist
                 self.cost_mat_dist[lbl2, lbl1] = dist
-                
-                int_cost = self.line_int(loc1, loc2, lbl1, lbl2)
-                
+            
                 # Int cost is symmetric
                 self.cost_mat_int[lbl1, lbl2] = int_cost
                 self.cost_mat_int[lbl2, lbl1] = int_cost
                 
-                
-                # Set the forward connection
-                self.connection_mat[0][lbl1, lbl2] = loc1
-                self.connection_mat[1][lbl1, lbl2] = loc2
-
-                # Set the backward connection
-                self.connection_mat[0][lbl2, lbl1] = loc2
-                self.connection_mat[1][lbl2, lbl1] = loc1
+                if not skip_connection:
+                    # Set the forward connection
+                    self.connection_mat[0][lbl1, lbl2] = loc1
+                    self.connection_mat[1][lbl1, lbl2] = loc2
+    
+                    # Set the backward connection
+                    self.connection_mat[0][lbl2, lbl1] = loc2
+                    self.connection_mat[1][lbl2, lbl1] = loc1
 
                 if dist+int_cost < 0:
                     warnings.warn(
