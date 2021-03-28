@@ -1,7 +1,6 @@
-import brainlit.algorithms.generate_fragments
-import brainlit.algorithms.connect_fragments
-import brainlit.algorithms.trace_analysis
-
-from brainlit.algorithms.generate_fragments import *
-from brainlit.algorithms.connect_fragments import *
-from brainlit.algorithms.trace_analysis import *
+from . import generate_fragments
+from .generate_fragments import *
+from . import connect_fragments
+from .connect_fragments import *
+from . import trace_analysis
+from .trace_analysis import *

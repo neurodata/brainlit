@@ -23,7 +23,7 @@ def draw_sphere(shape, center, radius):
     Adapted from https://stackoverflow.com/a/56060957
 
     Parameters
-    -------
+    ----------
     shape : tuple
         The shape of output array.
 
@@ -54,7 +54,7 @@ def draw_tube_from_spheres(img, vertex0, vertex1, radius):
     Generate a segmentation mask of a tube (series of spheres) connecting known vertices.
 
     Parameters
-    -------
+    ----------
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
 
@@ -89,7 +89,7 @@ def draw_tube_from_edt(img, vertex0, vertex1, radius):
     Generate a segmentation mask of a tube connecting known vertices.
 
     Parameters
-    -------
+    ----------
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
 
@@ -121,7 +121,7 @@ def tubes_seg(img, vertices, radius, spheres=False):
     Generate a segmentation mask of cylinders connecting known vertices.
 
     Parameters
-    -------
+    ----------
     img : cloudvolume.volumecutout.VolumeCutout
         The volume to segment.
 
@@ -149,7 +149,6 @@ def tubes_seg(img, vertices, radius, spheres=False):
     return labels
 
 
-# TOMMY REVIEW
 def tubes_from_paths(
     size: Tuple[int, int, int],
     paths: List[List[int]],
