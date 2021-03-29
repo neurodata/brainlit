@@ -14,6 +14,8 @@ Tutorials showcasing how to use the utils folder.
    notebooks/utils/utils
    notebooks/utils/uploading_brains
    notebooks/utils/downloading_brains
+   notebooks/utils/downloading_benchmarking
+   notebooks/utils/uploading_benchmarking
 
 .. _pipeline_tutorials:
 
@@ -52,7 +54,7 @@ Demonstrate region growing methods using GMM and simple ITK
 .. toctree::
    :maxdepth: 1
 
-   notebooks/algorithms/tutorial_notebook_adaptive_thresh.ipynb
+   notebooks/algorithms/adaptive_thresh_tutorial.ipynb
 
 Regression Clasifiers
 ---------------------
