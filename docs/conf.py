@@ -1,4 +1,4 @@
-# Configuration file for the Sphinx documentation builder.
+## Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
 # list see the documentation:
@@ -49,7 +49,7 @@ autoapi_dirs = ["../brainlit"]
 autoapi_add_toctree_entry = False
 autoapi_generate_api_docs = False
 
-nbsphinx_execute = 'never'
+#nbsphinx_execute = 'never'
 
 # -- sphinxcontrib.rawfiles
 # rawfiles = ["CNAME"]
