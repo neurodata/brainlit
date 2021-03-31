@@ -69,3 +69,7 @@ experiments/axon_geometry/.ipynb_checkpoints/
 experiments/axon_geometry/figures/
 experiments/axon_geometry/data/
 **.ipynb_checkpoints/
+
+# data generation from tests
+data/test_upload/*
+data/test_upload_segments/*

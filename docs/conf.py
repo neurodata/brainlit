@@ -49,7 +49,7 @@ autoapi_dirs = ["../brainlit"]
 autoapi_add_toctree_entry = False
 autoapi_generate_api_docs = False
 
-#nbsphinx_execute = 'never'
+# nbsphinx_execute = 'never'
 
 # -- sphinxcontrib.rawfiles
 # rawfiles = ["CNAME"]
@@ -83,7 +83,7 @@ source_encoding = "utf-8"
 # -- Options for HTML output -------------------------------------------------
 # Add any paths that contain custom static files here, relative to this directory.
 templates_path = ["_templates"]
-html_static_path = []
+html_static_path = ["_static"]
 modindex_common_prefix = ["brainlit."]
 
 pygments_style = "sphinx"
