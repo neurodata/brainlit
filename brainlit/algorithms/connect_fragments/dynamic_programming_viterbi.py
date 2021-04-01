@@ -126,15 +126,15 @@ class viterbi_algorithm:
         cost_dist = self.cost_mat_dist[prev_state, state]
         cost_int = self.cost_mat_int[prev_state, state]
 
-        if self.path_has_connection([prev_state, state], path):
-            cost_int = np.inf
+        #if self.path_has_connection([prev_state, state], path):
+            #cost_int = np.inf
  
         total_cost = cost_dist + cost_int
-        print(prev_state, state)
-        print(f"{cost_dist} + {cost_int} = {total_cost}");
+        #print(prev_state, state)
+        #print(f"{cost_dist} + {cost_int} = {total_cost}");
         return total_cost
     
-
+    """
     def path_has_connection(self,connection,path):
         l = len(connection)
         
@@ -147,6 +147,7 @@ class viterbi_algorithm:
                 print("Connection duplicate")
                 return True
         return False
+    """
     
     def compute_bounds(self, label, pad):
         """ Currently zmin and zmax are hardcoded as 0,1 for this simple image """
@@ -169,28 +170,27 @@ class viterbi_algorithm:
         cmin, cmax = np.where(c)[0][[0, -1]]
         cmin = np.amax((0, math.floor(cmin - (pad) / res[1])))
         cmax = np.amin((labels.shape[1], math.ceil(cmax + (pad + 1) / res[1])))
-        #zmin, zmax = np.where(z)[0][[0, -1]]
-        #zmin = np.amax((0, math.floor(zmin - (pad) / res[2])))
-        #zmax = np.amin((labels.shape[2], math.ceil(zmax + (pad + 1) / res[2])))
-        zmin = 0
-        zmax = 2
+        zmin, zmax = np.where(z)[0][[0, -1]]
+        zmin = np.amax((0, math.floor(zmin - (pad) / res[2])))
+        zmax = np.amin((labels.shape[2], math.ceil(zmax + (pad + 1) / res[2])))
+
         return int(rmin), int(rmax), int(cmin), int(cmax), int(zmin), int(zmax)
     
         
     def frags_to_lines_le_skel(self, nonline_labels=[]):
         """Relies on the assumption that self.labels has values as if it came from measure.label"""
-        labels = self.labels
-
         end_points = {}
 
         # Note: we want label 1 onwards, because 0 is background
-        for component in np.unique(labels)[1:]:
+        for component in np.unique(self.labels)[1:]:
+            #print("Component: ", component)
+            #print(np.argwhere(self.labels == component))
             # Skip if it is a soma
             if component in nonline_labels:
                 continue
             
             # Mask the current component
-            mask = labels == component
+            mask = self.labels == component
             
             # The mask is relatively sparse, so we need to cut out only the 
             # relevant regions with labels
@@ -216,10 +216,10 @@ class viterbi_algorithm:
 
             end_points[component] = (a, b)
             
-        print(f"{len(end_points.keys())} out of {len(np.unique(labels)[1:])} are lines")
+        print(f"{len(end_points.keys())} out of {len(np.unique(self.labels)[1:])} are lines")
 
         self.end_points = end_points
-        components = set(np.unique(labels)[1:])
+        components = set(np.unique(self.labels)[1:])
         components_lines = set(end_points.keys())
         self.not_lines = components.difference(components_lines)
 

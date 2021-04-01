@@ -166,23 +166,110 @@ def testEndpoints():
     
     print("Endpoints Tests: ", alg3.end_points)
 
+def testEndpoints3D():
+    alg3_3D.frags_to_lines_le_skel([4])
+    # Labels 1 and 3 are lines for this 100x100 example
+    
+    ids1 = map(id, np.array(alg3_3D.end_points[1]))
+    ids2 = map(id, np.array(alg3_3D.end_points[2]))
+    ids3 = map(id, np.array(alg3_3D.end_points[3]))
+    #ids4 = map(id, np.array(alg3_3D.end_points[4]))
+    #ids5 = map(id, np.array(alg3_3D.end_points[2]))
+                
+    
+    # Check if both endpoints are found
+    # Note that the manually typed endpoints were identified visually
+    # in this simple example.
+    #assert(id(np.array([1,1,0])) in ids1)
+    #assert(id(np.array([48,48,0])) in ids1)
+    
+    #assert(id(np.array([51,51,0])) in ids3)
+    #assert(id(np.array([97,97,0])) in ids3)
+    
+    
+    print("Endpoints Tests: ", alg3_3D.end_points)
+
+
 def testViterbi():
+    def print_path(alg, path):
+        c = alg.connection_mat
+        path_lbls = path[1]
+        for i in range(len(path_lbls)-1):
+            from_lbl = path_lbls[i]
+            to_lbl = path_lbls[i+1]
+            
+            print(f"From {from_lbl} to {to_lbl}: {c[0][from_lbl][to_lbl]}, {c[1][from_lbl][to_lbl]}")
+    
+    print()
+    
+    print("========== Viterbi 2D ==========")
+    
     alg.compute_all_dists()
     top_path, sorted_paths = alg.viterbi_frag(1, K=4, somas=alg.somas)
     print("------- PATHS -------")
     print(sorted_paths)
     print("----- BEST PATH -----")
     print(top_path)
+    print_path(alg, top_path)   
+    #print("----- BUGGY PATH -----")
+    #print(sorted_paths[1][1])
+    #print_path(alg, sorted_paths[1][1])
     
-    c = alg.connection_mat
-    path_lbls = top_path[1]
-    for i in range(len(path_lbls)-1):
-        from_lbl = path_lbls[i]
-        to_lbl = path_lbls[i+1]
-        
-        print(f"From {from_lbl} to {to_lbl}: {c[0][from_lbl][to_lbl]}, {c[1][from_lbl][to_lbl]}")
+    print()
+    
+    alg1.compute_all_dists()
+    print("_______ WITH DIFFERENT INTENSITY DATA _______")
+    top_path1, sorted_paths1 = alg1.viterbi_frag(1, K=4, somas=alg1.somas)
+    print("------- PATHS -------")
+    print(sorted_paths1)
+    print("----- BEST PATH -----")
+    print(top_path1)
+    print_path(alg1, top_path1)
+    #print("----- BUGGY PATH -----")
+    #print(sorted_paths1[1][1])
+    #print_path(alg1, sorted_paths1[1][1])
+    
+    print("__________ K=10 TEST __________")
+    top_path, sorted_paths = alg.viterbi_frag(1, K=10, somas=alg.somas)
+    print("------- PATHS -------")
+    print(sorted_paths)
+    print("----- BEST PATH -----")
+    print(top_path)
+    print_path(alg, top_path)   
+    
+    print()
 
-
+def testViterbi3D():
+    def print_path(alg, path):
+        c = alg.connection_mat
+        path_lbls = path[1]
+        for i in range(len(path_lbls)-1):
+            from_lbl = path_lbls[i]
+            to_lbl = path_lbls[i+1]
+            
+            print(f"From {from_lbl} to {to_lbl}: {c[0][from_lbl][to_lbl]}, {c[1][from_lbl][to_lbl]}")
+    print()
+    
+    print("========== Viterbi 3D ==========")
+    
+    alg4_3D.compute_all_dists()
+    top_path, sorted_paths = alg4_3D.viterbi_frag(1, K=6, somas=alg4_3D.somas)
+    print("------- PATHS -------")
+    print(sorted_paths)
+    print("----- BEST PATH -----")
+    print(top_path)
+    print_path(alg4_3D, top_path)
+    
+    print()
+    
+    print("__________ K=10 TEST __________")
+    top_path, sorted_paths = alg4_3D.viterbi_frag(1, K=10, somas=alg4_3D.somas)
+    print("------- PATHS -------")
+    print(sorted_paths)
+    print("----- BEST PATH -----")
+    print(top_path)
+    print_path(alg4_3D, top_path)
+    
 ''' Setting up the image environment '''
 
 def grid_gen(grid_id=10):
@@ -241,6 +328,66 @@ def grid_gen(grid_id=10):
         grid[9,9,0] = 255 # Soma        
         
         
+
+        # We'll have the bottom-right corner, which is labeled 5, be the soma
+        somas = {5:[(9,9,0)]}
+    
+    if grid_id == 102:
+        ''' Generates a 10x10x2 grid with a small assortment of labels'''
+        # 10x10x2 image, with 1 color channel greyscale
+        grid = np.zeros((10,10,2))
+        labels = np.zeros((10,10,2))
+        grid[0,9,0] = 255
+        grid[0,0,0] = 255
+        grid[0,1,0] = 255
+        grid[0,2,0] = 255
+        grid[3,3,0] = 255
+        grid[4,3,0] = 255
+        grid[5,3,0] = 255
+        grid[5,4,0] = 255
+        grid[6,4,0] = 255
+        grid[6,5,0] = 255
+        grid[7,7,0] = 255
+        grid[7,8,0] = 255
+        grid[9,9,0] = 255 # Soma
+        
+        # Add this back in later. For simplicity, only the 0th layer of grid has labels
+        #grid[:,:,1] = grid[:,:,0] 
+        # Label the components
+        labels, num = measure.label(grid, return_num=True)
+
+        # Create intensity data, similar to the other grid10 but it has an
+        # intensity anomaly
+        grid[0,9,0] = 255 # Blob
+        
+        grid[0,0,0] = 150 # Frag
+        grid[0,1,0] = 150 # Frag
+        grid[0,2,0] = 150 # Frag
+        
+        grid[1,2,0] = 150
+        grid[1,3,0] = 150
+        grid[2,3,0] = 175
+                
+        grid[3,3,0] = 255 # Frag
+        grid[4,3,0] = 255 # Frag
+        grid[5,3,0] = 255 # Frag
+        grid[5,4,0] = 255 # Frag
+        grid[6,4,0] = 255 # Frag
+        grid[6,5,0] = 255 # Frag
+        
+        grid[6,6,0] = 40 
+        grid[7,6,0] = 40 
+
+        grid[7,7,0] = 50 # Frag
+        grid[7,8,0] = 50 # Frag
+        
+        
+        grid[8,8,0] = 50
+        grid[8,9,0] = 50
+
+        grid[9,9,0] = 255 # Soma        
+        
+
 
         # We'll have the bottom-right corner, which is labeled 5, be the soma
         somas = {5:[(9,9,0)]}
@@ -324,7 +471,7 @@ def grid_gen3D(grid_id=10):
         # Mark a soma
         grid[0,0,99] = 255
         
-        somas = {2:(0,0,99)}
+        somas = {2:[(0,0,99)]}
         labels, num = measure.label(grid, return_num=True)
     
     if grid_id == 25:
@@ -359,10 +506,91 @@ def grid_gen3D(grid_id=10):
         # Mark a soma
         grid[0,0,24] = 255
         
-        somas = {2:(0,0,24)}
+        somas = {2:[(0,0,24)]}
         
         labels, num = measure.label(grid, return_num=True)
     
+    if grid_id == 101:
+        grid = np.zeros((100,100,100))
+        labels = np.zeros((100,100,100))
+        for i in range(1,90):
+            grid[i,0,0] = 240
+        for j in range(5,90):
+            grid[0,j,0] = 200
+        for k in range(10,70):
+            grid[0,0,k] = 160
+                    
+
+        grid[99,99,99] = 255
+        labels, num = measure.label(grid, return_num=True)
+        print("Soma:",labels[99,99,99])
+        somas = {3:[(99,99,99)]}
+    
+    if grid_id == 15:
+        grid = np.zeros((100,100,100))
+        labels = np.zeros((100,100,100))
+        for i in range(0,4):
+            grid[i,0,0] = 150
+
+        grid[4,3,0] = 125
+        grid[4,3,1] = 125
+        grid[4,4,1] = 125
+        grid[4,4,2] = 125
+        grid[4,5,2] = 125
+        grid[4,6,2] = 125
+        grid[4,7,2] = 125
+        
+        grid[6,8,4] = 175
+        grid[6,9,4] = 175
+        grid[6,10,4] = 175
+        grid[7,10,4] = 175
+        grid[7,10,5] = 175
+        grid[7,10,6] = 175
+        grid[7,10,7] = 175
+        
+        grid[8,12,7] = 225
+        grid[8,12,8] = 225
+        grid[8,12,9] = 225
+        grid[8,12,10] = 225
+        grid[9,12,10] = 225
+        grid[10,12,10] = 225
+        grid[11,13,10] = 225
+        grid[12,13,10] = 225
+        grid[12,13,11] = 225
+        
+        #for j in range(0,12):
+        #    grid[0,j,12] = 100
+        
+        grid[14,14,14] = 255
+        labels, num = measure.label(grid, return_num=True)
+        #print("labels: ", np.unique(labels))
+        #print("lbl1:" , np.argwhere(labels==1))
+        #print("lbl2:" , np.argwhere(labels==2))
+        #print("lbl3:" , np.argwhere(labels==3))
+        #print("lbl4:" , np.argwhere(labels==4))
+        #print("lbl5:" , np.argwhere(labels==5))
+        somas = {5:[(14,14,14)]}
+
+        # Adding intensity data
+        grid[3,1,0] = 130
+        grid[3,2,0] = 130
+        grid[3,3,0] = 130
+
+        grid[4,7,2] = 150
+        grid[4,8,2] = 150
+        grid[4,8,3] = 150
+        grid[5,8,3] = 150
+        grid[6,8,3] = 150
+        
+        grid[7,10,7] = 200
+        grid[8,10,7] = 200
+        grid[8,11,7] = 200
+        
+        grid[12,14,11] = 245
+        grid[13,14,11] = 245
+        grid[13,14,12] = 245
+        grid[14,14,13] = 245
+
     return grid, labels, num, somas
     
 img, lbls, _ , somas = grid_gen(10)
@@ -409,6 +637,55 @@ endpts2_3D = {}
 endpts2_3D[1] = ((0,0,0),(4,0,0))
 alg2_3D.end_points = endpts2_3D
 
+#100x100 example for endpoints
+img3_3D, lbls3_3D, _, somas3_3D = grid_gen3D(101)
+alg3_3D = viterbi_algorithm(img3_3D, lbls3_3D, somas3_3D, [1,1,1])
+
+#10x10 high intensity loop test
+img1, lbls1, _ , somas1 = grid_gen(102)
+plt.figure()
+plt.imshow(img1[:,:,0])
+plt.figure()
+plt.imshow(img[:,:,0])
+alg1 = viterbi_algorithm(img1, lbls1, somas1, [1,1,1])
+# For the timebeing, manually do the endpoints
+# NOTE: no endpoints for 2 or 5 because they are "blobs"
+endpoints = {}
+endpoints[1] = ((0,0,0),(0,2,0))
+endpoints[3] = ((3,3,0),(6,5,0))
+endpoints[4] = ((7,7,0),(7,8,0))
+#alg.end_points = alg.frags_to_lines_le_skel()
+alg1.end_points = endpoints
+
+
+#100x100 viterbi test
+img4_3D, lbls4_3D, _, somas4_3D = grid_gen3D(15)
+
+alg4_3D = viterbi_algorithm(img4_3D, lbls4_3D, somas4_3D, [1,1,1])
+# For the timebeing, manually do the endpoints
+# NOTE: no endpoints for 2 or 5 because they are "blobs"
+endpoints = {}
+endpoints[1] = ((0,0,0),(3,0,0))
+endpoints[2] = ((4,3,0),(4,7,2))
+endpoints[3] = ((6,8,4),(7,10,7))
+endpoints[4] = ((8,12,7),(12,13,11))
+#alg.end_points = alg.frags_to_lines_le_skel()
+alg4_3D.end_points = endpoints
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+plot_pts1 = (np.nonzero(lbls4_3D==1))
+plot_pts2 = (np.nonzero(lbls4_3D==2))
+plot_pts3 = (np.nonzero(lbls4_3D==3))
+plot_pts4 = (np.nonzero(lbls4_3D==4))
+plot_pts5 = (np.nonzero(lbls4_3D==5))
+
+ax.scatter(plot_pts1[0],plot_pts1[1],plot_pts1[2])
+ax.scatter(plot_pts2[0],plot_pts2[1],plot_pts2[2])
+ax.scatter(plot_pts3[0],plot_pts3[1],plot_pts3[2])
+ax.scatter(plot_pts4[0],plot_pts4[1],plot_pts4[2])
+ax.scatter(plot_pts5[0],plot_pts5[1],plot_pts5[2])
+
+
 testInit()
 testLineToLine()
 testLineToLine3D()
@@ -417,6 +694,7 @@ testLineToBlob3D()
 testPathIntensityCost()
 testConnections()
 testEndpoints()
+testEndpoints3D()
 testViterbi()
-
+testViterbi3D()
 #print(lbls)
