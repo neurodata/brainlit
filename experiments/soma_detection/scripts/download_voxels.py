@@ -29,7 +29,6 @@ connect_str = az_secret["AZURE_STORAGE_CONNECTION_STRING"]
 container_name = "datasets"
 blob_service_client = BlobServiceClient.from_connection_string(connect_str)
 
-d = []
 for brain in brains:
     brain_name = "brain%d" % brain
 
@@ -56,29 +55,8 @@ for brain in brains:
             t1 = time.time()
             dt = np.around(t1 - t0, decimals=3)
             print(f"done in {dt}s {bbox}")
-            np.save(volume_filepath, img, allow_pickle=True)
-            
-            # print(f"Uploading root volume to AzureBlobStorage...", end="", flush=True)
-            # t0 = time.time()
-            # with open(tmp_npy, "rb") as data:
-            #     blob_name = f"soma-detection/{brain_name}_{seg_id}.npy"
-            #     blob_client = blob_service_client.get_blob_client(
-            #         container=container_name, blob=blob_name
-            #     )
-            #     blob_client.upload_blob(data, overwrite=True)
-            # d.append(
-            #     {
-            #         "brain": brain_name,
-            #         "seg_id": seg_id,
-            #         "channel": "image",
-            #         "label": True,
-            #         "filepath": blob_name,
-            #         "intensity": np.sum(img.flatten()),
-            #     }
-            # )
-            # t1 = time.time()
-            # dt = np.around(t1 - t0, decimals=3)
-            # print(f"done in {dt}s")
+            d = {"bbox": np.array(bbox.to_list()), "volume": img}
+            np.save(volume_filepath, d, allow_pickle=True)
 
             pts = bbox.to_list()
             size = bbox.size3()
@@ -106,31 +84,5 @@ for brain in brains:
                     t1 = time.time()
                     dt = np.around(t1 - t0, decimals=3)
                     print(f"done in {dt}s")
-                    np.save(neighvolume_filepath, neigh_img, allow_pickle=True)
-
-                    # print(
-                    #     f"Uploading neighbor volume to AzureBlobStorage...", end="", flush=True
-                    # )
-                    # t0 = time.time()
-                    # with open(tmp_npy, "rb") as data:
-                    #     blob_name = f"soma-detection/{brain_name}_{seg_id}_neighbor{neigh_id}.npy"
-                    #     blob_client = blob_service_client.get_blob_client(
-                    #         container=container_name, blob=blob_name
-                    #     )
-                    #     blob_client.upload_blob(data, overwrite=True)
-                    # d.append(
-                    #     {
-                    #         "brain": brain_name,
-                    #         "seg_id": seg_id,
-                    #         "channel": "image",
-                    #         "label": False,
-                    #         "filepath": blob_name,
-                    #         "intensity": np.sum(neigh_img.flatten()),
-                    #     }
-                    # )
-                    # t1 = time.time()
-                    # dt = np.around(t1 - t0, decimals=3)
-                    # print(f"done in {dt}s")
-
-dataset = pd.DataFrame(d)
-dataset.to_csv(os.path.join(data_dir, "dataset.csv"))
+                    d = {"bbox": neigh_pts, "volume": neigh_img}
+                    np.save(neighvolume_filepath, d, allow_pickle=True)
