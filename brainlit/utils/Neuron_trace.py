@@ -29,7 +29,9 @@ class NeuronTrace:
         read_offset: bool
             If swc is provided, whether offset should be read from file, default False
         use_https: bool
-            Flag whether to use a potentially faster, read-only version of the data, default True
+            Flag to read data in the cloud from a secure, cached source.
+            When reading from public data, doesn't require any credentials files.
+            Might cause unexpected behavior when pushing data. Optional, default True.
 
     Attributes
     ----------
@@ -411,31 +413,31 @@ class NeuronTrace:
          Creates a spanning subgraph from a seed node and parent graph using BFS.
 
         Arguments
-         ----------
-         node_id : int
-             The id of the node to use as a seed.
-             If df is not None this become the node index.
-         depth : int
-             The max depth for BFS to traven in each direction.
-         df : None, DataFrame (default = None)
-             Dataframe storing indices.
-             In some cases indexing by row number is preferred.
-         spacing : None, :class:`numpy.array` (default = None)
-             Conversion factor (spatial units/voxel). Assumed to be np.array([x,y,z]).
-             Provided if graph should convert to voxel coordinates first.  Default is None.
-         origin : :class:`numpy.array`
-             Origin of the spatial coordinate, if converting to voxels. Default is None.
-             Assumed to be np.array([x,y,z])
+        ----------
+        node_id : int
+            The id of the node to use as a seed.
+            If df is not None this become the node index.
+        depth : int
+            The max depth for BFS to traven in each direction.
+        df : None, DataFrame (default = None)
+            Dataframe storing indices.
+            In some cases indexing by row number is preferred.
+        spacing : None, :class:`numpy.array` (default = None)
+            Conversion factor (spatial units/voxel). Assumed to be np.array([x,y,z]).
+            Provided if graph should convert to voxel coordinates first.  Default is None.
+        origin : :class:`numpy.array`
+            Origin of the spatial coordinate, if converting to voxels. Default is None.
+            Assumed to be np.array([x,y,z])
 
-         Returns
-         -------
-         G_sub : :class:`networkx.classes.digraph.DiGraph`
-             Subgraph
+        Returns
+        -------
+        G_sub : :class:`networkx.classes.digraph.DiGraph`
+            Subgraph
 
-         tree : DiGraph
-             The tree returned by BFS.
+        tree : DiGraph
+            The tree returned by BFS.
 
-         paths : list
+        paths : list
             List of Nx3 numpy.array. Rows of the array are 3D coordinates in voxel
             units. Each array is one path.
 

@@ -31,7 +31,9 @@ class NeuroglancerSession:
         url: Precompued path either to a file URI or url URI. Defaults to mouselight brain1.
         mip: Resolution level to pull and push data at. Defaults to 0, the highest resolution.
         url_segments: Precomputed path to segmentation data. Optional, default None.
-        use_https: Whether to use a potentially read-only cached version of the data. Optional, default True.
+        use_https: Flag to read data in the cloud from a secure, cached source. 
+            When reading from public data, doesn't require any credentials files. 
+            Might cause unexpected behavior when pushing data. Optional, default True.
 
     Attributes:
         url: CloudVolumePrecomputedPath to image data.
