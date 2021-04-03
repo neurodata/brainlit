@@ -200,10 +200,11 @@ Running a specific test, such as ``test_upload.py`` can be done simply by ``ptes
 Contributing
 ------------
 
-Contribution guidelines can be found via `CONTRIBUTING.md <https://github.com/neurodata/brainlit/blob/master/CONTRIBUTING.md>`_
+We welcome all contributors, and encourage them to follow our contribution guidelines gound in `CONTRIBUTING.md <https://github.com/neurodata/brainlit/blob/master/CONTRIBUTING.md>`_. Issues with the "good first issue" tag are meant for contributors that are either new to open source coding, or new to the package. Additionally, users are encouraged to use issues not only to discuss code-related problems, but for more general discussions about the package.
 
 Credits
 -------
 
-Thanks to the neurodata team and the group in the neurodata class which started the project.
-This project is currently managed by Tommy Athey and Bijan Varjavand.
+Brainlit is a product of the `neurodata lab <https://neurodata.io/>`_. It is actively maintained by Thomas Athey (@tathey1) and Bijan Varjavand (@bvarjavand), and is regularly used and contributed to by students in the `Neuro Data Design <https://neurodatadesign.io/>`_ course. We strive to follow the same `code of conduct <https://opensource.microsoft.com/codeofconduct/>`_ that applies to the Microsoft open source community.
+
+
