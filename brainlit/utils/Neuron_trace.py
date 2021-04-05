@@ -83,6 +83,7 @@ class NeuronTrace:
         check_type(mip, (type(None), int))
         check_type(read_offset, bool)
         check_type(rounding, bool)
+        check_type(use_https, bool)
         if (seg_id == None and type(mip) == int) or (
             type(seg_id) == int and mip == None
         ):
