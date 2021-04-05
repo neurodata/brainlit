@@ -1,0 +1,59 @@
+{
+  "data_type": "uint16",
+  "num_channels": 1,
+  "scales": [
+    {
+      "chunk_sizes": [
+        [
+          132,
+          100,
+          52
+        ]
+      ],
+      "encoding": "raw",
+      "key": "9560_9741_31628",
+      "resolution": [
+        9560,
+        9741,
+        31628
+      ],
+      "size": [
+        1056,
+        800,
+        416
+      ],
+      "voxel_offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "chunk_sizes": [
+        [
+          132,
+          100,
+          52
+        ]
+      ],
+      "encoding": "raw",
+      "key": "19120_19482_63256",
+      "resolution": [
+        19120,
+        19482,
+        63256
+      ],
+      "size": [
+        528,
+        400,
+        208
+      ],
+      "voxel_offset": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "type": "image"
+}

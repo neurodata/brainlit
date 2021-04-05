@@ -71,5 +71,5 @@ experiments/axon_geometry/data/
 **.ipynb_checkpoints/
 
 # data generation from tests
-data/test_upload/*
-data/test_upload_segments/*
+# data/test_upload/* # NEEDED FOR TESTING S3
+# data/test_upload_segments/* # NEEDED FOR TESTING S3
