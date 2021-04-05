@@ -55,7 +55,7 @@ class NeuroglancerSession:
     ):
         check_precomputed(url)
         check_type(mip, (int, np.integer))
-        check_type(use_https=bool)
+        check_type(use_https, bool)
         self.url = url
         self.cv = CloudVolume(url, parallel=False, use_https=use_https)
         if mip < 0 or mip >= len(self.cv.scales):
