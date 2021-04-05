@@ -203,6 +203,7 @@ class NeuroglancerSession:
             img: A 2*nx+1 X 2*ny+1 X 2*nz+1 volume.
             bounds: Bounding box object which contains the bounds of the volume.
             vox_in_img: List of coordinates which locate the initial point in the subvolume.
+            voxel: List of coordinate which locate the initial point in the whole volume.
         """
         check_type(radius, (int, np.integer))
         if radius < 0:
@@ -216,7 +217,7 @@ class NeuroglancerSession:
         img = self.pull_bounds_img(bounds)
         # img = self.cv.download(bounds, mip=self.mip)
         vox_in_img = voxel - np.array(bounds.to_list()[:3])
-        return np.squeeze(np.array(img)), bounds, vox_in_img
+        return np.squeeze(np.array(img)), bounds, vox_in_img, voxel
 
     def pull_vertex_list(
         self,
