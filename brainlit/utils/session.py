@@ -203,7 +203,7 @@ class NeuroglancerSession:
             img: A 2*nx+1 X 2*ny+1 X 2*nz+1 volume.
             bounds: Bounding box object which contains the bounds of the volume.
             vox_in_img: List of coordinates which locate the initial point in the subvolume.
-            voxel: List of coordinate which locate the initial point in the whole volume.
+            voxel: List of coordinates which locate the initial point within the original volume.
         """
         check_type(radius, (int, np.integer))
         if radius < 0:
