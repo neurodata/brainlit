@@ -14,7 +14,7 @@ top_level = Path(__file__).parents[3] / "data"
 input = (top_level / "data_octree").as_posix()
 url = str((top_level / "test_upload"))
 # p = "file://" + str(top_level)
-url_seg = "file://" + url + "_segments"
+url_seg = "file://" + url + "_segments/"
 # url_seg = "../data/test_upload_segments/"
 url = url + "/serial"
 swc_path = "./data/data_octree/consensus-swcs/2018-08-01_G-002_consensus.swc"
@@ -31,7 +31,8 @@ path_bad_string = "asdf"
 path_bad_nonstring = 3
 
 test_swc = NeuronTrace(swc_path)
-test_s3 = NeuronTrace(url_seg, seg_id, mip)
+test_s3 = NeuronTrace(url_seg, seg_id, mip, use_https=False)
+test_s3_https = NeuronTrace(url_seg, seg_id, mip, use_https=True)
 
 ####################
 ### input checks ###
@@ -69,6 +70,10 @@ def test_Neurontrace_bad_inputs():
     # test 'rounding' must be bool
     with pytest.raises(TypeError):
         test_trace = NeuronTrace(swc_path, rounding=rounding_bad)
+
+    # test 'use_https' must be bool
+    with pytest.raises(TypeError):
+        test_trace = NeuronTrace(swc_path, use_https=0)
 
 
 def test_get_df_arguments():

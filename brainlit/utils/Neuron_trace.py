@@ -28,6 +28,10 @@ class NeuronTrace:
             If s3 is provided, specifies if it should be rounded, default True
         read_offset: bool
             If swc is provided, whether offset should be read from file, default False
+        use_https: bool
+            Flag to read data in the cloud from a secure, cached source.
+            When reading from public data, doesn't require any credentials files.
+            Might cause unexpected behavior when pushing data. Optional, default True.
 
     Attributes
     ----------
@@ -56,7 +60,15 @@ class NeuronTrace:
 
     """
 
-    def __init__(self, path, seg_id=None, mip=None, rounding=True, read_offset=False):
+    def __init__(
+        self,
+        path,
+        seg_id=None,
+        mip=None,
+        rounding=True,
+        read_offset=False,
+        use_https=False,
+    ):
         self.path = path
         self.input_type = None
         self.df = None
@@ -64,12 +76,14 @@ class NeuronTrace:
         self.seg_id = seg_id
         self.mip = mip
         self.rounding = rounding
+        self.use_https = use_https
 
         check_type(path, str)
         check_type(seg_id, (type(None), int))
         check_type(mip, (type(None), int))
         check_type(read_offset, bool)
         check_type(rounding, bool)
+        check_type(use_https, bool)
         if (seg_id == None and type(mip) == int) or (
             type(seg_id) == int and mip == None
         ):
@@ -79,7 +93,7 @@ class NeuronTrace:
 
         # first check if it is a skel
         if seg_id != None and mip != None:
-            cv = CloudVolume(path, mip=mip)
+            cv = CloudVolume(path, mip=mip, use_https=self.use_https)
             skeleton = cv.skeleton.get(seg_id)
             if type(skeleton) is Skeleton:
                 self.input_type = "skel"
@@ -181,7 +195,7 @@ class NeuronTrace:
             skel = self._swc2skeleton(self.path, benchmarking, origin)
             return skel
         elif self.input_type == "skel":
-            cv = CloudVolume(self.path, mip=self.mip)
+            cv = CloudVolume(self.path, mip=self.mip, use_https=self.use_https)
             skel = cv.skeleton.get(self.seg_id)
             return skel
 
@@ -400,31 +414,31 @@ class NeuronTrace:
          Creates a spanning subgraph from a seed node and parent graph using BFS.
 
         Arguments
-         ----------
-         node_id : int
-             The id of the node to use as a seed.
-             If df is not None this become the node index.
-         depth : int
-             The max depth for BFS to traven in each direction.
-         df : None, DataFrame (default = None)
-             Dataframe storing indices.
-             In some cases indexing by row number is preferred.
-         spacing : None, :class:`numpy.array` (default = None)
-             Conversion factor (spatial units/voxel). Assumed to be np.array([x,y,z]).
-             Provided if graph should convert to voxel coordinates first.  Default is None.
-         origin : :class:`numpy.array`
-             Origin of the spatial coordinate, if converting to voxels. Default is None.
-             Assumed to be np.array([x,y,z])
+        ----------
+        node_id : int
+            The id of the node to use as a seed.
+            If df is not None this become the node index.
+        depth : int
+            The max depth for BFS to traven in each direction.
+        df : None, DataFrame (default = None)
+            Dataframe storing indices.
+            In some cases indexing by row number is preferred.
+        spacing : None, :class:`numpy.array` (default = None)
+            Conversion factor (spatial units/voxel). Assumed to be np.array([x,y,z]).
+            Provided if graph should convert to voxel coordinates first.  Default is None.
+        origin : :class:`numpy.array`
+            Origin of the spatial coordinate, if converting to voxels. Default is None.
+            Assumed to be np.array([x,y,z])
 
-         Returns
-         -------
-         G_sub : :class:`networkx.classes.digraph.DiGraph`
-             Subgraph
+        Returns
+        -------
+        G_sub : :class:`networkx.classes.digraph.DiGraph`
+            Subgraph
 
-         tree : DiGraph
-             The tree returned by BFS.
+        tree : DiGraph
+            The tree returned by BFS.
 
-         paths : list
+        paths : list
             List of Nx3 numpy.array. Rows of the array are 3D coordinates in voxel
             units. Each array is one path.
 
@@ -727,7 +741,7 @@ class NeuronTrace:
         # TODO check header length
 
         # check input
-        cv = CloudVolume(s3_path, mip=mip)
+        cv = CloudVolume(s3_path, mip=mip, use_https=self.use_https)
         skeleton = cv.skeleton.get(seg_id)
         swc_string = skeleton.to_swc()
         string_io = StringIO(swc_string)

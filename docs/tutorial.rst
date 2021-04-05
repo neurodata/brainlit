@@ -11,7 +11,6 @@ Tutorials showcasing how to use the utils folder.
 .. toctree::
    :maxdepth: 1
 
-   notebooks/utils/utils
    notebooks/utils/uploading_brains
    notebooks/utils/downloading_brains
    notebooks/utils/downloading_benchmarking

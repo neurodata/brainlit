@@ -74,13 +74,15 @@ def test_NeuroglancerSession_bad_inputs(vars_local):
     with pytest.raises(NotImplementedError):
         NeuroglancerSession(url="asdf")
     with pytest.raises(TypeError):
-        NeuroglancerSession(url=url, mip=1.5)
+        NeuroglancerSession(url, mip=1.5)
     with pytest.raises(ValueError):
-        NeuroglancerSession(url=url, mip=-1)
+        NeuroglancerSession(url, mip=-1)
     with pytest.raises(ValueError):
-        NeuroglancerSession(url=url, mip=100)
+        NeuroglancerSession(url, mip=100)
     with pytest.raises(TypeError):
         NeuroglancerSession(url, url_segments=0)
+    with pytest.raises(TypeError):
+        NeuroglancerSession(url, use_https=0)
     with pytest.raises(NotImplementedError):
         NeuroglancerSession(url, url_segments="asdf")
 

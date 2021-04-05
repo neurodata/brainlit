@@ -15,7 +15,7 @@ install-qt-binding==0.0.8
 jupyter==1.0.0
 napari==0.3.7
 nbstripout
-nilearn==0.6.2
+nilearn==0.7.0
 pandas==1.1.2
 PySide2==5.15.1
 # pip-chill==1.0.0
@@ -23,3 +23,4 @@ pyopenssl==19.1.0
 scikit-image==0.17.2
 simpleitk==2.0.0
 wincertstore==0.2
+
