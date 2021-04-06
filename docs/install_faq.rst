@@ -29,7 +29,7 @@ Obstacles Encountered During downloading_brains Tutorial (macOS)
     * In terminal, type `pip install opencv-contrib-python-headless`
     * Or try including ``%gui qt`` just above the ``import napari`` line. 
 
-9. We have not yet been able to make ``brainlit`` compatible with Mac OS BigSur, and are working to resolve the issue.
+9. When installing ``brainlit`` on Mac OS BigSur, make sure you are using ``python==3.9.0`` and not ``python==3.9.1``. This is a known `issue <https://github.com/napari/napari/issues/1393#issuecomment-745615931>`. Please report any other Mac OS BigSur compatibility issues.
 
 
 Windows
