@@ -67,7 +67,7 @@ def generate_brain_trace_data(brain: str, spacing: int):
                 spline = spline_tree.nodes[node]
                 spline_height = node_height(spline_tree, node)
                 if spline_height == 0:
-                    spline_class = "axon"
+                    spline_class = "primary"
                 else:
                     successors = spline_tree.successors(node)
                     if len(list(successors)) == 0:
