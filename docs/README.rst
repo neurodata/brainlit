@@ -200,7 +200,7 @@ Running a specific test, such as ``test_upload.py`` can be done simply by ``ptes
 Contributing
 ------------
 
-We welcome all contributors, and encourage them to follow our contribution guidelines gound in `CONTRIBUTING.md <https://github.com/neurodata/brainlit/blob/master/CONTRIBUTING.md>`_. Issues with the "good first issue" tag are meant for contributors that are either new to open source coding, or new to the package. Additionally, users are encouraged to use issues not only to discuss code-related problems, but for more general discussions about the package.
+We welcome all contributors, and encourage them to follow our contribution guidelines found in `CONTRIBUTING.md <https://github.com/neurodata/brainlit/blob/master/CONTRIBUTING.md>`_. Issues with the "good first issue" tag are meant for contributors that are either new to open source coding, or new to the package. Additionally, users are encouraged to use issues not only to discuss code-related problems, but for more general discussions about the package.
 
 Credits
 -------
