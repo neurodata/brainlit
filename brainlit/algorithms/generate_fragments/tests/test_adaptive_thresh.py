@@ -172,10 +172,13 @@ def test_connected_threshold():
 
 def test_confidence_connected_threshold():
     # create a data set featured with Gaussian distribution
-    G1 = np.append(
-        np.round(np.random.normal(loc=125, scale=25, size=(62498, 1))),
-        np.array([0, 255]),
-    )
+    Good = False
+    # to ensure the random number does not fall outside of 0 to 255 range (dynamic range of an 8-bit image)
+    while Good == False:
+        G1 = np.round(np.random.normal(loc=125, scale=25, size=(62500, 1)))
+        if min(G1) > 0 and max(G1) < 255:
+            Good = True
+
     # the data is distributed in the image by the order of each pixel's intensity
     img = np.sort(G1).reshape(250, 250).astype(int)
     # if we set multiplier to be 2.5, we are expected to connect around 99% of the pixels
