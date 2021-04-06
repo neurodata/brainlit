@@ -205,6 +205,6 @@ We welcome all contributors, and encourage them to follow our contribution guide
 Credits
 -------
 
-Brainlit is a product of the `neurodata lab <https://neurodata.io/>`_. It is actively maintained by Thomas Athey (@tathey1) and Bijan Varjavand (@bvarjavand), and is regularly used and contributed to by students in the `Neuro Data Design <https://neurodatadesign.io/>`_ course. We strive to follow the same `code of conduct <https://opensource.microsoft.com/codeofconduct/>`_ that applies to the Microsoft open source community.
+Brainlit is a product of the `neurodata lab <https://neurodata.io/>`_. It is actively maintained by Thomas Athey (`@tathey1 <https://github.com/tathey1>`_) and Bijan Varjavand (`@bvarjavand <https://github.com/bvarjavand>`_), and is regularly used and contributed to by students in the `Neuro Data Design <https://neurodatadesign.io/>`_ course. We strive to follow the same `code of conduct <https://opensource.microsoft.com/codeofconduct/>`_ that applies to the Microsoft open source community.
 
 
