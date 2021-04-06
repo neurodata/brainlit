@@ -37,7 +37,7 @@ This script will prepare the experiment folder scaffolding
     ... etc.
 
 
-and download data from S3 (no credentials are required)
+and download data from S3 (no credentials are required).
 
 2. Compute and save trace analysis data
 
