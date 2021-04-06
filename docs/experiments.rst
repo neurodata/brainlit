@@ -5,7 +5,7 @@ Experiments
 Axon Splines
 ============
 
-Paper: 
+Paper: **Fitting Splines to Axonal Arbors Quantifies Relationship between Branch Order and Geometry**
 
 .. toctree::
     :maxdepth: 2

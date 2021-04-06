@@ -38,3 +38,4 @@ or you can run pytest on a single test file by
    - [ ] For core code edit [index.rst](https://github.com/neurodata/brainlit/blob/develop/docs/reference/index.rst) and your submodule's `.rst` file such as [algs.rst](https://github.com/neurodata/brainlit/blob/develop/docs/reference/algs.rst).
    - [ ] For notebooks, edit [tutorial.rst](https://github.com/neurodata/brainlit/blob/develop/docs/tutorial.rst).
    - [ ] Run `./docs/build_docs.sh` from brainlit's root directory. Output will be in `docs/_build/`. You should open `docs/_build/html/index.html` to preview the new documentation.
+   - [ ] After your PR is merged, please (if appropriate) close any relevant issues and delete any relevant branches.
