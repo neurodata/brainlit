@@ -46,7 +46,7 @@ def generate_brain_trace_data(brain: str, spacing: int):
         string_id = str(i).zfill(3)
         seg_swc_path = os.path.join(
             segments_swc_dir,
-            "{}_G-{}_consensus.swc".format(
+            "{}_g-{}_consensus.swc".format(
                 "2018-08-01" if brain == "brain1" else "2018-12-01", string_id
             ),
         )

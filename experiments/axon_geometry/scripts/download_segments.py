@@ -7,7 +7,12 @@ from pathlib import Path
 cwd = Path(os.path.abspath(__file__))
 exp_dir = cwd.parents[1]
 data_dir = os.path.join(exp_dir, "data")
+figures_dir = os.path.join(exp_dir, "figures")
 print(f"Downloading segments to {data_dir}")
+
+# Make figures directory
+if not os.path.exists(figures_dir):
+    os.makedirs(figures_dir)
 
 # Make data directory
 if not os.path.exists(data_dir):
@@ -21,7 +26,6 @@ for brain in brains:
         os.makedirs(os.path.join(data_dir, brain_name))
     seg_dir = os.path.join(brain_dir, "segments_swc")
     trace_data_dir = os.path.join(brain_dir, "trace_data")
-    figures_dir = os.path.join(brain_dir, "figure")
     if not os.path.exists(seg_dir):
         os.makedirs(seg_dir)
     if not os.path.exists(trace_data_dir):
@@ -39,6 +43,6 @@ for brain in brains:
         seg_count += 1
     for i, seg_obj in enumerate(bucket.objects.filter(Prefix=prefix)):
         seg_name = os.path.basename(seg_obj.key)
-        seg_path = os.path.join(seg_dir, seg_name)
+        seg_path = os.path.join(seg_dir, seg_name.lower())
         bucket.download_file(seg_obj.key, seg_path)
         print("%s: downloaded segment %d/%d" % (brain_name, i + 1, seg_count))

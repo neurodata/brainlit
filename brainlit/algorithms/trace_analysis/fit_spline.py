@@ -181,8 +181,11 @@ class GeometricGraph(nx.Graph):
         path_length = x.shape[0]
         NodeDist = np.linalg.norm(np.diff(x, axis=0), axis=1)
         TotalDist = np.concatenate(([0], np.cumsum(NodeDist)))
-        k = np.amin([path_length - 1, 5])
-        tck, u = splprep([x[:, 0], x[:, 1], x[:, 2]], u=TotalDist, k=k)
+        if path_length != 5:
+            k = np.amin([path_length - 1, 5])
+        else:
+            k = 3
+        tck, u = splprep([x[:, 0], x[:, 1], x[:, 2]], s=0, u=TotalDist, k=k)
 
         return tck, u
 
