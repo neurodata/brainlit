@@ -100,6 +100,6 @@ These tutorials demonstrate tools to load and visualize data from s3 buckets or 
 .. toctree::
    :maxdepth: 1
 
-   notebooks/visualization/loading
+   .. notebooks/visualization/loading
    notebooks/visualization/visualization
    notebooks/visualization/neighborhood_visualization_demo
