@@ -33,7 +33,7 @@ fig_dir = os.path.join(data_dir, "figures")
 
 brains = [1]
 
-s3 = boto3.resource("s3",)
+s3 = boto3.resource("s3")
 bucket = s3.Bucket("open-neurodata")
 
 def contains_somas(img):
