@@ -10,6 +10,8 @@ import time
 from tqdm import tqdm
 import napari
 
+upload = False
+
 cwd = Path(os.path.abspath(__file__))
 exp_dir = cwd.parents[1]
 data_dir = os.path.join(exp_dir, "data")
@@ -119,14 +121,16 @@ for brain in brains[:1]:
         # save dictionary and upload coords to S3
         coords_filename = f"{_min[0]}_{_min[1]}_{_min[2]}_{_max[0]}_{_max[1]}_{_max[2]}"
         coords_path = os.path.join(volumes_dir, f"{coords_filename}.npy")
-        coords_s3key = f"{somas_prefix}/{coords_filename}"
 
         np.save(coords_path, contained_coords, allow_pickle=True)
-        print(f"Uploading coordinates to S3...", end="", flush=True)
-        t0 = time.time()
-        bucket.upload_file(coords_path, coords_s3key)
-        t = time.time()
-        dt = np.around(t - t0, decimals=3)
-        print(f"done in {dt}s")
+
+        if upload:
+            coords_s3key = f"{somas_prefix}/{coords_filename}"
+            print(f"Uploading coordinates to S3...", end="", flush=True)
+            t0 = time.time()
+            bucket.upload_file(coords_path, coords_s3key)
+            t = time.time()
+            dt = np.around(t - t0, decimals=3)
+            print(f"done in {dt}s")
         # update spatial_coords
         sorted_coords = np.delete(sorted_coords, contained_ids, axis=0)

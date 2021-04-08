@@ -27,22 +27,15 @@ from skimage import (
 )
 
 mip = 1
-radius = 150
-neigh_n = 6
 
 cwd = Path(os.path.abspath(__file__))
 exp_dir = cwd.parents[1]
 data_dir = os.path.join(exp_dir, "data")
-volumes_dir = os.path.join(data_dir, "volumes", str(radius))
-somas_dir = os.path.join(data_dir, "somas")
-fig_dir = os.path.join(data_dir, "figures")
-# print(f"Volumes dir {volumes_dir}")
 
 brains = [1]
 
 s3 = boto3.resource("s3")
 bucket = s3.Bucket("open-neurodata")
-
 
 def contains_somas(img):
     proj = np.amax(img, axis=2)
@@ -64,7 +57,7 @@ def contains_somas(img):
             out[out == label] = 0
 
     labels, m = morphology.label(out, background=0, return_num=True)
-    label = 0 if (m == 0 or m >= 12) else 1
+    label = 0 if (m == 0 or m >= 10) else 1
 
     return proj, label, out
 
