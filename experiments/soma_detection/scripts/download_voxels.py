@@ -62,23 +62,29 @@ for brain in brains:
             size = bbox.size3()
 
             neighbor_dims = [(0, 3), (1, 4), (2, 5)]
-            neighbor_dirs = [1, -1] 
+            neighbor_dirs = [1, -1]
             # find 6-connected neighbors
             for i, neighbor_dim in enumerate(neighbor_dims):
                 m = neighbor_dim[0]
                 n = neighbor_dim[1]
                 for j, neighbor_dir in enumerate(neighbor_dirs):
                     neigh_pts = pts.copy()
-                    neigh_id = i*2 + j
-                    neighvolume_filepath = os.path.join(volumes_dir, brain_name, f"{seg_id}_neigh{neigh_id}.npy")
+                    neigh_id = i * 2 + j
+                    neighvolume_filepath = os.path.join(
+                        volumes_dir, brain_name, f"{seg_id}_neigh{neigh_id}.npy"
+                    )
                     neigh_pts[m] += neighbor_dir * size[i]
                     neigh_pts[n] += neighbor_dir * size[i]
-                    
+
                     # handle possible negative coordinates
                     neigh_pts = [max(0, c) for c in neigh_pts]
-                    
+
                     neighbor_bbox = Bbox(neigh_pts[:3], neigh_pts[3:])
-                    print(f"Pulling neighbor #{neigh_id} {neighbor_bbox}...", end="", flush=True)
+                    print(
+                        f"Pulling neighbor #{neigh_id} {neighbor_bbox}...",
+                        end="",
+                        flush=True,
+                    )
                     t0 = time.time()
                     neigh_img = ngl_sess.pull_bounds_img(neighbor_bbox)
                     t1 = time.time()
