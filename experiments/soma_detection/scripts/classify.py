@@ -1,31 +1,21 @@
+from os.path import join
 import boto3
-from botocore import UNSIGNED
-from botocore.client import Config
 import os
 from pathlib import Path
+from cloudvolume.lib import Bbox
+from napari import viewer
 import numpy as np
-import json
-import time
-import matplotlib.pyplot as plt
-from skimage.util import img_as_ubyte
-from skimage import exposure
-from skimage.morphology import disk
-from skimage.filters import rank
-from scipy import ndimage as ndi
 from tqdm import tqdm
 from brainlit.utils.session import NeuroglancerSession
+import napari
+from skimage.io import imsave
 
 from skimage import (
-    color,
-    feature,
     filters,
-    measure,
     morphology,
-    segmentation,
-    exposure,
-    util,
 )
 
+viz = True
 mip = 1
 
 cwd = Path(os.path.abspath(__file__))
@@ -37,13 +27,12 @@ brains = [1]
 s3 = boto3.resource("s3")
 bucket = s3.Bucket("open-neurodata")
 
-def contains_somas(img):
-    proj = np.amax(img, axis=2)
 
-    out = img.copy()
+def contains_somas(volume):
+    out = volume.copy()
 
     t = filters.threshold_otsu(out)
-    out = out > 1.25 * t
+    out = out > t
 
     clean_selem = morphology.octahedron(2)
     cclean_selem = morphology.octahedron(1)
@@ -53,159 +42,139 @@ def contains_somas(img):
     out, labels = morphology.label(out, background=0, return_num=True)
     for label in np.arange(1, labels + 1):
         A = np.sum(out.flatten() == label)
-        if A < 50:
+        if A < 100:
             out[out == label] = 0
 
     labels, m = morphology.label(out, background=0, return_num=True)
+    rel_centroids = np.zeros((m, 3))
+    for i, c in enumerate(range(1, m + 1)):
+        ids = np.where(labels == c)
+        rel_centroids[i] = np.round([np.mean(u) for u in ids]).astype(int)
+
     label = 0 if (m == 0 or m >= 10) else 1
 
-    return proj, label, out
+    return label, rel_centroids, out
 
 
-for brain in brains:
+def classify(brain):
     brain_name = "brain%d" % brain
+
+    brain_dir = os.path.join(data_dir, brain_name)
+    volumes_dir = os.path.join(brain_dir, "volumes")
+    results_dir = os.path.join(brain_dir, "results")
+    hits_dir = os.path.join(results_dir, "hit")
+    miss_dir = os.path.join(results_dir, "miss")
 
     brain_prefix = f"brainlit/{brain_name}"
     segments_prefix = f"brainlit/{brain_name}_segments"
     somas_prefix = f"brainlit/{brain_name}_somas"
-    skeletons_prefix = f"{segments_prefix}/skeletons"
 
     brain_url = f"s3://open-neurodata/{brain_prefix}"
     segments_url = f"s3://open-neurodata/{segments_prefix}"
 
     ngl_sess = NeuroglancerSession(mip=1, url=brain_url, url_segments=segments_url)
+    res = ngl_sess.cv_segments.scales[ngl_sess.mip]["resolution"]
 
-    running_correct = 0
-    running_seg_count = 0
-    running_neigh_count = 0
-    positive_neigh_count = 0
-    negative_neigh_count = 0
     failed = []
-    for i, seg_obj in tqdm(enumerate(bucket.objects.filter(Prefix=skeletons_prefix))):
-        seg_id = os.path.basename(seg_obj.key)
-        if seg_id != "info":
+    hit = []
+    hit_count = 0
+    miss = []
+    miss_count = 0
+    total = 0
+    for vol_object in tqdm(bucket.objects.filter(Prefix=somas_prefix)):
+        vol_key = vol_object.key
+        vol_id = os.path.basename(vol_object.key)
+        if vol_id != "":
+            vol_filepath = os.path.join(volumes_dir, f"{vol_id}.npy")
+            bucket.download_file(vol_key, vol_filepath)
 
-            volume_filepath = os.path.join(volumes_dir, brain_name, f"{seg_id}.npy")
-            mask_filepath = os.path.join(volumes_dir, brain_name, f"{seg_id}_mask.npy")
-            d = np.load(volume_filepath, allow_pickle=True).item()
-            img = d["volume"]
-            bbox = d["bbox"]
+            volume_coords = np.array(
+                os.path.basename(vol_object.key).split("_")
+            ).astype(float)
+            volume_vox_min = np.round(np.divide(volume_coords[:3], res)).astype(int)
+            volume_vox_max = np.round(np.divide(volume_coords[3:], res)).astype(int)
+
+            soma_coords = np.load(vol_filepath, allow_pickle=True)
+
+            rel_soma_coords = np.array(
+                [
+                    np.round(np.divide(c, res)).astype(int) - volume_vox_min
+                    for c in soma_coords
+                ]
+            )
+
+            bbox = Bbox(volume_vox_min, volume_vox_max)
+            volume = ngl_sess.pull_bounds_img(bbox)
 
             try:
-                proj, label, somas = contains_somas(img)
-                out, labels = morphology.label(somas, background=0, return_num=True)
+                label, rel_pred_centroids, out = contains_somas(volume)
             except ValueError:
-                failed.append(seg_id)
+                print(f"failed {vol_id}")
+                failed.append(vol_id)
             else:
-                for m in range(1, labels + 1):
-                    c = np.where(out == m)
-
-                    min_pt, max_pt = np.amin(c, axis=1), np.amax(c, axis=1)
-
-                    soma_bbox = bbox.copy()
-                    soma_bbox[:3] += min_pt
-                    soma_bbox[3:] += max_pt
-                    soma_bbox_nm = np.multiply(
-                        soma_bbox, np.tile(ngl_sess.cv.scales[mip]["resolution"], 2)
-                    )
-
-                    soma_filename = f"{soma_bbox_nm[0]}-{soma_bbox_nm[1]}_{soma_bbox_nm[2]}-{soma_bbox_nm[3]}_{soma_bbox_nm[4]}-{soma_bbox_nm[5]}"
-
-                    soma_s3key = f"{somas_prefix}/{soma_filename}"
-                    soma_filepath = os.path.join(
-                        somas_dir, brain_name, f"{soma_filename}.npy"
-                    )
-
-                    np.save(soma_filepath, soma_bbox_nm, allow_pickle=True)
-                    bucket.upload_file(soma_filepath, soma_s3key)
-                np.save(mask_filepath, somas)
-                # Update stats
-                running_seg_count += 1
-                if label == 1:
-                    running_correct += 1
-                # Save figure
-                fig = plt.figure(figsize=(12, 4))
-                axes = fig.subplots(1, 2)
-                ax = axes[0]
-                ax.imshow(proj)
-                ax.set_title(r"MIP")
-                ax = axes[1]
-                ax.imshow(np.amax(somas, axis=2))
-                ax.set_title(r"label = $%d$" % label)
-
-                fig_path = os.path.join(
-                    fig_dir, brain_name, "TP" if label == 1 else "FN", f"{seg_id}.eps"
-                )
-                plt.savefig(fig_path)
-                # plt.show()
-                plt.close()
-
-            for neigh_id in np.arange(neigh_n):
-                neighvolume_filepath = os.path.join(
-                    volumes_dir, brain_name, f"{seg_id}_neigh{neigh_id}.npy"
-                )
-                mask_filepath = os.path.join(
-                    volumes_dir, brain_name, f"{seg_id}_neigh{neigh_id}_mask.npy"
-                )
-
-                neigh_d = np.load(neighvolume_filepath, allow_pickle=True).item()
-                neigh_img = neigh_d["volume"]
-                neigh_bbox = neigh_d["bbox"]
-
-                try:
-                    proj, label, somas = contains_somas(neigh_img)
-                    out, labels = morphology.label(somas, background=0, return_num=True)
-                except ValueError:
-                    failed.append(seg_id)
+                if label == 0:
+                    miss.append(vol_id)
+                    miss_count += 1
+                    out_dir = miss_dir
                 else:
-                    for m in range(1, labels + 1):
-                        c = np.where(out == m)
-
-                        min_pt, max_pt = np.amin(c, axis=1), np.amax(c, axis=1)
-
-                        soma_bbox = neigh_bbox.copy()
-                        soma_bbox[:3] += min_pt
-                        soma_bbox[3:] += max_pt
-                        soma_bbox_nm = np.multiply(
-                            soma_bbox, np.tile(ngl_sess.cv.scales[mip]["resolution"], 2)
-                        )
-
-                        soma_filename = f"{soma_bbox_nm[0]}-{soma_bbox_nm[1]}_{soma_bbox_nm[2]}-{soma_bbox_nm[3]}_{soma_bbox_nm[4]}-{soma_bbox_nm[5]}"
-
-                        soma_s3key = f"{somas_prefix}/{soma_filename}"
-                        soma_filepath = os.path.join(
-                            somas_dir, brain_name, f"{soma_filename}.npy"
-                        )
-
-                        np.save(soma_filepath, soma_bbox_nm, allow_pickle=True)
-                        bucket.upload_file(soma_filepath, soma_s3key)
-                    np.save(mask_filepath, somas)
-                    # Update stats
-                    running_neigh_count += 1
-                    if label == 1:
-                        positive_neigh_count += 1
-                    else:
-                        negative_neigh_count += 1
-                    # Save figure
-                    fig = plt.figure(figsize=(12, 4))
-                    axes = fig.subplots(1, 2)
-                    ax = axes[0]
-                    ax.imshow(proj)
-                    ax.set_title(r"MIP")
-                    ax = axes[1]
-                    ax.imshow(np.amax(somas, axis=2))
-                    ax.set_title(r"label = $%d$" % label)
-
-                    fig_path = os.path.join(
-                        fig_dir,
-                        brain_name,
-                        "neighbors",
-                        str(label),
-                        f"{seg_id}_neigh{neigh_id}.eps",
+                    pred_centroids = np.array(
+                        [
+                            np.multiply(volume_vox_min + c, res)
+                            for c in rel_pred_centroids
+                        ]
                     )
-                    plt.savefig(fig_path)
-                    # plt.show()
-                    plt.close()
 
-    TPR = running_correct / running_seg_count
-    print(f"{brain_name}: TPR = {TPR}")
+                    soma_norms = np.linalg.norm(soma_coords, axis=1)
+                    pred_norms = np.linalg.norm(pred_centroids, axis=1)
+                    match = np.array(
+                        [
+                            min([abs(prediction - soma) for prediction in pred_norms])
+                            < 10e3
+                            for soma in soma_norms
+                        ]
+                    )
+
+                    if match.any():
+                        hit.append(vol_id)
+                        hit_count += sum(match)
+                        miss_count += len(soma_norms) - sum(match)
+                        out_dir = hits_dir
+                    else:
+                        miss.append(vol_id)
+                        miss_count += len(soma_norms)
+                        out_dir = miss_dir
+
+                total += len(soma_norms)
+
+                viewer = napari.Viewer(ndisplay=3)
+                viewer.add_image(volume)
+                viewer.add_points(
+                    rel_soma_coords,
+                    name="ground truth",
+                    size=5,
+                    symbol="o",
+                    face_color=np.array([1, 0, 0, 0.5]),
+                )
+                if label == 1:
+                    viewer.add_points(
+                        rel_pred_centroids,
+                        name="detection",
+                        size=5,
+                        symbol="o",
+                        face_color=np.array([0, 0, 1, 0.5]),
+                    )
+
+                screenshot_path = os.path.join(out_dir, f"{vol_id}_screenshot.png")
+                mask_path = os.path.join(out_dir, f"{vol_id}_mask.npy")
+
+                screenshot = viewer.screenshot()
+                imsave(screenshot_path, screenshot)
+                np.save(mask_path, out)
+                viewer.close()
+    print(f"hits: {hit_count}/{total}")
+    print(f"miss: {miss_count}/{total}")
+
+
+with napari.gui_qt():
+    for brain in brains:
+        classify(brain)
