@@ -58,6 +58,7 @@ class NeuroglancerSession:
         if mip < 0 or mip >= len(self.cv.scales):
             raise ValueError(f"{mip} should be between 0 and {len(self.cv.scales)}.")
         self.mip = mip
+        self.fill_missing = fill_missing
         self.chunk_size = self.cv.scales[self.mip]["chunk_sizes"][0]
         self.scales = self.cv.scales[self.mip]["resolution"]
 
@@ -110,7 +111,7 @@ class NeuroglancerSession:
         check_precomputed(seg_url)
 
         self.url_segments = seg_url
-        self.cv_segments = CloudVolume(self.url_segments, parallel=False, fill_missing=fill_missing)
+        self.cv_segments = CloudVolume(self.url_segments, parallel=False, fill_missing=self.fill_missing)
 
     def get_segments(
         self,
