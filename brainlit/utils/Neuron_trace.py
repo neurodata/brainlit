@@ -79,7 +79,7 @@ class NeuronTrace:
 
         # first check if it is a skel
         if seg_id != None and mip != None:
-            cv = CloudVolume(path, mip=mip)
+            cv = CloudVolume(path, mip=mip, fill_missing=True)
             skeleton = cv.skeleton.get(seg_id)
             if type(skeleton) is Skeleton:
                 self.input_type = "skel"
@@ -181,7 +181,7 @@ class NeuronTrace:
             skel = self._swc2skeleton(self.path, benchmarking, origin)
             return skel
         elif self.input_type == "skel":
-            cv = CloudVolume(self.path, mip=self.mip)
+            cv = CloudVolume(self.path, mip=self.mip, fill_missing=True)
             skel = cv.skeleton.get(self.seg_id)
             return skel
 
@@ -727,7 +727,7 @@ class NeuronTrace:
         # TODO check header length
 
         # check input
-        cv = CloudVolume(s3_path, mip=mip)
+        cv = CloudVolume(s3_path, mip=mip, fill_missing=True)
         skeleton = cv.skeleton.get(seg_id)
         swc_string = skeleton.to_swc()
         string_io = StringIO(swc_string)
