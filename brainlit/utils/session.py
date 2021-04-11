@@ -49,7 +49,7 @@ class NeuroglancerSession:
         url: str,  #  = "s3://open-neurodata/brainlit/brain1"
         mip: int = 0,
         url_segments: Optional[str] = None,
-        fill_missing: True
+        fill_missing: bool = True
     ):
         check_precomputed(url)
         check_type(mip, (int, np.integer))
