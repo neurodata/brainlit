@@ -31,6 +31,7 @@ class NeuroglancerSession:
         url: Precompued path either to a file URI or url URI. Defaults to mouselight brain1.
         mip: Resolution level to pull and push data at. Defaults to 0, the highest resolution.
         url_segments: Precomputed path to segmentation data. Optional, default None.
+        fill_missing: Fill missing values with 0s
 
     Attributes:
         url: CloudVolumePrecomputedPath to image data.
@@ -48,11 +49,12 @@ class NeuroglancerSession:
         url: str,  #  = "s3://open-neurodata/brainlit/brain1"
         mip: int = 0,
         url_segments: Optional[str] = None,
+        fill_missing: True
     ):
         check_precomputed(url)
         check_type(mip, (int, np.integer))
         self.url = url
-        self.cv = CloudVolume(url, parallel=False)
+        self.cv = CloudVolume(url, parallel=False, fill_missing=fill_missing)
         if mip < 0 or mip >= len(self.cv.scales):
             raise ValueError(f"{mip} should be between 0 and {len(self.cv.scales)}.")
         self.mip = mip
@@ -62,7 +64,7 @@ class NeuroglancerSession:
         self.url_segments = url_segments
         if url_segments is None:
             try:  # default is to add _segments
-                self.cv_segments = CloudVolume(url + "_segments", parallel=False)
+                self.cv_segments = CloudVolume(url + "_segments", parallel=False, , fill_missing=fill_missing)
                 self.url_segments = url + "_segments"
             except InfoUnavailableError:
                 warnings.warn(
@@ -73,7 +75,7 @@ class NeuroglancerSession:
                 self.cv_segments = None
         else:
             check_precomputed(url_segments)
-            self.cv_segments = CloudVolume(url_segments, parallel=False)
+            self.cv_segments = CloudVolume(url_segments, parallel=False, fill_missing=fill_missing)
 
     def _get_voxel(self, seg_id: int, v_id: int) -> Tuple[int, int, int]:
         """Gets coordinates of segment vertex, in voxel space.
@@ -108,7 +110,7 @@ class NeuroglancerSession:
         check_precomputed(seg_url)
 
         self.url_segments = seg_url
-        self.cv_segments = CloudVolume(self.url_segments, parallel=False)
+        self.cv_segments = CloudVolume(self.url_segments, parallel=False, fill_missing=fill_missing)
 
     def get_segments(
         self,
