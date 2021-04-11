@@ -28,6 +28,8 @@ class NeuronTrace:
             If s3 is provided, specifies if it should be rounded, default True
         read_offset: bool
             If swc is provided, whether offset should be read from file, default False
+        fill_missing: bool
+            Fill missing values with 0s
 
     Attributes
     ----------
@@ -56,7 +58,7 @@ class NeuronTrace:
 
     """
 
-    def __init__(self, path, seg_id=None, mip=None, rounding=True, read_offset=False):
+    def __init__(self, path, seg_id=None, mip=None, rounding=True, read_offset=False, fill_missing=True):
         self.path = path
         self.input_type = None
         self.df = None
@@ -64,6 +66,7 @@ class NeuronTrace:
         self.seg_id = seg_id
         self.mip = mip
         self.rounding = rounding
+        self.fill_missing=fill_missing
 
         check_type(path, str)
         check_type(seg_id, (type(None), int))
@@ -79,7 +82,7 @@ class NeuronTrace:
 
         # first check if it is a skel
         if seg_id != None and mip != None:
-            cv = CloudVolume(path, mip=mip, fill_missing=True)
+            cv = CloudVolume(path, mip=mip, fill_missing=fill_missing)
             skeleton = cv.skeleton.get(seg_id)
             if type(skeleton) is Skeleton:
                 self.input_type = "skel"
@@ -181,7 +184,7 @@ class NeuronTrace:
             skel = self._swc2skeleton(self.path, benchmarking, origin)
             return skel
         elif self.input_type == "skel":
-            cv = CloudVolume(self.path, mip=self.mip, fill_missing=True)
+            cv = CloudVolume(self.path, mip=self.mip, fill_missing=self.fill_missing)
             skel = cv.skeleton.get(self.seg_id)
             return skel
 
@@ -727,7 +730,7 @@ class NeuronTrace:
         # TODO check header length
 
         # check input
-        cv = CloudVolume(s3_path, mip=mip, fill_missing=True)
+        cv = CloudVolume(s3_path, mip=mip, fill_missing=self.fill_missing)
         skeleton = cv.skeleton.get(seg_id)
         swc_string = skeleton.to_swc()
         string_io = StringIO(swc_string)
