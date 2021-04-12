@@ -65,7 +65,7 @@ class NeuroglancerSession:
         self.url_segments = url_segments
         if url_segments is None:
             try:  # default is to add _segments
-                self.cv_segments = CloudVolume(url + "_segments", parallel=False, , fill_missing=fill_missing)
+                self.cv_segments = CloudVolume(url + "_segments", parallel=False, fill_missing=fill_missing)
                 self.url_segments = url + "_segments"
             except InfoUnavailableError:
                 warnings.warn(
