@@ -130,8 +130,6 @@ class viterbi_algorithm:
             #cost_int = np.inf
  
         total_cost = cost_dist + cost_int
-        #print(prev_state, state)
-        #print(f"{cost_dist} + {cost_int} = {total_cost}");
         return total_cost
     
     """
@@ -182,8 +180,6 @@ class viterbi_algorithm:
 
         # Note: we want label 1 onwards, because 0 is background
         for component in np.unique(self.labels)[1:]:
-            #print("Component: ", component)
-            #print(np.argwhere(self.labels == component))
             # Skip if it is a soma
             if component in nonline_labels:
                 continue
@@ -240,11 +236,6 @@ class viterbi_algorithm:
         d2 = np.linalg.norm(np.multiply(np.subtract(ends1[0], ends2[1]), self.res))
         d3 = np.linalg.norm(np.multiply(np.subtract(ends1[1], ends2[0]), self.res))
         d4 = np.linalg.norm(np.multiply(np.subtract(ends1[1], ends2[1]), self.res))
-        
-        #d1 = np.linalg.norm(np.subtract(ends1[0], ends2[0]))
-        #d2 = np.linalg.norm(np.subtract(ends1[0], ends2[1]))
-        #d3 = np.linalg.norm(np.subtract(ends1[1], ends2[0]))
-        #d4 = np.linalg.norm(np.subtract(ends1[1], ends2[1]))
         
         idx = np.argmin([d1, d2, d3, d4])
 

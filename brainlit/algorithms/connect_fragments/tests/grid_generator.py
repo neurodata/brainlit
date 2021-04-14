@@ -7,6 +7,7 @@ Created on Wed Apr  7 21:39:28 2021
 
 import numpy as np
 from skimage import measure
+from brainlit.algorithms.connect_fragments.dynamic_programming_viterbi import viterbi_algorithm
 #import matplotlib.pyplot as plt
 
 def grid_gen(grid_id=10):
@@ -323,4 +324,110 @@ def grid_gen3D(grid_id=10):
         grid[14,14,13] = 245
 
     return grid, labels, num, somas
+
+def grid_builder(grid_id="0"):    
+    ''' Setting up the image environment '''
+    alg = None
+    if (grid_id == "0") or (grid_id == "0.5"):
+        img, lbls, _ , somas = grid_gen(10)
+        #plt.figure()
+        #plt.imshow(img[:,:,0])
+
+        # For the timebeing, manually do the endpoints
+        # NOTE: no endpoints for 2 or 5 because they are "blobs"
+        endpoints = {}
+        endpoints[1] = ((0,0,0),(0,2,0))
+        endpoints[3] = ((3,3,0),(6,5,0))
+        endpoints[4] = ((7,7,0),(7,8,0))
+
+        if grid_id == "0":
+            alg = viterbi_algorithm(img, lbls, somas, [1,1,1])
+            alg.end_points = endpoints
+        
+        if grid_id == "0.5":
+            alg = viterbi_algorithm(img,lbls,somas,[0.5,0.5,0.5])
+            alg.end_points = endpoints
+        
+    if (grid_id == "2") or (grid_id == "2.5"):
+        img, lbls, _ , somas = grid_gen(20)
+        # manually do the endpoints
+        # NOTE: no endpoints for 1 or 4 because they are blobs
+        endpoints = {}
+        endpoints[2] = ((1,1,0),(9,9,0))
+        endpoints[3] = ((12,12,0),(15,15,0))
+        
+        if grid_id == "2":
+            alg = viterbi_algorithm(img, lbls, somas, [1,1,1])
+            alg.end_points = endpoints
+        
+        if grid_id == "2.5":
+            alg = viterbi_algorithm(img, lbls, somas, [0.5,0.5,0.5])
+            alg.end_points = endpoints
     
+    if (grid_id == "3"):    
+        # 100x100 example for endpoints testing
+        img, lbls, _, somas = grid_gen(100)
+        alg = viterbi_algorithm(img, lbls, somas, [1,1,1])
+        alg.end_points = {} # Leave empty, will solve with endpoint function
+        
+    if (grid_id == "1_3") or (grid_id == "1_3.5"):
+        img, lbls, _, somas = grid_gen3D(100)
+        endpoints = {}
+        endpoints[1] = ((0,0,0),(3,0,0))
+        endpoints[3] = ((99,99,99),(96,99,99))
+        
+        if grid_id == "1_3":
+            alg = viterbi_algorithm(img, lbls, somas, [1,1,1])
+            alg.end_points = endpoints
+
+        if grid_id == "1_3.5":
+            alg = viterbi_algorithm(img, lbls, somas, [0.5,0.5,0.5])
+            alg.end_points = endpoints
+    
+    if (grid_id == "2_3") or (grid_id == "2_3.5"):
+        img, lbls, _, somas,= grid_gen3D(25)
+        endpoints = {}
+        endpoints[1] = ((0,0,0),(4,0,0))
+        
+        if grid_id == "2_3":
+            alg = viterbi_algorithm(img, lbls, somas, [1,1,1])
+            alg.end_points = endpoints
+        
+        if grid_id == "2_3.5":
+            alg = viterbi_algorithm(img, lbls, somas, [0.5,0.5,0.5])
+            alg.end_points = endpoints
+    
+    if (grid_id == "3_3"):
+        #100x100 example for endpoints testing
+        img, lbls, _, somas = grid_gen3D(101)
+        alg = viterbi_algorithm(img, lbls, somas, [1,1,1])
+        alg.end_points = {} # Leave empty, will solve with endpoint function
+        
+    if (grid_id == "1"):
+        #10x10 high intensity loop test
+        img, lbls, _ , somas = grid_gen(102)
+
+        # For the timebeing, manually do the endpoints
+        # NOTE: no endpoints for 2 or 5 because they are "blobs"
+        endpoints = {}
+        endpoints[1] = ((0,0,0),(0,2,0))
+        endpoints[3] = ((3,3,0),(6,5,0))
+        endpoints[4] = ((7,7,0),(7,8,0))
+        alg = viterbi_algorithm(img, lbls, somas, [1,1,1])
+        alg.end_points = endpoints
+        
+    if (grid_id == "4_3"):
+        #100x100 viterbi test
+        img, lbls, _, somas = grid_gen3D(15)
+        
+        # For the timebeing, manually do the endpoints
+        # NOTE: no endpoints for 2 or 5 because they are "blobs"
+        endpoints = {}
+        endpoints[1] = ((0,0,0),(3,0,0))
+        endpoints[2] = ((4,3,0),(4,7,2))
+        endpoints[3] = ((6,8,4),(7,10,7))
+        endpoints[4] = ((8,12,7),(12,13,11))
+        alg = viterbi_algorithm(img, lbls, somas, [1,1,1])
+        alg.end_points = endpoints
+
+    return alg
