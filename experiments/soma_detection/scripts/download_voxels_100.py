@@ -40,7 +40,7 @@ for brain in brains[:1]:
     brain_url = f"s3://open-neurodata/{brain_prefix}"
     segments_url = f"s3://open-neurodata/{segments_prefix}"
 
-    ngl_sess = NeuroglancerSession(mip=1, url=brain_url, url_segments=segments_url)
+    ngl_sess = NeuroglancerSession(mip=2, url=brain_url, url_segments=segments_url)
 
     segments = bucket.objects.filter(Prefix=skeletons_prefix)
     n = sum(1 if os.path.basename(seg.key) != "info" else 0 for seg in segments.all())
