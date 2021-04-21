@@ -28,17 +28,18 @@ import time
 
 import matplotlib.pyplot as plt
 
+
 class viterbi_algorithm:
-    def __init__(self, image, labels, soma_labels, resolution=[1,1,1]):
+    def __init__(self, image, labels, soma_labels, resolution=[1, 1, 1]):
 
         num_components = np.amax(labels)
         self.num_components = num_components
         self.image = image
         self.labels = labels
         self.somas = soma_labels
-        
-        self.cost_mat_dist = np.ones((num_components+1, num_components+1)) * -1
-        self.cost_mat_int = np.ones((num_components+1, num_components+1)) * -1
+
+        self.cost_mat_dist = np.ones((num_components + 1, num_components + 1)) * -1
+        self.cost_mat_int = np.ones((num_components + 1, num_components + 1)) * -1
 
         self.res = resolution
 
@@ -49,14 +50,14 @@ class viterbi_algorithm:
         # two elements in tuple refers to two objects
         # 0th and 1st dim refer to object numbers, 2nd axis is the voxel coordinates
         self.connection_mat = (
-            np.zeros((num_components+1, num_components+1, 3), dtype=int),
-            np.zeros((num_components+1, num_components+1, 3), dtype=int),
+            np.zeros((num_components + 1, num_components + 1, 3), dtype=int),
+            np.zeros((num_components + 1, num_components + 1, 3), dtype=int),
         )
 
         self.end_points = None
         self.not_lines = None
-        self.sigma = 1/20
-    
+        self.sigma = 1 / 20
+
     def viterbi_frag(self, start_lbl, K, somas):
         """Run Viterbi algorithm on image that has been masked into connected components.
         Args:
@@ -79,15 +80,12 @@ class viterbi_algorithm:
         for step in np.arange(K):
             all_paths.append(paths_k)
 
-            paths_k, closest_state = self.viterbi_frag_next_layer(
-                paths_k,
-                somas,
-            )
+            paths_k, closest_state = self.viterbi_frag_next_layer(paths_k, somas,)
 
         sort_paths = sorted(paths_k.items(), key=lambda x: x[1][0])
         top_paths = [entry[1] for entry in sort_paths[:1]]
         return top_paths[0], sort_paths
-    
+
     def viterbi_frag_next_layer(self, paths_k, somas):
         num_components = self.num_components
 
@@ -113,25 +111,25 @@ class viterbi_algorithm:
                 if length < shortest_length:
                     shortest_length = length
                     shortest_path = path
-                    
+
             if shortest_length < closest_state_len:
                 closest_state = state
                 closest_state_len = shortest_length
-                
+
             paths_k1[state] = (shortest_length, shortest_path)
 
         return paths_k1, closest_state
-    
+
     def path_cost(self, prev_state, state, path, somas):
         cost_dist = self.cost_mat_dist[prev_state, state]
         cost_int = self.cost_mat_int[prev_state, state]
 
-        #if self.path_has_connection([prev_state, state], path):
-            #cost_int = np.inf
- 
+        # if self.path_has_connection([prev_state, state], path):
+        # cost_int = np.inf
+
         total_cost = cost_dist + cost_int
         return total_cost
-    
+
     """
     def path_has_connection(self,connection,path):
         l = len(connection)
@@ -146,7 +144,7 @@ class viterbi_algorithm:
                 return True
         return False
     """
-    
+
     def compute_bounds(self, label, pad):
         """ Currently zmin and zmax are hardcoded as 0,1 for this simple image """
         """compute coordinates of bounding box around a masked object, with given padding
@@ -172,8 +170,7 @@ class viterbi_algorithm:
         zmax = np.amin((labels.shape[2], math.ceil(zmax + (pad + 1) / self.res[2])))
 
         return int(rmin), int(rmax), int(cmin), int(cmax), int(zmin), int(zmax)
-    
-        
+
     def frags_to_lines_le_skel(self, nonline_labels=[]):
         """Relies on the assumption that self.labels has values as if it came from measure.label"""
         end_points = {}
@@ -183,19 +180,19 @@ class viterbi_algorithm:
             # Skip if it is a soma
             if component in nonline_labels:
                 continue
-            
+
             # Mask the current component
             mask = self.labels == component
-            
-            # The mask is relatively sparse, so we need to cut out only the 
+
+            # The mask is relatively sparse, so we need to cut out only the
             # relevant regions with labels
             rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
-            mask = mask[rmin:rmax,cmin:cmax,zmin:zmax]
+            mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
             skel = morphology.skeletonize_3d(mask)
 
             coords_mask = np.argwhere(mask)
             coords_skel = np.argwhere(skel)
-            
+
             if len(coords_skel) < 4:
                 coords = coords_mask
             else:
@@ -206,19 +203,20 @@ class viterbi_algorithm:
             amin = np.argmin(embedding)
             a = coords[amax, :]
             b = coords[amin, :]
-            a = np.add(a,[rmin, cmin, zmin])
-            b = np.add(b,[rmin, cmin, zmin])
+            a = np.add(a, [rmin, cmin, zmin])
+            b = np.add(b, [rmin, cmin, zmin])
 
             end_points[component] = (a, b)
-            
-        print(f"{len(end_points.keys())} out of {len(np.unique(self.labels)[1:])} are lines")
+
+        print(
+            f"{len(end_points.keys())} out of {len(np.unique(self.labels)[1:])} are lines"
+        )
 
         self.end_points = end_points
         components = set(np.unique(self.labels)[1:])
         components_lines = set(end_points.keys())
         self.not_lines = components.difference(components_lines)
 
-    
     def line_line_dist(self, lbl1, lbl2):
         """
         Args:
@@ -227,16 +225,16 @@ class viterbi_algorithm:
         """
         if lbl1 == lbl2:
             raise ValueError(f"Cannot compute distance between {lbl1} and {lbl2}")
-        
+
         ends1 = self.end_points[lbl1]
         ends2 = self.end_points[lbl2]
-        
+
         # Compute the euclidean distance between each endpoint
         d1 = np.linalg.norm(np.multiply(np.subtract(ends1[0], ends2[0]), self.res))
         d2 = np.linalg.norm(np.multiply(np.subtract(ends1[0], ends2[1]), self.res))
         d3 = np.linalg.norm(np.multiply(np.subtract(ends1[1], ends2[0]), self.res))
         d4 = np.linalg.norm(np.multiply(np.subtract(ends1[1], ends2[1]), self.res))
-        
+
         idx = np.argmin([d1, d2, d3, d4])
 
         if idx == 0:
@@ -250,7 +248,7 @@ class viterbi_algorithm:
 
         dist_cost = np.amin([d1, d2, d3, d4])
         return dist_cost, loc1, loc2
-    
+
     def line_blob_dist(self, lbl1, lbl2):
         """
         Args:
@@ -285,14 +283,14 @@ class viterbi_algorithm:
                 np.multiply(np.subtract(coords, endpt), self.res), axis=1
             )
             dist_cost = np.amin(dists)
-            
+
             # find minimum based on distance cost
             if dist_cost < lowest_cost:
                 lowest_cost = dist_cost
                 endpt_lowest = endpt
                 blob_lowest = coords[np.argmin(dists)]
 
-        if labels[endpt_lowest[0],endpt_lowest[1],endpt_lowest[2]] != lbl1:
+        if labels[endpt_lowest[0], endpt_lowest[1], endpt_lowest[2]] != lbl1:
             raise ValueError(
                 f"Lowest cost point: {endpt_lowest} has label {labels[endpt_lowest]}, not {lbl1}"
             )
@@ -310,30 +308,30 @@ class viterbi_algorithm:
 
         # remove first and last voxels, which are part of foreground
         ints = ints[1:-1]
-        #print(lbl1,lbl2,ints)
+        # print(lbl1,lbl2,ints)
         mu1 = 2  # np.mean(image[labels == lbl1])
 
         # Need to check about this
-        #int_cost = (mu1 ** 2 - 2 * mu1 * np.mean(ints)) / self.sigma
-        
-        int_cost = 1/(np.mean(ints)+1)
-        
+        # int_cost = (mu1 ** 2 - 2 * mu1 * np.mean(ints)) / self.sigma
+
+        int_cost = 1 / (np.mean(ints) + 1)
+
         return int_cost
-    
+
     def compute_all_dists(self):
         for lbl1 in range(1, self.num_components + 1):
             for lbl2 in range(lbl1, self.num_components + 1):
-                
+
                 skip_connection = False
-                
+
                 if lbl2 == lbl1:
                     continue
-                
+
                 if lbl1 in self.end_points.keys() and lbl2 in self.end_points.keys():
                     # Line to line
                     dist, loc1, loc2 = self.line_line_dist(lbl1, lbl2)
                     int_cost = self.line_int(loc1, loc2, lbl1, lbl2)
-                    
+
                 # One of them is a blob
                 elif lbl1 in self.end_points.keys():
                     # lbl1 to soma (lbl2)
@@ -350,31 +348,31 @@ class viterbi_algorithm:
                     dist = np.inf
                     int_cost = np.inf
                     skip_connection = True
-                    
+
                 # Distance cost is symmetric
                 self.cost_mat_dist[lbl1, lbl2] = dist
                 self.cost_mat_dist[lbl2, lbl1] = dist
-            
+
                 # Int cost is symmetric
                 self.cost_mat_int[lbl1, lbl2] = int_cost
                 self.cost_mat_int[lbl2, lbl1] = int_cost
-                
+
                 if not skip_connection:
                     # Set the forward connection
                     self.connection_mat[0][lbl1, lbl2] = loc1
                     self.connection_mat[1][lbl1, lbl2] = loc2
-    
+
                     # Set the backward connection
                     self.connection_mat[0][lbl2, lbl1] = loc2
                     self.connection_mat[1][lbl2, lbl1] = loc1
 
-                if dist+int_cost < 0:
+                if dist + int_cost < 0:
                     warnings.warn(
                         f"Negative cost between {lbl1} to {lbl2} from: dist - {dist}, intensity - {int_cost}"
                     )
 
         for soma in self.somas.keys():
-            # Going from soma to anything else is impossible, 
+            # Going from soma to anything else is impossible,
             # as we want to connect foreground to somas
             self.cost_mat_dist[soma, :] = np.inf
             self.cost_mat_int[soma, :] = np.inf
@@ -382,12 +380,11 @@ class viterbi_algorithm:
             self.cost_mat_dist[soma, soma] = 0
             self.cost_mat_int[soma, soma] = 0
             # Connection from soma outwards should be 0'd
-            self.connection_mat[0][soma, :] = [0,0,0]
-            self.connection_mat[1][soma, :] = [0,0,0]
+            self.connection_mat[0][soma, :] = [0, 0, 0]
+            self.connection_mat[1][soma, :] = [0, 0, 0]
 
-            self.connection_mat[0][soma, :] = [0,0,0]
-            self.connection_mat[1][soma, :] = [0,0,0]
-
+            self.connection_mat[0][soma, :] = [0, 0, 0]
+            self.connection_mat[1][soma, :] = [0, 0, 0]
 
         for lbl1 in range(1, self.num_components + 1):
             if lbl1 in self.somas.keys():
@@ -395,4 +392,3 @@ class viterbi_algorithm:
             else:
                 denom = logsumexp(-1 * self.cost_mat_dist[lbl1, 1:])
             self.cost_mat_dist[lbl1, 1:] = self.cost_mat_dist[lbl1, 1:] + denom
-
