@@ -216,15 +216,6 @@ def testConnections():
                 assert np.inf == alg.cost_mat_dist[i, j]
                 assert np.inf == alg.cost_mat_int[i, j]
 
-    # For manual debugging purposes
-    connect_points = set()
-    for i in range(1):
-        for j in range(1, 5):
-            for k in range(1, 5):
-                if not (np.equal([0, 0, 0], c[i][j][k])).all():
-                    connect_points.add(tuple(c[i][j][k]))
-
-
 def testEndpoints():
     alg3 = grid_builder("3")
     alg3.frags_to_lines_le_skel([2])

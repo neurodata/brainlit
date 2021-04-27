@@ -11,9 +11,6 @@ from brainlit.algorithms.connect_fragments.dynamic_programming_viterbi import (
     viterbi_algorithm,
 )
 
-# import matplotlib.pyplot as plt
-
-
 def grid_gen(grid_id=10):
     if grid_id == 10:
         """ Generates a 10x10x2 grid with a small assortment of labels"""
@@ -34,8 +31,7 @@ def grid_gen(grid_id=10):
         grid[7, 8, 0] = 255
         grid[9, 9, 0] = 255  # Soma
 
-        # Add this back in later. For simplicity, only the 0th layer of grid has labels
-        # grid[:,:,1] = grid[:,:,0]
+        # For simplicity, only the 0th layer of grid has labels
         # Label the components
         labels, num = measure.label(grid, return_num=True)
 
@@ -90,8 +86,7 @@ def grid_gen(grid_id=10):
         grid[7, 8, 0] = 255
         grid[9, 9, 0] = 255  # Soma
 
-        # Add this back in later. For simplicity, only the 0th layer of grid has labels
-        # grid[:,:,1] = grid[:,:,0]
+        # For simplicity, only the 0th layer of grid has labels
         # Label the components
         labels, num = measure.label(grid, return_num=True)
 
@@ -157,8 +152,7 @@ def grid_gen(grid_id=10):
 
         # Label a soma
         grid[19, 19, 0] = 255
-        # Add this back in later. For simplicity, only the 0th layer of grid has labels
-        # grid[:,:,1] = grid[:,:,0]
+        # For simplicity, only the 0th layer of grid has labels
         # Label the components
         labels, num = measure.label(grid, return_num=True)
 
@@ -180,14 +174,11 @@ def grid_gen(grid_id=10):
             grid[i, i, 0] = 175
         # Label a soma
         grid[10, 30, 0] = 255
-        # Add this back in later. For simplicity, only the 0th layer of grid has labels
-        # grid[:,:,1] = grid[:,:,0]
+        # For simplicity, only the 0th layer of grid has labels
         # Label the components
         labels, num = measure.label(grid, return_num=True)
         somas = {2: [(10, 30, 0)]}
 
-    # plt.figure()
-    # plt.imshow(labels[:,:,0])
     return grid, labels, num, somas
 
 
@@ -294,9 +285,6 @@ def grid_gen3D(grid_id=10):
         grid[12, 13, 10] = 225
         grid[12, 13, 11] = 225
 
-        # for j in range(0,12):
-        #    grid[0,j,12] = 100
-
         grid[14, 14, 14] = 255
         labels, num = measure.label(grid, return_num=True)
         somas = {5: [(14, 14, 14)]}
@@ -329,8 +317,6 @@ def grid_builder(grid_id="0"):
     alg = None
     if (grid_id == "0") or (grid_id == "0.5"):
         img, lbls, _, somas = grid_gen(10)
-        # plt.figure()
-        # plt.imshow(img[:,:,0])
 
         # For the timebeing, manually do the endpoints
         # NOTE: no endpoints for 2 or 5 because they are "blobs"
