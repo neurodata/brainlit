@@ -49,7 +49,7 @@ class NeuroglancerSession:
         url: str,  #  = "s3://open-neurodata/brainlit/brain1"
         mip: int = 0,
         url_segments: Optional[str] = None,
-        fill_missing: bool = True
+        fill_missing: bool = True,
     ):
         check_precomputed(url)
         check_type(mip, (int, np.integer))
@@ -65,7 +65,9 @@ class NeuroglancerSession:
         self.url_segments = url_segments
         if url_segments is None:
             try:  # default is to add _segments
-                self.cv_segments = CloudVolume(url + "_segments", parallel=False, fill_missing=fill_missing)
+                self.cv_segments = CloudVolume(
+                    url + "_segments", parallel=False, fill_missing=fill_missing
+                )
                 self.url_segments = url + "_segments"
             except InfoUnavailableError:
                 warnings.warn(
@@ -76,7 +78,9 @@ class NeuroglancerSession:
                 self.cv_segments = None
         else:
             check_precomputed(url_segments)
-            self.cv_segments = CloudVolume(url_segments, parallel=False, fill_missing=fill_missing)
+            self.cv_segments = CloudVolume(
+                url_segments, parallel=False, fill_missing=fill_missing
+            )
 
     def _get_voxel(self, seg_id: int, v_id: int) -> Tuple[int, int, int]:
         """Gets coordinates of segment vertex, in voxel space.
@@ -111,7 +115,9 @@ class NeuroglancerSession:
         check_precomputed(seg_url)
 
         self.url_segments = seg_url
-        self.cv_segments = CloudVolume(self.url_segments, parallel=False, fill_missing=self.fill_missing)
+        self.cv_segments = CloudVolume(
+            self.url_segments, parallel=False, fill_missing=self.fill_missing
+        )
 
     def get_segments(
         self,
