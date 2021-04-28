@@ -56,7 +56,7 @@ This repository is a container of methods that Neurodata usees to expose their o
 Motivation
 ----------
 
-The repository originated as the project of a team in Joshua Vogelstein's class **Neurodata** at Johns Hopkins University. This project was focused on data science towards the `mouselight data <https://www.hhmi.org/news/mouselight-project-maps-1000-neurons-and-counting-in-the-mouse-brain>`_. It becme apparent that the tools developed for the class would be useful for other groups doing data science on large data volumes.
+The repository originated as the project of a team in Joshua Vogelstein's class **Neurodata** at Johns Hopkins University. This project was focused on data science towards the `mouselight data <https://www.hhmi.org/news/mouselight-project-maps-1000-neurons-and-counting-in-the-mouse-brain>`_. It became apparent that the tools developed for the class would be useful for other groups doing data science on large data volumes.
 The repository can now be considered a "holding bay" for code developed by Neurodata for collaborators and researchers to use.
 
 Installation
@@ -86,6 +86,11 @@ Install from source
 * clone the repo: ``git clone https://github.com/neurodata/brainlit.git``
 * cd into the repo: ``cd brainlit``
 * install brainlit: ``pip install -e .``
+
+.. toctree::
+   :maxdepth: 2
+
+   install_faq
 
 How to use Brainlit
 -------------------
@@ -200,10 +205,11 @@ Running a specific test, such as ``test_upload.py`` can be done simply by ``ptes
 Contributing
 ------------
 
-Contribution guidelines can be found via `CONTRIBUTING.md <https://github.com/neurodata/brainlit/blob/master/CONTRIBUTING.md>`_
+We welcome all contributors, and encourage them to follow our contribution guidelines found in `CONTRIBUTING.md <https://github.com/neurodata/brainlit/blob/master/CONTRIBUTING.md>`_. Issues with the "good first issue" tag are meant for contributors that are either new to open source coding, or new to the package. Additionally, users are encouraged to use issues not only to discuss code-related problems, but for more general discussions about the package.
 
 Credits
 -------
 
-Thanks to the neurodata team and the group in the neurodata class which started the project.
-This project is currently managed by Tommy Athey and Bijan Varjavand.
+Brainlit is a product of the `neurodata lab <https://neurodata.io/>`_. It is actively maintained by Thomas Athey (`@tathey1 <https://github.com/tathey1>`_) and Bijan Varjavand (`@bvarjavand <https://github.com/bvarjavand>`_), and is regularly used and contributed to by students in the `Neuro Data Design <https://neurodatadesign.io/>`_ course. We strive to follow the same `code of conduct <https://opensource.microsoft.com/codeofconduct/>`_ that applies to the Microsoft open source community.
+
+

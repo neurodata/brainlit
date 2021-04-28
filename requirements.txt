@@ -1,11 +1,21 @@
 black==20.8b1
 brotlipy==0.7.0
 cloud-volume==1.6.0
+codecov==2.1.11
+compressed-segmentation==1.0.0
+coverage==5.0.3
+cryptography==3.3.2
+cycler==0.10.0
+dask==2.10.1
+decorator==4.4.1
+docutils==0.15.2
+fastremap==1.8.0
 feather-format==0.4.1
 install-qt-binding==0.0.8
 jupyter==1.0.0
 napari==0.3.7
-nilearn==0.6.2
+nbstripout
+nilearn==0.7.0
 pandas==1.1.2
 PySide2==5.15.1
 # pip-chill==1.0.0

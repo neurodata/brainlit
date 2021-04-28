@@ -58,5 +58,14 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# Documentation notebook data
+docs/notebooks/utils/data
+
 # PyBuilder
 target/
+
+# experiments/axon_geometry
+experiments/axon_geometry/.ipynb_checkpoints/
+experiments/axon_geometry/figures/
+experiments/axon_geometry/data/
+**.ipynb_checkpoints/
