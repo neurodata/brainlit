@@ -58,7 +58,15 @@ class NeuronTrace:
 
     """
 
-    def __init__(self, path, seg_id=None, mip=None, rounding=True, read_offset=False, fill_missing=True):
+    def __init__(
+        self,
+        path,
+        seg_id=None,
+        mip=None,
+        rounding=True,
+        read_offset=False,
+        fill_missing=True,
+    ):
         self.path = path
         self.input_type = None
         self.df = None
@@ -66,7 +74,7 @@ class NeuronTrace:
         self.seg_id = seg_id
         self.mip = mip
         self.rounding = rounding
-        self.fill_missing=fill_missing
+        self.fill_missing = fill_missing
 
         check_type(path, str)
         check_type(seg_id, (type(None), int))
