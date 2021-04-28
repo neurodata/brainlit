@@ -16,15 +16,6 @@ Demonstrate region growing methods using GMM and simple ITK
 
    notebooks/algorithms/adaptive_thresh_tutorial.ipynb
 
-Regression Clasifiers
----------------------
-Demonstrate collecting features and using them for axon classification.
-
-.. toctree::
-   :maxdepth: 1
-
-   notebooks/algorithms/log_regression_classifiers_tutorial
-
 
 .. _preprocessing_tutorials:
 
@@ -39,18 +30,4 @@ These tutorials demonstrate different preprocessing methods: connected component
    notebooks/preprocessing/pcawhitening
    notebooks/preprocessing/windowpad
    notebooks/preprocessing/gaborfilter
-
-
-.. _features_tutorials:
-
-Features
-========
-This tutorial presents feature extraction methods: neighborhood-based and linear filter-based methods.
-
-.. toctree::
-   :maxdepth: 1
-      
-   notebooks/features/features
-
-.. _viz_tutorials:
 
