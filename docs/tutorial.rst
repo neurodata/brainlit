@@ -2,6 +2,20 @@
 Tutorial
 ********
 
+.. _utils_tutorials:
+
+Utils
+=====
+Tutorials showcasing how to use the utils folder.
+
+.. toctree::
+   :maxdepth: 1
+
+   notebooks/utils/uploading_brains
+   notebooks/utils/downloading_brains
+   notebooks/utils/downloading_benchmarking
+   notebooks/utils/uploading_benchmarking
+
 .. _pipeline_tutorials:
 
 Pipelines
