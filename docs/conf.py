@@ -45,7 +45,6 @@ extensions = [
 
 nbsphinx_kernel_name = "python3"
 nbsphinx_allow_errors = True
-nbsphinx_execute = 'never'
 autoapi_dirs = ["../brainlit"]
 autoapi_add_toctree_entry = False
 autoapi_generate_api_docs = False
