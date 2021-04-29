@@ -31,7 +31,7 @@ class NeuroglancerSession:
         url: Precompued path either to a file URI or url URI. Defaults to mouselight brain1.
         mip: Resolution level to pull and push data at. Defaults to 0, the highest resolution.
         url_segments: Precomputed path to segmentation data. Optional, default None.
-        fill_missing: Fill missing values with 0s
+        fill_missing: Always passes directly into 'CloudVolume()' function to fill missing segent/image values with 0s
 
     Attributes:
         url: CloudVolumePrecomputedPath to image data.
