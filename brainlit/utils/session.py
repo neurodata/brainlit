@@ -52,7 +52,7 @@ class NeuroglancerSession:
         check_precomputed(url)
         check_type(mip, (int, np.integer))
         self.url = url
-        self.cv = CloudVolume(url, parallel=False)
+        self.cv = CloudVolume(url, parallel=False, use_https=True)
         if mip < 0 or mip >= len(self.cv.scales):
             raise ValueError(f"{mip} should be between 0 and {len(self.cv.scales)}.")
         self.mip = mip
@@ -62,7 +62,7 @@ class NeuroglancerSession:
         self.url_segments = url_segments
         if url_segments is None:
             try:  # default is to add _segments
-                self.cv_segments = CloudVolume(url + "_segments", parallel=False)
+                self.cv_segments = CloudVolume(url + "_segments", parallel=False, use_https=True)
                 self.url_segments = url + "_segments"
             except InfoUnavailableError:
                 warnings.warn(
@@ -73,7 +73,7 @@ class NeuroglancerSession:
                 self.cv_segments = None
         else:
             check_precomputed(url_segments)
-            self.cv_segments = CloudVolume(url_segments, parallel=False)
+            self.cv_segments = CloudVolume(url_segments, parallel=False, use_https=True)
 
     def _get_voxel(self, seg_id: int, v_id: int) -> Tuple[int, int, int]:
         """Gets coordinates of segment vertex, in voxel space.
@@ -108,7 +108,7 @@ class NeuroglancerSession:
         check_precomputed(seg_url)
 
         self.url_segments = seg_url
-        self.cv_segments = CloudVolume(self.url_segments, parallel=False)
+        self.cv_segments = CloudVolume(self.url_segments, parallel=False, use_https=True)
 
     def get_segments(
         self,
