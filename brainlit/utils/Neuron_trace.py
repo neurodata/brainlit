@@ -92,7 +92,9 @@ class NeuronTrace:
 
         # first check if it is a skel
         if seg_id != None and mip != None:
-            cv = CloudVolume(path, mip=mip, fill_missing=fill_missing, use_https=self.use_https)
+            cv = CloudVolume(
+                path, mip=mip, fill_missing=fill_missing, use_https=self.use_https
+            )
             skeleton = cv.skeleton.get(seg_id)
             if type(skeleton) is Skeleton:
                 self.input_type = "skel"
