@@ -66,6 +66,7 @@ class NeuronTrace:
         rounding=True,
         read_offset=False,
         fill_missing=True,
+        use_https=True,
     ):
         self.path = path
         self.input_type = None
@@ -75,6 +76,7 @@ class NeuronTrace:
         self.mip = mip
         self.rounding = rounding
         self.fill_missing = fill_missing
+        self.use_https = use_https
 
         check_type(path, str)
         check_type(seg_id, (type(None), int))
@@ -90,7 +92,7 @@ class NeuronTrace:
 
         # first check if it is a skel
         if seg_id != None and mip != None:
-            cv = CloudVolume(path, mip=mip, fill_missing=fill_missing, use_https=True)
+            cv = CloudVolume(path, mip=mip, fill_missing=fill_missing, use_https=self.use_https)
             skeleton = cv.skeleton.get(seg_id)
             if type(skeleton) is Skeleton:
                 self.input_type = "skel"
@@ -741,7 +743,7 @@ class NeuronTrace:
 
         # check input
         cv = CloudVolume(
-            s3_path, mip=mip, fill_missing=self.fill_missing, use_https=True
+            s3_path, mip=mip, fill_missing=self.fill_missing, use_https=self.use_https
         )
         skeleton = cv.skeleton.get(seg_id)
         swc_string = skeleton.to_swc()

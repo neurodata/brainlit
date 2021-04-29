@@ -50,12 +50,14 @@ class NeuroglancerSession:
         mip: int = 0,
         url_segments: Optional[str] = None,
         fill_missing: bool = True,
+        use_https: bool = True,
     ):
         check_precomputed(url)
         check_type(mip, (int, np.integer))
         self.url = url
+        self.use_https = use_https
         self.cv = CloudVolume(
-            url, parallel=False, fill_missing=fill_missing, use_https=True
+            url, parallel=False, fill_missing=fill_missing, use_https=self.use_https
         )
         if mip < 0 or mip >= len(self.cv.scales):
             raise ValueError(f"{mip} should be between 0 and {len(self.cv.scales)}.")
@@ -71,7 +73,7 @@ class NeuroglancerSession:
                     url + "_segments",
                     parallel=False,
                     fill_missing=fill_missing,
-                    use_https=True,
+                    use_https=self.use_https,
                 )
                 self.url_segments = url + "_segments"
             except InfoUnavailableError:
@@ -84,7 +86,10 @@ class NeuroglancerSession:
         else:
             check_precomputed(url_segments)
             self.cv_segments = CloudVolume(
-                url_segments, parallel=False, fill_missing=fill_missing, use_https=True
+                url_segments,
+                parallel=False,
+                fill_missing=fill_missing,
+                use_https=self.use_https,
             )
 
     def _get_voxel(self, seg_id: int, v_id: int) -> Tuple[int, int, int]:
@@ -124,7 +129,7 @@ class NeuroglancerSession:
             self.url_segments,
             parallel=False,
             fill_missing=self.fill_missing,
-            use_https=True,
+            use_https=self.use_https,
         )
 
     def get_segments(
@@ -149,7 +154,7 @@ class NeuroglancerSession:
         if self.cv_segments is None:
             raise ValueError("Cannot get segments without segmentation data.")
         s3_trace = Neuron_trace.NeuronTrace(
-            self.url_segments, seg_id, self.mip, rounding
+            self.url_segments, seg_id, self.mip, rounding, use_https=self.use_https
         )
 
         G = s3_trace.get_graph()
