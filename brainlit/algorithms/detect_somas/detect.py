@@ -6,11 +6,10 @@ from skimage import filters, morphology, measure
 import pandas as pd
 from scipy import ndimage
 
-from brainlit.utils.util import check_type
+from brainlit.utils.util import check_type, check_iterable_type
 
-def find_somas(
-    volume: np.ndarray, res: np.ndarray
-) -> Tuple[int, np.ndarray, np.ndarray]:
+
+def find_somas(volume: np.ndarray, res: list) -> Tuple[int, np.ndarray, np.ndarray]:
     r"""Find bright neuron somas in an input volume.
 
     This simple soma detector assumes that somas are brighter than the
@@ -35,41 +34,39 @@ def find_somas(
     volume : numpy.ndarray
         The 3D image array to run the detector on.
 
-    res : numpy.ndarray
-        A `1 x 3` array containing the resolution of each voxel in `nm`.
+    res : list
+        A `1 x 3` list containing the resolution of each voxel in `nm`.
 
     Returns
     -------
     label : bool
         A boolean value indicating whether the detector found any somas in the input volume.
-    
+
     rel_centroids : numpy.ndarray
-        A `N x 3` list containing the relative voxel positions of the detected somas.
-    
+        A `N x 3` array containing the relative voxel positions of the detected somas.
+
     out : numpy.ndarray
         A `160 x 160 x 50` array containing the detection mask.
     """
 
-    res = np.ascontiguousarray(res)
-    volume = np.ascontiguousarray(volume)
-
     check_type(volume, np.ndarray)
+    check_iterable_type(volume.flatten(), (int, float))
     volume_dim = volume.ndim
     if volume_dim != 3:
-        raise ValueError("volume must be three-dimensional")
+        raise ValueError("Input volume must be three-dimensional")
     if volume.shape[0] < 20 or volume.shape[1] < 20:
         raise ValueError("Input volume is too small")
 
-    check_type(res, np.ndarray)
-
-    if np.any(res == 0):
-        raise ValueError("Resolution ")
+    check_type(res, list)
+    check_iterable_type(res, (int, float))
+    if len(res) != 3:
+        raise ValueError("Resolution must be three-dimensional")
+    if np.any([el == 0 for el in res]):
+        raise ValueError("Resolution must be non-zero at every position")
 
     desired_size = np.array([160, 160, 50])
     zoom_factors = np.divide(desired_size, volume.shape)
-    print(res)
     res = np.divide(res, zoom_factors)
-    print(res)
     out = ndimage.zoom(volume, zoom=zoom_factors)
     # 1) binarize volume using Otsu's method
     t = filters.threshold_otsu(out)
