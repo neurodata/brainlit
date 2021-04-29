@@ -30,6 +30,16 @@ Demonstrate pulling data and pushing traced annotations.
 
    notebooks/pipelines/seg_pipeline_demo
 
+Segmentation
+------------
+Notebooks showing how to manually and automatically segment data.
+
+.. toctree::
+   :maxdepth: 1
+
+   notebooks/pipelines/manual_segmentation
+   notebooks/pipelines/tubes_feature_extraction_demo
+
 .. _algorithm_tutorials:
 
 Algorithms
