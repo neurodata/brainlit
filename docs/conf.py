@@ -75,7 +75,7 @@ intersphinx_mapping = {
 
 # -- sphinx options ----------------------------------------------------------
 source_suffix = ".rst"
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints", "notebooks/pipelines", "notebooks/utils"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints", "notebooks/utils"]
 master_doc = "index"
 source_encoding = "utf-8"
 

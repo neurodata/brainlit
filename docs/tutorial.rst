@@ -2,6 +2,20 @@
 Tutorial
 ********
 
+.. _pipeline_tutorials:
+
+Pipelines
+=========
+
+Semi-automatic Annotation Pipeline
+----------------------------------
+Demonstrate pulling data and pushing traced annotations.
+
+.. toctree::
+   :maxdepth: 1
+
+   notebooks/pipelines/seg_pipeline_demo
+
 .. _algorithm_tutorials:
 
 Algorithms
