@@ -12,7 +12,7 @@ from skimage.io import imsave
 
 import matplotlib.pyplot as plt
 
-from detect import find_somas
+from brainlit.algorithms.detect_somas import find_somas
 
 viz = True
 mip = 1
@@ -87,7 +87,7 @@ def classify(brain):
             soma_coords = np.load(vol_filepath, allow_pickle=True)
 
             for mip in range(1, 7):
-                print(mip)
+                print(mip, brain_url, segments_url)
                 ngl_sess = NeuroglancerSession(
                     mip=mip, url=brain_url, url_segments=segments_url
                 )
