@@ -19,17 +19,19 @@ class NeuronTrace:
     Arguments
     ---------
         path : str
-            Path to either s3 bucket (url) or swc file (filepath)
+            Path to either s3 bucket (url) or swc file (filepath).
         seg_id : int
-            If s3 bucket path is provided, the segment number to pull, default None
+            If s3 bucket path is provided, the segment number to pull, default None.
         mip : int
-            If s3 bucket path is provided, the resolution to use for scaling, default None
-        rounding: bool
+            If s3 bucket path is provided, the resolution to use for scaling, default None.
+        rounding : bool
             If s3 is provided, specifies if it should be rounded, default True
-        read_offset: bool
-            If swc is provided, whether offset should be read from file, default False
+        read_offset : bool
+            If swc is provided, whether offset should be read from file, default False.
         fill_missing: bool
-            Always passes directly into 'CloudVolume()' function to fill missing skeleton values with 0s
+            Always passes directly into 'CloudVolume()' function to fill missing skeleton values with 0s, default True.
+        use_https : bool
+            Always passes directly into 'CloudVolume()' function to set use_https to desired value, default True.
 
     Attributes
     ----------
