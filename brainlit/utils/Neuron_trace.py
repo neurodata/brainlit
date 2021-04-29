@@ -29,7 +29,7 @@ class NeuronTrace:
         read_offset: bool
             If swc is provided, whether offset should be read from file, default False
         fill_missing: bool
-            Fill missing values with 0s
+            Always passes directly into 'CloudVolume()' function to fill missing skeleton values with 0s
 
     Attributes
     ----------
