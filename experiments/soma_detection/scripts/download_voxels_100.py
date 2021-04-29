@@ -10,8 +10,8 @@ import time
 from tqdm import tqdm
 import napari
 
-
 upload = False
+viz = False
 
 cwd = Path(os.path.abspath(__file__))
 exp_dir = cwd.parents[1]
@@ -109,22 +109,23 @@ for brain in brains[:1]:
             ]
         )
         # visualize volumes with points on top of somas
-        # if len(rel_vox_c) > 1:
-        #     with napari.gui_qt():
-        #         viewer = napari.Viewer(ndisplay=3)
-        #         viewer.add_image(volume)
-        #         viewer.add_points(
-        #             rel_vox_c,
-        #             size=5,
-        #             symbol="o",
-        #             face_color=np.array([1, 0, 0, 0.5]),
-        #         )
-        # save dictionary and upload coords to S3
+        if viz:
+            with napari.gui_qt():
+                viewer = napari.Viewer(ndisplay=3)
+                viewer.add_image(volume)
+                viewer.add_points(
+                    rel_vox_c,
+                    size=5,
+                    symbol="o",
+                    face_color=np.array([1, 0, 0, 0.5]),
+                )
+        # save coords
         coords_filename = f"{_min[0]}_{_min[1]}_{_min[2]}_{_max[0]}_{_max[1]}_{_max[2]}"
         coords_path = os.path.join(volumes_dir, f"{coords_filename}.npy")
 
         np.save(coords_path, contained_coords, allow_pickle=True)
 
+        # upload coords to s3
         if upload:
             coords_s3key = f"{somas_prefix}/{coords_filename}"
             print(f"Uploading coordinates to S3...", end="", flush=True)
