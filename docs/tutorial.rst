@@ -31,3 +31,15 @@ These tutorials demonstrate different preprocessing methods: connected component
    notebooks/preprocessing/windowpad
    notebooks/preprocessing/gaborfilter
 
+.. _viz_tutorials:
+
+Vizualization
+=============
+These tutorials demonstrate tools to load and visualize data from s3 buckets or .swc files.
+
+.. toctree::
+   :maxdepth: 1
+
+   notebooks/visualization/loading
+   notebooks/visualization/visualization
+   notebooks/visualization/neighborhood_visualization_demo
