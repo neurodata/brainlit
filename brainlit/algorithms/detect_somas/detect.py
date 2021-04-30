@@ -8,6 +8,7 @@ from scipy import ndimage
 
 from brainlit.utils.util import check_type, check_iterable_type
 
+import matplotlib.pyplot as plt
 
 def find_somas(volume: np.ndarray, res: list) -> Tuple[int, np.ndarray, np.ndarray]:
     r"""Find bright neuron somas in an input volume.
@@ -68,8 +69,9 @@ def find_somas(volume: np.ndarray, res: list) -> Tuple[int, np.ndarray, np.ndarr
     zoom_factors = np.divide(desired_size, volume.shape)
     res = np.divide(res, zoom_factors)
     out = ndimage.zoom(volume, zoom=zoom_factors)
+    out = out / np.max(out.flatten())
     # 1) binarize volume using Otsu's method
-    t = filters.threshold_otsu(out)
+    t = filters.threshold_otsu(out, nbins=256)
     out = out > t
     # 2) erode with structuring element proportional to zoom factors
     selem_size = np.amax(np.ceil(zoom_factors)).astype(int)
