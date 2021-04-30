@@ -50,7 +50,7 @@ def find_somas(volume: np.ndarray, res: list) -> Tuple[int, np.ndarray, np.ndarr
     """
 
     check_type(volume, np.ndarray)
-    check_iterable_type(volume.flatten(), (int, float))
+    check_iterable_type(volume.flatten(), np.uint16)
     volume_dim = volume.ndim
     if volume_dim != 3:
         raise ValueError("Input volume must be three-dimensional")
@@ -78,7 +78,7 @@ def find_somas(volume: np.ndarray, res: list) -> Tuple[int, np.ndarray, np.ndarr
     # 3) identify connected components
     out, num_labels = morphology.label(out, background=0, return_num=True)
     # 4) remove connected components with diameter not in reasonable range, find centroids of candidate regions
-    properties = ["label", "equivalent_diameter", "centroid"]
+    properties = ["label", "equivalent_diameter"]
     props = measure.regionprops_table(out, properties=properties)
     df_props = pd.DataFrame(props)
     rel_centroids = []
@@ -86,18 +86,12 @@ def find_somas(volume: np.ndarray, res: list) -> Tuple[int, np.ndarray, np.ndarr
         l = row["label"]
         d = row["equivalent_diameter"]
         dmu = d * np.mean(res[:1]) / 1000
-        print(dmu)
         if dmu < 5 or dmu >= 21:
             out[out == l] = 0
             num_labels -= 1
         else:
-            centroid = np.array(
-                [
-                    int(row["centroid-0"]),
-                    int(row["centroid-1"]),
-                    int(row["centroid-2"]),
-                ]
-            )
+            ids = np.where(out == l)
+            centroid = np.round([np.median(u) for u in ids]).astype(int)
             centroid = np.divide(centroid, zoom_factors)
             rel_centroids.append(centroid)
     return num_labels > 0, np.array(rel_centroids), out
