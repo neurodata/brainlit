@@ -1,16 +1,15 @@
+import os
 import numpy as np
 from brainlit.algorithms.detect_somas import find_somas
-import brainlit
-from brainlit.utils.session import NeuroglancerSession
-from cloudvolume.lib import Bbox
-import skimage
-from scipy import ndimage
-import os
 from pytest import raises
+from pathlib import Path
 
 dir = "s3://open-neurodata/brainlit/brain1"
 dir_segments = "s3://open-neurodata/brainlit/brain1_segments"
-volume_keys = "4807349.0_3827990.0_2922565.75_4907349.0_3927990.0_3022565.75"
+
+cwd = Path(os.path.abspath(__file__))
+root_dir = cwd.parents[4]
+data_dir = os.path.join(root_dir, "data", "test_detect")
 
 ##############
 ### inputs ###
@@ -59,131 +58,40 @@ def test_find_somas_bad_input():
 
 
 def test_detect_output():
-    # download a volume
-    mip = 3
-    ngl_sess = NeuroglancerSession(
-        mip=mip, url=dir, url_segments=dir_segments, use_https=False
-    )
-    res = ngl_sess.cv_segments.scales[ngl_sess.mip]["resolution"]
-    volume_coords = np.array(os.path.basename(volume_keys).split("_")).astype(float)
-    volume_vox_min = np.round(np.divide(volume_coords[:3], res)).astype(int)
-    volume_vox_max = np.round(np.divide(volume_coords[3:], res)).astype(int)
-    bbox = Bbox(volume_vox_min, volume_vox_max)
-    img = ngl_sess.pull_bounds_img(bbox)
-    # apply soma detector
-    label, rel_centroids, out = find_somas(img, res)
-    # check output type
-    assert type(label) == bool
-    assert type(rel_centroids) == np.ndarray
-    assert type(out) == np.ndarray
-    # check output dimension
-    assert rel_centroids.shape[1] == 3
-    assert out.shape == (160, 160, 50)
+    volume_key = "4807349.0_3827990.0_2922565.75_4907349.0_3927990.0_3022565.75"
+    mips = {
+        1: [597.518465909091, 608.831796875, 1976.8082932692307],
+        2: [1195.036931818182, 1217.66359375, 3953.6165865384614],
+        3: [2390.073863636364, 2435.3271875, 7907.233173076923],
+    }
+    soma = np.load(os.path.join(data_dir, "soma.npy"), allow_pickle=True)
+    for mip in [1, 2, 3]:
+        res = mips[mip]
+        print(res)
 
+        volume_coords = np.array(volume_key.split("_")).astype(float)
+        volume_vox_min = np.round(np.divide(volume_coords[:3], res)).astype(int)
 
-def test_detect_mip3():
-    # download a volume
-    mip = 3
-    ngl_sess = NeuroglancerSession(
-        mip=mip, url=dir, url_segments=dir_segments, use_https=False
-    )
-    res = ngl_sess.cv_segments.scales[ngl_sess.mip]["resolution"]
-    volume_coords = np.array(os.path.basename(volume_keys).split("_")).astype(float)
-    volume_vox_min = np.round(np.divide(volume_coords[:3], res)).astype(int)
-    volume_vox_max = np.round(np.divide(volume_coords[3:], res)).astype(int)
-    bbox = Bbox(volume_vox_min, volume_vox_max)
-    img = ngl_sess.pull_bounds_img(bbox)
-    # apply find_soma()
-    label, rel_centroids, out = find_somas(img, res)
+        img = np.load(os.path.join(data_dir, f"{mip}_volume.npy"), allow_pickle=True)
+        label, rel_pred_centroids, out = find_somas(img, res)
+        # check output type
+        assert type(label) == bool
+        assert type(rel_pred_centroids) == np.ndarray
+        assert type(out) == np.ndarray
+        # check output dimension
+        assert rel_pred_centroids.shape[1] == 3
+        assert out.shape == (160, 160, 50)
+        # check detected somas matche with ground truth
+        pred_centroids = np.array(
+            [np.multiply(volume_vox_min + c, res) for c in rel_pred_centroids]
+        )
 
-    # apply a maually tuned soma detector
-    # threshold at top 5%
-    H = np.sort(np.reshape(img, [1, -1]))
-    thres = H[0, -round((H.shape[1]) * 0.05)]
-    lx, ly, lz = img.shape
-    imgTop5 = np.zeros([lx, ly, lz])
-    for m in range(lx):
-        for n in range(ly):
-            for p in range(lz):
-                if img[m, n, p] < thres:
-                    imgTop5[m, n, p] = 0
-                else:
-                    imgTop5[m, n, p] = img[m, n, p]
-
-    # erosion
-    ero5 = ndimage.binary_erosion(imgTop5, iterations=1)
-    # region label
-    ReLab, NumLab = skimage.measure.label(ero5, return_num=True)
-    # refine the label by region size
-    props = skimage.measure.regionprops(ReLab)
-    CNumLab = NumLab
-    somaCo = []
-    for x in range(NumLab):
-        D = props[x].equivalent_diameter
-        # convert from voxel to micron
-        Dmu = D * np.mean(np.array([res[0], res[1]])) / 1000
-        if Dmu < 11 or Dmu > 21:
-            CNumLab -= 1
-        else:
-            somaCo.append(props[x].centroid)
-
-    # compare the results of the two detectors
-    Dist = np.linalg.norm(somaCo - rel_centroids)
-    # convert from voxel to micron
-    Distmu = Dist * np.mean(np.array([res[0], res[1]])) / 1000
-    # distance of the detected centroids is smaller than 5 mu
-    assert Distmu < 5
-
-
-def test_detect_mip0():
-    # download a volume
-    mip = 0
-    ngl_sess = NeuroglancerSession(
-        mip=mip, url=dir, url_segments=dir_segments, use_https=False
-    )
-    res = ngl_sess.cv_segments.scales[ngl_sess.mip]["resolution"]
-    volume_coords = np.array(os.path.basename(volume_keys).split("_")).astype(float)
-    volume_vox_min = np.round(np.divide(volume_coords[:3], res)).astype(int)
-    volume_vox_max = np.round(np.divide(volume_coords[3:], res)).astype(int)
-    bbox = Bbox(volume_vox_min, volume_vox_max)
-    img = ngl_sess.pull_bounds_img(bbox)
-    # apply find_soma()
-    label, rel_centroids, out = find_somas(img, res)
-
-    # apply a maually tuned soma detector
-    # threshold at top 5%
-    H = np.sort(np.reshape(img, [1, -1]))
-    thres = H[0, -round((H.shape[1]) * 0.05)]
-    lx, ly, lz = img.shape
-    imgTop5 = np.zeros([lx, ly, lz])
-    for m in range(lx):
-        for n in range(ly):
-            for p in range(lz):
-                if img[m, n, p] < thres:
-                    imgTop5[m, n, p] = 0
-                else:
-                    imgTop5[m, n, p] = img[m, n, p]
-
-    # erosion
-    ero5 = ndimage.binary_erosion(imgTop5, iterations=8)
-    # region label
-    ReLab, NumLab = skimage.measure.label(ero5, return_num=True)
-    # refine the label by region size
-    props = skimage.measure.regionprops(ReLab)
-    CNumLab = NumLab
-    somaCo = []
-    for x in range(NumLab):
-        D = props[x].equivalent_diameter
-        # convert from voxel to micron
-        Dmu = D * np.mean(np.array([res[0], res[1]])) / 1000
-        if Dmu < 11 or Dmu > 21:
-            CNumLab -= 1
-        else:
-            somaCo.append(props[x].centroid)
-
-    # compare the results of the two detectors
-    Dist = np.linalg.norm(somaCo - rel_centroids)
-    # convert from voxel to micron
-    Distmu = Dist * np.mean(np.array([res[0], res[1]])) / 1000
-    # distance of the detected centroids is smaller than 5 mu
-    assert Distmu < 5
+        soma_norms = np.linalg.norm(soma, axis=1)
+        pred_norms = np.linalg.norm(pred_centroids, axis=1)
+        match = np.array(
+            [
+                min([abs(prediction - soma) for prediction in pred_norms]) < 5e3
+                for soma in soma_norms
+            ]
+        )
+        assert match.all()
