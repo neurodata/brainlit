@@ -1,14 +1,12 @@
 from typing import Tuple
 
 import numpy as np
-from numpy.core.fromnumeric import ndim
 from skimage import filters, morphology, measure
 import pandas as pd
 from scipy import ndimage
 
 from brainlit.utils.util import check_type, check_iterable_type
 
-import matplotlib.pyplot as plt
 
 def find_somas(volume: np.ndarray, res: list) -> Tuple[int, np.ndarray, np.ndarray]:
     r"""Find bright neuron somas in an input volume.
@@ -48,6 +46,25 @@ def find_somas(volume: np.ndarray, res: list) -> Tuple[int, np.ndarray, np.ndarr
 
     out : numpy.ndarray
         A `160 x 160 x 50` array containing the detection mask.
+
+    Examples
+    --------
+    >>> # download a volume
+    >>> dir = "s3://open-neurodata/brainlit/brain1"
+    >>> dir_segments = "s3://open-neurodata/brainlit/brain1_segments"
+    >>> volume_keys = "4807349.0_3827990.0_2922565.75_4907349.0_3927990.0_3022565.75"
+    >>> mip = 1
+    >>> ngl_sess = NeuroglancerSession(
+    >>>     mip=mip, url=dir, url_segments=dir_segments, use_https=False
+    >>> )
+    >>> res = ngl_sess.cv_segments.scales[ngl_sess.mip]["resolution"]
+    >>> volume_coords = np.array(os.path.basename(volume_keys).split("_")).astype(float)
+    >>> volume_vox_min = np.round(np.divide(volume_coords[:3], res)).astype(int)
+    >>> volume_vox_max = np.round(np.divide(volume_coords[3:], res)).astype(int)
+    >>> bbox = Bbox(volume_vox_min, volume_vox_max)
+    >>> img = ngl_sess.pull_bounds_img(bbox)
+    >>> # apply soma detector
+    >>> label, rel_centroids, out = find_somas(img, res)
     """
 
     check_type(volume, np.ndarray)
@@ -71,7 +88,7 @@ def find_somas(volume: np.ndarray, res: list) -> Tuple[int, np.ndarray, np.ndarr
     out = ndimage.zoom(volume, zoom=zoom_factors)
     out = out / np.max(out.flatten())
     # 1) binarize volume using Otsu's method
-    t = filters.threshold_otsu(out, nbins=256)
+    t = filters.threshold_otsu(out)
     out = out > t
     # 2) erode with structuring element proportional to zoom factors
     selem_size = np.amax(np.ceil(zoom_factors)).astype(int)

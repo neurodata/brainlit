@@ -25,19 +25,17 @@ def test_find_somas_bad_input():
     with raises(TypeError, match=r"should be <class 'numpy.ndarray'>"):
         find_somas(volume, res)
     volume = np.array([1, "a", 2])
-    with raises(
-        TypeError, match=r"elements should be \(<class 'int'>, <class 'float'>\)."
-    ):
+    with raises(TypeError, match=r"elements should be <class 'numpy.uint16'>"):
         find_somas(volume, res)
-    volume = np.zeros((2, 2))
+    volume = np.zeros((2, 2), dtype=np.uint16)
     # test input volume must be three-dimensional
     with raises(ValueError, match=r"Input volume must be three-dimensional"):
         find_somas(volume, res)
-    volume = np.zeros((19, 19, 21))
+    volume = np.zeros((19, 19, 21), dtype=np.uint16)
     # test input volume has to be at least 20x20xNz
     with raises(ValueError, match=r"Input volume is too small"):
         find_somas(volume, res)
-    volume = np.zeros((50, 50, 50))
+    volume = np.zeros((50, 50, 50), dtype=np.uint16)
 
     # test res should be list
     with raises(TypeError, match=r"should be <class 'list'>"):
