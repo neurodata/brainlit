@@ -6,7 +6,6 @@ import SimpleITK as sitk
 from cloudvolume import CloudVolume, view
 from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError
-from pathlib import Path
 from brainlit.utils import Neuron_trace
 from brainlit.algorithms.generate_fragments import tube_seg
 import napari
