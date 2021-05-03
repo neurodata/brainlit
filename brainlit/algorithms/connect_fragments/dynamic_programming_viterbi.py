@@ -31,6 +31,27 @@ import matplotlib.pyplot as plt
 
 class viterbi_algorithm:
     def __init__(self, image, labels, soma_labels, resolution=[1, 1, 1]):
+        """Connects fragments using the viterbi algorithm dynamic programming approach
+    
+        Arguments:
+            image: Intensity data, numpy or python array of shape [x,y,channels]
+            labels: Label data, numpy or python array of shape [x,y,1] where the 3rd channel is labels: 0 background and 1-N objects
+            soma_labels: Dictionary of soma labels and their corresponding coordinates in the imagespace
+            resolution: Scaling factor along each dimension for anisotropic images, numpy vector or python array of 1x3
+    
+        Attributes:
+            num_components: total number of fragment objects
+            image: Image data array
+            labels: Label data array
+            somas: Dictionary of soma labels and their locations in imagespace
+            cost_mat_dist: Distance cost matrix, initialized with -1
+            cost_mat_int: Intensity cost matrix, initialized with -1
+            resolution: Resolution scaling along each dimension
+            connection_mat: Connection matrix of a "from" point to a "to" point
+            end_points: Endpoints dictionary, labels as keys and 2 corresponding coordinates as values
+            not_lines: Dictionary of blob-like objects
+            sigma: Hard-coded variance for converting certain values for a distribution
+        """
 
         num_components = np.amax(labels)
         self.num_components = num_components
@@ -65,7 +86,8 @@ class viterbi_algorithm:
             K (int): number of iterations
             somas (list): list of components that are cell bodies
         Returns:
-            [type]: [description]
+            top_path (cost,{path}): best path of length K starting at start_lbl
+            sort_paths [(cost,{path})]: all paths of length K starting at start_lbl ordered by cost
         """
 
         # Initialize dictionary of paths
@@ -87,6 +109,15 @@ class viterbi_algorithm:
         return top_paths[0], sort_paths
 
     def viterbi_frag_next_layer(self, paths_k, somas):
+        """Query the next layer of paths, up to K layers
+        Args:
+            paths_k {state: (cost, path)}: dict of optimal paths of length k to reach each state
+            somas (list): list of components that are cell bodies
+        Returns:
+            paths_k1 {state: (cost, path)}: dict of paths of length k+1 to reach each state
+            closest_state (int): state to traverse to with lowest cost
+        """
+
         num_components = self.num_components
 
         # This dictionary will store the paths for the next level
@@ -130,23 +161,7 @@ class viterbi_algorithm:
         total_cost = cost_dist + cost_int
         return total_cost
 
-    """
-    def path_has_connection(self,connection,path):
-        l = len(connection)
-        
-        # If the path is < 2 nodes long
-        if l > len(path):
-            return False
-
-        for i in range(len(path) - l + 1):
-            if path[i : i + l] == connection:
-                print("Connection duplicate")
-                return True
-        return False
-    """
-
     def compute_bounds(self, label, pad):
-        """ Currently zmin and zmax are hardcoded as 0,1 for this simple image """
         """compute coordinates of bounding box around a masked object, with given padding
         Args:
             label (np.array): mask of the object
@@ -218,7 +233,7 @@ class viterbi_algorithm:
         self.not_lines = components.difference(components_lines)
 
     def line_line_dist(self, lbl1, lbl2):
-        """
+        """compute distance between line-like objects based on closest endpoints
         Args:
             lbl1 ([type]): [non-soma component]
             lbl2 ([type]): [non-soma component]
@@ -250,7 +265,7 @@ class viterbi_algorithm:
         return dist_cost, loc1, loc2
 
     def line_blob_dist(self, lbl1, lbl2):
-        """
+        """compute distance between line-like and blob-like object based on closest endpoint of line to closest point on blob boundary
         Args:
             lbl1 ([type]): [line component]
             lbl2 ([type]): [soma/blob component]
@@ -319,6 +334,10 @@ class viterbi_algorithm:
         return int_cost
 
     def compute_all_dists(self):
+        """Fills distance matrix for each component-component relationship
+        Args:
+            None
+        """
         for lbl1 in range(1, self.num_components + 1):
             for lbl2 in range(lbl1, self.num_components + 1):
 

@@ -17,5 +17,9 @@ Fragment Generation
 .. autoapifunction:: otsu
 .. autoapifunction:: gmm_seg
 
+.. currentmodule:: brainlit.algorithms.connect_fragments
+
 Connect Fragments
 -----------------
+.. autoapiclass:: viterbi_algorithm
+	:members:
