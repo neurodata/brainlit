@@ -54,6 +54,15 @@ Demonstrate region growing methods using GMM and simple ITK
 
    notebooks/algorithms/adaptive_thresh_tutorial.ipynb
 
+Soma Detection
+--------------
+Demonstrate simple soma detection algorithm on known somas in Janelia dataset, brain1
+
+.. toctree::
+   :maxdepth: 1
+
+   notebooks/algorithms/detect_somas.ipynb
+
 
 .. _preprocessing_tutorials:
 
