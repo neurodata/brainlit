@@ -12,7 +12,7 @@ AUTHOR = (
 )
 AUTHOR_EMAIL = "bvarjav1@jhu.edu"
 URL = "https://github.com/neurodata/brainlit"
-MINIMUM_PYTHON_VERSION = 3, 8  # Minimum of Python 3.7
+MINIMUM_PYTHON_VERSION = 3, 7  # Minimum of Python 3.7
 REQUIRED_PACKAGES = [
     "napari[pyqt5]>=0.2.11",
     "networkx>=2.1",
