@@ -30,29 +30,29 @@ import matplotlib.pyplot as plt
 
 
 class viterbi_algorithm:
-    def __init__(self, image, labels, soma_labels, resolution=[1, 1, 1]):
-        """Connects fragments using the viterbi algorithm dynamic programming approach
-    
-        Arguments:
-            image: Intensity data, numpy or python array of shape [x,y,channels]
-            labels: Label data, numpy or python array of shape [x,y,1] where the 3rd channel is labels: 0 background and 1-N objects
-            soma_labels: Dictionary of soma labels and their corresponding coordinates in the imagespace
-            resolution: Scaling factor along each dimension for anisotropic images, numpy vector or python array of 1x3
-    
-        Attributes:
-            num_components: total number of fragment objects
-            image: Image data array
-            labels: Label data array
-            somas: Dictionary of soma labels and their locations in imagespace
-            cost_mat_dist: Distance cost matrix, initialized with -1
-            cost_mat_int: Intensity cost matrix, initialized with -1
-            resolution: Resolution scaling along each dimension
-            connection_mat: Connection matrix of a "from" point to a "to" point
-            end_points: Endpoints dictionary, labels as keys and 2 corresponding coordinates as values
-            not_lines: Dictionary of blob-like objects
-            sigma: Hard-coded variance for converting certain values for a distribution
-        """
+    """Connects fragments using the viterbi algorithm dynamic programming approach
 
+    Arguments:
+        image: Intensity data, numpy or python array of shape [x,y,channels]
+        labels: Label data, numpy or python array of shape [x,y,1] where the 3rd channel is labels: 0 background and 1-N objects
+        soma_labels: Dictionary of soma labels and their corresponding coordinates in the imagespace
+        resolution: Scaling factor along each dimension for anisotropic images, numpy vector or python array of 1x3
+
+    Attributes:
+        num_components: total number of fragment objects
+        image: Image data array
+        labels: Label data array
+        somas: Dictionary of soma labels and their locations in imagespace
+        cost_mat_dist: Distance cost matrix, initialized with -1
+        cost_mat_int: Intensity cost matrix, initialized with -1
+        resolution: Resolution scaling along each dimension
+        connection_mat: Connection matrix of a "from" point to a "to" point
+        end_points: Endpoints dictionary, labels as keys and 2 corresponding coordinates as values
+        not_lines: Dictionary of blob-like objects
+        sigma: Hard-coded variance for converting certain values for a distribution
+    """
+
+    def __init__(self, image, labels, soma_labels, resolution=[1, 1, 1]):
         num_components = np.amax(labels)
         self.num_components = num_components
         self.image = image
