@@ -69,10 +69,3 @@ experiments/axon_geometry/.ipynb_checkpoints/
 experiments/axon_geometry/figures/
 experiments/axon_geometry/data/
 **.ipynb_checkpoints/
-
-# experiments/soma_detection
-experiments/soma_detection/.ipynb_checkpoints/
-experiments/soma_detection/figures/
-experiments/soma_detection/data/
-experiments/soma_detection/secrets/
-**.ipynb_checkpoints/

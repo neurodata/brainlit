@@ -1,5 +1,4 @@
 black==20.8b1
-boto3==1.4.7
 brotlipy==0.7.0
 cloud-volume==1.6.0
 codecov==2.1.11

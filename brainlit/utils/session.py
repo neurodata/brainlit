@@ -6,6 +6,7 @@ import SimpleITK as sitk
 from cloudvolume import CloudVolume, view
 from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError
+from pathlib import Path
 from brainlit.utils import Neuron_trace
 from brainlit.algorithms.generate_fragments import tube_seg
 import napari
@@ -30,8 +31,6 @@ class NeuroglancerSession:
         url: Precompued path either to a file URI or url URI. Defaults to mouselight brain1.
         mip: Resolution level to pull and push data at. Defaults to 0, the highest resolution.
         url_segments: Precomputed path to segmentation data. Optional, default None.
-        fill_missing: Always passes directly into 'CloudVolume()' function to fill missing segent/image values with 0s.
-        use_https: Always passes directly into 'CloudVolume()' function to set use_https to the desired value.
 
     Attributes:
         url: CloudVolumePrecomputedPath to image data.
@@ -49,32 +48,21 @@ class NeuroglancerSession:
         url: str,  #  = "s3://open-neurodata/brainlit/brain1"
         mip: int = 0,
         url_segments: Optional[str] = None,
-        fill_missing: bool = True,
-        use_https: bool = True,
     ):
         check_precomputed(url)
         check_type(mip, (int, np.integer))
         self.url = url
-        self.use_https = use_https
-        self.cv = CloudVolume(
-            url, parallel=False, fill_missing=fill_missing, use_https=self.use_https
-        )
+        self.cv = CloudVolume(url, parallel=False)
         if mip < 0 or mip >= len(self.cv.scales):
             raise ValueError(f"{mip} should be between 0 and {len(self.cv.scales)}.")
         self.mip = mip
-        self.fill_missing = fill_missing
         self.chunk_size = self.cv.scales[self.mip]["chunk_sizes"][0]
         self.scales = self.cv.scales[self.mip]["resolution"]
 
         self.url_segments = url_segments
         if url_segments is None:
             try:  # default is to add _segments
-                self.cv_segments = CloudVolume(
-                    url + "_segments",
-                    parallel=False,
-                    fill_missing=fill_missing,
-                    use_https=self.use_https,
-                )
+                self.cv_segments = CloudVolume(url + "_segments", parallel=False)
                 self.url_segments = url + "_segments"
             except InfoUnavailableError:
                 warnings.warn(
@@ -85,12 +73,7 @@ class NeuroglancerSession:
                 self.cv_segments = None
         else:
             check_precomputed(url_segments)
-            self.cv_segments = CloudVolume(
-                url_segments,
-                parallel=False,
-                fill_missing=fill_missing,
-                use_https=self.use_https,
-            )
+            self.cv_segments = CloudVolume(url_segments, parallel=False)
 
     def _get_voxel(self, seg_id: int, v_id: int) -> Tuple[int, int, int]:
         """Gets coordinates of segment vertex, in voxel space.
@@ -125,12 +108,7 @@ class NeuroglancerSession:
         check_precomputed(seg_url)
 
         self.url_segments = seg_url
-        self.cv_segments = CloudVolume(
-            self.url_segments,
-            parallel=False,
-            fill_missing=self.fill_missing,
-            use_https=self.use_https,
-        )
+        self.cv_segments = CloudVolume(self.url_segments, parallel=False)
 
     def get_segments(
         self,
@@ -154,7 +132,7 @@ class NeuroglancerSession:
         if self.cv_segments is None:
             raise ValueError("Cannot get segments without segmentation data.")
         s3_trace = Neuron_trace.NeuronTrace(
-            self.url_segments, seg_id, self.mip, rounding, use_https=self.use_https
+            self.url_segments, seg_id, self.mip, rounding
         )
 
         G = s3_trace.get_graph()

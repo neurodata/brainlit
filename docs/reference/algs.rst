@@ -19,10 +19,3 @@ Fragment Generation
 
 Connect Fragments
 -----------------
-
-.. currentmodule:: brainlit.algorithms.detect_somas
-
-Soma Detection
---------------
-
-.. autoapifunction:: find_somas

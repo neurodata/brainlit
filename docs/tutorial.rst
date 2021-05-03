@@ -11,6 +11,7 @@ Tutorials showcasing how to use the utils folder.
 .. toctree::
    :maxdepth: 1
 
+   notebooks/utils/utils
    notebooks/utils/uploading_brains
    notebooks/utils/downloading_brains
    notebooks/utils/downloading_benchmarking
@@ -40,6 +41,7 @@ Notebooks showing how to manually and automatically segment data.
    notebooks/pipelines/manual_segmentation
    notebooks/pipelines/tubes_feature_extraction_demo
 
+
 .. _algorithm_tutorials:
 
 Algorithms
@@ -54,14 +56,14 @@ Demonstrate region growing methods using GMM and simple ITK
 
    notebooks/algorithms/adaptive_thresh_tutorial.ipynb
 
-Soma Detection
---------------
-Demonstrate simple soma detection algorithm on known somas in Janelia dataset, brain1
+Regression Clasifiers
+---------------------
+Demonstrate collecting features and using them for axon classification.
 
 .. toctree::
    :maxdepth: 1
 
-   notebooks/algorithms/detect_somas.ipynb
+   notebooks/algorithms/log_regression_classifiers_tutorial
 
 
 .. _preprocessing_tutorials:
@@ -77,6 +79,18 @@ These tutorials demonstrate different preprocessing methods: connected component
    notebooks/preprocessing/pcawhitening
    notebooks/preprocessing/windowpad
    notebooks/preprocessing/gaborfilter
+
+
+.. _features_tutorials:
+
+Features
+========
+This tutorial presents feature extraction methods: neighborhood-based and linear filter-based methods.
+
+.. toctree::
+   :maxdepth: 1
+      
+   notebooks/features/features
 
 .. _viz_tutorials:
 
