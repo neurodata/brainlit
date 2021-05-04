@@ -23,3 +23,10 @@ Connect Fragments
 -----------------
 .. autoapiclass:: viterbi_algorithm
 	:members:
+
+.. currentmodule:: brainlit.algorithms.detect_somas
+
+Soma Detection
+--------------
+
+.. autoapifunction:: find_somas

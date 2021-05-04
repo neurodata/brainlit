@@ -34,7 +34,7 @@ class viterbi_algorithm:
 
     Arguments:
         image: Intensity data, numpy or python array of shape [x,y,channels]
-        labels: Label data, numpy or python array of shape [x,y,1] where the 3rd channel is labels: 0 background and 1-N objects
+        labels: Label data, numpy or python array of shape [x,y,1] where the 3rd channel is labels: 0 for background and 1...N for fragments
         soma_labels: Dictionary of soma labels and their corresponding coordinates in the imagespace
         resolution: Scaling factor along each dimension for anisotropic images, numpy vector or python array of 1x3
 
@@ -151,7 +151,14 @@ class viterbi_algorithm:
 
         return paths_k1, closest_state
 
-    def path_cost(self, prev_state, state, path, somas):
+    def path_cost(self, prev_state, state, somas):
+        """compute the cost of traversing to a state
+        Args:
+            prev_state (int): The label corresponding to the state we're coming from
+            state (int): The label corresponding to the state we're going to
+        Returns:
+            total_cost (float): The cost of traversing from prev_state to state
+        """
         cost_dist = self.cost_mat_dist[prev_state, state]
         cost_int = self.cost_mat_int[prev_state, state]
 
