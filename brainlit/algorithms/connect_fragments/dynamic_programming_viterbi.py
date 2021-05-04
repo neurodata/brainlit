@@ -6,27 +6,14 @@ Created on Wed Feb 10 21:47:47 2021
 """
 
 import numpy as np
-from itertools import combinations
-from graspy.match import GraphMatch as GMP
-import networkx as nx
 import scipy.ndimage as ndi
-from sklearn.metrics import pairwise_distances_argmin_min
 import warnings
 import math
-from sklearn.metrics import pairwise_distances_argmin_min, pairwise_distances
 from sklearn.manifold import SpectralEmbedding
 from mouselight_code.src.swc2voxel import Bresenham3D
 
-# from mouselight_code.src.visualize import napari_viewer
-from scipy import spatial
 from scipy.special import logsumexp
-from tqdm import tqdm
-from sklearn.decomposition import PCA
-from skimage import measure
 from skimage import morphology
-import time
-
-import matplotlib.pyplot as plt
 
 
 class viterbi_algorithm:
@@ -134,7 +121,7 @@ class viterbi_algorithm:
                 path = paths_k[prev_state][1].copy()
                 # Calculate the cost to traverse
                 length = paths_k[prev_state][0] + self.path_cost(
-                    prev_state, state, path, somas
+                    prev_state, state, somas
                 )
 
                 path.append(state)
