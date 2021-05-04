@@ -216,6 +216,7 @@ def testConnections():
                 assert np.inf == alg.cost_mat_dist[i, j]
                 assert np.inf == alg.cost_mat_int[i, j]
 
+
 def testEndpoints():
     alg3 = grid_builder("3")
     alg3.frags_to_lines_le_skel([2])

@@ -11,6 +11,7 @@ from brainlit.algorithms.connect_fragments.dynamic_programming_viterbi import (
     viterbi_algorithm,
 )
 
+
 def grid_gen(grid_id=10):
     if grid_id == 10:
         """ Generates a 10x10x2 grid with a small assortment of labels"""
