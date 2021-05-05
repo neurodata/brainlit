@@ -198,7 +198,7 @@ class NeuronTrace:
             return skel
         elif self.input_type == "skel":
             cv = CloudVolume(
-                self.path, mip=self.mip, fill_missing=self.fill_missing, self.use_https
+                self.path, mip=self.mip, fill_missing=self.fill_missing, use_https=self.use_https
             )
             skel = cv.skeleton.get(self.seg_id)
             return skel
