@@ -24,8 +24,8 @@ rounding_bad = "asdf"
 path_bad_string = "asdf"
 path_bad_nonstring = 3
 
-test_swc = NeuronTrace(swc_path)
-test_s3 = NeuronTrace(url_seg, seg_id, mip)
+test_swc = NeuronTrace(swc_path,use_https=False)
+test_s3 = NeuronTrace(url_seg, seg_id, mip,use_https=False)
 
 ####################
 ### input checks ###
