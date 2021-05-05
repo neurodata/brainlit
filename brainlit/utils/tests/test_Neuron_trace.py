@@ -10,7 +10,7 @@ import pytest
 from pathlib import Path
 import networkx.algorithms.isomorphism as iso
 
-swc_path = "./../../../data/data_octree/consensus-swcs/2018-08-01_G-002_consensus.swc"
+swc_path = "./data/data_octree/consensus-swcs/2018-08-01_G-002_consensus.swc"
 
 
 url_seg = 's3://open-neurodata/brainlit/brain1_segments'
@@ -24,7 +24,7 @@ rounding_bad = "asdf"
 path_bad_string = "asdf"
 path_bad_nonstring = 3
 
-test_swc = NeuronTrace(path=swc_path)
+test_swc = NeuronTrace(swc_path)
 test_s3 = NeuronTrace(url_seg, seg_id, mip)
 
 ####################
