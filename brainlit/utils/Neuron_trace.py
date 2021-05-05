@@ -67,7 +67,7 @@ class NeuronTrace:
         rounding=True,
         read_offset=False,
         fill_missing=True,
-        use_https=True,
+        use_https=False,
     ):
         self.path = path
         self.input_type = None
