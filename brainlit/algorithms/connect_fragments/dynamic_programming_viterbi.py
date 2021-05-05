@@ -10,7 +10,7 @@ import scipy.ndimage as ndi
 import warnings
 import math
 from sklearn.manifold import SpectralEmbedding
-from mouselight_code.src.swc2voxel import Bresenham3D
+from brainlit.viz.swc2voxel import Bresenham3D
 
 from scipy.special import logsumexp
 from skimage import morphology
@@ -310,7 +310,12 @@ class viterbi_algorithm:
 
         # Use bresenham3D to "draw" a line in 3D
         xlist, ylist, zlist = Bresenham3D(
-            loc1[0], loc1[1], loc1[2], loc2[0], loc2[1], loc2[2]
+            int(loc1[0]),
+            int(loc1[1]),
+            int(loc1[2]),
+            int(loc2[0]),
+            int(loc2[1]),
+            int(loc2[2]),
         )
         # Calculate the intensity cost along the line
         ints = self.image[xlist, ylist, zlist]
