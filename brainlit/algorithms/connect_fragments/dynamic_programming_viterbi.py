@@ -89,7 +89,10 @@ class viterbi_algorithm:
         for step in np.arange(K):
             all_paths.append(paths_k)
 
-            paths_k, closest_state = self.viterbi_frag_next_layer(paths_k, somas,)
+            paths_k, closest_state = self.viterbi_frag_next_layer(
+                paths_k,
+                somas,
+            )
 
         sort_paths = sorted(paths_k.items(), key=lambda x: x[1][0])
         top_paths = [entry[1] for entry in sort_paths[:1]]

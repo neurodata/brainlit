@@ -14,7 +14,7 @@ from brainlit.algorithms.connect_fragments.dynamic_programming_viterbi import (
 
 def grid_gen(grid_id=10):
     if grid_id == 10:
-        """ Generates a 10x10x2 grid with a small assortment of labels"""
+        """Generates a 10x10x2 grid with a small assortment of labels"""
         # 10x10x2 image, with 1 color channel greyscale
         grid = np.zeros((10, 10, 2))
         labels = np.zeros((10, 10, 2))
@@ -69,7 +69,7 @@ def grid_gen(grid_id=10):
         somas = {5: [(9, 9, 0)]}
 
     if grid_id == 102:
-        """ Generates a 10x10x2 grid with a small assortment of labels"""
+        """Generates a 10x10x2 grid with a small assortment of labels"""
         # 10x10x2 image, with 1 color channel greyscale
         grid = np.zeros((10, 10, 2))
         labels = np.zeros((10, 10, 2))
@@ -125,7 +125,7 @@ def grid_gen(grid_id=10):
         somas = {5: [(9, 9, 0)]}
 
     if grid_id == 20:
-        """ Generates a 20x20x2 grid with a small assortment of labels"""
+        """Generates a 20x20x2 grid with a small assortment of labels"""
         # 20x20x2 image, with 1 color channel greyscale
         grid = np.zeros((20, 20, 2))
         labels = np.zeros((20, 20, 2))
@@ -161,7 +161,7 @@ def grid_gen(grid_id=10):
         somas = {4: [(19, 19, 0)]}
 
     if grid_id == 100:
-        """ Generates a 100x100x2 grid with 2 labels along the diagonal"""
+        """Generates a 100x100x2 grid with 2 labels along the diagonal"""
         """ and one soma """
         # 100x100x2 image, with 1 color channel greyscale
         grid = np.zeros((100, 100, 2))
@@ -314,7 +314,7 @@ def grid_gen3D(grid_id=10):
 
 
 def grid_builder(grid_id="0"):
-    """ Setting up the image environment """
+    """Setting up the image environment"""
     alg = None
     if (grid_id == "0") or (grid_id == "0.5"):
         img, lbls, _, somas = grid_gen(10)
@@ -371,7 +371,12 @@ def grid_builder(grid_id="0"):
             alg.end_points = endpoints
 
     if (grid_id == "2_3") or (grid_id == "2_3.5"):
-        img, lbls, _, somas, = grid_gen3D(25)
+        (
+            img,
+            lbls,
+            _,
+            somas,
+        ) = grid_gen3D(25)
         endpoints = {}
         endpoints[1] = ((0, 0, 0), (4, 0, 0))
 
