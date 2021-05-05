@@ -8,7 +8,7 @@ matrix:
     - python: 3.8
 cache: pip
 before_install:
-  - "./.aws.sh"
+  - ./.aws.sh
 install:
   - pip install -r requirements.txt
   - pip install -U pytest pytest-cov pytest-doctestplus codecov six

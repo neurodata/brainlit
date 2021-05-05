@@ -56,5 +56,5 @@ jobs:
           name: aws key
           # This assumes pytest is installed via the install-package step above
           command: |
-            "./.aws.sh"
+            ./.aws.sh
 
