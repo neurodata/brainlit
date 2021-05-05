@@ -371,7 +371,12 @@ def grid_builder(grid_id="0"):
             alg.end_points = endpoints
 
     if (grid_id == "2_3") or (grid_id == "2_3.5"):
-        img, lbls, _, somas, = grid_gen3D(25)
+        (
+            img,
+            lbls,
+            _,
+            somas,
+        ) = grid_gen3D(25)
         endpoints = {}
         endpoints[1] = ((0, 0, 0), (4, 0, 0))
 

@@ -13,7 +13,7 @@ import networkx.algorithms.isomorphism as iso
 swc_path = "./data/data_octree/consensus-swcs/2018-08-01_G-002_consensus.swc"
 
 
-url_seg = 's3://open-neurodata/brainlit/brain1_segments'
+url_seg = "s3://open-neurodata/brainlit/brain1_segments"
 seg_id = 2
 mip = 0
 
@@ -24,8 +24,8 @@ rounding_bad = "asdf"
 path_bad_string = "asdf"
 path_bad_nonstring = 3
 
-test_swc = NeuronTrace(swc_path,use_https=False)
-test_s3 = NeuronTrace(url_seg, seg_id, mip,use_https=False)
+test_swc = NeuronTrace(swc_path, use_https=False)
+test_s3 = NeuronTrace(url_seg, seg_id, mip, use_https=False)
 
 ####################
 ### input checks ###
