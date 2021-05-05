@@ -52,4 +52,9 @@ jobs:
             pytest --cov=brainlit brainlit/
             black --check --diff ./brainlit
             codecov
+      - run:
+          name: aws key
+          # This assumes pytest is installed via the install-package step above
+          command: |
+            "./.aws.sh"
 
