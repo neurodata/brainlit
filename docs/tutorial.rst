@@ -53,6 +53,15 @@ Demonstrate region growing methods using GMM and simple ITK
    :maxdepth: 1
 
    notebooks/algorithms/adaptive_thresh_tutorial.ipynb
+   
+Connecting Fragments
+---------------------
+Demonstrate fragment path connections using Viterbi algorithm on a simple grid example
+
+.. toctree::
+   :maxdepth: 1
+
+   notebooks/algorithms/viterbi_tutorial.ipynb
 
 Soma Detection
 --------------
