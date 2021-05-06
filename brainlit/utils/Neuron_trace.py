@@ -67,7 +67,7 @@ class NeuronTrace:
         rounding=True,
         read_offset=False,
         fill_missing=True,
-        use_https=True,
+        use_https=False,
     ):
         self.path = path
         self.input_type = None
@@ -94,7 +94,7 @@ class NeuronTrace:
         # first check if it is a skel
         if seg_id != None and mip != None:
             cv = CloudVolume(
-                path, mip=mip, fill_missing=fill_missing, use_https=self.use_https
+                path, mip=mip, fill_missing=fill_missing, use_https=use_https
             )
             skeleton = cv.skeleton.get(seg_id)
             if type(skeleton) is Skeleton:
@@ -198,7 +198,10 @@ class NeuronTrace:
             return skel
         elif self.input_type == "skel":
             cv = CloudVolume(
-                self.path, mip=self.mip, fill_missing=self.fill_missing, use_https=True
+                self.path,
+                mip=self.mip,
+                fill_missing=self.fill_missing,
+                use_https=self.use_https,
             )
             skel = cv.skeleton.get(self.seg_id)
             return skel
