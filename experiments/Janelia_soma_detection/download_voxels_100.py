@@ -14,8 +14,9 @@ import napari
 upload = False
 
 cwd = Path(os.path.abspath(__file__))
-exp_dir = cwd.parents[1]
+exp_dir = cwd.parents[0]
 data_dir = os.path.join(exp_dir, "data")
+
 
 if os.path.exists(data_dir) is False:
     os.makedirs(data_dir)
