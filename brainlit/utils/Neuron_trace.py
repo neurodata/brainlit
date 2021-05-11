@@ -10,6 +10,7 @@ from brainlit.utils.util import (
     check_size,
 )
 from sklearn.metrics import pairwise_distances_argmin_min
+import warnings
 
 
 class NeuronTrace:
@@ -706,7 +707,8 @@ class NeuronTrace:
             header_length += 1
 
         if not offset_found:
-            raise IOError("No offset information found in: " + path)
+            warnings.warn("No offset information found in: " + path)
+            offset = [float(0) for i in range(3)]
         # read coordinates
         df = pd.read_table(
             path,
