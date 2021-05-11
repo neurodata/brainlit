@@ -714,7 +714,7 @@ class NeuronTrace:
             path,
             names=["sample", "structure", "x", "y", "z", "r", "parent"],
             skiprows=header_length,
-            delimiter=" ",
+            delimiter="\s+",
         )
         return df, offset, color, cc, branch
 
