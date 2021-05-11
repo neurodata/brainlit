@@ -17,5 +17,16 @@ Fragment Generation
 .. autoapifunction:: otsu
 .. autoapifunction:: gmm_seg
 
+.. currentmodule:: brainlit.algorithms.connect_fragments
+
 Connect Fragments
 -----------------
+.. autoapiclass:: viterbi_algorithm
+	:members:
+
+.. currentmodule:: brainlit.algorithms.detect_somas
+
+Soma Detection
+--------------
+
+.. autoapifunction:: find_somas

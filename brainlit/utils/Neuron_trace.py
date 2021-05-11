@@ -1,5 +1,4 @@
 import numpy as np
-from pathlib import Path
 import re
 import pandas as pd
 import networkx as nx
@@ -11,6 +10,7 @@ from brainlit.utils.util import (
     check_size,
 )
 from sklearn.metrics import pairwise_distances_argmin_min
+import warnings
 
 
 class NeuronTrace:
@@ -19,17 +19,19 @@ class NeuronTrace:
     Arguments
     ---------
         path : str
-            Path to either s3 bucket (url) or swc file (filepath)
+            Path to either s3 bucket (url) or swc file (filepath).
         seg_id : int
-            If s3 bucket path is provided, the segment number to pull, default None
+            If s3 bucket path is provided, the segment number to pull, default None.
         mip : int
-            If s3 bucket path is provided, the resolution to use for scaling, default None
-        rounding: bool
+            If s3 bucket path is provided, the resolution to use for scaling, default None.
+        rounding : bool
             If s3 is provided, specifies if it should be rounded, default True
-        read_offset: bool
-            If swc is provided, whether offset should be read from file, default False
+        read_offset : bool
+            If swc is provided, whether offset should be read from file, default False.
         fill_missing: bool
-            Always passes directly into 'CloudVolume()' function to fill missing skeleton values with 0s
+            Always passes directly into 'CloudVolume()' function to fill missing skeleton values with 0s, default True.
+        use_https : bool
+            Always passes directly into 'CloudVolume()' function to set use_https to desired value, default True.
 
     Attributes
     ----------
@@ -66,6 +68,7 @@ class NeuronTrace:
         rounding=True,
         read_offset=False,
         fill_missing=True,
+        use_https=False,
     ):
         self.path = path
         self.input_type = None
@@ -75,6 +78,7 @@ class NeuronTrace:
         self.mip = mip
         self.rounding = rounding
         self.fill_missing = fill_missing
+        self.use_https = use_https
 
         check_type(path, str)
         check_type(seg_id, (type(None), int))
@@ -90,7 +94,9 @@ class NeuronTrace:
 
         # first check if it is a skel
         if seg_id != None and mip != None:
-            cv = CloudVolume(path, mip=mip, fill_missing=fill_missing, use_https=True)
+            cv = CloudVolume(
+                path, mip=mip, fill_missing=fill_missing, use_https=use_https
+            )
             skeleton = cv.skeleton.get(seg_id)
             if type(skeleton) is Skeleton:
                 self.input_type = "skel"
@@ -193,7 +199,10 @@ class NeuronTrace:
             return skel
         elif self.input_type == "skel":
             cv = CloudVolume(
-                self.path, mip=self.mip, fill_missing=self.fill_missing, use_https=True
+                self.path,
+                mip=self.mip,
+                fill_missing=self.fill_missing,
+                use_https=self.use_https,
             )
             skel = cv.skeleton.get(self.seg_id)
             return skel
@@ -698,7 +707,8 @@ class NeuronTrace:
             header_length += 1
 
         if not offset_found:
-            raise IOError("No offset information found in: " + path)
+            warnings.warn("No offset information found in: " + path)
+            offset = [float(0) for i in range(3)]
         # read coordinates
         df = pd.read_table(
             path,
@@ -741,7 +751,7 @@ class NeuronTrace:
 
         # check input
         cv = CloudVolume(
-            s3_path, mip=mip, fill_missing=self.fill_missing, use_https=True
+            s3_path, mip=mip, fill_missing=self.fill_missing, use_https=self.use_https
         )
         skeleton = cv.skeleton.get(seg_id)
         swc_string = skeleton.to_swc()
