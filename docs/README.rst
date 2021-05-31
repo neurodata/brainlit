@@ -161,7 +161,7 @@ Push and Pull Data
 ^^^^^^^^^^^^^^^^^^^^
 
 Brainlit uses Seung Lab's `CloudVolume <https://github.com/seung-lab/cloud-volume>`_ package to push and pull data through the cloud or a local machine in an efficient and parallelized fashion. 
-`Uploading demo <https://github.com/neurodata/brainlit/blob/develop/docs/notebooks/utils/uploading_brains.ipynb>`_ showcases how to upload both brain volumes and neuron traces. Likewise, `downloading demo <https://github.com/neurodata/brainlit/blob/develop/docs/notebooks/utils/downloading_brains.ipynb>`_\ shows how to download data.
+`Uploading demo <https://github.com/neurodata/brainlit/blob/develop/docs/notebooks/utils/uploading_brains.ipynb>`_ showcases how to upload both brain volumes and neuron traces. Likewise, `downloading demo <https://github.com/neurodata/brainlit/blob/develop/docs/notebooks/utils/downloading_brains.ipynb>`_ shows how to download data.
 
 We note the CloudVolume's only requirement is to have an account on `S3 <https://aws.amazon.com/s3>`_, as the brain data is publicly available.
 
