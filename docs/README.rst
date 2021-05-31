@@ -168,8 +168,8 @@ We note the CloudVolume's only requirement is to have an account on `S3 <https:/
 Visualize
 ^^^^^^^^^
 
-Brainlit supports many methods to visualize large data. Visualizing the entire data can be done via Google's `Neuroglancer <https://github.com/google/neuroglancer>`_\ directly in your browser. 
-For example, `this link <https://tinyurl.com/jbvbhs73>`_\ will visualize a slice of one of the brains contained in the MouseLight dataset provided by `HHMI Janelia <https://www.janelia.org/project-team/mouselight>`_\, as shown in the screenshot below
+Brainlit supports many methods to visualize large data. Visualizing the entire data can be done via Google's `Neuroglancer <https://github.com/google/neuroglancer>`_ directly in your browser. 
+For example, `this link <https://tinyurl.com/jbvbhs73>`_ will visualize a slice of one of the brains contained in the MouseLight dataset provided by `HHMI Janelia <https://www.janelia.org/project-team/mouselight>`_, as shown in the screenshot below
 
 .. image:: https://i.postimg.cc/YjKN63pp/Screen-Shot-2021-05-30-at-10-36-24-PM.png
    :target: https://i.postimg.cc/YjKN63pp/Screen-Shot-2021-05-30-at-10-36-24-PM.png
