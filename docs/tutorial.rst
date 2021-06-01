@@ -44,15 +44,6 @@ Notebooks showing how to manually and automatically segment data.
 
 Algorithms
 ==========
-
-Adaptive Thresholding
----------------------
-Demonstrate region growing methods using GMM and simple ITK.
-
-.. toctree::
-   :maxdepth: 1
-
-   notebooks/algorithms/adaptive_thresh_tutorial.ipynb
    
 Connecting Fragments
 ---------------------
