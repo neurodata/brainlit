@@ -52,6 +52,7 @@ If your drivers/operating system are out of the date:
 You may get the following error message:
    
     RuntimeError: Using glBindFramebuffer with no OpenGL context.
+
 In the napari window, the images can be seen loaded but cannot be displayed at the screen as shown in the screenshot below:
 `Napari screenshot <https://user-images.githubusercontent.com/66708974/92999637-92c60200-f4f0-11ea-8cad-116a93ae6969.png>`_
 
@@ -417,7 +418,7 @@ WSL2 is a fully functional Linux kernel that can run ELF64 binaries on a Windows
 Install python required libraries and build tools. 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run the below commands to configure the WSL2 environment. See `here <https://stackoverflow.com/questions/8097161/how-would-i-build-python-myself-from-source-code-on-ubuntu/31492697>`_ for more information. 
+Run the below commands to configure the WSL2 environment. See `WSL2 tutorial <https://stackoverflow.com/questions/8097161/how-would-i-build-python-myself-from-source-code-on-ubuntu/31492697>`_ for more information. 
 
 
 .. code-block::
@@ -463,8 +464,7 @@ Configure X11 Port Forwarding
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Install `VcXsrv Windows X Server <https://sourceforge.net/projects/vcxsrv/>`_ on your Windows host machine
-- Let VcXsrv through your Public & Private windows firewall. 
-(Control Panel -> System and Security -> Windows Defender Firewall -> Allowed Apps -> Change Settings)
+- Let VcXsrv through your Public & Private windows firewall. (Control Panel -> System and Security -> Windows Defender Firewall -> Allowed Apps -> Change Settings)
 - Run XLaunch on your Windows Host Machine with default settings AND select the "Disable Access Control" option
 - To confim X11 Port Forwarding is configured, run ``xclock`` on the subsystem.  This should launch on your windows machine. 
 
@@ -482,8 +482,8 @@ AWS Credentials Issues
 
 Do **NOT** push any official AWS credentials to any repository. These posts are a good reference to get a sense of what pushing AWS credentials implies:
 
-1. *I Published My AWS Secret Key to GitHub* by Danny Guo `here <https://www.dannyguo.com/blog/i-published-my-aws-secret-key-to-github/>`_
-2. *Exposing your AWS access keys on Github can be extremely costly. A personal experience.* by Guru `here <https://medium.com/@nagguru/exposing-your-aws-access-keys-on-github-can-be-extremely-costly-a-personal-experience-960be7aad039>`_
+1. *I Published My AWS Secret Key to GitHub* by Danny Guo `blog post here <https://www.dannyguo.com/blog/i-published-my-aws-secret-key-to-github/>`_
+2. *Exposing your AWS access keys on Github can be extremely costly. A personal experience.* by Guru `link here <https://medium.com/@nagguru/exposing-your-aws-access-keys-on-github-can-be-extremely-costly-a-personal-experience-960be7aad039>`_
 3. *Dev put AWS keys on Github. Then BAD THINGS happened* by Darren Pauli `here <https://www.theregister.com/2015/01/06/dev_blunder_shows_github_crawling_with_keyslurping_bots/>`_
 
 
