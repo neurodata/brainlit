@@ -4,7 +4,7 @@ How to reproduce this experiment
 
 Before reproducing this experiment, make sure that:
 
-- You have installed the ``brainlit`` package [`Documentation <https://brainlit.netlify.app/readme#installation>`_]
+- You have installed the ``brainlit`` package [`Documentation <https://brainlit.netlify.app/readme#installation>`_]. Currently, you need to install the package from source to execute these codes.
 - You have installed PyTorch [`Documentation <https://pytorch.org/get-started/locally/>`_].
 
 This experiment does *not* require a GPU (CUDA is not needed for PyTorch).
