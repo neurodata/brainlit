@@ -6,15 +6,8 @@ import SimpleITK as sitk
 from cloudvolume import CloudVolume, view
 from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError
-from pathlib import Path
-from brainlit.utils.swc import (
-    read_s3,
-    swc_to_voxel,
-    df_to_graph,
-    get_sub_neuron,
-    graph_to_paths,
-)
-from brainlit.algorithms.generate_fragments.tube_seg import tubes_from_paths
+from brainlit.utils import Neuron_trace
+from brainlit.algorithms.generate_fragments import tube_seg
 import napari
 import warnings
 import networkx as nx
@@ -37,6 +30,8 @@ class NeuroglancerSession:
         url: Precompued path either to a file URI or url URI. Defaults to mouselight brain1.
         mip: Resolution level to pull and push data at. Defaults to 0, the highest resolution.
         url_segments: Precomputed path to segmentation data. Optional, default None.
+        fill_missing: Always passes directly into 'CloudVolume()' function to fill missing segent/image values with 0s.
+        use_https: Always passes directly into 'CloudVolume()' function to set use_https to the desired value.
 
     Attributes:
         url: CloudVolumePrecomputedPath to image data.
@@ -54,21 +49,32 @@ class NeuroglancerSession:
         url: str,  #  = "s3://open-neurodata/brainlit/brain1"
         mip: int = 0,
         url_segments: Optional[str] = None,
+        fill_missing: bool = True,
+        use_https: bool = False,
     ):
         check_precomputed(url)
         check_type(mip, (int, np.integer))
         self.url = url
-        self.cv = CloudVolume(url, parallel=False)
+        self.use_https = use_https
+        self.cv = CloudVolume(
+            url, parallel=False, fill_missing=fill_missing, use_https=self.use_https
+        )
         if mip < 0 or mip >= len(self.cv.scales):
             raise ValueError(f"{mip} should be between 0 and {len(self.cv.scales)}.")
         self.mip = mip
+        self.fill_missing = fill_missing
         self.chunk_size = self.cv.scales[self.mip]["chunk_sizes"][0]
         self.scales = self.cv.scales[self.mip]["resolution"]
 
         self.url_segments = url_segments
         if url_segments is None:
             try:  # default is to add _segments
-                self.cv_segments = CloudVolume(url + "_segments", parallel=False)
+                self.cv_segments = CloudVolume(
+                    url + "_segments",
+                    parallel=False,
+                    fill_missing=fill_missing,
+                    use_https=self.use_https,
+                )
                 self.url_segments = url + "_segments"
             except InfoUnavailableError:
                 warnings.warn(
@@ -79,7 +85,12 @@ class NeuroglancerSession:
                 self.cv_segments = None
         else:
             check_precomputed(url_segments)
-            self.cv_segments = CloudVolume(url_segments, parallel=False)
+            self.cv_segments = CloudVolume(
+                url_segments,
+                parallel=False,
+                fill_missing=fill_missing,
+                use_https=self.use_https,
+            )
 
     def _get_voxel(self, seg_id: int, v_id: int) -> Tuple[int, int, int]:
         """Gets coordinates of segment vertex, in voxel space.
@@ -114,7 +125,12 @@ class NeuroglancerSession:
         check_precomputed(seg_url)
 
         self.url_segments = seg_url
-        self.cv_segments = CloudVolume(self.url_segments, parallel=False)
+        self.cv_segments = CloudVolume(
+            self.url_segments,
+            parallel=False,
+            fill_missing=self.fill_missing,
+            use_https=self.use_https,
+        )
 
     def get_segments(
         self,
@@ -137,17 +153,22 @@ class NeuroglancerSession:
         check_type(rounding, bool)
         if self.cv_segments is None:
             raise ValueError("Cannot get segments without segmentation data.")
-        df = read_s3(self.url_segments, seg_id, self.mip, rounding)
-        # df_voxel = swc_to_voxel(df, spacing=self.scales, origin=np.array([0, 0, 0]))
-        G = df_to_graph(df)
+        s3_trace = Neuron_trace.NeuronTrace(
+            self.url_segments, seg_id, self.mip, rounding, use_https=self.use_https
+        )
+
+        G = s3_trace.get_graph()
+        paths = s3_trace.get_paths()
 
         if bbox is not None:
             if isinstance(bbox, Bbox):
                 bbox = bbox.to_list()
             check_iterable_type(bbox, (int, np.integer))
             check_iterable_nonnegative(bbox)
-            G = get_sub_neuron(G, [bbox[:3], bbox[3:]])
-        return G
+            G = s3_trace.get_sub_neuron([bbox[:3], bbox[3:]])
+            paths = s3_trace.get_sub_neuron_paths([bbox[:3], bbox[3:]])
+
+        return [G, paths]
 
     def create_tubes(
         self,
@@ -175,13 +196,18 @@ class NeuroglancerSession:
             if radius <= 0:
                 raise ValueError("Radius must be positive.")
 
-        G = self.get_segments(seg_id, bbox)
-        paths = graph_to_paths(G)
+        # s3_trace = NeuronTrace(self.url_segments,seg_id,self.mip,rounding)
+        # paths = s3_trace.get_paths(bbox)
+        G_paths = self.get_segments(seg_id, bbox)
+        paths = G_paths[1]
+
         if isinstance(bbox, Bbox):
             bbox = bbox.to_list()
         check_iterable_type(bbox, (int, np.integer))
         check_iterable_nonnegative(bbox)
-        labels = tubes_from_paths(np.subtract(bbox[3:], bbox[:3]), paths, radius)
+        labels = tube_seg.tubes_from_paths(
+            np.subtract(bbox[3:], bbox[:3]), paths, radius
+        )
         return labels
 
     def pull_voxel(
@@ -198,7 +224,7 @@ class NeuroglancerSession:
         Returns:
             img: A 2*nx+1 X 2*ny+1 X 2*nz+1 volume.
             bounds: Bounding box object which contains the bounds of the volume.
-            vox_in_img: List of coordinates which locate the initial point in the volume.
+            vox_in_img: List of coordinates which locate the initial point in the subvolume.
         """
         check_type(radius, (int, np.integer))
         if radius < 0:

@@ -9,6 +9,9 @@ Data Helper Methods
 .. autoapiclass:: NeuroglancerSession
     :members:
 
+.. autoapiclass:: NeuronTrace
+    :members:
+
 .. currentmodule:: brainlit.utils.upload_to_neuroglancer
 
 S3 Helper Methods
