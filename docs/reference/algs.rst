@@ -24,6 +24,17 @@ Connect Fragments
 .. autoapiclass:: viterbi_algorithm
 	:members:
 
+.. currentmodule:: brainlit.algorithms.trace_analysis
+
+Trace Analysis
+--------------
+
+.. autoapifunction:: speed
+.. autoapifunction:: curvature
+.. autoapifunction:: torsion
+.. autoapiclass:: GeometricGraph
+	:members:
+
 .. currentmodule:: brainlit.algorithms.detect_somas
 
 Soma Detection
