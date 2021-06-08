@@ -72,6 +72,7 @@ Demonstrate estimation of curvature and torsion on simple curve, and fitting spl
 
    notebooks/algorithms/spline_fxns_tutorial.ipynb
    notebooks/algorithms/view_swc_spline.ipynb
+   notebooks/algorithms/biccn_demo.ipynb
 
 Soma Detection
 --------------
