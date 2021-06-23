@@ -26,6 +26,7 @@ def node_height(G, node):
     else:
         return 1 + node_height(G, predecessors[0])
 
+
 def resample_ggraph(G, dropout_freq: float):
     root = G.root
     T = nx.bfs_tree(G, root)
@@ -43,12 +44,13 @@ def resample_ggraph(G, dropout_freq: float):
                 T.add_edge(parent, child)
             G.remove_node(node)
             T.remove_node(node)
-            
+
     return G
-       
 
 
-def generate_brain_trace_data(brain: str, spacing: int, dropout_freq: float, iter_name: str):
+def generate_brain_trace_data(
+    brain: str, spacing: int, dropout_freq: float, iter_name: str
+):
     cwd = Path(os.path.abspath(__file__))
     exp_dir = cwd.parents[1]
     data_dir = os.path.join(exp_dir, "data")
@@ -77,7 +79,9 @@ def generate_brain_trace_data(brain: str, spacing: int, dropout_freq: float, ite
             df_swc_offset_neuron = swc_trace.get_df()
             print("Loaded segment {}".format(i))
             G = GeometricGraph(df=df_swc_offset_neuron)
+            print(f"node number before: {len(G.nodes)}")
             G = resample_ggraph(G, dropout_freq)
+            print(f"node number after: {len(G.nodes)}")
             print("Initialized GeometricGraph")
             spline_tree = G.fit_spline_tree_invariant()
             print("Computed splines")
@@ -132,9 +136,9 @@ def generate_brain_trace_data(brain: str, spacing: int, dropout_freq: float, ite
 # spacing of 1um is for autocorrelation plot
 # spacing of 14um is for regression plots
 for brain in ["brain1", "brain2"]:
-    generate_brain_trace_data(brain, 1, 0, iter_name="no_dropout")
-    
-    ''' uncomment to generate data with random points being dropped
+    generate_brain_trace_data(brain, spacing=1, dropout_freq=0, iter_name="no_dropout")
+
+    """ uncomment to generate data with random points being dropped - e.g. to run resample_trace.ipynb
     for i in range(20):
-        generate_brain_trace_data(brain, 1, 0.1, iter_name="10pct_iter" + str(i))
-    '''
+        generate_brain_trace_data(brain, spacing=1, dropout_freq=0.1, iter_name="10pct_iter" + str(i))
+    """
