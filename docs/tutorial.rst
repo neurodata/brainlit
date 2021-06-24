@@ -63,6 +63,17 @@ Demonstrate fragment path connections using Viterbi algorithm on a simple grid e
 
    notebooks/algorithms/viterbi_tutorial.ipynb
 
+Trace Analysis
+--------------
+Demonstrate estimation of curvature and torsion on simple curve, and fitting splines to a neuron.
+
+.. toctree::
+   :maxdepth: 1
+
+   notebooks/algorithms/spline_fxns_tutorial.ipynb
+   notebooks/algorithms/view_swc_spline.ipynb
+   notebooks/algorithms/biccn_demo.ipynb
+
 Soma Detection
 --------------
 Demonstrate simple soma detection algorithm on known somas in Janelia dataset, brain1.
