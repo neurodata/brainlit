@@ -46,7 +46,6 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             pip install pytest pytest-cov codecov black
-            pip install -r requirements.txt
             pip install -e .
       - run:
           name: run tests
