@@ -46,7 +46,7 @@ This repository is a container of methods that Neurodata usees to expose their o
 
 .. image:: https://i.postimg.cc/QtG9Xs68/Brainlit.png
    :target: https://i.postimg.cc/QtG9Xs68/Brainlit.png
-   :alt: Brainlight Features
+   :alt: Brainlit Features
 
 
 .. toctree::
@@ -157,24 +157,29 @@ Core
 
 The core brain-lit package can be described by the diagram at the top of the readme:
 
-(Push and Pull Data)
+Push and Pull Data
 ^^^^^^^^^^^^^^^^^^^^
 
-Brainlit uses the Seung Lab's `Cloudvolume <https://github.com/seung-lab/cloud-volume>`_ package to push and pull data through the cloud or a local machine in an efficient and parallelized fashion. `Uploading demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/utils/uploading_brains.ipynb>`_.\ :raw-html-m2r:`<br>`
-The only requirement is to have an account on a cloud service on s3, azure, or google cloud.
+Brainlit uses Seung Lab's `CloudVolume <https://github.com/seung-lab/cloud-volume>`_ package to push and pull data through the cloud or a local machine in an efficient and parallelized fashion. 
+`Uploading demo <https://github.com/neurodata/brainlit/blob/develop/docs/notebooks/utils/uploading_brains.ipynb>`_ showcases how to upload both brain volumes and neuron traces. Likewise, `downloading demo <https://github.com/neurodata/brainlit/blob/develop/docs/notebooks/utils/downloading_brains.ipynb>`_ shows how to download data.
 
-Loading data via local filepath of an octree structure is also supported. `Octree demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/utils/upload_brains.ipynb>`_.
+We note the CloudVolume's only requirement is to have an account on `S3 <https://aws.amazon.com/s3>`_, as the brain data is publicly available.
 
 Visualize
 ^^^^^^^^^
 
-Brainlit supports many methods to visualize large data. Visualizing the entire data can be done via Google's `Neuroglancer <https://github.com/google/neuroglancer>`_\ , which provides a web link as shown below.
+Brainlit supports many methods to visualize large data. Visualizing the entire data can be done via Google's `Neuroglancer <https://github.com/google/neuroglancer>`_ directly in your browser. 
+For example, `this link <https://tinyurl.com/jbvbhs73>`_ will visualize a slice of one of the brains contained in the MouseLight dataset provided by `HHMI Janelia <https://www.janelia.org/project-team/mouselight>`_, as shown in the screenshot below
 
-screenshot
+.. image:: https://i.postimg.cc/YjKN63pp/Screen-Shot-2021-05-30-at-10-36-24-PM.png
+   :target: https://i.postimg.cc/YjKN63pp/Screen-Shot-2021-05-30-at-10-36-24-PM.png
+   :alt: Neuroglancer screenshot
 
-Brainlit also has tools to visualize chunks of data as 2d slices or as a 3d model. `Visualization demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/visualization/visualization.ipynb>`_.
+Brainlit also has tools to visualize chunks of data as 2d slices or as a 3d model. The `visualization demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/visualization/visualization.ipynb>`_ will open the following napari view of a volume of brain
 
-screenshot
+.. image:: https://i.postimg.cc/fLd1D8gs/Screen-Shot-2021-05-30-at-10-56-45-PM.png
+   :target: https://i.postimg.cc/fLd1D8gs/Screen-Shot-2021-05-30-at-10-56-45-PM.png
+   :alt: napari screenshot
 
 Manually Segment
 ^^^^^^^^^^^^^^^^
@@ -185,16 +190,6 @@ Automatically and Semi-automatically Segment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Similar to the above pipeline, segmentations can be automatically or semi-automatically generated and pushed to a separate channel for viewing. `Semi-auto demo <https://github.com/neurodata/brainlit/blob/master/docs/notebooks/pipelines/seg_pipeline_demo.ipynb>`_.
-
-API Reference
--------------
-
-
-.. image:: https://readthedocs.org/projects/brainlight/badge/?version=latest
-   :target: https://brainlight.readthedocs.io/en/latest/?badge=latest
-   :alt: Documentation Status
-
-The documentation can be found at `https://brainlight.readthedocs.io/en/latest/ <https://brainlight.readthedocs.io/en/latest/>`_.
 
 Tests
 -----

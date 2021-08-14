@@ -24,7 +24,7 @@ Paper: **Hidden Markov Modeling for Maximum Likelihood Neuron Reconstruction**
     link_stubs/hmm_reconstruction_readme_link
 
 3D CNN for Soma Detection (Prerna's model)
-============
+==========================================
 
 Paper: **Deep-Learning-Based Soma Detection in Whole-Brain Volumes**
 

@@ -1,6 +1,6 @@
 
 Deep-Learning-Based Neuron Detection in Whole-Brain Volumes
---------------------------------
+-----------------------------------------------------------
 
 The three scripts in this directory test Prerna Singh's 3D-CNN on three different datasets from Brain 1:
   - ``compareSubvols.ipynb``: The middle-most volume within the brain (1020x1020x1020 voxels)

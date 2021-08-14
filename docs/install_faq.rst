@@ -463,8 +463,7 @@ Configure X11 Port Forwarding
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Install `VcXsrv Windows X Server <https://sourceforge.net/projects/vcxsrv/>`_ on your Windows host machine
-- Let VcXsrv through your Public & Private windows firewall. 
-(Control Panel -> System and Security -> Windows Defender Firewall -> Allowed Apps -> Change Settings)
+- Let VcXsrv through your Public & Private windows firewall. (Control Panel -> System and Security -> Windows Defender Firewall -> Allowed Apps -> Change Settings)
 - Run XLaunch on your Windows Host Machine with default settings AND select the "Disable Access Control" option
 - To confim X11 Port Forwarding is configured, run ``xclock`` on the subsystem.  This should launch on your windows machine. 
 

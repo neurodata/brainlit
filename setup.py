@@ -14,21 +14,20 @@ AUTHOR_EMAIL = "bvarjav1@jhu.edu"
 URL = "https://github.com/neurodata/brainlit"
 MINIMUM_PYTHON_VERSION = 3, 7  # Minimum of Python 3.7
 REQUIRED_PACKAGES = [
-    "napari[pyqt5]>=0.2.11",
-    "networkx>=2.1",
-    "numpy>=1.8.1",
-    "scikit-learn>=0.19.1",
-    "scikit-image>=0.16.2",
-    "opencv-python==4.2.0.32",
-    "scipy>=1.1.0",
-    "seaborn>=0.9.0",
-    "simpleitk>=1.2.4",
-    "cloud-volume @ git+https://github.com/neurodata/cloud-volume.git@voxel-res-non-int",
-    "tifffile>=2020.7.17",
-    "statsmodels>=0.11.1",
-    "nibabel>=2.4.1",
-    "nilearn>=0.5.2",
-    "feather-format==0.4.1",
+"numpy>=1.8.1",
+"scikit-image>=0.16.2",
+"simpleitk>=1.2.4",
+"networkx>=2.1",
+"scikit-learn>=0.19.1",
+"scipy>=1.1.0",
+"seaborn>=0.9.0",
+"tifffile>=2020.7.17",
+"napari[pyqt5]>=0.2.11",
+"cloud-volume>=4.2.0",
+"feather-format==0.4.1",
+"nibabel>=2.4.1",
+"nilearn>=0.5.2",
+
 ]
 
 # Find savanna version.
