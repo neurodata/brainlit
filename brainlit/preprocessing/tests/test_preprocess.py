@@ -524,18 +524,18 @@ def test_label_points():
 def test_split_frags():
     soma_coords = [[0,0,0]]
     labels = np.zeros((100,100,100), dtype=int)
-    labels[0,0,0:10] = 1
-    labels[10,10,20:40] = 2
-    labels[50,50,30:80] = 3
+    labels[0:5,0:5,0:10] = 1
+    labels[10:15,10:15,20:40] = 2
+    labels[50:55,50:55,30:80] = 3
 
     im_processed = 0.2*np.ones((100,100,100))
-    im_processed[0,0,0:10] = 0.91
-    im_processed[10,10,20:40] = 0.93
-    im_processed[50,50,30:80] = 0.94
+    im_processed[0:5,0:5,0:10] = 0.91
+    im_processed[10:15,10:15,20:40] = 0.93
+    im_processed[50:55,50:55,30:80] = 0.94
 
     threshold = 0.9
 
     res = [1,1,1]
 
     new_labels = split_frags(soma_coords, labels, im_processed, threshold, res)
-    assert len(np.unique(new_labels)) > 17
+    assert len(np.unique(new_labels)) > 8
