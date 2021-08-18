@@ -4,6 +4,13 @@ from brainlit.preprocessing.image_process import (
     gabor_filter,
     getLargestCC,
     removeSmallCCs,
+    label_points,
+    split_frags,
+    remove_somas,
+    split_frags_place_points,
+    split_frags_split_comps,
+    split_frags_split_fractured_components,
+    rename_states_consecutively,
 )
 from brainlit.preprocessing.preprocess import (
     center,
@@ -304,6 +311,31 @@ def test_removeSmallCCs_bad_input():
 def test_removeSmallCCs_valid_input():
     removeSmallCCs(np.ones((5, 5)), 2)
 
+def test_label_points_valid_input():
+    labels = np.zeros((10,10,10), dtype=int)
+    labels[0,0,0] = 1
+    labels[9,9,9] = 2
+    points = [[1,1,1], [8,8,8]]
+    res = [1, 1, 1]
+
+    label_points(labels, points, res)
+
+def test_split_frags_valid_input():
+    soma_coords = [[0,0,0]]
+    labels = np.zeros((10,10,10), dtype=int)
+    labels[0,0,0] = 1
+    labels[9,9,9] = 2
+
+    im_processed = 0.2*np.ones((10,10,10))
+    im_processed[0,0,0] = 0.91
+    im_processed[9,9,9] = 0.95
+
+    threshold = 0.9
+
+    res = [1,1,1]
+
+    split_frags(soma_coords, labels, im_processed, threshold, res)
+
 
 ############################
 ### functionality checks ###
@@ -475,3 +507,35 @@ def test_removeSmallCCs():
             expected_output[i, j] = 1
     output = removeSmallCCs(img, 5).astype(int)
     assert_array_equal(expected_output, output)
+
+
+def test_label_points():
+    labels = np.zeros((10,10,10), dtype=int)
+    labels[0,0,0] = 1
+    labels[9,9,9] = 2
+    points = [[9,9,0], [0,0,9]]
+    res = [0.01, 0.01, 1]
+
+    points, point_labels = label_points(labels, points, res)
+    expected_output = [1, 2]
+
+    assert_array_equal(expected_output, point_labels)
+
+def test_split_frags():
+    soma_coords = [[0,0,0]]
+    labels = np.zeros((100,100,100), dtype=int)
+    labels[0,0,0:10] = 1
+    labels[10,10,20:40] = 2
+    labels[50,50,30:80] = 3
+
+    im_processed = 0.2*np.ones((100,100,100))
+    im_processed[0,0,0:10] = 0.91
+    im_processed[10,10,20:40] = 0.93
+    im_processed[50,50,30:80] = 0.94
+
+    threshold = 0.9
+
+    res = [1,1,1]
+
+    new_labels = split_frags(soma_coords, labels, im_processed, threshold, res)
+    assert np.unique(new_labels) > 17
