@@ -20,9 +20,23 @@ class most_probable_neuron_path:
         soma_lbls=[],
         resolution=[0.3, 0.3, 1],
         coef_dist=0.5,
-        coef_curv=0,
+        coef_curv=0.0,
         frag_orientation_length=5,
     ):
+        """Initialize object that performs tracing.
+
+        Args:
+            image (np.array): image
+            labels (np.array): segmentation
+            soma_lbls (list, optional): voxel coordinates of somas. Defaults to [].
+            resolution (list, optional): voxel size. Defaults to [0.3, 0.3, 1].
+            coef_dist (float, optional): hyperparameter that weights the distance factor. Defaults to 0.5.
+            coef_curv (float, optional): hyperparameter that weights the curvature factor. Defaults to 0.0.
+            frag_orientation_length (int, optional): length used to compute orientation at fragment endpoints. Defaults to 5.
+
+        Raises:
+            ValueError: Labels must have consecutive values.
+        """
 
         # standard parameters
         self.image = image
@@ -101,9 +115,7 @@ class most_probable_neuron_path:
         kde = KernelDensity(kernel="gaussian", bandwidth=100).fit(data_2d)
 
         image_tiered = 0 * image
-        for val in tqdm(
-            np.unique(image), desc="setting up emission distribution..."
-        ):
+        for val in tqdm(np.unique(image), desc="setting up emission distribution..."):
             mask = image == val
             score = kde.score_samples(np.array([[val]]))
             image_tiered[mask] = -score
@@ -111,7 +123,11 @@ class most_probable_neuron_path:
         self.image_tiered = image_tiered
 
     def frags_to_lines(self):
-        """Relies on the assumption that self.labels has values as if it came from measure.label"""
+        """Convert fragments to lines.
+
+        Raises:
+            ValueError: In case there is only one endpoint computed for a fragment. Shouldn't happen, but potentially useful for debugging.
+        """
         labels = self.labels
         soma_lbls = self.soma_lbls
         comp_to_states = self.comp_to_states
@@ -153,8 +169,8 @@ class most_probable_neuron_path:
 
             a = np.add(a, [rmin, cmin, zmin])
             b = np.add(b, [rmin, cmin, zmin])
-            dif = b-a
-            dif = dif/np.linalg.norm(dif)
+            dif = b - a
+            dif = dif / np.linalg.norm(dif)
 
             state_to_comp[states[0]][2]["coord1"] = a
             state_to_comp[states[0]][2][
@@ -180,6 +196,14 @@ class most_probable_neuron_path:
         self.int_comp_costs = int_comp_costs
 
     def endpoints_from_coords_neighbors(self, coords):
+        """Compute endpoints of fragment.
+
+        Args:
+            coords (np.array): coordinates of voxels in the fragment
+
+        Returns:
+            list: endpoints of the fragment
+        """
         res = self.res
 
         dims = np.multiply(np.amax(coords, axis=0) - np.amin(coords, axis=0), res)
@@ -200,10 +224,10 @@ class most_probable_neuron_path:
         indices = np.argsort(degrees)
         sorted = [degrees[i] for i in indices]
 
-        #point with fewest neighbors
+        # point with fewest neighbors
         ends = [coords[indices[0], :]]
-        #second endpoint is point with fewest neighbors that is not within "close_enough" of the first endpoint
-        #close_enough gets smaller until a second point is found
+        # second endpoint is point with fewest neighbors that is not within "close_enough" of the first endpoint
+        # close_enough gets smaller until a second point is found
         while len(ends) < 2:
             for coord_idx, degree in zip(indices, sorted):
                 coord = coords[coord_idx, :]
@@ -225,7 +249,7 @@ class most_probable_neuron_path:
             pad (float): padding around object in um
 
         Returns:
-            [ints]: integer coordinates of bounding box
+            ints: integer coordinates of bounding box
         """
         labels = self.labels
         res = self.res
@@ -245,6 +269,15 @@ class most_probable_neuron_path:
         return int(rmin), int(rmax), int(cmin), int(cmax), int(zmin), int(zmax)
 
     def compute_all_costs_dist(self, point_point_func, point_blob_func):
+        """Compute all pairwise costs of distance term
+
+        Args:
+            point_point_func (function): function used to compute distance between fragment objects
+            point_blob_func (function): function used to compute distance between a fragment and a blob (soma) object
+
+        Raises:
+            ValueError: [description]
+        """
         self.soma_lbls
 
         cost_mat_dist = self.cost_mat_dist
@@ -254,7 +287,9 @@ class most_probable_neuron_path:
         num_states = self.num_states
 
         with tqdm(
-            total=int(num_states ** 2), desc="Computing state costs (geometry)", smoothing=0.1
+            total=int(num_states ** 2),
+            desc="Computing state costs (geometry)",
+            smoothing=0.1,
         ) as pbar:
             for state1 in range(num_states):
                 state1_info = state_to_comp[state1]
@@ -270,12 +305,11 @@ class most_probable_neuron_path:
                         state_to_comp[state1][1] == state_to_comp[state2][1]
                     ):  # states from same fragment
                         dist_cost = np.inf
-                        #distances here are symmetric
+                        # distances here are symmetric
                         cost_mat_dist[state1, state2] = dist_cost
                         cost_mat_dist[state2, state1] = dist_cost
                     elif (
-                        state1_info[0] == "fragment"
-                        and state2_info[0] == "fragment"
+                        state1_info[0] == "fragment" and state2_info[0] == "fragment"
                     ):  # two fragments
                         dist_cost = point_point_func(
                             state1_info[2]["coord2"],
@@ -297,13 +331,11 @@ class most_probable_neuron_path:
                         ]
 
                         cost_mat_dist[state1, state2] = dist_cost
-                        cost_mat_dist[
-                            other_states2[0], other_states1[0]
-                        ] = dist_cost
+                        cost_mat_dist[other_states2[0], other_states1[0]] = dist_cost
 
                     elif state1_info[0] == "soma" and state2_info[0] == "soma":
                         dist_cost == np.inf
-                        #distances here are symmetric
+                        # distances here are symmetric
                         cost_mat_dist[state1, state2] = dist_cost
                         cost_mat_dist[state2, state1] = dist_cost
                     elif state1_info[0] == "fragment" and state2_info[0] == "soma":
@@ -337,7 +369,7 @@ class most_probable_neuron_path:
                         self.state_to_comp[fragment_state][2][
                             "soma connection point"
                         ] = soma_pt
-                        
+
                         cost_mat_dist[fragment_state, soma_state] = dist_cost
                         cost_mat_dist[soma_state, fragment_state] = np.inf
                     else:
@@ -353,6 +385,22 @@ class most_probable_neuron_path:
             cost_mat_dist[state1, :] = cost_mat_dist[state1, :] + denom
 
     def point_point_dist(self, pt1, orientation1, pt2, orientation2, verbose=False):
+        """Compute distance cost between two fragment objects.
+
+        Args:
+            pt1 (list): point on fragment 1
+            orientation1 (list): orientation at pt1 on fragment 1
+            pt2 (list): point on fragment 2
+            orientation2 (list): orientation at pt2 on fragment 2
+            verbose (bool, optional): Print the distance and its various components. Defaults to False.
+
+        Raises:
+            ValueError: If the points are the same, or the orientation vectors are not (roughly) unit length
+            ValueError: NAN distance of curvature.
+
+        Returns:
+            float: distance based cost
+        """
         res = self.res
 
         dif = np.multiply(np.subtract(pt2, pt1), res)
@@ -380,7 +428,7 @@ class most_probable_neuron_path:
             raise ValueError(f"NAN cost: distance - {dist}, curv - {k_cost}")
 
         # if combined  average angle is tighter than 45 deg or either is tighter than 30 deg
-        if 1-k1_sq < -0.87 or 1-k2_sq < -0.87:
+        if 1 - k1_sq < -0.87 or 1 - k2_sq < -0.87:
             return np.inf
 
         cost = k_cost * self.coef_curv + self.coef_dist * (dist ** 2)
@@ -392,7 +440,22 @@ class most_probable_neuron_path:
         return cost
 
     def point_blob_dist(self, point, orientation, blob_lbl, verbose=False):
-        """Assumes that the first label has endpoints (line mode)"""
+        """Compute distance between a fragment object and a blob (soma) object
+
+        Args:
+            point (list): point on fragment
+            orientation (list): orientation at point on fragment
+            blob_lbl (int): label of blob (soma) object
+            verbose (bool, optional): Print distance and its various components. Defaults to False.
+
+        Raises:
+            ValueError: If distance of curvature factors are NAN
+            ValueError: If the closest point on the blob is not actually on the blob. Shouldn't happen but potentially useful for debugging.
+
+        Returns:
+            float: distance based cost
+            nonline_point: coordinate on the blob that the fragment connects to
+        """
         labels = self.labels
         soma_locs = self.soma_locs
 
@@ -434,7 +497,12 @@ class most_probable_neuron_path:
         return cost, nonline_point
 
     def compute_all_costs_int(self):
-        #should be run after compute all dist costs
+        """Compute all pairwise intensity based transition costs.
+
+        Raises:
+            ValueError: This pair of states did not fall into any category. Shouldn't happen but potentially useful for debugging.
+        """
+        # should be run after compute all dist costs
         cost_mat_dist = self.cost_mat_dist
         cost_mat_int = self.cost_mat_int
         state_to_comp = self.state_to_comp
@@ -442,7 +510,9 @@ class most_probable_neuron_path:
         num_states = self.num_states
 
         with tqdm(
-            total=int(num_states ** 2), desc="Computing state costs (intensity)", smoothing=0.1
+            total=int(num_states ** 2),
+            desc="Computing state costs (intensity)",
+            smoothing=0.1,
         ) as pbar:
             for state1 in range(num_states):
                 state1_info = state_to_comp[state1]
@@ -462,13 +532,12 @@ class most_probable_neuron_path:
                         # costs are not necessarily symmetric here (cost mat dist case)
                         cost_mat_int[state1, state2] != int_cost
                     elif (
-                        state1_info[0] == "fragment"
-                        and state2_info[0] == "fragment"
+                        state1_info[0] == "fragment" and state2_info[0] == "fragment"
                     ):  # two fragments
                         line_int_cost = self.line_int(
                             state1_info[2]["coord2"], state2_info[2]["coord1"]
                         )
-                        
+
                         # distances here are symmetric, but need to find the opposite orientation
                         other_states1 = [
                             s
@@ -481,27 +550,24 @@ class most_probable_neuron_path:
                             if s != state2
                         ]
 
-                        cost_mat_int[other_states2[0], other_states1[0]] = self.int_comp_costs[state1_info[1]] + line_int_cost
-                        cost_mat_int[state1, state2] = self.int_comp_costs[state2_info[1]] + line_int_cost
+                        cost_mat_int[other_states2[0], other_states1[0]] = (
+                            self.int_comp_costs[state1_info[1]] + line_int_cost
+                        )
+                        cost_mat_int[state1, state2] = (
+                            self.int_comp_costs[state2_info[1]] + line_int_cost
+                        )
                     elif state1_info[0] == "fragment" and state2_info[0] == "soma":
                         soma_info = state2_info
                         fragment_info = state1_info
                         fragment_state = state1
                         soma_state = state2
 
-                        try:
-                            int_cost = self.line_int(
-                                    fragment_info[2]["coord2"],
-                                    state_to_comp[fragment_state][2][
-                                        "soma connection point"
-                                    ],
-                                )
-                        except:
-                            c1 = fragment_info[2]["coord2"]
-                            c2 = state_to_comp[fragment_state][2]["soma connection point"]
-                            raise ValueError(f"state {state1} to {state2}, coord {c1} to {c2}")
-                        cost_mat_int[fragment_state, soma_state] = int_cost   
-                        cost_mat_int[soma_state, fragment_state] = np.inf  
+                        int_cost = self.line_int(
+                            fragment_info[2]["coord2"],
+                            state_to_comp[fragment_state][2]["soma connection point"],
+                        )
+                        cost_mat_int[fragment_state, soma_state] = int_cost
+                        cost_mat_int[soma_state, fragment_state] = np.inf
                     elif state1_info[0] == "soma" and state2_info[0] == "fragment":
                         soma_info = state1_info
                         fragment_info = state2_info
@@ -509,13 +575,11 @@ class most_probable_neuron_path:
                         soma_state = state1
 
                         int_cost = self.line_int(
-                                fragment_info[2]["coord2"],
-                                state_to_comp[fragment_state][2][
-                                    "soma connection point"
-                                ],
-                            )
-                        cost_mat_int[fragment_state, soma_state] = int_cost 
-                        cost_mat_int[soma_state, fragment_state] = np.inf 
+                            fragment_info[2]["coord2"],
+                            state_to_comp[fragment_state][2]["soma connection point"],
+                        )
+                        cost_mat_int[fragment_state, soma_state] = int_cost
+                        cost_mat_int[soma_state, fragment_state] = np.inf
                     else:
                         raise ValueError("No cases caught int")
 
@@ -547,6 +611,18 @@ class most_probable_neuron_path:
         return sum
 
     def reset_dists(self, type="all"):
+        """Reset cost matrices
+
+        Args:
+            type (str, optional): "dist" will only clear the distance based costs, "int" will only clear intensity based costs, "all" will clear both. Defaults to "all".
+
+        Raises:
+            ValueError: If the type is not a valid option.
+        """
+        if type not in ["dist", "int", "all"]:
+            raise ValueError(
+                f"Type must be either in [dist, int, all], input was {type}"
+            )
         num_states = self.num_states
         if type == "dist" or type == "all":
             self.cost_mat_dist = np.ones((num_states, num_states)) * -np.inf
@@ -554,6 +630,7 @@ class most_probable_neuron_path:
             self.cost_mat_int = np.ones((num_states, num_states)) * -np.inf
 
     def create_nx_graph(self):
+        """Transform the states and the costs into a directed graph."""
         nxGraph = nx.DiGraph()
         state_to_comp = self.state_to_comp
         for state in tqdm(state_to_comp.keys(), desc="Adding nodes to nx graph"):
@@ -580,4 +657,3 @@ class most_probable_neuron_path:
                 if np.isfinite(w):
                     nxGraph.add_edge(row_num, col_num, weight=w)
         self.nxGraph = nxGraph
-
