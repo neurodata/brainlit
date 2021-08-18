@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from brainlit.algorithms.connect_fragments import dynamic_programming_viterbi2
 from brainlit.preprocessing import image_process
+import networkx as nx
 from numpy.testing import (
     assert_array_equal,
 )
