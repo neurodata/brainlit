@@ -538,4 +538,4 @@ def test_split_frags():
     res = [1,1,1]
 
     new_labels = split_frags(soma_coords, labels, im_processed, threshold, res)
-    assert np.unique(new_labels) > 17
+    assert len(np.unique(new_labels)) > 17
