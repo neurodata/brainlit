@@ -268,6 +268,118 @@ class most_probable_neuron_path:
         zmax = np.amin((labels.shape[2], math.ceil(zmax + (pad + 1) / res[2])))
         return int(rmin), int(rmax), int(cmin), int(cmax), int(zmin), int(zmax)
 
+    def point_point_dist(self, pt1, orientation1, pt2, orientation2, verbose=False):
+        """Compute distance cost between two fragment objects.
+
+        Args:
+            pt1 (list): point on fragment 1
+            orientation1 (list): orientation at pt1 on fragment 1
+            pt2 (list): point on fragment 2
+            orientation2 (list): orientation at pt2 on fragment 2
+            verbose (bool, optional): Print the distance and its various components. Defaults to False.
+
+        Raises:
+            ValueError: If the points are the same, or the orientation vectors are not (roughly) unit length
+            ValueError: NAN distance of curvature.
+
+        Returns:
+            float: distance based cost
+        """
+        res = self.res
+
+        dif = np.multiply(np.subtract(pt2, pt1), res)
+
+        dist = np.linalg.norm(dif)
+
+        if (
+            dist == 0
+            or not math.isclose(np.linalg.norm(orientation1), 1, abs_tol=1e-5)
+            or not math.isclose(np.linalg.norm(orientation2), 1, abs_tol=1e-5)
+        ):
+            raise ValueError(
+                f"pt1: {pt1} pt2: {pt2} dist: {dist}, o1: {orientation1} o2: {orientation2}"
+            )
+
+        if dist > 15:
+            return np.inf
+
+        k1_sq = 1 - np.dot(dif, orientation1) / dist
+        k2_sq = 1 - np.dot(dif, orientation2) / dist
+
+        k_cost = np.mean([k1_sq, k2_sq])
+
+        if np.isnan(dist) or np.isnan(k_cost):
+            raise ValueError(f"NAN cost: distance - {dist}, curv - {k_cost}")
+
+        # if combined  average angle is tighter than 45 deg or either is tighter than 30 deg
+        if 1 - k1_sq < -0.87 or 1 - k2_sq < -0.87:
+            return np.inf
+
+        cost = k_cost * self.coef_curv + self.coef_dist * (dist ** 2)
+        if verbose:
+            print(
+                f"Distance: {dist}, Curv penalty: {k_cost} (dots {1-k1_sq}, {1-k2_sq}, from dif-{dif}), Total cost: {cost}"
+            )
+
+        return cost
+
+    def point_blob_dist(self, point, orientation, blob_lbl, verbose=False):
+        """Compute distance between a fragment object and a blob (soma) object
+
+        Args:
+            point (list): point on fragment
+            orientation (list): orientation at point on fragment
+            blob_lbl (int): label of blob (soma) object
+            verbose (bool, optional): Print distance and its various components. Defaults to False.
+
+        Raises:
+            ValueError: If distance of curvature factors are NAN
+            ValueError: If the closest point on the blob is not actually on the blob. Shouldn't happen but potentially useful for debugging.
+
+        Returns:
+            float: distance based cost
+            nonline_point: coordinate on the blob that the fragment connects to
+        """
+        labels = self.labels
+        soma_locs = self.soma_locs
+
+        coords = soma_locs[blob_lbl]
+        difs = np.multiply(np.subtract(coords, point), self.res)
+        dists = np.linalg.norm(difs, axis=1)
+        argmin = np.argmin(dists)
+        dif = difs[argmin, :]
+        dist = dists[argmin]
+
+        dot = np.dot(dif, orientation) / (
+            np.linalg.norm(dif) * np.linalg.norm(orientation)
+        )
+        k_cost = 1 - dot
+
+        if np.isnan(k_cost) or np.isnan(dist):
+            raise ValueError(f"NAN cost: distance - {dist}, curv - {k_cost}")
+
+        if dist > 15:
+            cost = np.inf
+        else:
+            cost = k_cost * self.coef_curv + self.coef_dist * (dist ** 2)
+
+        nonline_point = coords[argmin, :]
+        if (
+            labels[
+                nonline_point[0],
+                nonline_point[1],
+                nonline_point[2],
+            ]
+            != blob_lbl
+        ):
+            raise ValueError("Error in setting connection_mat")
+        if verbose:
+            print(
+                f"Distance: {dist}, Curv penalty: {k_cost}, Total cost: {cost}, connection point: {nonline_point}"
+            )
+
+        return cost, nonline_point
+
     def compute_all_costs_dist(self, point_point_func, point_blob_func):
         """Compute all pairwise costs of distance term
 
@@ -383,118 +495,6 @@ class most_probable_neuron_path:
             else:
                 denom = logsumexp(-1 * cost_mat_dist[state1, :])
             cost_mat_dist[state1, :] = cost_mat_dist[state1, :] + denom
-
-    def point_point_dist(self, pt1, orientation1, pt2, orientation2, verbose=False):
-        """Compute distance cost between two fragment objects.
-
-        Args:
-            pt1 (list): point on fragment 1
-            orientation1 (list): orientation at pt1 on fragment 1
-            pt2 (list): point on fragment 2
-            orientation2 (list): orientation at pt2 on fragment 2
-            verbose (bool, optional): Print the distance and its various components. Defaults to False.
-
-        Raises:
-            ValueError: If the points are the same, or the orientation vectors are not (roughly) unit length
-            ValueError: NAN distance of curvature.
-
-        Returns:
-            float: distance based cost
-        """
-        res = self.res
-
-        dif = np.multiply(np.subtract(pt2, pt1), res)
-
-        dist = np.linalg.norm(dif)
-
-        if (
-            dist == 0
-            or not math.isclose(np.linalg.norm(orientation1), 1, abs_tol=1e-5)
-            or not math.isclose(np.linalg.norm(orientation2), 1, abs_tol=1e-5)
-        ):
-            raise ValueError(
-                f"pt1: {pt1} pt2: {pt2} dist: {dist}, o1: {orientation1} o2: {orientation2}"
-            )
-
-        if dist > 15:
-            return np.inf
-
-        k1_sq = 1 - np.dot(dif, orientation1) / dist
-        k2_sq = 1 - np.dot(dif, orientation2) / dist
-
-        k_cost = np.mean([k1_sq, k2_sq])
-
-        if np.isnan(dist) or np.isnan(k_cost):
-            raise ValueError(f"NAN cost: distance - {dist}, curv - {k_cost}")
-
-        # if combined  average angle is tighter than 45 deg or either is tighter than 30 deg
-        if 1 - k1_sq < -0.87 or 1 - k2_sq < -0.87:
-            return np.inf
-
-        cost = k_cost * self.coef_curv + self.coef_dist * (dist ** 2)
-        if verbose:
-            print(
-                f"Distance: {dist}, Curv penalty: {k_cost} (dots {1-k1_sq}, {1-k2_sq}, from dif-{dif}), Total cost: {cost}"
-            )
-
-        return cost
-
-    def point_blob_dist(self, point, orientation, blob_lbl, verbose=False):
-        """Compute distance between a fragment object and a blob (soma) object
-
-        Args:
-            point (list): point on fragment
-            orientation (list): orientation at point on fragment
-            blob_lbl (int): label of blob (soma) object
-            verbose (bool, optional): Print distance and its various components. Defaults to False.
-
-        Raises:
-            ValueError: If distance of curvature factors are NAN
-            ValueError: If the closest point on the blob is not actually on the blob. Shouldn't happen but potentially useful for debugging.
-
-        Returns:
-            float: distance based cost
-            nonline_point: coordinate on the blob that the fragment connects to
-        """
-        labels = self.labels
-        soma_locs = self.soma_locs
-
-        coords = soma_locs[blob_lbl]
-        difs = np.multiply(np.subtract(coords, point), self.res)
-        dists = np.linalg.norm(difs, axis=1)
-        argmin = np.argmin(dists)
-        dif = difs[argmin, :]
-        dist = dists[argmin]
-
-        dot = np.dot(dif, orientation) / (
-            np.linalg.norm(dif) * np.linalg.norm(orientation)
-        )
-        k_cost = 1 - dot
-
-        if np.isnan(k_cost) or np.isnan(dist):
-            raise ValueError(f"NAN cost: distance - {dist}, curv - {k_cost}")
-
-        if dist > 15:
-            cost = np.inf
-        else:
-            cost = k_cost * self.coef_curv + self.coef_dist * (dist ** 2)
-
-        nonline_point = coords[argmin, :]
-        if (
-            labels[
-                nonline_point[0],
-                nonline_point[1],
-                nonline_point[2],
-            ]
-            != blob_lbl
-        ):
-            raise ValueError("Error in setting connection_mat")
-        if verbose:
-            print(
-                f"Distance: {dist}, Curv penalty: {k_cost}, Total cost: {cost}, connection point: {nonline_point}"
-            )
-
-        return cost, nonline_point
 
     def compute_all_costs_int(self):
         """Compute all pairwise intensity based transition costs.

@@ -62,6 +62,7 @@ Demonstrate fragment path connections using Viterbi algorithm on a simple grid e
    :maxdepth: 1
 
    notebooks/algorithms/viterbi_tutorial.ipynb
+   notebooks/algorithms/viterbi2_tutorial.ipynb
 
 Trace Analysis
 --------------

@@ -311,28 +311,30 @@ def test_removeSmallCCs_bad_input():
 def test_removeSmallCCs_valid_input():
     removeSmallCCs(np.ones((5, 5)), 2)
 
+
 def test_label_points_valid_input():
-    labels = np.zeros((10,10,10), dtype=int)
-    labels[0,0,0] = 1
-    labels[9,9,9] = 2
-    points = [[1,1,1], [8,8,8]]
+    labels = np.zeros((10, 10, 10), dtype=int)
+    labels[0, 0, 0] = 1
+    labels[9, 9, 9] = 2
+    points = [[1, 1, 1], [8, 8, 8]]
     res = [1, 1, 1]
 
     label_points(labels, points, res)
 
-def test_split_frags_valid_input():
-    soma_coords = [[0,0,0]]
-    labels = np.zeros((10,10,10), dtype=int)
-    labels[0,0,0] = 1
-    labels[9,9,9] = 2
 
-    im_processed = 0.2*np.ones((10,10,10))
-    im_processed[0,0,0] = 0.91
-    im_processed[9,9,9] = 0.95
+def test_split_frags_valid_input():
+    soma_coords = [[0, 0, 0]]
+    labels = np.zeros((10, 10, 10), dtype=int)
+    labels[0, 0, 0] = 1
+    labels[9, 9, 9] = 2
+
+    im_processed = 0.2 * np.ones((10, 10, 10))
+    im_processed[0, 0, 0] = 0.91
+    im_processed[9, 9, 9] = 0.95
 
     threshold = 0.9
 
-    res = [1,1,1]
+    res = [1, 1, 1]
 
     split_frags(soma_coords, labels, im_processed, threshold, res)
 
@@ -510,10 +512,10 @@ def test_removeSmallCCs():
 
 
 def test_label_points():
-    labels = np.zeros((10,10,10), dtype=int)
-    labels[0,0,0] = 1
-    labels[9,9,9] = 2
-    points = [[9,9,0], [0,0,9]]
+    labels = np.zeros((10, 10, 10), dtype=int)
+    labels[0, 0, 0] = 1
+    labels[9, 9, 9] = 2
+    points = [[9, 9, 0], [0, 0, 9]]
     res = [0.01, 0.01, 1]
 
     points, point_labels = label_points(labels, points, res)
@@ -521,21 +523,22 @@ def test_label_points():
 
     assert_array_equal(expected_output, point_labels)
 
-def test_split_frags():
-    soma_coords = [[0,0,0]]
-    labels = np.zeros((100,100,100), dtype=int)
-    labels[0:5,0:5,0:10] = 1
-    labels[10:15,10:15,20:40] = 2
-    labels[50:55,50:55,30:80] = 3
 
-    im_processed = 0.2*np.ones((100,100,100))
-    im_processed[0:5,0:5,0:10] = 0.91
-    im_processed[10:15,10:15,20:40] = 0.93
-    im_processed[50:55,50:55,30:80] = 0.94
+def test_split_frags():
+    soma_coords = [[0, 0, 0]]
+    labels = np.zeros((100, 100, 100), dtype=int)
+    labels[0:5, 0:5, 0:10] = 1
+    labels[10:15, 10:15, 20:40] = 2
+    labels[50:55, 50:55, 30:80] = 3
+
+    im_processed = 0.2 * np.ones((100, 100, 100))
+    im_processed[0:5, 0:5, 0:10] = 0.91
+    im_processed[10:15, 10:15, 20:40] = 0.93
+    im_processed[50:55, 50:55, 30:80] = 0.94
 
     threshold = 0.9
 
-    res = [1,1,1]
+    res = [1, 1, 1]
 
     new_labels = split_frags(soma_coords, labels, im_processed, threshold, res)
     assert len(np.unique(new_labels)) > 8
