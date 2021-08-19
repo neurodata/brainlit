@@ -21,6 +21,9 @@ Fragment Generation
 
 Connect Fragments
 -----------------
+.. autoapiclass:: most_probable_neuron_path
+	:members:
+
 .. autoapiclass:: viterbi_algorithm
 	:members:
 
