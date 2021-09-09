@@ -269,7 +269,7 @@ def split_frags(soma_coords, labels, im_processed, threshold, res):
     new_labels = split_frags_split_fractured_components(new_labels)
 
     props = regionprops(new_labels)
-    for label, prop in enumerate(tqdm(props)):
+    for label, prop in enumerate(tqdm(props, desc = "remove small fragments")):
         if prop.area < 15:
             new_labels[new_labels == prop.label] = 0
 
@@ -433,14 +433,18 @@ def split_frags_split_fractured_components(new_labels):
     Returns:
         np.array: new image segmentation - different numbers indicate different fragments, 0 is background
     """
-    for lbl in tqdm(np.unique(new_labels), desc="Split fractured components"):
-        if lbl > 0:
-            mask = new_labels == lbl
-            lbl_labels = label(mask)
-            if np.amax(lbl_labels) > 1:
-                for lbl_label in np.unique(lbl_labels):
-                    if lbl_label not in [0, 1]:
-                        new_labels[lbl_labels == lbl_label] = np.amax(new_labels) + 1
+    props = regionprops(new_labels)
+    new_lbl = np.amax(new_labels) + 1
+    for prop in tqdm(props, desc="Split fractured components"):
+        bbox = prop['bbox']
+        lbl = prop['label']
+        cutout = new_labels[bbox[0]:bbox[3],bbox[1]:bbox[4],bbox[2]:bbox[5]]
+        mask = cutout == lbl
+        lbl_labels = label(mask)
+        for lbl_label in np.unique(lbl_labels):
+            if lbl_label not in [0, 1]:
+                cutout[lbl_labels == lbl_label] = new_lbl
+                new_lbl += 1
 
     return new_labels
 
@@ -454,17 +458,16 @@ def rename_states_consecutively(new_labels):
     Returns:
         np.array: new image segmentation - different numbers indicate different fragments, 0 is background
     """
-    new_labels2 = np.copy(new_labels)
-    unq = len(np.unique(new_labels))
-    difference = np.amax(new_labels) - unq
+    vals = np.unique(new_labels)
+    vals = np.delete(vals, 0)
+    vals = np.append(vals, [0])
+    new_vals = np.arange(1, len(vals))
+    new_vals = np.append(new_vals, [0])
 
-    with tqdm(total=difference) as pbar:
-        for label in range(np.amax(new_labels2)):
-            if np.amax(new_labels) < label:
-                break
-            if np.sum(new_labels2 == label) == 0:
-                new_labels[new_labels == np.amax(new_labels)] = label
-                new_difference = np.amax(new_labels) - unq
-                pbar.update(difference - new_difference)
-                difference = new_difference
+    data = np.reshape(np.copy(new_labels), (new_labels.size,))
+    sort_idx = np.argsort(vals)
+    idx = np.searchsorted(vals, data, sorter = sort_idx)
+    out = new_vals[sort_idx][idx]
+    new_labels = np.reshape(out, new_labels.shape)
+
     return new_labels
