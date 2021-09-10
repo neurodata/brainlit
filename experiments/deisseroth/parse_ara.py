@@ -3,7 +3,7 @@ from collections import defaultdict
 
 class Node:
     
-    def __init__(self, id_, acronym, name, parent_id, level=0):
+    def __init__(self, id_, acronym, name, parent_id, st_level, level=0):
         self.id = id_
         self.acronym = acronym
         self.name = name
@@ -11,6 +11,7 @@ class Node:
 #         self.color = None
         self.children = []
         self.parent_id = parent_id
+        self.st_level = st_level
     
     def __repr__(self):
         return 'name: {},level: {},id: {},children: {}\n'.format(self.name,self.level,self.id,repr(self.children))
@@ -19,7 +20,7 @@ class Node:
         self.children.append(child)
 
 def build_tree(obj, level=0):
-    node = Node(obj['id'],obj['acronym'],obj['name'], obj['parent_structure_id'], level=level)
+    node = Node(obj['id'],obj['acronym'],obj['name'], obj['parent_structure_id'], obj['st_level'], level=level)
     for i in obj['children']:
         node.add_child(build_tree(i, level=level+1))
     return node
