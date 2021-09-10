@@ -116,15 +116,14 @@ class most_probable_neuron_path:
 
         print("Setting up emission distribution...")
         vals = np.array([np.unique(image)]).T
-        scores_neg = -1*kde.score_samples(vals)
+        scores_neg = -1 * kde.score_samples(vals)
         vals = np.squeeze(vals)
 
         data = np.reshape(np.copy(image), (image.size,))
         sort_idx = np.argsort(vals)
-        idx = np.searchsorted(vals, data, sorter = sort_idx)
+        idx = np.searchsorted(vals, data, sorter=sort_idx)
         out = scores_neg[sort_idx][idx]
         image_tiered = np.reshape(out, image.shape)
-
 
         self.image_tiered = image_tiered
 

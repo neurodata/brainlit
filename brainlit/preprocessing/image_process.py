@@ -269,7 +269,7 @@ def split_frags(soma_coords, labels, im_processed, threshold, res):
     new_labels = split_frags_split_fractured_components(new_labels)
 
     props = regionprops(new_labels)
-    for label, prop in enumerate(tqdm(props, desc = "remove small fragments")):
+    for label, prop in enumerate(tqdm(props, desc="remove small fragments")):
         if prop.area < 15:
             new_labels[new_labels == prop.label] = 0
 
@@ -436,9 +436,9 @@ def split_frags_split_fractured_components(new_labels):
     props = regionprops(new_labels)
     new_lbl = np.amax(new_labels) + 1
     for prop in tqdm(props, desc="Split fractured components"):
-        bbox = prop['bbox']
-        lbl = prop['label']
-        cutout = new_labels[bbox[0]:bbox[3],bbox[1]:bbox[4],bbox[2]:bbox[5]]
+        bbox = prop["bbox"]
+        lbl = prop["label"]
+        cutout = new_labels[bbox[0] : bbox[3], bbox[1] : bbox[4], bbox[2] : bbox[5]]
         mask = cutout == lbl
         lbl_labels = label(mask)
         for lbl_label in np.unique(lbl_labels):
@@ -466,7 +466,7 @@ def rename_states_consecutively(new_labels):
 
     data = np.reshape(np.copy(new_labels), (new_labels.size,))
     sort_idx = np.argsort(vals)
-    idx = np.searchsorted(vals, data, sorter = sort_idx)
+    idx = np.searchsorted(vals, data, sorter=sort_idx)
     out = new_vals[sort_idx][idx]
     new_labels = np.reshape(out, new_labels.shape)
 
