@@ -251,7 +251,7 @@ def split_frags(soma_coords, labels, im_processed, threshold, res):
     Returns:
         np.array: new image segmentation - different numbers indicate different fragments, 0 is background
     """
-    radius_states = 5
+    radius_states = 7
     image_iterative, states, comp_to_states, new_soma_masks = remove_somas(
         soma_coords, labels, im_processed, res
     )
@@ -314,7 +314,7 @@ def remove_somas(soma_coords, labels, im_processed, res):
         dist = np.ones_like(image_iterative)
         dist[soma_pt[0], soma_pt[1], soma_pt[2]] = 0
         dt = ndi.morphology.distance_transform_edt(dist, sampling=[0.3, 0.3, 1])
-        sphere = dt < 12
+        sphere = dt < 15
         new_soma_mask = np.logical_and(soma_mask, sphere)
 
         image_iterative[new_soma_mask] = 0
