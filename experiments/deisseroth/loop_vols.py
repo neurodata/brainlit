@@ -6,7 +6,6 @@ import warnings
 import subprocess
 from tqdm import tqdm
 import h5py
-from skimage import measure
 from joblib import Parallel, delayed
 import multiprocessing
 
@@ -75,7 +74,7 @@ shape = vol.shape
 
 for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
     for j in tqdm(range(coords[1], shape[1], chunk_size[1]), leave=False):    
-        Parallel(n_jobs=ncpu)(delayed(process_chunk)(i,j,k) for k in tqdm(range(0,shape[2],chunk_size[2]), leave=False))
+        Parallel(n_jobs=ncpu)(delayed(process_chunk)(i,j,k) for k in range(0,shape[2],chunk_size[2], leave=False))
         with open(progress_file, 'a') as f:
             f.write('\n')
             f.write(f'{i} {j}')
