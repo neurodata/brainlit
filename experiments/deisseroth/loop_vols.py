@@ -60,7 +60,7 @@ def process_chunk(i, j, k):
     
     subprocess.run(["/home/tathey1/ilastik-1.3.3post3-Linux/run_ilastik.sh", "--headless", "--project=/data/tathey1/matt_wright/ilastik/model1/matt_benchmark_formal_brain3.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
-    f = h5py.File("/Users/thomasathey/Documents/mimlab/mouselight/ailey/files/image_" + str(k) + "_Probabilities.h5", "r")
+    f = h5py.File("/data/tathey1/matt_wright/brain4/tracing/image_" + str(k) + "_Probabilities.h5", "r")
     pred = f.get("exported_data")
     pred = pred[:,:,:,1]
     mask = pred > 0.5
