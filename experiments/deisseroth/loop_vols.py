@@ -13,6 +13,15 @@ import multiprocessing
 chunk_size = [256, 256, 300]
 ncpu = 4
 dir = "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/Ch_647"
+progress_file = "/home/tathey1/progress.txt"
+
+with open(progress_file) as f:
+    for line in f:
+        pass
+    last_line = line
+
+coords_list = last_line.split(' ')
+coords = [int(coord) for coord in coords_list]
 
 print(f"Number cpus: {multiprocessing.cpu_count()}")
 
@@ -64,9 +73,10 @@ vol = CloudVolume(dir, parallel=True, mip=mip, fill_missing=True)
 shape = vol.shape
 
 
-
-for i in tqdm(range(0, shape[0], chunk_size[0])):
-    for j in tqdm(range(0, shape[1], chunk_size[1]), leave=False):    
+for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
+    for j in tqdm(range(coords[1], shape[1], chunk_size[1]), leave=False):    
         Parallel(n_jobs=ncpu)(delayed(process_chunk)(i,j,k) for k in tqdm(range(0,shape[2],chunk_size[2]), leave=False))
-
+        with open(progress_file, 'a') as f:
+            f.write('\n')
+            f.write(f'{i} {j}')
 
