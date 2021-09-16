@@ -56,7 +56,6 @@ def process_chunk(i, j, k):
     subvol_endo = np.squeeze(vol_endo[i:i2,j:j2,k:k2])
 
     image_3channel = np.stack([subvol_bg, subvol_fg, subvol_endo], axis=0)
-    print(f"3c: {image_3channel.shape}")
 
     fname = data_dir + "/image_" + str(k) + ".h5"
     with h5py.File(fname, "w") as f:
@@ -68,10 +67,8 @@ def process_chunk(i, j, k):
     f = h5py.File(data_dir + "image_" + str(k) + "_Probabilities.h5", "r")
     pred = f.get("exported_data")
 
-    print(f"pred1: {pred.shape}")
     pred = pred[1,:,:,:]
 
-    print(f"pred2: {pred.shape}")
     mask = np.array(pred > 0.5).astype('uint64')
     vol_mask[i:i2,j:j2,k:k2] = mask
 
