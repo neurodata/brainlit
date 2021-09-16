@@ -66,7 +66,7 @@ def process_chunk(i, j, k):
 
     f = h5py.File(data_dir + "image_" + str(k) + "_Probabilities.h5", "r")
     pred = f.get("exported_data")
-    pred = pred[:,:,:,1]
+    pred = pred[1,:,:,:]
     mask = pred > 0.5
 
     vol_mask[i:i2,j:j2,k:k2] = mask
