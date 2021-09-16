@@ -74,7 +74,7 @@ shape = vol.shape
 
 for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
     for j in tqdm(range(coords[1], shape[1], chunk_size[1]), leave=False):    
-        Parallel(n_jobs=ncpu)(delayed(process_chunk)(i,j,k) for k in range(0,shape[2],chunk_size[2], leave=False))
+        Parallel(n_jobs=ncpu)(delayed(process_chunk)(i,j,k) for k in range(0,shape[2],chunk_size[2]))
         with open(progress_file, 'a') as f:
             f.write('\n')
             f.write(f'{i} {j}')
