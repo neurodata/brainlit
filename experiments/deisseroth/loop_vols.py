@@ -51,9 +51,9 @@ def process_chunk(i, j, k):
     i2 = np.amin([i+chunk_size[0], shape[0]])
     j2 = np.amin([j+chunk_size[1], shape[1]])
     k2 = np.amin([k+chunk_size[2], shape[2]])
-    subvol_fg = vol_fg[i:i2,j:j2,k:k2]
-    subvol_bg = vol_bg[i:i2,j:j2,k:k2]
-    subvol_endo = vol_endo[i:i2,j:j2,k:k2]
+    subvol_fg = np.squeeze(vol_fg[i:i2,j:j2,k:k2])
+    subvol_bg = np.squeeze(vol_bg[i:i2,j:j2,k:k2])
+    subvol_endo = np.squeeze(vol_endo[i:i2,j:j2,k:k2])
 
     image_3channel = np.stack([subvol_bg, subvol_fg, subvol_endo], axis=0)
 
