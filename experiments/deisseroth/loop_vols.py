@@ -12,7 +12,7 @@ import multiprocessing
 chunk_size = [256, 256, 300]
 ncpu = 4
 dir = "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/Ch_647"
-progress_file = "/home/tathey1/progress.txt"
+progress_file = "/home/tathey1/progress.txt" #"/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/tracing/progress.txt" 
 
 with open(progress_file) as f:
     for line in f:
@@ -28,20 +28,23 @@ warnings.filterwarnings("ignore")
 
 
 def process_chunk(i, j, k):
+    data_dir = "/data/tathey1/matt_wright/brain4/tracing/"
+    #data_dir = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/tracing/"
+
     chunk_size = [256, 256, 300]
     mip = 0
     
     dir_mask = "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/axon_mask"
-    vol_mask = CloudVolume(dir_mask, parallel=True, mip=mip, fill_missing=True)
+    vol_mask = CloudVolume(dir_mask, parallel=1, mip=mip, fill_missing=True)
 
     dir_fg = "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/Ch_647"
-    vol_fg = CloudVolume(dir_fg, parallel=True, mip=mip, fill_missing=True)
+    vol_fg = CloudVolume(dir_fg, parallel=1, mip=mip, fill_missing=True)
 
     dir_bg = "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/Ch_561"
-    vol_bg = CloudVolume(dir_bg, parallel=True, mip=mip, fill_missing=True)
+    vol_bg = CloudVolume(dir_bg, parallel=1, mip=mip, fill_missing=True)
 
     dir_endo = "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/Ch_488"
-    vol_endo = CloudVolume(dir_endo, parallel=True, mip=mip, fill_missing=True)
+    vol_endo = CloudVolume(dir_endo, parallel=1, mip=mip, fill_missing=True)
 
     shape = vol_fg.shape
 
@@ -54,13 +57,14 @@ def process_chunk(i, j, k):
 
     image_3channel = np.stack([subvol_bg, subvol_fg, subvol_endo], axis=0)
 
-    fname = "/data/tathey1/matt_wright/brain4/tracing/image_" + str(k) + ".h5"
+    fname = data_dir + "/image_" + str(k) + ".h5"
     with h5py.File(fname, "w") as f:
         dset = f.create_dataset("image_3channel", data=image_3channel)
     
     subprocess.run(["/home/tathey1/ilastik-1.3.3post3-Linux/run_ilastik.sh", "--headless", "--project=/data/tathey1/matt_wright/ilastik/model1/matt_benchmark_formal_brain3.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    
-    f = h5py.File("/data/tathey1/matt_wright/brain4/tracing/image_" + str(k) + "_Probabilities.h5", "r")
+    #subprocess.run(["/Applications/ilastik-1.3.3post3-OSX.app/Contents/ilastik-release/run_ilastik.sh", "--headless", "--project=/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain3/matt_benchmark_formal_brain3.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    f = h5py.File(data_dir + "image_" + str(k) + "_Probabilities.h5", "r")
     pred = f.get("exported_data")
     pred = pred[:,:,:,1]
     mask = pred > 0.5
