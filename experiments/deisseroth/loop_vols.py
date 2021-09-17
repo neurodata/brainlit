@@ -73,7 +73,7 @@ def process_chunk(i, j, k):
 
     mask = np.array(pred > 0.5).astype('uint64')
     print(f"{k}: {np.sum(mask)}, {mask.shape}")
-    vol_mask[i:i2,j:j2,k:k2,0] = mask
+    vol_mask[i:i2,j:j2,k:k2] = mask
 
 mip = 0
 vol = CloudVolume(dir, parallel=True, mip=mip, fill_missing=True)
