@@ -1,6 +1,9 @@
 import igneous.task_creation as tc
+from taskqueue import LocalTaskQueue
 
 layer_path = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/axon_mask"
+
+tq = LocalTaskQueue(parallel=8)
 
 tasks = tc.create_downsampling_tasks(
     layer_path, # e.g. 'gs://bucket/dataset/layer'
@@ -18,3 +21,6 @@ tasks = tc.create_downsampling_tasks(
     compress='gzip', # None, 'gzip', and 'br' (brotli) are options
     factor=(2,2,2), # common options are (2,2,1) and (2,2,2)
   )
+
+  tq.insert(tasks)
+tq.execute()
