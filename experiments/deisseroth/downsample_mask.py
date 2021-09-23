@@ -22,5 +22,5 @@ tasks = tc.create_downsampling_tasks(
     factor=(2,2,2), # common options are (2,2,1) and (2,2,2)
   )
 
-  tq.insert(tasks)
+tq.insert(tasks)
 tq.execute()
