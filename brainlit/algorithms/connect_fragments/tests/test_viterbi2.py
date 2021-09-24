@@ -24,11 +24,13 @@ def test_viterbi2_bad_input():
 
 
 def test_viterbi2_valid_input():
-    image = np.ones((10, 10, 10))
+    image = np.zeros((10, 10, 10))
     labels = np.zeros((10, 10, 10), dtype=int)
 
     labels[0, 0, 0] = 1
     labels[9, 9, 9] = 2
+    image[0, 0, 0] = 1
+    image[9, 9, 9] = 1
 
     mpnp = dynamic_programming_viterbi2.most_probable_neuron_path(image, labels)
 
