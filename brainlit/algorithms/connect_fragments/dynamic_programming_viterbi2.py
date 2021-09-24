@@ -114,11 +114,16 @@ class most_probable_neuron_path:
         data_2d = np.expand_dims(np.sort(np.array(data_sample)), axis=1)
         kde = KernelDensity(kernel="gaussian", bandwidth=100).fit(data_2d)
 
-        image_tiered = 0 * image
-        for val in tqdm(np.unique(image), desc="setting up emission distribution..."):
-            mask = image == val
-            score = kde.score_samples(np.array([[val]]))
-            image_tiered[mask] = -score
+        print("Setting up emission distribution...")
+        vals = np.array([np.unique(image)]).T
+        scores_neg = -1 * kde.score_samples(vals)
+        vals = np.squeeze(vals)
+
+        data = np.reshape(np.copy(image), (image.size,))
+        sort_idx = np.argsort(vals)
+        idx = np.searchsorted(vals, data, sorter=sort_idx)
+        out = scores_neg[sort_idx][idx]
+        image_tiered = np.reshape(out, image.shape)
 
         self.image_tiered = image_tiered
 
