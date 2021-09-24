@@ -20,8 +20,8 @@ def resample(path, spacing=1):
         new_path.append(pt1)
         dist = np.linalg.norm(pt1 - pt2)
 
-        if dist > 1:
-            ts = np.arange(0, dist, 5)
+        if dist > spacing:
+            ts = np.arange(0, dist, spacing)
             mid = np.zeros((len(ts) - 1, 3))
             for i, t in enumerate(ts[1:]):
                 mid[i, :] = pt1 + (t / dist) * (pt2 - pt1)
@@ -46,8 +46,15 @@ def sd(pts1, pts2, substantial=False):
     _, dists1 = pairwise_distances_argmin_min(pts1, pts2)
     _, dists2 = pairwise_distances_argmin_min(pts2, pts1)
     if substantial:
-        ddiv1 = np.mean(dists1[dists1 > 2])
-        ddiv2 = np.mean(dists2[dists2 > 2])
+        if any(dists1 > 2):
+            ddiv1 = np.mean(dists1[dists1 > 2])
+        else:
+            ddiv1 = 0
+        if any(dists2 > 2):
+            ddiv2 = np.mean(dists2[dists2 > 2])
+        else:
+            ddiv2 = 0
+        
         return np.mean([ddiv1, ddiv2])
     else:
         ddiv1 = np.mean(dists1)
