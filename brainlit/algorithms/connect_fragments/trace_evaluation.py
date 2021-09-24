@@ -54,7 +54,7 @@ def sd(pts1, pts2, substantial=False):
             ddiv2 = np.mean(dists2[dists2 > 2])
         else:
             ddiv2 = 0
-        
+
         return np.mean([ddiv1, ddiv2])
     else:
         ddiv1 = np.mean(dists1)
