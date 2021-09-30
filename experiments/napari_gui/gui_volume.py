@@ -80,17 +80,25 @@ viewer.camera.angles = [0, -90, 180]
 def get_layer_labels():
     labels = []
     label2state = {}
-    if len(viewer.layers) > 2:
-        for i in range(2,len(viewer.layers)):
+    label2layers = {}
+
+    for i in range(len(viewer.layers)):
+        if type(viewer.layers[i]) == napari.layers.points.points.Points:
             label_name = viewer.layers[i].name.split(" ")
             label = int(label_name[1])
             state = int(label_name[3])
-            labels.append(label)
+
+            if label not in labels:
+                labels.append(label)
+                label2layers[label] = [i]
+            else:
+                label2layers[label] = label2layers[label] + [i]
+
             label2state[label] = state
-    return labels, label2state
+    return labels, label2state, label2layers
 
 @labels_layer.mouse_drag_callbacks.append
-def get_connected_component_shape(layer, event):
+def select_state(layer, event):
     data_coordinates = layer.world_to_data(event.position)
     cords = np.round(data_coordinates).astype(int)
     val = layer.get_value(
@@ -101,7 +109,7 @@ def get_connected_component_shape(layer, event):
     if val is None:
         return
     if val != 0: 
-        existing_labels, label2state = get_layer_labels()
+        existing_labels, label2state, label2layers = get_layer_labels()
 
         if val in existing_labels and label2state[val] == 0:
             state_num = 1
@@ -119,11 +127,10 @@ def get_connected_component_shape(layer, event):
         print(msg)
 
         if val in existing_labels:
-            existing_labels.reverse()
-            n = len(viewer.layers)
-            for i, existing_label in enumerate(existing_labels):
-                if val == existing_label:
-                    viewer.layers.pop(n-i-3)
+            layers = label2layers[val]
+            layers.reverse()
+            for layer in layers:
+                viewer.layers.pop(layer)
 
 
 def drawpath(state1, state2):
@@ -148,8 +155,7 @@ def drawpath(state1, state2):
             cumul_cost += dist_cost + int_cost
             print(f"Trans. #{s}: dist cost state {path_states[s-1]}->state {state}, comp {viterbi.state_to_comp[path_states[s-1]][1]}->comp {viterbi.state_to_comp[state][1]}: {dist_cost:.2f}, int cost: {int_cost:.2f}, cum. cost: {cumul_cost:.2f}")
         if viterbi.state_to_comp[state][0] == "fragment":
-            if s>0:
-                lines.append(list(viterbi.state_to_comp[state][2]["coord1"]))
+            lines.append(list(viterbi.state_to_comp[state][2]["coord1"]))
             lines.append(list(viterbi.state_to_comp[state][2]["coord2"]))
         elif viterbi.state_to_comp[path_states[s-1]][0] == "fragment":
             lines.append(list(viterbi.state_to_comp[path_states[s-1]][2]["soma connection point"])) 
@@ -158,15 +164,25 @@ def drawpath(state1, state2):
 
 @viewer.bind_key('a')
 def accept_image(viewer):
-    if len(viewer.layers) > 4:
-        existing_labels, label2state = get_layer_labels()
-        existing_labels = np.unique(existing_labels)
-        state1 = viterbi.comp_to_states[existing_labels[0]][label2state[existing_labels[0]]]
-        state2 = viterbi.comp_to_states[existing_labels[1]][label2state[existing_labels[1]]]
+    existing_labels, label2state, label2layers = get_layer_labels()
+    if len(existing_labels) >= 2:
+        state1 = viterbi.comp_to_states[existing_labels[-2]][label2state[existing_labels[-2]]]
+        state2 = viterbi.comp_to_states[existing_labels[-1]][label2state[existing_labels[-1]]]
 
         lines = drawpath(state1, state2)
         viewer.add_shapes(lines, shape_type="path", edge_color="blue", edge_width=1)
+
+        layers  = label2layers[existing_labels[-2]] + label2layers[existing_labels[-1]]
+        layers.sort(reverse=True)
+
+        for layer in layers:
+            viewer.layers.pop(layer)
     else:
         print("Not enough states selected")
+
+@viewer.bind_key('c')
+def accept_image(viewer):
+    while len(viewer.layers) > 2:
+        viewer.layers.pop(-1)
     
 napari.run()
