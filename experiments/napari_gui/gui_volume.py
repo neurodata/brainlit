@@ -111,16 +111,20 @@ def select_state(layer, event):
     if val != 0: 
         existing_labels, label2state, label2layers = get_layer_labels()
 
-        if val in existing_labels and label2state[val] == 0:
+        if val in existing_labels and label2state[val] == 0 and len(viterbi.comp_to_states[val]) > 1:
             state_num = 1
         else:
             state_num = 0
 
         state = viterbi.comp_to_states[val][state_num]
-        pt1 = viterbi.state_to_comp[state][2]["coord1"]
-        pt2 = viterbi.state_to_comp[state][2]["coord2"]
-        viewer.add_points([pt1], face_color='red', size=7, name=f"label {val} state {state_num} start")
+        if viterbi.state_to_comp[state][0] == "fragment":
+            pt1 = viterbi.state_to_comp[state][2]["coord1"]
+            pt2 = viterbi.state_to_comp[state][2]["coord2"]
+            viewer.add_points([pt1], face_color='red', size=7, name=f"label {val} state {state_num} start")
+        else:
+            pt2 = viterbi.soma_locs[val][0,:]
         viewer.add_points([pt2], face_color='orange', size=7, name=f"label {val} state {state_num} end")
+
         msg = (
             f'clicked at {cords} on component {val} which is now is displaying endpoints'
         )
@@ -162,7 +166,7 @@ def drawpath(state1, state2):
 
     return lines
 
-@viewer.bind_key('a')
+@viewer.bind_key('t')
 def accept_image(viewer):
     existing_labels, label2state, label2layers = get_layer_labels()
     if len(existing_labels) >= 2:
