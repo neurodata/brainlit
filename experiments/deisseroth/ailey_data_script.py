@@ -27,9 +27,7 @@ vol_mask_ds = CloudVolume(dir, parallel=1, mip=2, fill_missing=False)
 print(vol_mask_ds.shape)
 
 data = vol_mask_ds[:,:,:,:]
-print(np.unique(data))
 data = data[:,:,:,0]
 data = np.swapaxes(data, 0,2)
-print(data.shape)
 
-io.imsave("/Users/thomasathey/Documents/mimlab/mouselight/ailey/wholebrain_results/brain4/register/axon_mask_3.tif", data)
+io.imsave("/data/tathey1/matt_wright/brain4/axon_mask_2.tif", data)
