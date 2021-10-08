@@ -21,56 +21,15 @@ from cloudvolume import Skeleton
 import re 
 
 num = 0
-janelia = False
+path = '/Users/thomasathey/Documents/mimlab/mouselight/input/images/first10_quantitative/viterbi_'+str(num)+'.pickle'
+path = '/Users/thomasathey/Documents/mimlab/mouselight/input/images/gui/viterbi_250.pickle'
 
-# read image
-im_path = "/Users/thomasathey/Documents/mimlab/mouselight/input/images/first10_quantitative/images/2018-08-01_" + str(num) + "_first10_quantitative.tif"
-
-im = Path(im_path)
-im_og = io.imread(im, plugin="tifffile")
-print(f"Image shape: {im_og.shape}")
-
-# read coords
-if janelia:
-    csv_path = "/Users/thomasathey/Documents/mimlab/mouselight/input/images/first10_quantitative/voxel_coords.csv"
-    coords = np.genfromtxt(csv_path, delimiter=',')
-    coords = coords[10*num:10*(num+1)].astype(int)
-    soma_coords = [list(coords[0,:])]
-    axon_coords = [list(coords[-1,:])]
-else:
-    csv_path = "/Users/thomasathey/Documents/mimlab/mouselight/input/images/first10_quantitative/my_points/points_" + str(num) + ".csv"
-    coords = np.genfromtxt(csv_path, delimiter=',')
-    coords = coords[1:].astype(int)
-    coords = coords[:,1:]
-    soma_coords = [list(coords[-1,:])]
-    axon_coords = [list(coords[0,:])]
-
-coords_list = list(coords)
-coords_list = [list(c) for c in coords_list]
-print(f"coords shape: {coords.shape}")
-
-# read ilastik
-pred_path = "/Users/thomasathey/Documents/mimlab/mouselight/input/images/first10_quantitative/2018-08-01_" + str(num) + "_first10_quantitative_Probabilities.h5"
-f = h5py.File(pred_path, 'r')
-pred = f.get('exported_data')
-pred = pred[:,:,:,1]
-im_processed = pred
-
-
-
-with open('/Users/thomasathey/Documents/mimlab/mouselight/input/images/first10_quantitative/viterbi_'+str(num)+'.pickle', 'rb') as handle:
+with open(path, 'rb') as handle:
     viterbi = pickle.load(handle)
 
 im = viterbi.image_raw
-im_og = im
-im_processed = viterbi.image
 new_labels = viterbi.labels
-soma_lbls = viterbi.soma_lbls
 
-_, axon_lbls = image_process.label_points(new_labels, axon_coords)
-_, soma_lbls = image_process.label_points(new_labels, soma_coords)
-soma_lbl = soma_lbls[0]
-print(f"Axon labels: {axon_lbls}, soma labels: {soma_lbls}")
 
 viewer = napari.Viewer(ndisplay=3)
 viewer.add_image(viterbi.image_raw, name="image")
