@@ -27,12 +27,12 @@ path = '/Users/thomasathey/Documents/mimlab/mouselight/input/images/gui/viterbi_
 with open(path, 'rb') as handle:
     viterbi = pickle.load(handle)
 
-im = viterbi.image_raw
+im = viterbi.image
 new_labels = viterbi.labels
 
 
 viewer = napari.Viewer(ndisplay=3)
-viewer.add_image(viterbi.image_raw, name="image")
+viewer.add_image(im, name="image")
 labels_layer = viewer.add_labels(new_labels, name="labels")
 viewer.camera.angles = [0, -90, 180]
 
@@ -85,7 +85,7 @@ def select_state(layer, event):
         viewer.add_points([pt2], face_color='orange', size=7, name=f"label {val} state {state_num} end")
 
         msg = (
-            f'clicked at {cords} on component {val} which is now is displaying endpoints'
+            f'clicked  on component {val} which is now is displaying endpoints: {pt2}'
         )
         print(msg)
 
