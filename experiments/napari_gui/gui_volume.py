@@ -18,22 +18,32 @@ import h5py
 from napari_animation import AnimationWidget
 import similaritymeasures
 from cloudvolume import Skeleton
-import re 
+import re
+from brainlit.utils.Neuron_trace import NeuronTrace
+
+nt = NeuronTrace(path="/Users/thomasathey/Documents/mimlab/mouselight/input/mim_slides/SNT_Data.swc")
+df = nt.get_df()
+SNT = df[['x','y','z']].to_numpy()
+SNT[:,[0,1,2]] = SNT[:,[2,1,0]]
+
 
 num = 0
 path = '/Users/thomasathey/Documents/mimlab/mouselight/input/images/first10_quantitative/viterbi_'+str(num)+'.pickle'
-path = '/Users/thomasathey/Documents/mimlab/mouselight/input/images/gui/viterbi_250.pickle'
+#path = '/Users/thomasathey/Documents/mimlab/mouselight/input/images/gui/viterbi_250.pickle'
 
 with open(path, 'rb') as handle:
     viterbi = pickle.load(handle)
 
-im = viterbi.image
+im = viterbi.image_raw
 new_labels = viterbi.labels
 
 
 viewer = napari.Viewer(ndisplay=3)
 viewer.add_image(im, name="image")
+viewer.add_shapes(SNT, shape_type="path", edge_color="blue", edge_width=1)
 labels_layer = viewer.add_labels(new_labels, name="labels")
+animation_widget = AnimationWidget(viewer)
+viewer.window.add_dock_widget(animation_widget, area='right')
 viewer.camera.angles = [0, -90, 180]
 
 def get_layer_labels():
@@ -95,6 +105,37 @@ def select_state(layer, event):
             for layer in layers:
                 viewer.layers.pop(layer)
 
+@viewer.bind_key('s')
+def accept_image(viewer):
+    existing_labels, label2state, label2layers = get_layer_labels()
+    if len(existing_labels) >= 1:
+        val = existing_labels[-1]
+        if label2state[val] == 0:
+            state_num = 1
+        else:
+            state_num = 0
+
+        state = viterbi.comp_to_states[val][state_num]
+        if viterbi.state_to_comp[state][0] == "fragment":
+            pt1 = viterbi.state_to_comp[state][2]["coord1"]
+            pt2 = viterbi.state_to_comp[state][2]["coord2"]
+            viewer.add_points([pt1], face_color='red', size=7, name=f"label {val} state {state_num} start")
+        else:
+            pt2 = viterbi.soma_locs[val][0,:]
+        viewer.add_points([pt2], face_color='orange', size=7, name=f"label {val} state {state_num} end")
+
+        msg = (
+            f'switched component {val} which is now is displaying endpoints: {pt2}'
+        )
+        print(msg)
+
+        if val in existing_labels:
+            layers = label2layers[val]
+            layers.reverse()
+            for layer in layers:
+                viewer.layers.pop(layer)
+    else:
+        print("No label selected")
 
 def drawpath(state1, state2):
     path_states = nx.shortest_path(viterbi.nxGraph, state1, state2, weight='weight')
@@ -133,7 +174,7 @@ def accept_image(viewer):
         state2 = viterbi.comp_to_states[existing_labels[-1]][label2state[existing_labels[-1]]]
 
         lines = drawpath(state1, state2)
-        viewer.add_shapes(lines, shape_type="path", edge_color="blue", edge_width=1)
+        viewer.add_shapes(lines, shape_type="path", edge_color="red", edge_width=1)
 
         layers  = label2layers[existing_labels[-2]] + label2layers[existing_labels[-1]]
         layers.sort(reverse=True)
