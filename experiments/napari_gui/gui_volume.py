@@ -52,19 +52,49 @@ def get_layer_labels():
     label2layers = {}
 
     for i in range(len(viewer.layers)):
-        if type(viewer.layers[i]) == napari.layers.points.points.Points:
+        print(type(viewer.layers[i]))
+        if type(viewer.layers[i]) == napari.layers.shapes.shapes.Shapes:
             label_name = viewer.layers[i].name.split(" ")
-            label = int(label_name[1])
-            state = int(label_name[3])
+            if label_name[0] == "label":
+                label = int(label_name[1])
+                state = int(label_name[3])
 
-            if label not in labels:
-                labels.append(label)
-                label2layers[label] = [i]
-            else:
-                label2layers[label] = label2layers[label] + [i]
+                if label not in labels:
+                    labels.append(label)
+                    label2layers[label] = [i]
+                else:
+                    label2layers[label] = label2layers[label] + [i]
 
-            label2state[label] = state
+                label2state[label] = state
     return labels, label2state, label2layers
+
+def draw_arrow(val, state_num):
+    state = viterbi.comp_to_states[val][state_num]
+    if viterbi.state_to_comp[state][0] == "fragment":
+        pt1 = viterbi.state_to_comp[state][2]["coord1"]
+        pt2 = viterbi.state_to_comp[state][2]["coord2"]
+        viewer.add_shapes([pt1,pt2], shape_type="path", edge_color="blue", edge_width=1, name=f"label {val} state {state_num} start")
+        orient = np.subtract(pt1,pt2)/np.linalg.norm(np.subtract(pt1,pt2))
+        base = np.add(pt2,orient*5)
+        orient2 = orient.copy()
+        orient2[0] = -orient[0]
+        c1 = np.cross(orient,orient2)/np.linalg.norm(np.cross(orient,orient2))
+        c2 = np.cross(orient,c1)/np.linalg.norm(np.cross(orient,c1))
+
+        corner1 = np.add(base,5*c1)
+        corner2 = np.add(base,-5*c1)
+        poly1 = np.squeeze(np.stack([pt2,corner1,corner2], axis=0))
+        corner1 = np.add(base,5*c2)
+        corner2 = np.add(base,-5*c2)
+        poly2 = np.squeeze(np.stack([pt2,corner1,corner2], axis=0))
+
+        viewer.add_shapes([pt1,pt2], shape_type="path", edge_color="blue", edge_width=1, name=f"label {val} state {state_num} stem")
+        viewer.add_shapes([poly1,poly2], shape_type="polygon", edge_color="blue", face_color='blue', edge_width=1, name=f"label {val} state {state_num} head")
+    else:
+        pt2 = viterbi.soma_locs[val][0,:]
+        viewer.add_points([pt2], face_color='orange', size=7, name=f"label {val} state {state_num} end")
+    return pt2
+
 
 @labels_layer.mouse_drag_callbacks.append
 def select_state(layer, event):
@@ -85,14 +115,8 @@ def select_state(layer, event):
         else:
             state_num = 0
 
-        state = viterbi.comp_to_states[val][state_num]
-        if viterbi.state_to_comp[state][0] == "fragment":
-            pt1 = viterbi.state_to_comp[state][2]["coord1"]
-            pt2 = viterbi.state_to_comp[state][2]["coord2"]
-            viewer.add_points([pt1], face_color='red', size=7, name=f"label {val} state {state_num} start")
-        else:
-            pt2 = viterbi.soma_locs[val][0,:]
-        viewer.add_points([pt2], face_color='orange', size=7, name=f"label {val} state {state_num} end")
+        
+        pt2 = draw_arrow(val, state_num)
 
         msg = (
             f'clicked  on component {val} which is now is displaying endpoints: {pt2}'
@@ -115,15 +139,8 @@ def accept_image(viewer):
         else:
             state_num = 0
 
-        state = viterbi.comp_to_states[val][state_num]
-        if viterbi.state_to_comp[state][0] == "fragment":
-            pt1 = viterbi.state_to_comp[state][2]["coord1"]
-            pt2 = viterbi.state_to_comp[state][2]["coord2"]
-            viewer.add_points([pt1], face_color='red', size=7, name=f"label {val} state {state_num} start")
-        else:
-            pt2 = viterbi.soma_locs[val][0,:]
-        viewer.add_points([pt2], face_color='orange', size=7, name=f"label {val} state {state_num} end")
-
+        pt2 = draw_arrow(val, state_num)
+        
         msg = (
             f'switched component {val} which is now is displaying endpoints: {pt2}'
         )
@@ -186,7 +203,7 @@ def accept_image(viewer):
 
 @viewer.bind_key('c')
 def accept_image(viewer):
-    while len(viewer.layers) > 2:
+    while len(viewer.layers) > 3:
         viewer.layers.pop(-1)
     
 napari.run()
