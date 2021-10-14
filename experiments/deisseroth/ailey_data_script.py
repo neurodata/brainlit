@@ -17,7 +17,7 @@ from tqdm import tqdm
 path_prefix = "/data/tathey1/matt_wright/brain3/"
 #path_prefix = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/wholebrain_results/brain4/register/"
 
-dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_01_Sert_Cre_R/axon_mask"
+dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_01_Sert_Cre_B/axon_mask"
 vol_mask_ds = CloudVolume(dir, parallel=1, mip=1, fill_missing=True)
 print(vol_mask_ds.shape)
 
