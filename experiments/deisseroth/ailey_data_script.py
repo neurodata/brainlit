@@ -15,7 +15,7 @@ import networkx as nx
 from tqdm import tqdm
 
 path_prefix = "/data/tathey1/matt_wright/brain4/"
-path_prefix = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/wholebrain_results/brain4/register/"
+#path_prefix = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/wholebrain_results/brain4/register/"
 
 dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/axon_mask"
 vol_mask_ds = CloudVolume(dir, parallel=1, mip=1, fill_missing=True)
@@ -36,7 +36,7 @@ for i in tqdm(range(0, vol_mask_ds.shape[2], 10)):
     chunk = np.swapaxes(chunk, 0,2)
     full_data[z1:z2,:,:] = chunk
 
-    if i%600 == 0 and i>0:
+    if i%600 == 0:
         print(f"Saving {i}")
         io.imsave(path_prefix + "axon_mask_1_" + str(i) + ".tif", full_data)
         
