@@ -25,7 +25,7 @@ full_data = np.zeros(vol_mask_ds.shape, dtype='uint8')
 full_data = np.squeeze(full_data)
 full_data = np.swapaxes(full_data, 0,2)
 
-for i in tqdm(range(0, vol_mask_ds.shape[2], 10)):
+for i in tqdm(range(1810, vol_mask_ds.shape[2], 10)):
     z1 = i
     z2 = i+10
     if z2 >= vol_mask_ds.shape[2]:
@@ -39,4 +39,4 @@ for i in tqdm(range(0, vol_mask_ds.shape[2], 10)):
         io.imsave(path_prefix + "axon_mask_1_" + str(i) + "_255.tif", full_data)
 
         
-io.imsave(path_prefix + "axon_mask_1_255.tif", full_data)
+io.imsave(path_prefix + "axon_mask_1_255_1810-2100.tif", full_data)
