@@ -130,7 +130,7 @@ def select_state(layer, event):
                 viewer.layers.pop(layer)
 
 @viewer.bind_key('s')
-def accept_image(viewer):
+def switch_state(viewer):
     existing_labels, label2state, label2layers = get_layer_labels()
     if len(existing_labels) >= 1:
         val = existing_labels[-1]
@@ -184,14 +184,14 @@ def drawpath(state1, state2):
     return lines
 
 @viewer.bind_key('t')
-def accept_image(viewer):
+def trace(viewer):
     existing_labels, label2state, label2layers = get_layer_labels()
     if len(existing_labels) >= 2:
         state1 = viterbi.comp_to_states[existing_labels[-2]][label2state[existing_labels[-2]]]
         state2 = viterbi.comp_to_states[existing_labels[-1]][label2state[existing_labels[-1]]]
 
         lines = drawpath(state1, state2)
-        viewer.add_shapes(lines, shape_type="path", edge_color="red", edge_width=1)
+        viewer.add_shapes(lines, shape_type="path", edge_color="red", edge_width=1, name="trace")
 
         layers  = label2layers[existing_labels[-2]] + label2layers[existing_labels[-1]]
         layers.sort(reverse=True)
@@ -202,8 +202,18 @@ def accept_image(viewer):
         print("Not enough states selected")
 
 @viewer.bind_key('c')
-def accept_image(viewer):
+def clear(viewer):
     while len(viewer.layers) > 3:
         viewer.layers.pop(-1)
     
+
+@viewer.bind_key('p')
+def print_path_infot(viewer):
+    for i in range(len(viewer.layers)):
+        layer = viewer.layers[i]
+        label_name = layer.name.split(" ")
+        if type(viewer.layers[i]) == napari.layers.shapes.shapes.Shapes and label_name[0] == "trace":
+            print(layer.data)
+
+
 napari.run()
