@@ -33,12 +33,12 @@ path = (
     + str(num)
     + ".pickle"
 )
-# path = '/Users/thomasathey/Documents/mimlab/mouselight/input/images/gui/viterbi_250.pickle'
+path = '/Users/thomasathey/Documents/mimlab/mouselight/input/images/gui/viterbi_250.pickle'
 
 with open(path, "rb") as handle:
     viterbi = pickle.load(handle)
 
-im = viterbi.image_raw
+im = viterbi.image#_raw
 new_labels = viterbi.labels
 
 nt = NeuronTrace(
@@ -64,7 +64,6 @@ def get_layers():
 
     for l in range(len(viewer.layers)):
         layer = viewer.layers[l]
-        print(type(layer))
         if type(layer) == napari.layers.shapes.shapes.Shapes or type(layer) == napari.layers.points.points.Points:
             label_name = layer.name.split(" ")
             if label_name[0] == "state":
@@ -95,46 +94,41 @@ def draw_arrow(val, state):
     if viterbi.state_to_comp[state][0] == "fragment":
         pt1 = viterbi.state_to_comp[state][2]["coord1"]
         pt2 = viterbi.state_to_comp[state][2]["coord2"]
-        viewer.add_shapes(
-            [pt1, pt2],
-            shape_type="path",
-            edge_color="blue",
-            edge_width=1,
-            name=f"state {state} label {val} start",
-        )
+
         orient = np.subtract(pt1, pt2) / np.linalg.norm(np.subtract(pt1, pt2))
         base = np.add(pt2, orient * factor)
         orient2 = orient.copy()
-        orient2[0] = -orient[0]
+        for i,term in enumerate(orient):
+            if term != 0:
+                orient2[i] = -orient[i]
+                break
         c1 = np.cross(orient, orient2) / np.linalg.norm(np.cross(orient, orient2))
         c2 = np.cross(orient, c1) / np.linalg.norm(np.cross(orient, c1))
-
         corner1 = np.add(base, factor * c1)
         corner2 = np.add(base, -factor * c1)
         poly1 = np.squeeze(np.stack([pt2, corner1, corner2], axis=0))
         corner1 = np.add(base, factor * c2)
         corner2 = np.add(base, -factor * c2)
         poly2 = np.squeeze(np.stack([pt2, corner1, corner2], axis=0))
-
         viewer.add_shapes(
             [pt1, pt2],
             shape_type="path",
-            edge_color="blue",
+            edge_color="red",
             edge_width=1,
             name=f"state {state} label {val} stem",
         )
         viewer.add_shapes(
             [poly1, poly2],
             shape_type="polygon",
-            edge_color="blue",
-            face_color="blue",
+            edge_color="red",
+            face_color="red",
             edge_width=1,
             name=f"state {state} label {val} head",
         )
     else:
         pt2 = viterbi.soma_locs[val][0, :]
         viewer.add_points(
-            [pt2], face_color="orange", size=7, name=f"state {state} label {val} end"
+            [pt2], face_color="red", size=7, name=f"state {state} label {val} end"
         )
     return pt2
 
