@@ -4,10 +4,12 @@ from cloudvolume import CloudVolume
 import pickle
 
 dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/axon_mask"
-vol_mask = CloudVolume(dir, parallel=1, mip=1, fill_missing=False)
+vol_mask = CloudVolume(dir, parallel=1, mip=1, fill_missing=True)
+print(f"Mask shape: {vol_mask.shape}")
 
 dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/atlas_to_target"
-vol_reg = CloudVolume(dir, parallel=1, mip=1, fill_missing=False)
+vol_reg = CloudVolume(dir, parallel=1, mip=1, fill_missing=True)
+print(f"Atlas shape: {vol_reg.shape}")
 
 outdir = "/data/tathey1/matt_wright/brain4/vols_densities/"
 
