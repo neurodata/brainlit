@@ -16,13 +16,25 @@ outdir = "/data/tathey1/matt_wright/brain4/vols_densities/"
 volumes = {}
 for x in tqdm(np.arange(0, vol_mask.shape[0], 128)):
     x2 = np.amin([x+128, vol_mask.shape[0]])
+    x_reg = int(x/8)
+    x2_reg = np.amin([int(x2/8), vol_reg.shape[0]])
+
     for y in tqdm(np.arange(0, vol_mask.shape[1], 128), leave=False):
         y2 = np.amin([x+128, vol_mask.shape[1]])
+        y_reg = int(y/8)
+        y2_reg = np.amin([int(y2/8), vol_reg.shape[1]])
         for z in tqdm(np.arange(0, vol_mask.shape[2], 128), leave=False):
             z2 = np.amin([x+128, vol_mask.shape[2]])
-            labels = vol_reg[x:x2,y:y2,z:z2]
-            labels_unique = np.unique(labels)
+            labels = vol_reg[x_reg:x2_reg,y_reg:y2_reg,z:z2]
+            labels = np.repeat(np.repeat(labels, 8, axis=0), 8, axis=1)
             mask = vol_mask[x:x2,y:y2,z:z2]
+
+            width = np.amin([mask.shape[0], labels.shape[0]])
+            height = np.amin([mask.shape[1], labels.shape[1]])
+            mask = mask[:width, :height, :]
+            labels = labels[:width, :height, :]
+
+            labels_unique = np.unique(labels)
 
             for unq in labels_unique:
                 if unq in volumes.keys():
