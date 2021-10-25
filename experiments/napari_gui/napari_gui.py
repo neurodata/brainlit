@@ -39,6 +39,7 @@ with open(path, "rb") as handle:
     viterbi = pickle.load(handle)
 
 im = viterbi.image#_raw
+print(f"Image shape: {im.shape}")
 new_labels = viterbi.labels
 
 nt = NeuronTrace(
