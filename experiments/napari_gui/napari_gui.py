@@ -27,6 +27,7 @@ from cloudvolume import Skeleton
 import re
 from brainlit.utils.Neuron_trace import NeuronTrace
 
+scale = [0.3, 0.3, 1]
 num = 0
 path = (
     "/Users/thomasathey/Documents/mimlab/mouselight/input/images/first10_quantitative/viterbi_"
@@ -50,12 +51,13 @@ SNT = df[["x", "y", "z"]].to_numpy()
 SNT[:, [0, 1, 2]] = SNT[:, [2, 1, 0]]
 
 viewer = napari.Viewer(ndisplay=3)
-viewer.add_image(im, name="image")
+viewer.add_image(im, name="image", scale=scale)
 # viewer.add_shapes(SNT, shape_type="path", edge_color="blue", edge_width=1)
-labels_layer = viewer.add_labels(new_labels, name="labels")
+labels_layer = viewer.add_labels(new_labels, name="labels", scale=scale)
 animation_widget = AnimationWidget(viewer)
 viewer.window.add_dock_widget(animation_widget, area="right")
 viewer.camera.angles = [0, -90, 180]
+viewer.scale_bar.visible = True
 
 
 def get_layers():
@@ -117,6 +119,7 @@ def draw_arrow(val, state):
             edge_color="red",
             edge_width=1,
             name=f"state {state} label {val} stem",
+            scale=scale
         )
         viewer.add_shapes(
             [poly1, poly2],
@@ -125,11 +128,12 @@ def draw_arrow(val, state):
             face_color="red",
             edge_width=1,
             name=f"state {state} label {val} head",
+            scale=scale
         )
     else:
         pt2 = viterbi.soma_locs[val][0, :]
         viewer.add_points(
-            [pt2], face_color="red", size=7, name=f"state {state} label {val} end"
+            [pt2], face_color="red", size=7, name=f"state {state} label {val} end", scale=scale
         )
     return pt2
 
@@ -232,6 +236,7 @@ def trace(viewer):
             edge_color="red",
             edge_width=1,
             name=f"trace {state1} to {state2}",
+            scale=scale
         )
 
         layers = states[state1] #+ states[state2]
