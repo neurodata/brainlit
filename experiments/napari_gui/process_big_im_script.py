@@ -68,7 +68,7 @@ import time
 # with open("/data/tathey1/mouselight/1_viterbi_states.pkl", 'wb') as handle:
 #     pickle.dump(mpnp, handle)
 
-with open("/data/tathey1/mouselight/1_viterbi_states.pkl", 'r') as handle:
+with open("/data/tathey1/mouselight/1_viterbi_states.pkl", 'rb') as handle:
     mpnp = pickle.load(handle)
 t1 = time.perf_counter()
 
