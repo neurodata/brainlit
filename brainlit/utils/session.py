@@ -262,13 +262,13 @@ class NeuroglancerSession:
         """
         check_type(seg_id, (int, np.integer))
         check_iterable_type(v_id_list, (int, np.integer))
-        check_type(buffer, (int, np.integer))
-        if buffer < 0:
-            raise ValueError(f"Buffer {buffer} shouild not be negative.")
         check_type(expand, bool)
         if expand:
             buffer = 0
-        buffer = [buffer] * 3
+        if not isinstance(buffer, Iterable):
+            buffer = [buffer] * 3
+        check_iterable_type(buffer, (int, np.integer))
+        check_iterable_nonnegative(buffer)
 
         voxel_list = [self._get_voxel(seg_id, i) for i in v_id_list]
         if len(voxel_list) == 1:  # edge case of 1 vertex
