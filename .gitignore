@@ -61,6 +61,12 @@ docs/_build/
 # Documentation notebook data
 docs/notebooks/utils/data
 
+# PyTest data
+data/test_upload/
+data/test_upload_annotations/
+data/test_upload_segments/
+data/source/
+
 # PyBuilder
 target/
 
