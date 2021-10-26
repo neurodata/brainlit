@@ -91,10 +91,7 @@ with open("/data/tathey1/mouselight/1_viterbi_nx.pkl", 'rb') as handle:
     mpnp = pickle.load(handle)
 t1 = time.perf_counter()
 
-#path_states = nx.shortest_path(mpnp.nxGraph, 1, 11, weight='weight')
-
-a = sorted(mpnp.nxGraph.degree, key=lambda x: x[1], reverse=True)
-nx.bfs_edges(mpnp.nxGraph, a[0][0])
+path_states = nx.shortest_path(mpnp.nxGraph, 4417, 417, weight='weight')
 
 print(f"computed path in {time.perf_counter()-t1} seconds")
 t1 = time.perf_counter()
