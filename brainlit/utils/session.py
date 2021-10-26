@@ -19,6 +19,7 @@ from brainlit.utils.util import (
     check_iterable_type,
     check_iterable_nonnegative,
 )
+from collections import Iterable
 
 Bounds = Union[Bbox, Tuple[int, int, int, int, int, int]]
 

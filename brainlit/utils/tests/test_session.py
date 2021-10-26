@@ -141,10 +141,6 @@ def test_pull_voxel_bad_inputs(session):
         sess.pull_voxel(seg_id, v_id, radus=1.5)
     with pytest.raises(ValueError):
         sess.pull_voxel(seg_id, v_id, radius=-1)
-    with pytest.raises(TypeError):
-        sess.pull_voxel(seg_id, v_id, buffer=[-1, 1, 1])
-    with pytest.raises(TypeError):
-        sess.pull_voxel(seg_id, v_id, buffer="buffer")
 
 
 def test_pull_vertex_list_bad_inputs(session):
@@ -175,6 +171,8 @@ def test_pull_vertex_list_bad_inputs(session):
         sess.pull_vertex_list(seg_id, v_id, buffer=1.5)
     with pytest.raises(ValueError):
         sess.pull_vertex_list(seg_id, v_id, buffer=-1)
+    with pytest.raises(ValueError):
+        sess.pull_vertex_list(seg_id, v_id, buffer=[-1, 1, 1])
     with pytest.raises(TypeError):
         sess.pull_vertex_list(seg_id, v_id, expand="asdf")
 
@@ -292,7 +290,9 @@ def test_pull_voxel(session):
 def test_pull_vertex_list(session):
     """Tests that pulling a vertex list returns valid regions."""
     sess, seg_id, v_id = session
-    img, bounds, voxel = sess.pull_vertex_list(seg_id, [100, 101, 102, 103])
+    img, bounds, voxel = sess.pull_vertex_list(
+        seg_id, [100, 101, 102, 103], buffer=[1, 1, 1]
+    )
     assert len(img.shape) == 3
     assert img.shape == tuple(bounds.size())
     for vox in voxel:
