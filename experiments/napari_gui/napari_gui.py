@@ -33,17 +33,17 @@ path = (
     + str(num)
     + ".pickle"
 )
-path = '/Users/thomasathey/Documents/mimlab/mouselight/input/images/gui/viterbi_250.pickle'
+#path = '/Users/thomasathey/Documents/mimlab/mouselight/input/images/gui/viterbi_250.pickle'
 
 with open(path, "rb") as handle:
     viterbi = pickle.load(handle)
 
-im = viterbi.image#_raw
+im = viterbi.image_raw
 print(f"Image shape: {im.shape}")
 new_labels = viterbi.labels
 
 nt = NeuronTrace(
-    path="/Users/thomasathey/Documents/mimlab/mouselight/input/mim_slides/SNT_Data.swc"
+    path="/Users/thomasathey/Documents/mimlab/mouselight/pres/mim_slides/SNT_Data.swc"
 )
 df = nt.get_df()
 SNT = df[["x", "y", "z"]].to_numpy()
