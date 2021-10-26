@@ -16,8 +16,8 @@ import time
 
 
 data_dir = "/data/tathey1/mouselight/"
-probs_path = os.path.join(data_dir, "Probabilities.tif")
-im_path = os.path.join(data_dir, "1.tif")
+probs_path = os.path.join(data_dir, "1mm_probabilities.tif")
+im_path = os.path.join(data_dir, "1mm.tif")
 
 res = [0.3,0.3,1]
 soma_coords = [[1666, 1666, 500]]
@@ -26,17 +26,13 @@ t1 = time.perf_counter()
 print("reading files")
 
 im_og = io.imread(im_path, plugin="tifffile")
-
-f = h5py.File(probs_path, 'r')
-pred = f.get('exported_data')
-pred = pred[:,:,:,1]
-im_processed = pred
+im_processed = io.imread(probs_path, plugin="tifffile")
 
 print(f"image shape: {im_og.shape}")
 print(f"read files in {time.perf_counter()-t1} seconds")
 t1 = time.perf_counter()
 
-threshold = 0.9  # 0.1
+threshold = 0.9
 labels = measure.label(im_processed > threshold)
 
 new_labels = image_process.split_frags(soma_coords, labels, im_processed, threshold, res)
