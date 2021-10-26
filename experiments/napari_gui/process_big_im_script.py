@@ -43,7 +43,7 @@ labels = measure.label(im_processed > threshold)
 print(f"labeled image in {time.perf_counter()-t1} seconds")
 t1 = time.perf_counter()
 
-new_labels = image_process.split_frags(soma_coords, labels, im_processed, threshold, res)
+new_labels = image_process.split_frags(soma_coords, labels, im_processed, threshold, res, verbose=True)
 
 io.imsave("/data/tathey1/mouselight/1_labels.tif", new_labels)
 

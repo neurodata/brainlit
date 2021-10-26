@@ -204,7 +204,7 @@ def removeSmallCCs(segmentation: np.ndarray, size: Union[int, float]) -> np.ndar
         raise ValueError("No connected components!")
     counts = np.bincount(labels.flat)[1:]
 
-    for v, count in enumerate(counts):
+    for v, count in enumerate(tqdm(counts, desc="looking for components to remove")):
         if count < size:
             labels[labels == v + 1] = 0
 
@@ -238,7 +238,7 @@ def label_points(labels, points, res):
     return points, point_labels
 
 
-def split_frags(soma_coords, labels, im_processed, threshold, res):
+def split_frags(soma_coords, labels, im_processed, threshold, res, verbose=False):
     """Preprocesses a neuron image segmentation by splitting up non-soma components into 5 micron segments
 
     Args:
@@ -252,20 +252,30 @@ def split_frags(soma_coords, labels, im_processed, threshold, res):
         np.array: new image segmentation - different numbers indicate different fragments, 0 is background
     """
     radius_states = 7
+    if verbose:
+        print("removing somas...")
     image_iterative, states, comp_to_states, new_soma_masks = remove_somas(
         soma_coords, labels, im_processed, res
     )
 
+    if verbose:
+        print("removing small components...")
     mask = labels > 0
     mask2 = removeSmallCCs(mask, 25)
     image_iterative[mask & (~mask2)] = 0
 
+    if verbose:
+        print("placing points...")
     states, comp_to_states = split_frags_place_points(
         image_iterative, labels, radius_states, res, threshold, states, comp_to_states
     )
 
+    if verbose:
+        print("splitting fragments...")
     new_labels = split_frags_split_comps(labels, new_soma_masks, states, comp_to_states)
 
+    if verbose:
+        print("splitting fractured fragments...")
     new_labels = split_frags_split_fractured_components(new_labels)
 
     props = regionprops(new_labels)
@@ -273,6 +283,8 @@ def split_frags(soma_coords, labels, im_processed, threshold, res):
         if prop.area < 15:
             new_labels[new_labels == prop.label] = 0
 
+    if verbose:
+        print("renaming components...")
     new_labels = rename_states_consecutively(new_labels)
 
     return new_labels
