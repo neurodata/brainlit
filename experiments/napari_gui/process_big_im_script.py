@@ -67,31 +67,33 @@ import time
 # print(f"made states in {time.perf_counter()-t1} seconds")
 # with open("/data/tathey1/mouselight/1_viterbi_states.pkl", 'wb') as handle:
 #     pickle.dump(mpnp, handle)
+# t1 = time.perf_counter()
 
-with open("/data/tathey1/mouselight/1_viterbi_states.pkl", 'rb') as handle:
+# mpnp.reset_dists(type="all")
+# mpnp.compute_all_costs_dist(point_point_func=mpnp.point_point_dist, point_blob_func=mpnp.point_blob_dist)
+
+# print(f"made dist cost in {time.perf_counter()-t1} seconds")
+# t1 = time.perf_counter()
+
+# mpnp.compute_all_costs_int()
+
+# print(f"made int cost in {time.perf_counter()-t1} seconds")
+# t1 = time.perf_counter()
+
+# mpnp.create_nx_graph()
+
+# with open("/data/tathey1/mouselight/1_viterbi_nx.pkl", 'wb') as handle:
+#     pickle.dump(mpnp, handle)
+
+# print(f"made graph in {time.perf_counter()-t1} seconds")
+
+with open("/data/tathey1/mouselight/1_viterbi_nx.pkl", 'rb') as handle:
     mpnp = pickle.load(handle)
 t1 = time.perf_counter()
 
-mpnp.reset_dists(type="all")
-mpnp.compute_all_costs_dist(point_point_func=mpnp.point_point_dist, point_blob_func=mpnp.point_blob_dist)
+#path_states = nx.shortest_path(mpnp.nxGraph, 1, 11, weight='weight')
 
-print(f"made dist cost in {time.perf_counter()-t1} seconds")
-t1 = time.perf_counter()
-
-mpnp.compute_all_costs_int()
-
-print(f"made int cost in {time.perf_counter()-t1} seconds")
-t1 = time.perf_counter()
-
-mpnp.create_nx_graph()
-
-with open("/data/tathey1/mouselight/1_viterbi_nx.pkl", 'wb') as handle:
-    pickle.dump(mpnp, handle)
-
-print(f"made graph in {time.perf_counter()-t1} seconds")
-t1 = time.perf_counter()
-
-path_states = nx.shortest_path(mpnp.nxGraph, 1, 11, weight='weight')
+nx.bfs_edges(mpnp.nxGraph, 1)
 
 print(f"computed path in {time.perf_counter()-t1} seconds")
 t1 = time.perf_counter()
