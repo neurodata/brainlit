@@ -93,7 +93,8 @@ t1 = time.perf_counter()
 
 #path_states = nx.shortest_path(mpnp.nxGraph, 1, 11, weight='weight')
 
-nx.bfs_edges(mpnp.nxGraph, 1)
+a = sorted(mpnp.nxGraph.degree, key=lambda x: x[1], reverse=True)
+nx.bfs_edges(mpnp.nxGraph, a[0][0])
 
 print(f"computed path in {time.perf_counter()-t1} seconds")
 t1 = time.perf_counter()
