@@ -23,7 +23,7 @@ probs_path = os.path.join(data_dir, "250_probs.tif")
 
 
 res = [0.3,0.3,1]
-soma_coords = [[1665, 1665, 499]]
+soma_coords = [[417, 417, 125]]
 
 t1 = time.perf_counter()
 print("reading files")
