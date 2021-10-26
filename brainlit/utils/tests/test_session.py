@@ -141,6 +141,10 @@ def test_pull_voxel_bad_inputs(session):
         sess.pull_voxel(seg_id, v_id, radus=1.5)
     with pytest.raises(ValueError):
         sess.pull_voxel(seg_id, v_id, radius=-1)
+    with pytest.raises(TypeError):
+        sess.pull_voxel(seg_id, v_id, buffer=[-1, 1, 1])
+    with pytest.raises(TypeError):
+        sess.pull_voxel(seg_id, v_id, buffer="buffer")
 
 
 def test_pull_vertex_list_bad_inputs(session):
