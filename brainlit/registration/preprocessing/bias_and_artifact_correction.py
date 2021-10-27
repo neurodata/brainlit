@@ -6,7 +6,7 @@ from skimage import morphology
 from skimage.filters import threshold_otsu
 from skimage.transform import resize, rescale
 
-from ..lddmm._lddmm_utilities import _validate_ndarray
+from ..lddmm.lddmm_utilities import _validate_ndarray
 
 
 def correct_bias_field(image, correct_at_scale=1, as_float32=True, **kwargs):

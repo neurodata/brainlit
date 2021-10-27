@@ -33,7 +33,7 @@ from collections.abc import Iterable
 
 import numpy as np
 
-from ..lddmm._lddmm_utilities import _validate_ndarray
+from ..lddmm.lddmm_utilities import _validate_ndarray
 
 
 def preprocess(data, processes):

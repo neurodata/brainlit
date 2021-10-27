@@ -5,7 +5,7 @@ from pathlib import Path
 import pickle
 
 from .presets import get_registration_preset
-from .lddmm._lddmm import lddmm_register, lddmm_transform_image, lddmm_transform_points
+from .lddmm.lddmm import lddmm_register, lddmm_transform_image, lddmm_transform_points
 from . import file_io
 
 

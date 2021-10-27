@@ -21,15 +21,15 @@ from scipy.sparse.linalg import cg, LinearOperator
 from skimage.transform import resize, rescale
 from matplotlib import pyplot as plt
 
-from ._lddmm_utilities import _validate_ndarray
-from ._lddmm_utilities import _validate_scalar_to_multi
-from ._lddmm_utilities import _validate_resolution
-from ._lddmm_utilities import _compute_axes
-from ._lddmm_utilities import _compute_coords
-from ._lddmm_utilities import _multiply_coords_by_affine
-from ._lddmm_utilities import _compute_tail_determinant
-from ._lddmm_utilities import resample
-from ._lddmm_utilities import sinc_resample
+from .lddmm_utilities import _validate_ndarray
+from .lddmm_utilities import _validate_scalar_to_multi
+from .lddmm_utilities import _validate_resolution
+from .lddmm_utilities import _compute_axes
+from .lddmm_utilities import _compute_coords
+from .lddmm_utilities import _multiply_coords_by_affine
+from .lddmm_utilities import _compute_tail_determinant
+from .lddmm_utilities import resample
+from .lddmm_utilities import sinc_resample
 
 r"""
   _            _       _                         

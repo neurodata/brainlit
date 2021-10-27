@@ -2,14 +2,14 @@ import pytest
 
 import numpy as np
 
-from skimage.registration._lddmm_utilities import _validate_scalar_to_multi
-from skimage.registration._lddmm_utilities import _validate_ndarray
-from skimage.registration._lddmm_utilities import _validate_resolution
-from skimage.registration._lddmm_utilities import _compute_axes
-from skimage.registration._lddmm_utilities import _compute_coords
-from skimage.registration._lddmm_utilities import _multiply_coords_by_affine
-from skimage.registration._lddmm_utilities import resample
-from skimage.registration._lddmm_utilities import sinc_resample
+from skimage.registration.lddmm_utilities import _validate_scalar_to_multi
+from skimage.registration.lddmm_utilities import _validate_ndarray
+from skimage.registration.lddmm_utilities import _validate_resolution
+from skimage.registration.lddmm_utilities import _compute_axes
+from skimage.registration.lddmm_utilities import _compute_coords
+from skimage.registration.lddmm_utilities import _multiply_coords_by_affine
+from skimage.registration.lddmm_utilities import resample
+from skimage.registration.lddmm_utilities import sinc_resample
 
 """
 Test _validate_scalar_to_multi.

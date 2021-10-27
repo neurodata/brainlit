@@ -2,11 +2,11 @@ import numpy as np
 from skimage.transform import resize
 from scipy.interpolate import interpn
 
-from ..lddmm._lddmm_utilities import _validate_scalar_to_multi
-from ..lddmm._lddmm_utilities import _validate_ndarray
-from ..lddmm._lddmm_utilities import _validate_resolution
-from ..lddmm._lddmm_utilities import _compute_axes
-from ..lddmm._lddmm_utilities import _compute_coords
+from ..lddmm.lddmm_utilities import _validate_scalar_to_multi
+from ..lddmm.lddmm_utilities import _validate_ndarray
+from ..lddmm.lddmm_utilities import _validate_resolution
+from ..lddmm.lddmm_utilities import _compute_axes
+from ..lddmm.lddmm_utilities import _compute_coords
 
 
 def _resample(image, resolution, final_resolution, **interpn_kwargs):
