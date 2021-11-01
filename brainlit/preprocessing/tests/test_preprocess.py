@@ -330,7 +330,9 @@ def test_compute_frags_valid_input():
     res = [1, 1, 1]
 
     compute_frags(soma_coords, labels, im_processed, threshold, res)
-    compute_frags(soma_coords, labels, im_processed, threshold, res, chunk_size=[5, 5, 5], ncpu=2)
+    compute_frags(
+        soma_coords, labels, im_processed, threshold, res, chunk_size=[5, 5, 5], ncpu=2
+    )
 
 
 ############################
@@ -538,6 +540,12 @@ def test_compute_frags():
     assert len(np.unique(new_labels)) > 8
 
     new_labels = compute_frags(
-        soma_coords, labels, im_processed, threshold, res, chunk_size=[50, 50, 50], ncpu=2
+        soma_coords,
+        labels,
+        im_processed,
+        threshold,
+        res,
+        chunk_size=[50, 50, 50],
+        ncpu=2,
     )
     assert len(np.unique(new_labels)) > 8

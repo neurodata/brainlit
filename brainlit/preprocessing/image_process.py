@@ -343,7 +343,7 @@ def compute_frags(
             )
             for arg in args
         ]
-        pool.close()  
+        pool.close()
         new_labels = _merge_chunked_labels(new_labelss, og_shape, chunk_size=chunk_size)
     return new_labels
 
