@@ -322,29 +322,18 @@ def compute_frags(
     Returns:
         np.array: new image segmentation - different numbers indicate different fragments, 0 is background
     """
-
     og_shape = labels.shape
     if chunk_size is None:
         new_labels = split_frags(soma_coords, labels, im_processed, threshold, res)
     else:
-        pool = mp.Pool(ncpu)
+        print(f"Parallelizing with {ncpu} cpus")
         args = _get_chunked_args(
             soma_coords, labels, im_processed, chunk_size=chunk_size
         )
-        new_labelss = [
-            pool.apply(
-                split_frags,
-                args=(
-                    arg["soma_coords"],
-                    arg["labels"],
-                    arg["im_processed"],
-                    threshold,
-                    res,
-                ),
-            )
-            for arg in args
-        ]
-        pool.close()
+        inputs = [(arg["soma_coords"],arg["labels"],arg["im_processed"],threshold, res) for arg in args]
+        with mp.Pool(ncpu) as pool:
+            new_labelss = pool.starmap(split_frags, inputs)
+            
         new_labels = _merge_chunked_labels(new_labelss, og_shape, chunk_size=chunk_size)
     return new_labels
 
