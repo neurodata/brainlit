@@ -127,6 +127,49 @@ class most_probable_neuron_path:
 
         self.image_tiered = image_tiered
 
+    def frag_to_line(self, component, labels, soma_lbls, image_tiered):
+
+        if component in soma_lbls:
+            return component, None, None, None, None, None
+
+        mask = labels == component
+
+        rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
+        mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
+
+        skel = morphology.skeletonize_3d(mask)
+
+        coords_mask = np.argwhere(mask)
+        coords_skel = np.argwhere(skel)
+
+        if len(coords_skel) < 4:
+            coords = coords_mask
+        else:
+            coords = coords_skel
+
+        endpoints = self.endpoints_from_coords_neighbors(coords)
+        a = endpoints[0]
+        try:
+            b = endpoints[1]
+        except:
+            print(f"only 1 endpoint for component {component}")
+            raise ValueError
+
+        a = np.add(a, [rmin, cmin, zmin])
+        b = np.add(b, [rmin, cmin, zmin])
+        dif = b - a
+        dif = dif / np.linalg.norm(dif)
+
+        a = [int(x) for x in a]
+        b = [int(x) for x in b]
+
+        xlist, ylist, zlist = Bresenham3D(a[0], a[1], a[2], b[0], b[1], b[2])
+        sum = np.sum(image_tiered[xlist, ylist, zlist])
+        if sum < 0:
+            warnings.warn(f"Negative int cost for comp {component}: {sum}")
+
+        return component, a, b, dif, -dif, sum
+
     def frags_to_lines(self):
         """Convert fragments to lines.
 
@@ -137,65 +180,35 @@ class most_probable_neuron_path:
         soma_lbls = self.soma_lbls
         comp_to_states = self.comp_to_states
         state_to_comp = self.state_to_comp
+        image_tiered = self.image_tiered
         np.amax(labels)
 
         int_comp_costs = {}
+        results = []
 
         for component in tqdm(
             comp_to_states.keys(), desc="Computing line representations"
         ):
+            component, a, b, o1, o2, sum = self.frag_to_line(component, labels, soma_lbls, image_tiered)
+            results.append((component, a, b, o1, o2, sum))
+        
+        for result in results:
+            component, a, b, o1, o2, sum = result
             if component in soma_lbls:
                 continue
-            else:
-                states = comp_to_states[component]
 
-            mask = labels == component
-
-            rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
-            mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
-
-            skel = morphology.skeletonize_3d(mask)
-
-            coords_mask = np.argwhere(mask)
-            coords_skel = np.argwhere(skel)
-
-            if len(coords_skel) < 4:
-                coords = coords_mask
-            else:
-                coords = coords_skel
-
-            endpoints = self.endpoints_from_coords_neighbors(coords)
-            a = endpoints[0]
-            try:
-                b = endpoints[1]
-            except:
-                print(f"only 1 endpoint for component {component}")
-                raise ValueError
-
-            a = np.add(a, [rmin, cmin, zmin])
-            b = np.add(b, [rmin, cmin, zmin])
-            dif = b - a
-            dif = dif / np.linalg.norm(dif)
-
+            states = comp_to_states[component]
             state_to_comp[states[0]][2]["coord1"] = a
             state_to_comp[states[0]][2][
                 "orientation1"
-            ] = dif  # orient along direction of fragment
+            ] = o1  # orient along direction of fragment
             state_to_comp[states[0]][2]["coord2"] = b
-            state_to_comp[states[0]][2]["orientation2"] = dif
+            state_to_comp[states[0]][2]["orientation2"] = -o2
 
             state_to_comp[states[1]][2]["coord1"] = b
-            state_to_comp[states[1]][2]["orientation1"] = -dif
+            state_to_comp[states[1]][2]["orientation1"] = -o1
             state_to_comp[states[1]][2]["coord2"] = a
-            state_to_comp[states[1]][2]["orientation2"] = -dif
-
-            a = [int(x) for x in a]
-            b = [int(x) for x in b]
-
-            xlist, ylist, zlist = Bresenham3D(a[0], a[1], a[2], b[0], b[1], b[2])
-            sum = np.sum(self.image_tiered[xlist, ylist, zlist])
-            if sum < 0:
-                warnings.warn(f"Negative int cost for comp {component}: {sum}")
+            state_to_comp[states[1]][2]["orientation2"] = -o2
             int_comp_costs[component] = sum
 
         self.int_comp_costs = int_comp_costs
