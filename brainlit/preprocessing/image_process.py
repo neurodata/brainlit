@@ -329,7 +329,10 @@ def compute_frags(
         args = _get_chunked_args(
             soma_coords, labels, im_processed, chunk_size=chunk_size
         )
-        inputs = [(arg["soma_coords"],arg["labels"],arg["im_processed"],threshold, res) for arg in args]
+        inputs = [
+            (arg["soma_coords"], arg["labels"], arg["im_processed"], threshold, res)
+            for arg in args
+        ]
         with mp.Pool(ncpu) as pool:
             new_labelss = pool.starmap(split_frags, inputs)
 
