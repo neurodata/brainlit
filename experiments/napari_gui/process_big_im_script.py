@@ -23,7 +23,7 @@ f = h5py.File(probs_path, 'r')
 
 
 res = [0.3,0.3,1]
-soma_coords = [[1666, 1666, 500]]
+soma_coords = [[1665, 1665, 499]]
 
 t1 = time.perf_counter()
 print("reading files")
