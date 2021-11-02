@@ -250,7 +250,7 @@ def _get_chunked_args(soma_coords, labels, im_processed, chunk_size=[200, 200, 2
         dict: dictionary of arguments that depend on chunking
     """
     shp = labels.shape
-
+    args = []
     for x1 in np.arange(0, shp[0], chunk_size[0]):
         x2 = np.amin([x1 + chunk_size[0], shp[0]])
         for y1 in np.arange(0, shp[1], chunk_size[1]):
@@ -266,12 +266,13 @@ def _get_chunked_args(soma_coords, labels, im_processed, chunk_size=[200, 200, 2
                             [x2, y2, z2],
                         ).all()
                     ):
-                        soma_coords_new.append(np.add([x1, y1, z1], soma_coord))
-                yield {
+                        soma_coords_new.append(np.subtract(soma_coord, [x1, y1, z1]))
+                args.append({
                     "soma_coords": soma_coords_new,
                     "labels": labels[x1:x2, y1:y2, z1:z2],
                     "im_processed": im_processed[x1:x2, y1:y2, z1:z2],
-                }
+                })
+    return args
 
 
 def _merge_chunked_labels(labels, new_shape, chunk_size=[200, 200, 200]):
@@ -411,7 +412,6 @@ def remove_somas(soma_coords, labels, im_processed, res):
     """
     states = []
     comp_to_states = {}
-    int_comp_costs = []
     # probability image, with all soma regions set to 0
     image_iterative = np.copy(im_processed)
     # list of soma region masks
