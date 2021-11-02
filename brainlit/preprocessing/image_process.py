@@ -266,7 +266,7 @@ def _get_chunked_args(soma_coords, labels, im_processed, chunk_size=[200, 200, 2
                             [x2, y2, z2],
                         ).all()
                     ):
-                        soma_coords_new.append(np.add([x1, y1, z1], soma_coord))
+                        soma_coords_new.append(np.subtract(soma_coord, [x1, y1, z1]))
                 yield {
                     "soma_coords": soma_coords_new,
                     "labels": labels[x1:x2, y1:y2, z1:z2],
