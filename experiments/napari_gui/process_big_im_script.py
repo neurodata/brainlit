@@ -16,22 +16,22 @@ import time
 
 
 data_dir = "/data/tathey1/mouselight/"
-im_path = os.path.join(data_dir, "1.tif")
+im_path = os.path.join(data_dir, "250.tif")
 
-probs_path = os.path.join(data_dir, "1_Probabilities.h5")
-f = h5py.File(probs_path, 'r')
+probs_path = os.path.join(data_dir, "250_probs.tif")
+#f = h5py.File(probs_path, 'r')
 
 
 res = [0.3,0.3,1]
-soma_coords = [[1666, 1666, 500]]
+soma_coords = [[417, 417, 125]]
 
 t1 = time.perf_counter()
 print("reading files")
 
 im_og = io.imread(im_path, plugin="tifffile")
-# im_processed = io.imread(probs_path, plugin="tifffile")
-im_processed = f.get('exported_data')
-im_processed = im_processed[:,:,:,1]
+im_processed = io.imread(probs_path, plugin="tifffile")
+# im_processed = f.get('exported_data')
+# im_processed = im_processed[:,:,:,1]
 
 print(f"image shape: {im_og.shape}")
 print(f"read files in {time.perf_counter()-t1} seconds")
@@ -43,7 +43,7 @@ labels = measure.label(im_processed > threshold)
 print(f"labeled image in {time.perf_counter()-t1} seconds")
 t1 = time.perf_counter()
 
-new_labels = image_process.split_frags(soma_coords, labels, im_processed, threshold, res, verbose=True)
+new_labels = image_process.compute_frags(soma_coords, labels, im_processed, threshold, res, chunk_size=[400,400,400], ncpu=8)
 
 io.imsave("/data/tathey1/mouselight/1_labels.tif", new_labels)
 
