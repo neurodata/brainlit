@@ -10,6 +10,8 @@ from sklearn.neighbors import radius_neighbors_graph, KernelDensity
 from brainlit.viz.swc2voxel import Bresenham3D
 import networkx as nx
 import math
+import multiprocessing
+from joblib import Parallel, delayed
 
 
 class most_probable_neuron_path:
@@ -127,50 +129,52 @@ class most_probable_neuron_path:
 
         self.image_tiered = image_tiered
 
-    def frag_to_line(self, component, labels, soma_lbls, image_tiered):
+    def frag_to_line(self, components, labels, soma_lbls, image_tiered):
+        results = []
+        for component in tqdm(components, desc="Computing line representations"):
+            if component in soma_lbls:
+                results.append((component, None, None, None, None, None))
 
-        if component in soma_lbls:
-            return component, None, None, None, None, None
+            mask = labels == component
 
-        mask = labels == component
+            rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
+            mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
 
-        rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
-        mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
+            skel = morphology.skeletonize_3d(mask)
 
-        skel = morphology.skeletonize_3d(mask)
+            coords_mask = np.argwhere(mask)
+            coords_skel = np.argwhere(skel)
 
-        coords_mask = np.argwhere(mask)
-        coords_skel = np.argwhere(skel)
+            if len(coords_skel) < 4:
+                coords = coords_mask
+            else:
+                coords = coords_skel
 
-        if len(coords_skel) < 4:
-            coords = coords_mask
-        else:
-            coords = coords_skel
+            endpoints = self.endpoints_from_coords_neighbors(coords)
+            a = endpoints[0]
+            try:
+                b = endpoints[1]
+            except:
+                print(f"only 1 endpoint for component {component}")
+                raise ValueError
 
-        endpoints = self.endpoints_from_coords_neighbors(coords)
-        a = endpoints[0]
-        try:
-            b = endpoints[1]
-        except:
-            print(f"only 1 endpoint for component {component}")
-            raise ValueError
+            a = np.add(a, [rmin, cmin, zmin])
+            b = np.add(b, [rmin, cmin, zmin])
+            dif = b - a
+            dif = dif / np.linalg.norm(dif)
 
-        a = np.add(a, [rmin, cmin, zmin])
-        b = np.add(b, [rmin, cmin, zmin])
-        dif = b - a
-        dif = dif / np.linalg.norm(dif)
+            a = [int(x) for x in a]
+            b = [int(x) for x in b]
 
-        a = [int(x) for x in a]
-        b = [int(x) for x in b]
+            xlist, ylist, zlist = Bresenham3D(a[0], a[1], a[2], b[0], b[1], b[2])
+            sum = np.sum(image_tiered[xlist, ylist, zlist])
+            if sum < 0:
+                warnings.warn(f"Negative int cost for comp {component}: {sum}")
 
-        xlist, ylist, zlist = Bresenham3D(a[0], a[1], a[2], b[0], b[1], b[2])
-        sum = np.sum(image_tiered[xlist, ylist, zlist])
-        if sum < 0:
-            warnings.warn(f"Negative int cost for comp {component}: {sum}")
+            results.append((component, a, b, dif, -dif, sum))
+        return results
 
-        return component, a, b, dif, -dif, sum
-
-    def frags_to_lines(self):
+    def frags_to_lines(self, ncpu):
         """Convert fragments to lines.
 
         Raises:
@@ -186,11 +190,15 @@ class most_probable_neuron_path:
         int_comp_costs = {}
         results = []
 
-        for component in tqdm(
-            comp_to_states.keys(), desc="Computing line representations"
-        ):
-            component, a, b, o1, o2, sum = self.frag_to_line(component, labels, soma_lbls, image_tiered)
-            results.append((component, a, b, o1, o2, sum))
+        if ncpu == 1:
+            results = self.frag_to_line(list(comp_to_states.keys()), labels, soma_lbls, image_tiered)
+        else:
+            print(f"Parallelizing x{ncpu}")
+            component_sets = np.array_split(list(comp_to_states.keys()), ncpu)
+            results_tuple = Parallel(n_jobs=ncpu)(delayed(self.frag_to_line)(components, labels, soma_lbls, image_tiered) for components in component_sets)
+            results = []
+            for result in results_tuple:
+                results += list(result)
         
         for result in results:
             component, a, b, o1, o2, sum = result
