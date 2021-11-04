@@ -34,9 +34,6 @@ def process_chunk(i, j, k):
     chunk_size = [256, 256, 300]
     mip = 0
     
-    dir_mask = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/axon_mask"
-    vol_mask = CloudVolume(dir_mask, parallel=1, mip=mip, fill_missing=True)
-
     dir_fg = "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_647"
     vol_fg = CloudVolume(dir_fg, parallel=1, mip=mip, fill_missing=True)
 
@@ -83,7 +80,7 @@ for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
     for j in tqdm(range(coords[1], shape[1], chunk_size[1]), leave=False):    
         results = Parallel(n_jobs=ncpu)(delayed(process_chunk)(i,j,k) for k in range(0,shape[2],chunk_size[2]))
         
-        with open(somas_file, 'a') as f:
+        with open(somas_file, 'a+') as f:
             for results_chunk in results:
                 for centroid in results_chunk:
                     f.write('\n')
