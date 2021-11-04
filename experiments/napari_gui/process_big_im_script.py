@@ -70,12 +70,12 @@ with open("/data/tathey1/mouselight/1_viterbi_states.pkl", 'wb') as handle:
 t1 = time.perf_counter()
 
 mpnp.reset_dists(type="all")
-mpnp.compute_all_costs_dist(point_point_func=mpnp.point_point_dist, point_blob_func=mpnp.point_blob_dist)
+mpnp.compute_all_costs_dist_par(point_point_func=mpnp.point_point_dist, point_blob_func=mpnp.point_blob_dist, ncpu=12)
 
 print(f"made dist cost in {time.perf_counter()-t1} seconds")
 t1 = time.perf_counter()
 
-mpnp.compute_all_costs_int()
+mpnp.compute_all_costs_int(ncpu=12)
 
 print(f"made int cost in {time.perf_counter()-t1} seconds")
 t1 = time.perf_counter()

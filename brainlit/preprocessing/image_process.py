@@ -267,11 +267,13 @@ def _get_chunked_args(soma_coords, labels, im_processed, chunk_size=[200, 200, 2
                         ).all()
                     ):
                         soma_coords_new.append(np.subtract(soma_coord, [x1, y1, z1]))
-                args.append({
-                    "soma_coords": soma_coords_new,
-                    "labels": labels[x1:x2, y1:y2, z1:z2],
-                    "im_processed": im_processed[x1:x2, y1:y2, z1:z2],
-                })
+                args.append(
+                    {
+                        "soma_coords": soma_coords_new,
+                        "labels": labels[x1:x2, y1:y2, z1:z2],
+                        "im_processed": im_processed[x1:x2, y1:y2, z1:z2],
+                    }
+                )
     return args
 
 
@@ -330,10 +332,13 @@ def compute_frags(
         args = _get_chunked_args(
             soma_coords, labels, im_processed, chunk_size=chunk_size
         )
-        inputs = [(arg["soma_coords"],arg["labels"],arg["im_processed"],threshold, res) for arg in args]
+        inputs = [
+            (arg["soma_coords"], arg["labels"], arg["im_processed"], threshold, res)
+            for arg in args
+        ]
         with mp.Pool(ncpu) as pool:
             new_labelss = pool.starmap(split_frags, inputs)
-            
+
         new_labels = _merge_chunked_labels(new_labelss, og_shape, chunk_size=chunk_size)
     return new_labels
 

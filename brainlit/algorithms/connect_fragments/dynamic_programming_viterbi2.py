@@ -192,15 +192,20 @@ class most_probable_neuron_path:
         results = []
 
         if ncpu == 1:
-            results = self.frag_to_line(list(comp_to_states.keys()), labels, soma_lbls, image_tiered)
+            results = self.frag_to_line(
+                list(comp_to_states.keys()), labels, soma_lbls, image_tiered
+            )
         else:
             print(f"Parallelizing x{ncpu}")
             component_sets = np.array_split(list(comp_to_states.keys()), ncpu)
-            results_tuple = Parallel(n_jobs=ncpu)(delayed(self.frag_to_line)(components, labels, soma_lbls, image_tiered) for components in component_sets)
+            results_tuple = Parallel(n_jobs=ncpu)(
+                delayed(self.frag_to_line)(components, labels, soma_lbls, image_tiered)
+                for components in component_sets
+            )
             results = []
             for result in results_tuple:
                 results += list(result)
-        
+
         for result in results:
             component, a, b, o1, o2, sum = result
             if component in soma_lbls:
@@ -416,11 +421,10 @@ class most_probable_neuron_path:
             state1_info = state_to_comp[state1]
             for state2 in range(num_states):
                 state2_info = state_to_comp[state2]
+                soma_pt = None
                 if state_to_comp[state1][1] == state_to_comp[state2][1]:
                     dist_cost = np.inf
-                elif (
-                    state1_info[0] == "fragment" and state2_info[0] == "fragment"
-                ): 
+                elif state1_info[0] == "fragment" and state2_info[0] == "fragment":
                     dist_cost = point_point_func(
                         state1_info[2]["coord2"],
                         state1_info[2]["orientation2"],
@@ -440,26 +444,10 @@ class most_probable_neuron_path:
                         fragment_info[2]["orientation2"],
                         soma_info[1],
                     )
-                    self.state_to_comp[fragment_state][2][
-                        "soma connection point"
-                    ] = soma_pt
                 elif state1_info[0] == "soma" and state2_info[0] == "fragment":
-                    soma_info = state1_info
-                    fragment_info = state2_info
-                    fragment_state = state2
-                    soma_state = state1
-
-                    dist_cost, soma_pt = point_blob_func(
-                        fragment_info[2]["coord2"],
-                        fragment_info[2]["orientation2"],
-                        soma_info[1],
-                    )
-                    self.state_to_comp[fragment_state][2][
-                        "soma connection point"
-                    ] = soma_pt
-                results.append((state1, state2, dist_cost))
+                    dist_cost = np.inf
+                results.append((state1, state2, dist_cost, soma_pt))
         return results
-            
 
     def compute_all_costs_dist_par(self, point_point_func, point_blob_func, ncpu=2):
         cost_mat_dist = self.cost_mat_dist
@@ -469,20 +457,30 @@ class most_probable_neuron_path:
         results = []
 
         if ncpu == 1:
-            results = self.compute_all_costs_dist_process(range(num_states), point_point_func, point_blob_func)
+            results = self.compute_all_costs_dist_process(
+                range(num_states), point_point_func, point_blob_func
+            )
         else:
             print(f"Parallelizing x{ncpu}")
             state_sets = np.array_split(np.arange(num_states), ncpu)
-            results_tuple = Parallel(n_jobs=ncpu)(delayed(self.frag_to_line)(states, point_point_func, point_blob_func) for states in state_sets)
+            results_tuple = Parallel(n_jobs=ncpu)(
+                delayed(self.compute_all_costs_dist_process)(
+                    states, point_point_func, point_blob_func
+                )
+                for states in state_sets
+            )
             results = []
             for result in results_tuple:
                 results += list(result)
 
-        
-        for result in tqdm(results, desc = 'filling in costs'):
-            state1, state2, dist_cost = result
+        for result in tqdm(results, desc="filling in costs"):
+            state1, state2, dist_cost, soma_pt = result
             cost_mat_dist[state1, state2] = dist_cost
-
+            if soma_pt is not None:
+                if state_to_comp[state1][0] == "soma":
+                    self.state_to_comp[state2][2]["soma connection point"] = soma_pt
+                else:
+                    self.state_to_comp[state1][2]["soma connection point"] = soma_pt
 
         # normalize dist mat
         for state1 in tqdm(range(num_states), desc="Normalizing"):
@@ -492,7 +490,6 @@ class most_probable_neuron_path:
             else:
                 denom = logsumexp(-1 * cost_mat_dist[state1, :])
             cost_mat_dist[state1, :] = cost_mat_dist[state1, :] + denom
-
 
     def compute_all_costs_dist(self, point_point_func, point_blob_func):
         """Compute all pairwise costs of distance term
@@ -607,6 +604,67 @@ class most_probable_neuron_path:
             else:
                 denom = logsumexp(-1 * cost_mat_dist[state1, :])
             cost_mat_dist[state1, :] = cost_mat_dist[state1, :] + denom
+
+    def compute_all_costs_int_process(self, states):
+        state_to_comp = self.state_to_comp
+        cost_mat_dist = self.cost_mat_dist
+        num_states = self.num_states
+
+        results = []
+
+        for state1 in tqdm(states, desc="Computing state costs (intensity)"):
+            state1_info = state_to_comp[state1]
+            for state2 in range(num_states):
+
+                state2_info = state_to_comp[state2]
+                if (
+                    state_to_comp[state1][1] == state_to_comp[state2][1]
+                    or cost_mat_dist[state1, state2] == np.inf
+                ):  # states from same fragment or distance is infinite
+                    int_cost = np.inf
+                elif (
+                    state1_info[0] == "fragment" and state2_info[0] == "fragment"
+                ):  # two fragments
+                    line_int_cost = self.line_int(
+                        state1_info[2]["coord2"], state2_info[2]["coord1"]
+                    )
+                    int_cost = line_int_cost + self.int_comp_costs[state2_info[1]]
+                elif state1_info[0] == "fragment" and state2_info[0] == "soma":
+                    fragment_info = state1_info
+                    fragment_state = state1
+
+                    int_cost = self.line_int(
+                        fragment_info[2]["coord2"],
+                        state_to_comp[fragment_state][2]["soma connection point"],
+                    )
+                elif state1_info[0] == "soma" and state2_info[0] == "fragment":
+                    int_cost = np.inf
+                else:
+                    raise ValueError("No cases caught int")
+                results.append((state1, state2, int_cost))
+        return results
+
+    def compute_all_costs_int_par(self, ncpu=1):
+        cost_mat_int = self.cost_mat_int
+        num_states = self.num_states
+        results = []
+
+        if ncpu == 1:
+            results = self.compute_all_costs_int_process(range(num_states))
+        else:
+            print(f"Parallelizing x{ncpu}")
+            state_sets = np.array_split(np.arange(num_states), ncpu)
+            results_tuple = Parallel(n_jobs=ncpu)(
+                delayed(self.compute_all_costs_int_process)(states)
+                for states in state_sets
+            )
+            results = []
+            for result in results_tuple:
+                results += list(result)
+
+        for result in tqdm(results, desc="filling in costs"):
+            state1, state2, int_cost = result
+            cost_mat_int[state1, state2] = int_cost
 
     def compute_all_costs_int(self):
         """Compute all pairwise intensity based transition costs.
