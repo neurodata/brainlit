@@ -75,7 +75,7 @@ mpnp.compute_all_costs_dist_par(point_point_func=mpnp.point_point_dist, point_bl
 print(f"made dist cost in {time.perf_counter()-t1} seconds")
 t1 = time.perf_counter()
 
-mpnp.compute_all_costs_int(ncpu=12)
+mpnp.compute_all_costs_int_par(ncpu=12)
 
 print(f"made int cost in {time.perf_counter()-t1} seconds")
 t1 = time.perf_counter()
