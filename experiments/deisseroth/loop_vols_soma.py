@@ -1,5 +1,5 @@
 from cloudvolume import CloudVolume
-from skimage import io
+from skimage import io, measure
 import numpy as np
 import sys
 import warnings
@@ -14,7 +14,8 @@ chunk_size = [256, 256, 300]
 ncpu = 12
 dir = "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_647"
 progress_file = "/home/tathey1/progress_soma.txt" #"/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/tracing/progress.txt" 
-somas_file = "/data/tathey1/matt_wright/brainr1/somas.txt"
+files_dir = "/data/tathey1/matt_wright/brainr1/"
+somas_file = "/home/tathey1/somas.txt"
 
 with open(progress_file) as f:
     for line in f:
@@ -55,8 +56,8 @@ def process_chunk(i, j, k):
     f = h5py.File(data_dir + "image_" + str(k) + "_Probabilities.h5", "r")
     pred = f.get("exported_data")
     print(f"pred shape: {pred}")
-    raise ValueError()
-    pred = pred[1,:,:,:]
+
+    pred = pred[:,:,:,0]
 
     mask = pred > 0.75
     labels = measure.label(mask)
@@ -89,5 +90,8 @@ for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
         with open(progress_file, 'a') as f:
             f.write('\n')
             f.write(f'{i} {j}')
+        
+        for f in os.listdir(files_dir):
+            os.remove(os.path.join(files_dir, f))
         
 
