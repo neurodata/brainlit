@@ -40,7 +40,7 @@ path = (
 with open(path, "rb") as handle:
     viterbi = pickle.load(handle)
 
-im = viterbi.image#_raw
+im = viterbi.image_raw
 print(f"Image shape: {im.shape}")
 new_labels = viterbi.labels
 
