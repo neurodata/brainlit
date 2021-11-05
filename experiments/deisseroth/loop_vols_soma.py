@@ -65,7 +65,8 @@ def process_chunk(i, j, k):
     results = []
     for prop in props:
         if prop["area"] > 50:
-            results.append(prop["centroid"])
+            location = list(np.add((i,j,k), prop["centroid"]))
+            results.append(location)
     return results
 
 
@@ -82,9 +83,9 @@ for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
         
         with open(somas_file, 'a+') as f:
             for results_chunk in results:
-                for centroid in results_chunk:
+                for location in results_chunk:
                     f.write('\n')
-                    f.write(f'{centroid}')
+                    f.write(f'{location}')
 
         with open(progress_file, 'a') as f:
             f.write('\n')
