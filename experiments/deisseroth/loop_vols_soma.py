@@ -58,7 +58,7 @@ def process_chunk(i, j, k):
 
     pred = pred[:,:,:,0]
 
-    mask = pred > 0.75
+    mask = pred > 0.65
     labels = measure.label(mask)
     props = measure.regionprops(labels)
 
