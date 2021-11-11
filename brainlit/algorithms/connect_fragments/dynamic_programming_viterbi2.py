@@ -157,7 +157,9 @@ class most_probable_neuron_path:
             print(f"Parallelizing state computation x{parallel}")
             component_sets = np.array_split(list(comp_to_states.keys()), parallel)
             results_tuple = Parallel(n_jobs=parallel)(
-                delayed(self.frags_to_lines)(components, labels, soma_lbls, image_tiered)
+                delayed(self.frags_to_lines)(
+                    components, labels, soma_lbls, image_tiered
+                )
                 for components in component_sets
             )
             results = self.concatenate_results(results_tuple)
