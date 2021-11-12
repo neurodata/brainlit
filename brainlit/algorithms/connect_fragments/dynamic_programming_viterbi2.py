@@ -1,3 +1,4 @@
+import re
 import warnings
 from tqdm import tqdm
 
@@ -10,6 +11,7 @@ from sklearn.neighbors import radius_neighbors_graph, KernelDensity
 from brainlit.viz.swc2voxel import Bresenham3D
 import networkx as nx
 import math
+from joblib import Parallel, delayed, parallel
 
 
 class most_probable_neuron_path:
@@ -22,6 +24,7 @@ class most_probable_neuron_path:
         coef_dist=0.5,
         coef_curv=0.0,
         frag_orientation_length=5,
+        parallel=1,
     ):
         """Initialize object that performs tracing.
 
@@ -33,6 +36,7 @@ class most_probable_neuron_path:
             coef_dist (float, optional): hyperparameter that weights the distance factor. Defaults to 0.5.
             coef_curv (float, optional): hyperparameter that weights the curvature factor. Defaults to 0.0.
             frag_orientation_length (int, optional): length used to compute orientation at fragment endpoints. Defaults to 5.
+            parallel (int, optional): number of cpus to use if parallelizing processes. Defaults to 1.
 
         Raises:
             ValueError: Labels must have consecutive values.
@@ -45,6 +49,7 @@ class most_probable_neuron_path:
         self.res = resolution
         self.coef_dist = coef_dist
         self.coef_curv = coef_curv
+        self.parallel = parallel
 
         # handling states and components
         num_components = np.amax(labels)
@@ -127,27 +132,78 @@ class most_probable_neuron_path:
 
         self.image_tiered = image_tiered
 
-    def frags_to_lines(self):
-        """Convert fragments to lines.
+    def concatenate_results(self, results_tuple):
+        results = []
+        for result in results_tuple:
+            results += list(result)
+        return results
 
-        Raises:
-            ValueError: In case there is only one endpoint computed for a fragment. Shouldn't happen, but potentially useful for debugging.
-        """
+    def compute_states(self):
+        """Compute state representation of fragments."""
         labels = self.labels
         soma_lbls = self.soma_lbls
         comp_to_states = self.comp_to_states
         state_to_comp = self.state_to_comp
-        np.amax(labels)
+        image_tiered = self.image_tiered
+        parallel = self.parallel
 
         int_comp_costs = {}
 
-        for component in tqdm(
-            comp_to_states.keys(), desc="Computing line representations"
-        ):
+        if parallel == 1:
+            results = self.frags_to_lines(
+                list(comp_to_states.keys()), labels, soma_lbls, image_tiered
+            )
+        else:
+            print(f"Parallelizing state computation x{parallel}")
+            component_sets = np.array_split(list(comp_to_states.keys()), parallel)
+            results_tuple = Parallel(n_jobs=parallel)(
+                delayed(self.frags_to_lines)(
+                    components, labels, soma_lbls, image_tiered
+                )
+                for components in component_sets
+            )
+            results = self.concatenate_results(results_tuple)
+
+        for result in results:
+            component, a, b, o1, o2, sum = result
             if component in soma_lbls:
                 continue
-            else:
-                states = comp_to_states[component]
+
+            states = comp_to_states[component]
+            state_to_comp[states[0]][2]["coord1"] = a
+            state_to_comp[states[0]][2][
+                "orientation1"
+            ] = o1  # orient along direction of fragment
+            state_to_comp[states[0]][2]["coord2"] = b
+            state_to_comp[states[0]][2]["orientation2"] = -o2
+
+            state_to_comp[states[1]][2]["coord1"] = b
+            state_to_comp[states[1]][2]["orientation1"] = -o1
+            state_to_comp[states[1]][2]["coord2"] = a
+            state_to_comp[states[1]][2]["orientation2"] = -o2
+            int_comp_costs[component] = sum
+
+        self.int_comp_costs = int_comp_costs
+
+    def frags_to_lines(self, components, labels, soma_lbls, image_tiered):
+        """Convert a set of fragments into state representations.
+
+        Args:
+            components (list of ints): list of fragment ids to be processed.
+            labels (np.array): segmentation/labels array of image.
+            soma_lbls (list of ints): list of fragment ids of somas.
+            image_tiered (np.array): array with assoociated image likelihood costs.
+
+        Raises:
+            ValueError: In case there is only one endpoint computed for a fragment. Shouldn't happen, but potentially useful for debugging.
+
+        Returns:
+            [list]: tuples of state info for all the specified fragments.
+        """
+        results = []
+        for component in tqdm(components, desc="Computing state representation"):
+            if component in soma_lbls:  # no state representation for soma
+                results.append((component, None, None, None, None, None))
 
             mask = labels == component
 
@@ -177,28 +233,16 @@ class most_probable_neuron_path:
             dif = b - a
             dif = dif / np.linalg.norm(dif)
 
-            state_to_comp[states[0]][2]["coord1"] = a
-            state_to_comp[states[0]][2][
-                "orientation1"
-            ] = dif  # orient along direction of fragment
-            state_to_comp[states[0]][2]["coord2"] = b
-            state_to_comp[states[0]][2]["orientation2"] = dif
-
-            state_to_comp[states[1]][2]["coord1"] = b
-            state_to_comp[states[1]][2]["orientation1"] = -dif
-            state_to_comp[states[1]][2]["coord2"] = a
-            state_to_comp[states[1]][2]["orientation2"] = -dif
-
             a = [int(x) for x in a]
             b = [int(x) for x in b]
 
             xlist, ylist, zlist = Bresenham3D(a[0], a[1], a[2], b[0], b[1], b[2])
-            sum = np.sum(self.image_tiered[xlist, ylist, zlist])
+            sum = np.sum(image_tiered[xlist, ylist, zlist])
             if sum < 0:
                 warnings.warn(f"Negative int cost for comp {component}: {sum}")
-            int_comp_costs[component] = sum
 
-        self.int_comp_costs = int_comp_costs
+            results.append((component, a, b, dif, -dif, sum))
+        return results
 
     def endpoints_from_coords_neighbors(self, coords):
         """Compute endpoints of fragment.
@@ -385,112 +429,90 @@ class most_probable_neuron_path:
 
         return cost, nonline_point
 
+    def compute_out_costs_dist(self, states, point_point_func, point_blob_func):
+        """Compute distance costs of all outgoing transitions from a list of states
+
+        Args:
+            states (list of ints): states for which to compute outgoing distance costs.
+            point_point_func (function): function used to compute distance between fragment objects
+            point_blob_func (function): function used to compute distance between a fragment and a blob (soma) object
+
+        Returns:
+            [list]: distance costs and, when relevant, soma connection points.
+        """
+        state_to_comp = self.state_to_comp
+        num_states = self.num_states
+        results = []
+
+        for state1 in tqdm(states, desc="computing state costs (geometry)"):
+            state1_info = state_to_comp[state1]
+            for state2 in range(num_states):
+                state2_info = state_to_comp[state2]
+                soma_pt = None
+                if state_to_comp[state1][1] == state_to_comp[state2][1]:
+                    dist_cost = np.inf
+                elif state1_info[0] == "fragment" and state2_info[0] == "fragment":
+                    dist_cost = point_point_func(
+                        state1_info[2]["coord2"],
+                        state1_info[2]["orientation2"],
+                        state2_info[2]["coord1"],
+                        state2_info[2]["orientation1"],
+                    )
+                elif state1_info[0] == "soma" and state2_info[0] == "soma":
+                    dist_cost == np.inf
+                elif state1_info[0] == "fragment" and state2_info[0] == "soma":
+                    soma_info = state2_info
+                    fragment_info = state1_info
+                    fragment_state = state1
+                    soma_state = state2
+
+                    dist_cost, soma_pt = point_blob_func(
+                        fragment_info[2]["coord2"],
+                        fragment_info[2]["orientation2"],
+                        soma_info[1],
+                    )
+                elif state1_info[0] == "soma" and state2_info[0] == "fragment":
+                    dist_cost = np.inf
+                results.append((state1, state2, dist_cost, soma_pt))
+        return results
+
     def compute_all_costs_dist(self, point_point_func, point_blob_func):
         """Compute all pairwise costs of distance term
 
         Args:
             point_point_func (function): function used to compute distance between fragment objects
             point_blob_func (function): function used to compute distance between a fragment and a blob (soma) object
-
-        Raises:
-            ValueError: [description]
         """
-        self.soma_lbls
-
         cost_mat_dist = self.cost_mat_dist
-        cost_mat_int = self.cost_mat_int
         state_to_comp = self.state_to_comp
-        comp_to_states = self.comp_to_states
         num_states = self.num_states
+        parallel = self.parallel
 
-        with tqdm(
-            total=int(num_states ** 2),
-            desc="Computing state costs (geometry)",
-            smoothing=0.1,
-        ) as pbar:
-            for state1 in range(num_states):
-                state1_info = state_to_comp[state1]
-                for state2 in range(num_states):
-                    pbar.update(1)
-                    state2_info = state_to_comp[state2]
+        if parallel == 1:
+            results = self.compute_out_costs_dist(
+                np.arange(num_states), point_point_func, point_blob_func
+            )
+        else:
+            print(f"Parallelizing distance cost computation x{parallel}")
+            state_sets = np.array_split(np.arange(num_states), parallel)
 
-                    if (
-                        cost_mat_dist[state1, state2] != -np.inf
-                    ):  # cost has already been computed
-                        continue
-                    elif (
-                        state_to_comp[state1][1] == state_to_comp[state2][1]
-                    ):  # states from same fragment
-                        dist_cost = np.inf
-                        # distances here are symmetric
-                        cost_mat_dist[state1, state2] = dist_cost
-                        cost_mat_dist[state2, state1] = dist_cost
-                    elif (
-                        state1_info[0] == "fragment" and state2_info[0] == "fragment"
-                    ):  # two fragments
-                        dist_cost = point_point_func(
-                            state1_info[2]["coord2"],
-                            state1_info[2]["orientation2"],
-                            state2_info[2]["coord1"],
-                            state2_info[2]["orientation1"],
-                        )
+            results_tuple = Parallel(n_jobs=parallel)(
+                delayed(self.compute_out_costs_dist)(
+                    states, point_point_func, point_blob_func
+                )
+                for states in state_sets
+            )
 
-                        # distances here are symmetric, but need to find the opposite orientation
-                        other_states1 = [
-                            s
-                            for s in comp_to_states[state_to_comp[state1][1]]
-                            if s != state1
-                        ]
-                        other_states2 = [
-                            s
-                            for s in comp_to_states[state_to_comp[state2][1]]
-                            if s != state2
-                        ]
+            results = self.concatenate_results(results_tuple)
 
-                        cost_mat_dist[state1, state2] = dist_cost
-                        cost_mat_dist[other_states2[0], other_states1[0]] = dist_cost
-
-                    elif state1_info[0] == "soma" and state2_info[0] == "soma":
-                        dist_cost == np.inf
-                        # distances here are symmetric
-                        cost_mat_dist[state1, state2] = dist_cost
-                        cost_mat_dist[state2, state1] = dist_cost
-                    elif state1_info[0] == "fragment" and state2_info[0] == "soma":
-                        soma_info = state2_info
-                        fragment_info = state1_info
-                        fragment_state = state1
-                        soma_state = state2
-
-                        dist_cost, soma_pt = point_blob_func(
-                            fragment_info[2]["coord2"],
-                            fragment_info[2]["orientation2"],
-                            soma_info[1],
-                        )
-                        self.state_to_comp[fragment_state][2][
-                            "soma connection point"
-                        ] = soma_pt
-
-                        cost_mat_dist[fragment_state, soma_state] = dist_cost
-                        cost_mat_dist[soma_state, fragment_state] = np.inf
-                    elif state1_info[0] == "soma" and state2_info[0] == "fragment":
-                        soma_info = state1_info
-                        fragment_info = state2_info
-                        fragment_state = state2
-                        soma_state = state1
-
-                        dist_cost, soma_pt = point_blob_func(
-                            fragment_info[2]["coord2"],
-                            fragment_info[2]["orientation2"],
-                            soma_info[1],
-                        )
-                        self.state_to_comp[fragment_state][2][
-                            "soma connection point"
-                        ] = soma_pt
-
-                        cost_mat_dist[fragment_state, soma_state] = dist_cost
-                        cost_mat_dist[soma_state, fragment_state] = np.inf
-                    else:
-                        raise ValueError("No cases caught dist")
+        for result in tqdm(results, desc="filling in costs"):
+            state1, state2, dist_cost, soma_pt = result
+            cost_mat_dist[state1, state2] = dist_cost
+            if soma_pt is not None:
+                if state_to_comp[state1][0] == "soma":
+                    self.state_to_comp[state2][2]["soma connection point"] = soma_pt
+                else:
+                    self.state_to_comp[state1][2]["soma connection point"] = soma_pt
 
         # normalize dist mat
         for state1 in tqdm(range(num_states), desc="Normalizing"):
@@ -501,92 +523,79 @@ class most_probable_neuron_path:
                 denom = logsumexp(-1 * cost_mat_dist[state1, :])
             cost_mat_dist[state1, :] = cost_mat_dist[state1, :] + denom
 
-    def compute_all_costs_int(self):
-        """Compute all pairwise intensity based transition costs.
+    def compute_out_int_costs(self, states):
+        """Compute outgoing intensity costs for a certain set of states.
+
+        Args:
+            states (list of ints): states to compute intensity costs.
 
         Raises:
             ValueError: This pair of states did not fall into any category. Shouldn't happen but potentially useful for debugging.
+
+        Returns:
+            [list]: intensity costs.
         """
-        # should be run after compute all dist costs
-        cost_mat_dist = self.cost_mat_dist
-        cost_mat_int = self.cost_mat_int
+
         state_to_comp = self.state_to_comp
-        comp_to_states = self.comp_to_states
+        cost_mat_dist = self.cost_mat_dist
         num_states = self.num_states
 
-        with tqdm(
-            total=int(num_states ** 2),
-            desc="Computing state costs (intensity)",
-            smoothing=0.1,
-        ) as pbar:
-            for state1 in range(num_states):
-                state1_info = state_to_comp[state1]
-                for state2 in range(num_states):
-                    pbar.update(1)
+        results = []
 
-                    state2_info = state_to_comp[state2]
-                    if (
-                        cost_mat_int[state1, state2] != -np.inf
-                    ):  # cost has already been computed or distance cost is infinite
-                        continue
-                    elif (
-                        state_to_comp[state1][1] == state_to_comp[state2][1]
-                        or cost_mat_dist[state1, state2] == np.inf
-                    ):  # states from same fragment or distance is infinite
-                        int_cost = np.inf
-                        # costs are not necessarily symmetric here (cost mat dist case)
-                        cost_mat_int[state1, state2] != int_cost
-                    elif (
-                        state1_info[0] == "fragment" and state2_info[0] == "fragment"
-                    ):  # two fragments
-                        line_int_cost = self.line_int(
-                            state1_info[2]["coord2"], state2_info[2]["coord1"]
-                        )
+        for state1 in tqdm(states, desc="Computing state costs (intensity)"):
+            state1_info = state_to_comp[state1]
+            for state2 in range(num_states):
 
-                        # distances here are symmetric, but need to find the opposite orientation
-                        other_states1 = [
-                            s
-                            for s in comp_to_states[state_to_comp[state1][1]]
-                            if s != state1
-                        ]
-                        other_states2 = [
-                            s
-                            for s in comp_to_states[state_to_comp[state2][1]]
-                            if s != state2
-                        ]
+                state2_info = state_to_comp[state2]
+                if (
+                    state_to_comp[state1][1] == state_to_comp[state2][1]
+                    or cost_mat_dist[state1, state2] == np.inf
+                ):  # states from same fragment or distance is infinite
+                    int_cost = np.inf
+                elif (
+                    state1_info[0] == "fragment" and state2_info[0] == "fragment"
+                ):  # two fragments
+                    line_int_cost = self.line_int(
+                        state1_info[2]["coord2"], state2_info[2]["coord1"]
+                    )
+                    int_cost = line_int_cost + self.int_comp_costs[state2_info[1]]
+                elif state1_info[0] == "fragment" and state2_info[0] == "soma":
+                    fragment_info = state1_info
+                    fragment_state = state1
 
-                        cost_mat_int[other_states2[0], other_states1[0]] = (
-                            self.int_comp_costs[state1_info[1]] + line_int_cost
-                        )
-                        cost_mat_int[state1, state2] = (
-                            self.int_comp_costs[state2_info[1]] + line_int_cost
-                        )
-                    elif state1_info[0] == "fragment" and state2_info[0] == "soma":
-                        soma_info = state2_info
-                        fragment_info = state1_info
-                        fragment_state = state1
-                        soma_state = state2
+                    int_cost = self.line_int(
+                        fragment_info[2]["coord2"],
+                        state_to_comp[fragment_state][2]["soma connection point"],
+                    )
+                elif state1_info[0] == "soma" and state2_info[0] == "fragment":
+                    int_cost = np.inf
+                else:
+                    raise ValueError("No cases caught int")
+                results.append((state1, state2, int_cost))
+        return results
 
-                        int_cost = self.line_int(
-                            fragment_info[2]["coord2"],
-                            state_to_comp[fragment_state][2]["soma connection point"],
-                        )
-                        cost_mat_int[fragment_state, soma_state] = int_cost
-                        cost_mat_int[soma_state, fragment_state] = np.inf
-                    elif state1_info[0] == "soma" and state2_info[0] == "fragment":
-                        soma_info = state1_info
-                        fragment_info = state2_info
-                        fragment_state = state2
-                        soma_state = state1
+    def compute_all_costs_int(self):
+        """Compute all pairwise intensity based transition costs."""
+        cost_mat_int = self.cost_mat_int
+        num_states = self.num_states
+        parallel = self.parallel
+        results = []
 
-                        int_cost = self.line_int(
-                            fragment_info[2]["coord2"],
-                            state_to_comp[fragment_state][2]["soma connection point"],
-                        )
-                        cost_mat_int[fragment_state, soma_state] = int_cost
-                        cost_mat_int[soma_state, fragment_state] = np.inf
-                    else:
-                        raise ValueError("No cases caught int")
+        if parallel == 1:
+            results = self.compute_out_int_costs(range(num_states))
+        else:
+            print(f"Parallelizing x{parallel}")
+            state_sets = np.array_split(np.arange(num_states), parallel)
+            results_tuple = Parallel(n_jobs=parallel)(
+                delayed(self.compute_out_int_costs)(states) for states in state_sets
+            )
+            results = []
+            for result in results_tuple:
+                results += list(result)
+
+        for result in tqdm(results, desc="filling in costs"):
+            state1, state2, int_cost = result
+            cost_mat_int[state1, state2] = int_cost
 
     def line_int(self, loc1, loc2):
         """Compute an observable cost based on line between two points
