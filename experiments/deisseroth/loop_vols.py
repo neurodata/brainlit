@@ -88,5 +88,7 @@ for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
             f.write(f'{i} {j}')
         for f in os.listdir(files_dir):
             os.remove(os.path.join(files_dir, f))
+    
+    coords[1] = 0
         
 

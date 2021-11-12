@@ -76,7 +76,6 @@ mip = 0
 vol = CloudVolume(dir, parallel=True, mip=mip, fill_missing=True)
 shape = vol.shape
 
-
 for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
     for j in tqdm(range(coords[1], shape[1], chunk_size[1]), leave=False):    
         results = Parallel(n_jobs=ncpu)(delayed(process_chunk)(i,j,k) for k in range(0,shape[2],chunk_size[2]))
@@ -93,5 +92,7 @@ for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
         
         for f in os.listdir(files_dir):
             os.remove(os.path.join(files_dir, f))
+
+    coords[1] = 0
         
 
