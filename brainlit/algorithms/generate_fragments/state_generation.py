@@ -39,7 +39,7 @@ class state_generation:
                 for f in os.listdir(data_bin):
                     if "Probabilities" in f:
                         items = f.split("_")
-                        z = items[1]
+                        z = int(items[1])
                         z2 = np.amin([z+chunk_size[2], image.shape[2]])
                         fname = os.path.join(data_bin, f)
                         f = h5py.File(fname, "r")
