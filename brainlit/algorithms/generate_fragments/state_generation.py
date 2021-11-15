@@ -46,6 +46,6 @@ class state_generation:
                         pred = f.get("exported_data")
                         pred = pred[:,:,:,0]
 
-                        probabilities[x:x2,y:y2,z:z2] = pred
+                        probabilities[x:x2,y:y2,z:z2,0] = pred
                     os.remove(os.path.join(data_bin, f))
 
