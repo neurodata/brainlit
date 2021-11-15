@@ -2,6 +2,7 @@ import zarr
 import numpy as np
 import h5py
 from joblib import Parallel, delayed
+import os
 
 import subprocess
 
@@ -15,6 +16,7 @@ class state_generation:
         self.parallel = parallel
 
     def predict_thread(self, corner1, corner2, data_bin):
+        print(f"{corner1}, {data_bin}")
         image = zarr.open(self.image_path, mode='r')
         image_chunk = np.squeeze(image[corner1[0]:corner2[0], corner1[1]:corner2[1], corner1[2]:corner2[2]])
         fname = data_bin + "image_" + str(corner1[0]) + ".h5"
@@ -33,4 +35,6 @@ class state_generation:
                 y2 = np.amin([y+chunk_size[1], image.shape[1]])
                 Parallel(n_jobs=self.parallel)(delayed(self.predict_thread)([x,y,z], [x2,y2,np.amin([z+chunk_size[2], image.shape[2]])], data_bin) for z in np.arange(0, image.shape[2], chunk_size[2]))
                 
+                for f in os.listdir(data_bin):
+                    os.remove(os.path.join(data_bin, f))
 
