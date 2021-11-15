@@ -37,15 +37,15 @@ class state_generation:
                 Parallel(n_jobs=self.parallel)(delayed(self.predict_thread)([x,y,z], [x2,y2,np.amin([z+chunk_size[2], image.shape[2]])], data_bin) for z in np.arange(0, image.shape[2], chunk_size[2]))
                 
                 for f in os.listdir(data_bin):
+                    fname = os.path.join(data_bin, f)
                     if "Probabilities" in f:
                         items = f.split("_")
                         z = int(items[1])
                         z2 = np.amin([z+chunk_size[2], image.shape[2]])
-                        fname = os.path.join(data_bin, f)
                         f = h5py.File(fname, "r")
                         pred = f.get("exported_data")
                         pred = pred[:,:,:,0]
 
                         probabilities[x:x2,y:y2,z:z2,0] = pred
-                    os.remove(os.path.join(data_bin, f))
+                    os.remove(fname)
 
