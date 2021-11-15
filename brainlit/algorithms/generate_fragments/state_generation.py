@@ -31,6 +31,6 @@ class state_generation:
             x2 = np.amin([x+chunk_size[0], image.shape[0]])
             for y in np.arange(0, image.shape[1], chunk_size[1]):
                 y2 = np.amin([y+chunk_size[1], image.shape[1]])
-                Parallel(n_jobs=self.parallel)(delayed(predict_thread)([x,y,z], [x2,y2,np.amin([z+chunk_size[2], image.shape[2]])], data_bin) for z in np.arange(0, image.shape[2], chunk_size[2]))
+                Parallel(n_jobs=self.parallel)(delayed(self.predict_thread)([x,y,z], [x2,y2,np.amin([z+chunk_size[2], image.shape[2]])], data_bin) for z in np.arange(0, image.shape[2], chunk_size[2]))
                 
 
