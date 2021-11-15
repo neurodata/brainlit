@@ -27,6 +27,7 @@ class state_generation:
 
     def predict(self, data_bin):
         image = zarr.open(self.image_path, mode='r')
+        probabilities = zarr.zeros(np.squeeze(image.shape), chunks = image.chunks, dtype="float")
         chunk_size = [375, 375, 125] #image.chunks
 
         for x in np.arange(0, image.shape[0], chunk_size[0]):
@@ -36,5 +37,15 @@ class state_generation:
                 Parallel(n_jobs=self.parallel)(delayed(self.predict_thread)([x,y,z], [x2,y2,np.amin([z+chunk_size[2], image.shape[2]])], data_bin) for z in np.arange(0, image.shape[2], chunk_size[2]))
                 
                 for f in os.listdir(data_bin):
+                    if "Probabilities" in f:
+                        items = f.split("_")
+                        z = items[1]
+                        z2 = np.amin([z+chunk_size[2], image.shape[2]])
+                        fname = os.path.join(data_bin, f)
+                        f = h5py.File(fname, "r")
+                        pred = f.get("exported_data")
+                        pred = pred[:,:,:,0]
+
+                        probabilities[x:x2,y:y2,z:z2] = pred
                     os.remove(os.path.join(data_bin, f))
 
