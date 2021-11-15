@@ -17,7 +17,7 @@ class state_generation:
     def predict_thread(self, corner1, corner2, data_bin):
         image = zarr.open(self.image_path, mode='r')
         image_chunk = np.squeeze(image[corner1[0]:corner2[0], corner1[1]:corner2[1], corner1[2]:corner2[2]])
-        fname = data_bin + "image_" + str(z) + ".h5"
+        fname = data_bin + "image_" + str(corner1[0]) + ".h5"
         with h5py.File(fname, "w") as f:
             f.create_dataset("image_chunk", data=image_chunk)
         subprocess.run([self.ilastik_program_path, "--headless", f"--project={self.ilastik_project_path}", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
