@@ -16,7 +16,7 @@ class state_generation:
         self.parallel = parallel
 
     def predict_thread(self, corner1, corner2, data_bin):
-        print(f"{corner1}, {data_bin}")
+        print(f"{corner1}, {corner2}, {data_bin}")
         image = zarr.open(self.image_path, mode='r')
         image_chunk = np.squeeze(image[corner1[0]:corner2[0], corner1[1]:corner2[1], corner1[2]:corner2[2]])
         fname = data_bin + "image_" + str(corner1[0]) + ".h5"
@@ -27,7 +27,7 @@ class state_generation:
 
     def predict(self, data_bin):
         image = zarr.open(self.image_path, mode='r')
-        chunk_size = image.chunks
+        chunk_size = [375, 375, 125] #image.chunks
 
         for x in np.arange(0, image.shape[0], chunk_size[0]):
             x2 = np.amin([x+chunk_size[0], image.shape[0]])
