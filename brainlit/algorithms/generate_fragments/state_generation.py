@@ -137,6 +137,7 @@ class state_generation:
         return specifications
 
     def split_frags_thread(self, corner1, corner2, soma_coords=[]):
+        print(f"Processing @corner: {corner1}")
         threshold = 0.9
 
         prob = zarr.open(self.prob_path, mode="r")
