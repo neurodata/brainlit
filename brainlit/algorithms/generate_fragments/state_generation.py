@@ -18,7 +18,7 @@ class state_generation:
         ilastik_project_path,
         chunk_size=[375, 375, 125],
         soma_coords=[],
-        resolution=[],
+        resolution=[0.3, 0.3, 1],
         parallel=1,
         prob_path=None,
     ):
@@ -161,13 +161,13 @@ class state_generation:
         image_iterative[mask & (~mask2)] = 0
 
         states, comp_to_states = image_process.split_frags_place_points(
-            image_iterative,
-            labels,
-            radius_states,
-            self.resolution,
-            threshold,
-            states,
-            comp_to_states,
+            image_iterative=image_iterative,
+            labels=labels,
+            radius_states=radius_states,
+            res=self.resolution,
+            threshold=threshold,
+            states=states,
+            comp_to_states=comp_to_states,
         )
 
         new_labels = image_process.split_frags_split_comps(
