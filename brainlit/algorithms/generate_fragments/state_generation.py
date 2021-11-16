@@ -20,6 +20,7 @@ class state_generation:
         soma_coords=[],
         resolution=[],
         parallel=1,
+        prob_path = None,
     ):
         self.image_path = image_path
         image = zarr.open(image_path, mode="r")
@@ -31,10 +32,9 @@ class state_generation:
         self.resolution = resolution
         self.parallel = parallel
 
-        self.prob_path = None
+        self.prob_path = prob_path
 
     def predict_thread(self, corner1, corner2, data_bin):
-        print(f"{corner1}, {corner2}, {data_bin}")
         image = zarr.open(self.image_path, mode="r")
         image_chunk = np.squeeze(
             image[
@@ -95,7 +95,7 @@ class state_generation:
                     os.remove(fname)
 
         zarr.save(prob_fname, probabilities)
-        self.prob_path = fname
+        self.prob_path = prob_fname
 
     def _get_frag_specifications(self):
         image = zarr.open(self.image_path, mode="r")
@@ -172,7 +172,7 @@ class state_generation:
         new_labels = image_process.split_frags_split_fractured_components(new_labels)
 
         props = measure.regionprops(new_labels)
-        for label, prop in enumerate(tqdm(props, desc="remove small fragments")):
+        for _, prop in enumerate(tqdm(props, desc="remove small fragments")):
             if prop.area < 15:
                 new_labels[new_labels == prop.label] = 0
 
