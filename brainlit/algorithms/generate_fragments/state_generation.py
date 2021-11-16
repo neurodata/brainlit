@@ -63,10 +63,14 @@ class state_generation:
             np.squeeze(image.shape), chunks=image.chunks, dtype="float"
         )
         chunk_size = self.chunk_size
+        items = self.image_path.split(".")
+        prob_fname = items[0] + "_probs.zarr"
 
-        for x in np.arange(0, image.shape[0], chunk_size[0]):
+        print(f"Constructing probability  image {prob_fname} of shape {probabilities.shape}")
+
+        for x in tqdm(np.arange(0, image.shape[0], chunk_size[0]), desc="Computing Ilastik Predictions"):
             x2 = np.amin([x + chunk_size[0], image.shape[0]])
-            for y in np.arange(0, image.shape[1], chunk_size[1]):
+            for y in tqdm(np.arange(0, image.shape[1], chunk_size[1]), leave=False):
                 y2 = np.amin([y + chunk_size[1], image.shape[1]])
                 Parallel(n_jobs=self.parallel)(
                     delayed(self.predict_thread)(
@@ -87,12 +91,10 @@ class state_generation:
                         pred = f.get("exported_data")
                         pred = pred[:, :, :, 0]
 
-                        probabilities[x:x2, y:y2, z:z2, 0] = pred
+                        probabilities[x:x2, y:y2, z:z2] = pred
                     os.remove(fname)
 
-        items = self.image_path.split(".")
-        fname = items[0] + "_probs.zarr"
-        zarr.save(fname, probabilities)
+        zarr.save(prob_fname, probabilities)
         self.prob_path = fname
 
     def _get_frag_specifications(self):
@@ -132,10 +134,9 @@ class state_generation:
     def split_frags_thread(self, corner1, corner2, soma_coords=[]):
         threshold = 0.9
 
-        image = zarr.open(self.image_path, mode="r")
         prob = zarr.open(self.prob_path, mode="r")
 
-        im_processed = image[
+        im_processed = prob[
             corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
         ]
         labels = measure.label(im_processed > threshold)
@@ -184,8 +185,11 @@ class state_generation:
         fragments = zarr.zeros(
             np.squeeze(image.shape), chunks=image.chunks, dtype="uint16"
         )
-        chunk_size = self.chunk_size
-        soma_coords = self.soma_coords
+        items = self.image_path.split(".")
+        frag_fname = items[0] + "_labels.zarr"
+
+        print(f"Constructing fragment image {frag_fname} of shape {fragments.shape}")
+
 
         specifications = self._get_frag_specifications()
 
@@ -207,9 +211,7 @@ class state_generation:
 
 
         
-        items = self.image_path.split(".")
-        fname = items[0] + "_labels.zarr"
-        zarr.save(fname, fragments)
-        self.fragment_name = fname
+        zarr.save(frag_fname, fragments)
+        self.fragment_name = frag_fname
 
 
