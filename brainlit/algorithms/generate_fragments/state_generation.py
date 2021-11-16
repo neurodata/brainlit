@@ -20,7 +20,7 @@ class state_generation:
         soma_coords=[],
         resolution=[],
         parallel=1,
-        prob_path = None,
+        prob_path=None,
     ):
         self.image_path = image_path
         image = zarr.open(image_path, mode="r")
@@ -66,9 +66,14 @@ class state_generation:
         items = self.image_path.split(".")
         prob_fname = items[0] + "_probs.zarr"
 
-        print(f"Constructing probability  image {prob_fname} of shape {probabilities.shape}")
+        print(
+            f"Constructing probability  image {prob_fname} of shape {probabilities.shape}"
+        )
 
-        for x in tqdm(np.arange(0, image.shape[0], chunk_size[0]), desc="Computing Ilastik Predictions"):
+        for x in tqdm(
+            np.arange(0, image.shape[0], chunk_size[0]),
+            desc="Computing Ilastik Predictions",
+        ):
             x2 = np.amin([x + chunk_size[0], image.shape[0]])
             for y in tqdm(np.arange(0, image.shape[1], chunk_size[1]), leave=False):
                 y2 = np.amin([y + chunk_size[1], image.shape[1]])
@@ -190,7 +195,6 @@ class state_generation:
 
         print(f"Constructing fragment image {frag_fname} of shape {fragments.shape}")
 
-
         specifications = self._get_frag_specifications()
 
         results = Parallel(n_jobs=self.parallel)(
@@ -207,11 +211,11 @@ class state_generation:
             corner1, corner2, labels = result
             labels[labels >= 0] += max_label
             max_label = np.amax([max_label, np.amax(labels)])
-            fragments[corner1[0]:corner2[0], corner1[1]:corner2[1], corner1[2]:corner2[2]] = labels
+            fragments[
+                corner1[0] : corner2[0],
+                corner1[1] : corner2[1],
+                corner1[2] : corner2[2],
+            ] = labels
 
-
-        
         zarr.save(frag_fname, fragments)
         self.fragment_name = frag_fname
-
-
