@@ -229,7 +229,7 @@ class state_generation:
         max_label = 0
         for result in results:
             corner1, corner2, labels = result
-            labels[labels >= 0] += max_label
+            labels[labels > 0] += max_label
             max_label = np.amax([max_label, np.amax(labels)])
             fragments[
                 corner1[0] : corner2[0],
@@ -424,7 +424,7 @@ class state_generation:
             rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
             mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
 
-            print("skeletonizing")
+            print(f"skeletonizing {mask.shape}")
             print(mask.shape)
             skel = morphology.skeletonize_3d(mask)
 
