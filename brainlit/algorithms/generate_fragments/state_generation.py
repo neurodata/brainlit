@@ -225,7 +225,7 @@ class state_generation:
                 corner1[1] : corner2[1],
                 corner1[2] : corner2[2],
             ] = labels
-
+        print(f"*****************Number of components: {max_label}*******************")
         zarr.save(frag_fname, fragments)
 
         soma_lbls = []
@@ -457,7 +457,6 @@ class state_generation:
             delayed(self.compute_states_thread)(
                 specification["corner1"],
                 specification["corner2"],
-                specification["soma_coords"],
             )
             for specification in specifications
         )
@@ -488,6 +487,7 @@ class state_generation:
             )
             state_num += 1
             states.append(state)
+        print(f"*****************Number of states: {len(states)}*******************")
 
         with open(states_fname, 'wb') as handle:
             pickle.dump(states, handle)
