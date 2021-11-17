@@ -420,9 +420,11 @@ class state_generation:
 
             print("masking")
             mask = labels == component
+            print("computing bounds")
             rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
             mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
 
+            print("skeletonizing")
             skel = morphology.skeletonize_3d(mask)
 
             print("coordinating")
