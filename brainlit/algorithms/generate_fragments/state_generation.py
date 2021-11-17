@@ -425,6 +425,7 @@ class state_generation:
             mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
 
             print("skeletonizing")
+            print(mask.shape)
             skel = morphology.skeletonize_3d(mask)
 
             print("coordinating")
@@ -435,7 +436,7 @@ class state_generation:
             else:
                 coords = coords_skel
 
-            print("endpoints")
+            print(f"endpoints {coords.shape}")
             endpoints = self.endpoints_from_coords_neighbors(coords)
             a = endpoints[0]
             try:
