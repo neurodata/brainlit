@@ -446,7 +446,7 @@ class state_generation:
             print(xlist)
             print(image_tiered)
             print(image_tiered[xlist, ylist, zlist])
-            sum = np.sum(image_tiered[xlist, ylist, zlist])
+            sum = np.sum(image_tiered.vindex[xlist, ylist, zlist])
             if sum < 0:
                 warnings.warn(f"Negative int cost for comp {component}: {sum}")
 
