@@ -243,7 +243,7 @@ class state_generation:
 
     def compute_soma_lbls(self):
         fragments = zarr.open(self.fragment_path, mode="r")
-        
+
         soma_lbls = []
         for soma_coord in self.soma_coords:
             local_labels = fragments[
@@ -359,7 +359,7 @@ class state_generation:
         Returns:
             list: endpoints of the fragment
         """
-        res = self.res
+        res = self.resolution
 
         dims = np.multiply(np.amax(coords, axis=0) - np.amin(coords, axis=0), res)
         max_length = np.sqrt(np.sum([dim ** 2 for dim in dims]))
