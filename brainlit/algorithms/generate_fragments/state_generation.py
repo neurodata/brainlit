@@ -13,6 +13,7 @@ import math
 import warnings
 import subprocess
 import random
+import pickle
 
 
 class state_generation:
@@ -304,7 +305,6 @@ class state_generation:
         zarr.save(tiered_fname, tiered)
         self.tiered_path = tiered_fname
 
-
     def compute_bounds(self, label, pad):
         """compute coordinates of bounding box around a masked object, with given padding
 
@@ -429,11 +429,27 @@ class state_generation:
             if sum < 0:
                 warnings.warn(f"Negative int cost for comp {component}: {sum}")
 
-            results.append((component, a, b, dif, -dif, sum))
+            results.append((component, a, b, -dif, dif, sum))
         return results
+
+    class state:
+        def __init__(
+            self, id, fragment, point1, point2, orientation1, orientation2, image_cost
+        ):
+            self.id = id
+            self.fragment = fragment
+            self.point1 = point1
+            self.point2 = point2
+            self.orientation1 = orientation1
+            self.orientation2 = orientation2
+            self.image_cost = image_cost
+
+            self.soma_connection_point = None
 
     def compute_states(self):
         print(f"Computing states")
+        items = self.image_path.split(".")
+        states_fname = items[0] + "_states.pickle"
 
         specifications = self._get_frag_specifications()
 
@@ -447,4 +463,31 @@ class state_generation:
         )
 
         state_num = 0
-        for result in results
+        states = []
+        for result in results:
+            component, a, b, oa, ob, sum = result
+            state = self.state(
+                id=state_num,
+                fragment=component,
+                point1=a,
+                point2=b,
+                orientation1=-oa,
+                orientation1=ob,
+                image_cost=sum,
+            )
+            states.append(state)
+            state_num += 1
+            state = self.state(
+                id=state_num,
+                fragment=component,
+                point1=a,
+                point2=b,
+                orientation1=-oa,
+                orientation1=ob,
+                image_cost=sum,
+            )
+            state_num += 1
+            states.append(state)
+
+        with open(states_fname, 'wb') as handle:
+            pickle.dump(states, handle)
