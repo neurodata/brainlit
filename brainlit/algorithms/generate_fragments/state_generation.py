@@ -397,7 +397,7 @@ class state_generation:
         return ends
 
     def compute_states_thread(self, corner1, corner2):
-        print(f"Computing state representations @corner {corner1}")
+        print(f"Computing state representations @corner {corner1}:{corner2}")
         fragments = zarr.open(self.fragment_path, mode="r")
         image_tiered = zarr.open(self.tiered_path, mode="r")
         labels = fragments[
