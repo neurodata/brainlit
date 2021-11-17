@@ -472,7 +472,7 @@ class state_generation:
                 point1=a,
                 point2=b,
                 orientation1=-oa,
-                orientation1=ob,
+                orientation2=ob,
                 image_cost=sum,
             )
             states.append(state)
