@@ -418,12 +418,14 @@ class state_generation:
             if component in self.soma_lbls:
                 results.append((component, None, None, None, None, None))
 
+            print("masking")
             mask = labels == component
             rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
             mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
 
             skel = morphology.skeletonize_3d(mask)
 
+            print("coordinating")
             coords_mask = np.argwhere(mask)
             coords_skel = np.argwhere(skel)
             if len(coords_skel) < 4:
@@ -431,6 +433,7 @@ class state_generation:
             else:
                 coords = coords_skel
 
+            print("endpoints")
             endpoints = self.endpoints_from_coords_neighbors(coords)
             a = endpoints[0]
             try:
@@ -447,6 +450,7 @@ class state_generation:
             a = [int(x) for x in a]
             b = [int(x) for x in b]
 
+            print("summing")
             xlist, ylist, zlist = Bresenham3D(a[0], a[1], a[2], b[0], b[1], b[2])
             sum = np.sum(image_tiered[xlist, ylist, zlist])
             if sum < 0:
