@@ -398,9 +398,12 @@ class state_generation:
 
     def compute_states_thread(self, corner1, corner2):
         print(f"Computing state representations @corner {corner1}:{corner2}")
-        fragments = zarr.open(self.fragment_path, mode="r")
-        image_tiered = zarr.open(self.tiered_path, mode="r")
-        labels = fragments[
+        fragments_zarr = zarr.open(self.fragment_path, mode="r")
+        tiered_zarr = zarr.open(self.tiered_path, mode="r")
+        labels = fragments_zarr[
+            corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
+        ]
+        image_tiered = tiered_zarr[
             corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
         ]
 
@@ -444,7 +447,7 @@ class state_generation:
             b = [int(x) for x in b]
 
             xlist, ylist, zlist = Bresenham3D(a[0], a[1], a[2], b[0], b[1], b[2])
-            sum = np.sum(image_tiered.vindex[xlist, ylist, zlist])
+            sum = np.sum(image_tiered[xlist, ylist, zlist])
             if sum < 0:
                 warnings.warn(f"Negative int cost for comp {component}: {sum}")
 
