@@ -8,8 +8,8 @@ sg = state_generation(
     "/data/tathey1/mouselight/octopus_exp.ilp",
     chunk_size=[300, 300, 300],
     parallel=12,
-    prob_path="/data/tathey1/mouselight/1mm_probs.zarr")
-    # fragment_path="/data/tathey1/mouselight/250_labels.zarr",
+    prob_path="/data/tathey1/mouselight/1mm_probs.zarr",
+    fragment_path="/data/tathey1/mouselight/1mm_labels.zarr")
     # tiered_path="/data/tathey1/mouselight/250_tiered.zarr")
 print(f"create object in {time.perf_counter()-t1} seconds")
 

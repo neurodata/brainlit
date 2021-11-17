@@ -263,6 +263,7 @@ class state_generation:
 
 
     def compute_image_tiered_thread(self, corner1, corner2):
+        print(f"Processing @corner: {corner1}")
         kde = self.kde
         image = zarr.open(self.image_path, mode="r")
 
