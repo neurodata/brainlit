@@ -239,6 +239,11 @@ class state_generation:
         print(f"*****************Number of components: {max_label}*******************")
         zarr.save(frag_fname, fragments)
 
+        self.fragment_path = frag_fname
+
+    def compute_soma_lbls(self):
+        fragments = zarr.open(self.fragment_path, mode="r")
+        
         soma_lbls = []
         for soma_coord in self.soma_coords:
             local_labels = fragments[
@@ -252,7 +257,9 @@ class state_generation:
             soma_lbls.append(soma_label)
 
         self.soma_lbls = soma_lbls
-        self.fragment_path = frag_fname
+
+
+
 
     def compute_image_tiered_thread(self, corner1, corner2):
         kde = self.kde

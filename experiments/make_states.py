@@ -21,6 +21,10 @@ print(f"create object in {time.perf_counter()-t1} seconds")
 # print(f"computed fragments in {time.perf_counter()-t1} seconds")
 
 t1 = time.perf_counter()
+sg.compute_soma_lbls()
+print(f"computed soma labels in {time.perf_counter()-t1} seconds")
+
+t1 = time.perf_counter()
 sg.compute_image_tiered()
 print(f"computed tiered image in {time.perf_counter()-t1} seconds")
 
