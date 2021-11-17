@@ -406,9 +406,10 @@ class state_generation:
         image_tiered = tiered_zarr[
             corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
         ]
-
+        print("read chunks")
         unq = np.unique(labels)
         components = unq[unq != 0]
+        print("found unique")
 
         results = []
         for component in tqdm(
