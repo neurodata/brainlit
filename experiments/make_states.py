@@ -17,9 +17,9 @@ print(f"create object in {time.perf_counter()-t1} seconds")
 # sg.predict("/data/tathey1/mouselight/data_bin/")
 # print(f"computed ilastik predictions in {time.perf_counter()-t1} seconds")
 
-t1 = time.perf_counter()
-sg.compute_frags()
-print(f"computed fragments in {time.perf_counter()-t1} seconds")
+# t1 = time.perf_counter()
+# sg.compute_frags()
+# print(f"computed fragments in {time.perf_counter()-t1} seconds")
 
 t1 = time.perf_counter()
 sg.compute_image_tiered()
