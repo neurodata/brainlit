@@ -1,3 +1,4 @@
+from re import VERBOSE
 import numpy as np
 from skimage.measure import label, regionprops
 import scipy.ndimage as ndi
@@ -340,7 +341,7 @@ def compute_frags(
     return new_labels
 
 
-def split_frags(soma_coords, labels, im_processed, threshold, res):
+def split_frags(soma_coords, labels, im_processed, threshold, res, verbose=True):
     """Preprocesses a single image chunk by splitting up non-soma components into 5 micron segments
 
     Args:
@@ -377,7 +378,7 @@ def split_frags(soma_coords, labels, im_processed, threshold, res):
     new_labels = split_frags_split_fractured_components(new_labels)
 
     props = regionprops(new_labels)
-    for label, prop in enumerate(tqdm(props, desc="remove small fragments")):
+    for label, prop in enumerate(tqdm(props, desc="remove small fragments", disable=not verbose)):
         if prop.area < 15:
             new_labels[new_labels == prop.label] = 0
 
@@ -386,7 +387,7 @@ def split_frags(soma_coords, labels, im_processed, threshold, res):
     return new_labels
 
 
-def remove_somas(soma_coords, labels, im_processed, res):
+def remove_somas(soma_coords, labels, im_processed, res, verbose=True):
     """Helper function of split_frags. Removes area around somas.
 
     Args:
@@ -409,7 +410,7 @@ def remove_somas(soma_coords, labels, im_processed, res):
     # list of soma region masks
     new_soma_masks = []
 
-    for soma_pt in tqdm(soma_coords, desc="removing somas"):
+    for soma_pt in tqdm(soma_coords, desc="removing somas", disable=not verbose):
         _, end_lbls = label_points(labels, [soma_pt], res)
         soma_lbl = end_lbls[0]
         soma_mask = labels == soma_lbl
@@ -432,7 +433,7 @@ def remove_somas(soma_coords, labels, im_processed, res):
 
 
 def split_frags_place_points(
-    image_iterative, labels, radius_states, res, threshold, states, comp_to_states
+    image_iterative, labels, radius_states, res, threshold, states, comp_to_states, verbose = True
 ):
     """Helper function of split_frags. Places points on high probability voxels while keeping the points a certain distance apart from each other.
 
@@ -458,7 +459,7 @@ def split_frags_place_points(
 
     prev_tot = np.sum(image_iterative > threshold)
 
-    with tqdm(total=prev_tot, desc="Adding points...") as pbar:
+    with tqdm(total=prev_tot, desc="Adding points...", verbose = not verbose) as pbar:
         while top > threshold:
             states.append(top_ind)
 
@@ -494,7 +495,7 @@ def split_frags_place_points(
     return states, comp_to_states
 
 
-def split_frags_split_comps(labels, new_soma_masks, states, comp_to_states):
+def split_frags_split_comps(labels, new_soma_masks, states, comp_to_states, verbose = True):
     """Helper function of split_frags. Splits the components according to the points that were placed by split_frags_place_points.
 
     Args:
@@ -509,7 +510,7 @@ def split_frags_split_comps(labels, new_soma_masks, states, comp_to_states):
     labels_split = np.copy(labels)
 
     next_lbl = np.amax(labels) + 1
-    for comp in tqdm(comp_to_states.keys(), desc="Splitting Fragments"):
+    for comp in tqdm(comp_to_states.keys(), desc="Splitting Fragments", disable = not verbose):
         comp_states = comp_to_states[comp]
         if len(comp_states) > 1:
             state_coords = []
@@ -532,7 +533,7 @@ def split_frags_split_comps(labels, new_soma_masks, states, comp_to_states):
     return new_labels
 
 
-def split_frags_split_fractured_components(new_labels):
+def split_frags_split_fractured_components(new_labels, verbose = True):
     """Helper function of split_frags. Some fragments from split_frags_split_comps may not be connected so this function separates those.
 
     Args:
@@ -543,7 +544,7 @@ def split_frags_split_fractured_components(new_labels):
     """
     props = regionprops(new_labels)
     new_lbl = np.amax(new_labels) + 1
-    for prop in tqdm(props, desc="Split fractured components"):
+    for prop in tqdm(props, desc="Split fractured components", disable = not verbose):
         bbox = prop["bbox"]
         lbl = prop["label"]
         cutout = new_labels[bbox[0] : bbox[3], bbox[1] : bbox[4], bbox[2] : bbox[5]]

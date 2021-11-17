@@ -174,7 +174,7 @@ class state_generation:
             comp_to_states,
             new_soma_masks,
         ) = image_process.remove_somas(
-            soma_coords, labels, im_processed, res=self.resolution
+            soma_coords, labels, im_processed, res=self.resolution, verbose = False
         )
         mask = labels > 0
         mask2 = image_process.removeSmallCCs(mask, 25)
@@ -188,13 +188,14 @@ class state_generation:
             threshold=threshold,
             states=states,
             comp_to_states=comp_to_states,
+            verbose = False
         )
 
         new_labels = image_process.split_frags_split_comps(
-            labels, new_soma_masks, states, comp_to_states
+            labels, new_soma_masks, states, comp_to_states, verbose = False
         )
 
-        new_labels = image_process.split_frags_split_fractured_components(new_labels)
+        new_labels = image_process.split_frags_split_fractured_components(new_labels, verbose=False)
 
         props = measure.regionprops(new_labels)
         for _, prop in enumerate(tqdm(props, desc="remove small fragments")):
