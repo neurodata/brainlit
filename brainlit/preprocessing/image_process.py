@@ -459,7 +459,7 @@ def split_frags_place_points(
 
     prev_tot = np.sum(image_iterative > threshold)
 
-    with tqdm(total=prev_tot, desc="Adding points...", verbose = not verbose) as pbar:
+    with tqdm(total=prev_tot, desc="Adding points...", disable = not verbose) as pbar:
         while top > threshold:
             states.append(top_ind)
 
