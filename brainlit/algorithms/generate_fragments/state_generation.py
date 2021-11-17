@@ -443,9 +443,6 @@ class state_generation:
             b = [int(x) for x in b]
 
             xlist, ylist, zlist = Bresenham3D(a[0], a[1], a[2], b[0], b[1], b[2])
-            print(xlist)
-            print(image_tiered)
-            print(image_tiered[xlist, ylist, zlist])
             sum = np.sum(image_tiered.vindex[xlist, ylist, zlist])
             if sum < 0:
                 warnings.warn(f"Negative int cost for comp {component}: {sum}")
