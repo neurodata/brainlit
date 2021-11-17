@@ -8,7 +8,7 @@ sg = state_generation(
     "/data/tathey1/mouselight/octopus_exp.ilp",
     chunk_size=[300, 300, 300],
     parallel=12,
-    prob_path="/data/tathey1/mouselight/1_probs.zarr")
+    prob_path="/data/tathey1/mouselight/250_probs.zarr")
 print(f"create object in {time.perf_counter()-t1} seconds")
 
 # t1 = time.perf_counter()
