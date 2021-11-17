@@ -6,8 +6,13 @@ import os
 from skimage import measure
 from brainlit.preprocessing import image_process
 from tqdm import tqdm
-
+from skimage import morphology
+from sklearn.neighbors import radius_neighbors_graph, KernelDensity
+from brainlit.viz.swc2voxel import Bresenham3D
+import math
+import warnings
 import subprocess
+import random
 
 
 class state_generation:
@@ -21,6 +26,7 @@ class state_generation:
         resolution=[0.3, 0.3, 1],
         parallel=1,
         prob_path=None,
+        fragment_path=None,
     ):
         self.image_path = image_path
         image = zarr.open(image_path, mode="r")
@@ -33,6 +39,7 @@ class state_generation:
         self.parallel = parallel
 
         self.prob_path = prob_path
+        self.fragment_path = fragment_path
 
     def predict_thread(self, corner1, corner2, data_bin):
         image = zarr.open(self.image_path, mode="r")
@@ -219,4 +226,225 @@ class state_generation:
             ] = labels
 
         zarr.save(frag_fname, fragments)
-        self.fragment_name = frag_fname
+
+        soma_lbls = []
+        for soma_coord in self.soma_coords:
+            local_labels = fragments[
+                soma_coord[0] - 20 : soma_coord[0] - 20,
+                soma_coord[1] - 20 : soma_coord[1] - 20,
+                soma_coord[2] - 20 : soma_coord[2] - 20,
+            ]
+            soma_label = image_process.label_points(
+                local_labels, [soma_coord], res=self.resolution
+            )[0]
+            soma_lbls.append(soma_label)
+
+        self.soma_lbls = soma_lbls
+        self.fragment_path = frag_fname
+
+    def compute_image_tiered_thread(self, corner1, corner2):
+        kde = self.kde
+        image = zarr.open(self.image_path, mode="r")
+
+        image = image[
+            corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
+        ]
+
+        vals = np.array([np.unique(image)]).T
+        scores_neg = -1 * kde.score_samples(vals)
+        vals = np.squeeze(vals)
+
+        data = np.reshape(np.copy(image), (image.size,))
+        sort_idx = np.argsort(vals)
+        idx = np.searchsorted(vals, data, sorter=sort_idx)
+        out = scores_neg[sort_idx][idx]
+        image_tiered = np.reshape(out, image.shape)
+
+        return (corner1, corner2, image_tiered)
+
+    def compute_image_tiered(self):
+        image = zarr.open(self.image_path, mode="r")
+        fragments = zarr.open(self.fragment_path, mode="r")
+        tiered = zarr.zeros(
+            np.squeeze(image.shape), chunks=image.chunks, dtype="uint16"
+        )
+        items = self.image_path.split(".")
+        tiered_fname = items[0] + "_tiered.zarr"
+        print(f"Constructing tiered image {tiered_fname} of shape {tiered.shape}")
+
+        image_chunk = image[:300, :300, :300]
+        fragments_chunk = fragments[:300, :300, :300]
+        data_fg = image_chunk[fragments_chunk > 0]
+        if len(data_fg.flatten()) > 10000:
+            data_sample = random.sample(list(data_fg), k=10000)
+        else:
+            data_sample = data_fg
+        data_2d = np.expand_dims(np.sort(np.array(data_sample)), axis=1)
+        kde = KernelDensity(kernel="gaussian", bandwidth=100).fit(data_2d)
+        self.kde = kde
+
+        specifications = self._get_frag_specifications()
+
+        results = Parallel(n_jobs=self.parallel)(
+            delayed(self.compute_image_tiered_thread)(
+                specification["corner1"],
+                specification["corner2"],
+            )
+            for specification in specifications
+        )
+
+        for result in results:
+            corner1, corner2, image_tiered = result
+            tiered[
+                corner1[0] : corner2[0],
+                corner1[1] : corner2[1],
+                corner1[2] : corner2[2],
+            ] = image_tiered
+
+        zarr.save(tiered_fname, tiered)
+        self.tiered_path = tiered_fname
+
+
+    def compute_bounds(self, label, pad):
+        """compute coordinates of bounding box around a masked object, with given padding
+
+        Args:
+            label (np.array): mask of the object
+            pad (float): padding around object in um
+
+        Returns:
+            ints: integer coordinates of bounding box
+        """
+        labels = self.labels
+        res = self.res
+
+        r = np.any(label, axis=(1, 2))
+        c = np.any(label, axis=(0, 2))
+        z = np.any(label, axis=(0, 1))
+        rmin, rmax = np.where(r)[0][[0, -1]]
+        rmin = np.amax((0, math.floor(rmin - pad / res[0])))
+        rmax = np.amin((labels.shape[0], math.ceil(rmax + (pad + 1) / res[0])))
+        cmin, cmax = np.where(c)[0][[0, -1]]
+        cmin = np.amax((0, math.floor(cmin - (pad) / res[1])))
+        cmax = np.amin((labels.shape[1], math.ceil(cmax + (pad + 1) / res[1])))
+        zmin, zmax = np.where(z)[0][[0, -1]]
+        zmin = np.amax((0, math.floor(zmin - (pad) / res[2])))
+        zmax = np.amin((labels.shape[2], math.ceil(zmax + (pad + 1) / res[2])))
+        return int(rmin), int(rmax), int(cmin), int(cmax), int(zmin), int(zmax)
+
+    def endpoints_from_coords_neighbors(self, coords):
+        """Compute endpoints of fragment.
+
+        Args:
+            coords (np.array): coordinates of voxels in the fragment
+
+        Returns:
+            list: endpoints of the fragment
+        """
+        res = self.res
+
+        dims = np.multiply(np.amax(coords, axis=0) - np.amin(coords, axis=0), res)
+        max_length = np.sqrt(np.sum([dim ** 2 for dim in dims]))
+
+        r = 15
+        if max_length < r:
+            radius = max_length / 2
+            close_enough = radius
+        else:
+            radius = r
+            close_enough = 9
+
+        A = radius_neighbors_graph(
+            coords, radius=radius, metric="wminkowski", metric_params={"w": res}
+        )
+        degrees = np.squeeze(np.array(np.sum(A, axis=1).T, dtype=int))
+        indices = np.argsort(degrees)
+        sorted = [degrees[i] for i in indices]
+
+        # point with fewest neighbors
+        ends = [coords[indices[0], :]]
+        # second endpoint is point with fewest neighbors that is not within "close_enough" of the first endpoint
+        # close_enough gets smaller until a second point is found
+        while len(ends) < 2:
+            for coord_idx, degree in zip(indices, sorted):
+                coord = coords[coord_idx, :]
+                dists = np.array(
+                    [np.linalg.norm(np.multiply(coord - end, res)) for end in ends]
+                )
+                if not any(dists < close_enough):
+                    ends.append(coord)
+                    break
+            close_enough = close_enough / 2
+
+        return ends
+
+    def compute_states_thread(self, corner1, corner2):
+        fragments = zarr.open(self.fragment_path, mode="r")
+        image_tiered = zarr.open(self.tiered_path, mode="r")
+        labels = fragments[
+            corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
+        ]
+
+        unq = np.unique(labels)
+        components = unq[unq != 0]
+
+        results = []
+        for component in tqdm(
+            components, desc=f"Computing state representations @corner {corner1}"
+        ):
+            if component in self.soma_lbls:
+                results.append((component, None, None, None, None, None))
+
+            mask = labels == component
+            rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
+            mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
+
+            skel = morphology.skeletonize_3d(mask)
+
+            coords_mask = np.argwhere(mask)
+            coords_skel = np.argwhere(skel)
+            if len(coords_skel) < 4:
+                coords = coords_mask
+            else:
+                coords = coords_skel
+
+            endpoints = self.endpoints_from_coords_neighbors(coords)
+            a = endpoints[0]
+            try:
+                b = endpoints[1]
+            except:
+                print(f"only 1 endpoint for component {component}")
+                raise ValueError
+
+            a = np.add(a, [rmin, cmin, zmin])
+            b = np.add(b, [rmin, cmin, zmin])
+            dif = b - a
+            dif = dif / np.linalg.norm(dif)
+
+            a = [int(x) for x in a]
+            b = [int(x) for x in b]
+
+            xlist, ylist, zlist = Bresenham3D(a[0], a[1], a[2], b[0], b[1], b[2])
+            sum = np.sum(image_tiered[xlist, ylist, zlist])
+            if sum < 0:
+                warnings.warn(f"Negative int cost for comp {component}: {sum}")
+
+            results.append((component, a, b, dif, -dif, sum))
+        return results
+
+    def compute_states(self):
+        print(f"Computing states")
+
+        specifications = self._get_frag_specifications()
+
+        results = Parallel(n_jobs=self.parallel)(
+            delayed(self.compute_states_thread)(
+                specification["corner1"],
+                specification["corner2"],
+                specification["soma_coords"],
+            )
+            for specification in specifications
+        )
+
+        state_num = 0
+        for result in results
