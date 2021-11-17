@@ -198,7 +198,7 @@ class state_generation:
         new_labels = image_process.split_frags_split_fractured_components(new_labels, verbose=False)
 
         props = measure.regionprops(new_labels)
-        for _, prop in enumerate(tqdm(props, desc="remove small fragments")):
+        for _, prop in enumerate(tqdm(props, desc="remove small fragments", disable=True)):
             if prop.area < 15:
                 new_labels[new_labels == prop.label] = 0
 
