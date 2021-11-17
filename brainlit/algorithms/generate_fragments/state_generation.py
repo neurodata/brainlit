@@ -28,7 +28,9 @@ class state_generation:
         parallel=1,
         prob_path=None,
         fragment_path=None,
+        tiered_path=None,
     ):
+
         self.image_path = image_path
         image = zarr.open(image_path, mode="r")
         self.image_shape = image.shape
@@ -39,8 +41,17 @@ class state_generation:
         self.resolution = resolution
         self.parallel = parallel
 
+        for other_im, name in zip(
+            [prob_path, fragment_path, tiered_path], ["prob", "frag", "tiered"]
+        ):
+            if other_im is not None:
+                other_image = zarr.open(other_im, mode="r")
+                if other_image.shape != self.image_shape:
+                    raise ValueError(f"{name} image has different shape than image")
+
         self.prob_path = prob_path
         self.fragment_path = fragment_path
+        self.tiered_path = tiered_path
 
     def predict_thread(self, corner1, corner2, data_bin):
         image = zarr.open(self.image_path, mode="r")
@@ -315,21 +326,21 @@ class state_generation:
         Returns:
             ints: integer coordinates of bounding box
         """
-        labels = self.labels
-        res = self.res
+        image_shape = self.image_shape
+        res = self.resolution
 
         r = np.any(label, axis=(1, 2))
         c = np.any(label, axis=(0, 2))
         z = np.any(label, axis=(0, 1))
         rmin, rmax = np.where(r)[0][[0, -1]]
         rmin = np.amax((0, math.floor(rmin - pad / res[0])))
-        rmax = np.amin((labels.shape[0], math.ceil(rmax + (pad + 1) / res[0])))
+        rmax = np.amin((image_shape[0], math.ceil(rmax + (pad + 1) / res[0])))
         cmin, cmax = np.where(c)[0][[0, -1]]
         cmin = np.amax((0, math.floor(cmin - (pad) / res[1])))
-        cmax = np.amin((labels.shape[1], math.ceil(cmax + (pad + 1) / res[1])))
+        cmax = np.amin((image_shape[1], math.ceil(cmax + (pad + 1) / res[1])))
         zmin, zmax = np.where(z)[0][[0, -1]]
         zmin = np.amax((0, math.floor(zmin - (pad) / res[2])))
-        zmax = np.amin((labels.shape[2], math.ceil(zmax + (pad + 1) / res[2])))
+        zmax = np.amin((image_shape[2], math.ceil(zmax + (pad + 1) / res[2])))
         return int(rmin), int(rmax), int(cmin), int(cmax), int(zmin), int(zmax)
 
     def endpoints_from_coords_neighbors(self, coords):
@@ -489,5 +500,5 @@ class state_generation:
             states.append(state)
         print(f"*****************Number of states: {len(states)}*******************")
 
-        with open(states_fname, 'wb') as handle:
+        with open(states_fname, "wb") as handle:
             pickle.dump(states, handle)
