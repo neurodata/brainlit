@@ -11,9 +11,9 @@ sg = state_generation(
     #prob_path="/data/tathey1/mouselight/1_probs.zarr")
 print(f"create object in {time.perf_counter()-t1} seconds")
 
-# t1 = time.perf_counter())
-# sg.predict("/data/tathey1/mouselight/data_bin/")
-# print(f"computed ilastik predictions in {time.perf_counter()-t1} seconds")
+t1 = time.perf_counter())
+sg.predict("/data/tathey1/mouselight/data_bin/")
+print(f"computed ilastik predictions in {time.perf_counter()-t1} seconds")
 
 t1 = time.perf_counter()
 sg.compute_frags()
