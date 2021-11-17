@@ -397,7 +397,6 @@ class state_generation:
         return ends
 
     def compute_states_thread(self, corner1, corner2):
-        print(f"Computing state representations @corner {corner1}:{corner2}")
         fragments_zarr = zarr.open(self.fragment_path, mode="r")
         tiered_zarr = zarr.open(self.tiered_path, mode="r")
         labels = fragments_zarr[
@@ -406,10 +405,8 @@ class state_generation:
         image_tiered = tiered_zarr[
             corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
         ]
-        print("read chunks")
         unq = np.unique(labels)
         components = unq[unq != 0]
-        print("found unique")
 
         results = []
         for component in tqdm(
@@ -418,17 +415,12 @@ class state_generation:
             if component in self.soma_lbls:
                 results.append((component, None, None, None, None, None))
 
-            print("masking")
             mask = labels == component
-            print("computing bounds")
             rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
             mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
 
-            print(f"skeletonizing {mask.shape}")
-            print(mask.shape)
             skel = morphology.skeletonize_3d(mask)
 
-            print("coordinating")
             coords_mask = np.argwhere(mask)
             coords_skel = np.argwhere(skel)
             if len(coords_skel) < 4:
@@ -436,7 +428,6 @@ class state_generation:
             else:
                 coords = coords_skel
 
-            print(f"endpoints {coords.shape}")
             endpoints = self.endpoints_from_coords_neighbors(coords)
             a = endpoints[0]
             try:
@@ -453,7 +444,6 @@ class state_generation:
             a = [int(x) for x in a]
             b = [int(x) for x in b]
 
-            print("summing")
             xlist, ylist, zlist = Bresenham3D(a[0], a[1], a[2], b[0], b[1], b[2])
             sum = np.sum(image_tiered[xlist, ylist, zlist])
             if sum < 0:
@@ -483,13 +473,14 @@ class state_generation:
 
         specifications = self._get_frag_specifications()
 
-        results = Parallel(n_jobs=self.parallel)(
+        results_tuple = Parallel(n_jobs=self.parallel)(
             delayed(self.compute_states_thread)(
                 specification["corner1"],
                 specification["corner2"],
             )
             for specification in specifications
         )
+        results = [item for result in results_tuple for item in result]
 
         state_num = 0
         states = []
