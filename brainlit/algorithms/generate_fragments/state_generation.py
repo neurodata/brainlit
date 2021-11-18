@@ -709,7 +709,6 @@ class mpnp:
                             G.nodes[state2]["point1"],
                             G.nodes[state2]["orientation1"],
                         )
-                        results.append((state1, state2, dist_cost, soma_pt))
                     except:
                         raise ValueError(f"Cant compute cost between fragments: state1: {state1}, state2: {state2}, node1: {G.nodes[state1]}, node2 = {G.nodes[state2]}")
                 elif (
@@ -721,8 +720,9 @@ class mpnp:
                         G.nodes[state1]["orientation2"],
                         G.nodes[state2]["fragment"],
                     )
-                    results.append((state1, state2, dist_cost, soma_pt))
 
+                if dist_cost != np.inf:
+                    results.append((state1, state2, dist_cost, soma_pt))
         return results
 
     def compute_all_costs_dist(self, frag_frag_func, frag_soma_func):
