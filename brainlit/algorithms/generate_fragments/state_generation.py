@@ -438,7 +438,7 @@ class state_generation:
             endpoints = self.endpoints_from_coords_neighbors(coords)
             for endpoint in endpoints:
                 if labels[endpoint[0], endpoint[1], endpoint[2]] != component:
-                    raise ValueError(f"Endpoint: {endpoint} of component: {component} lies off the component!")
+                    raise ValueError(f"Endpoint: {endpoint} of component: {component} lies off the component! coords mask: {coords_mask}, coords skel {coords_skel}")
             a = endpoints[0]
             try:
                 b = endpoints[1]
