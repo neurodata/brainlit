@@ -438,7 +438,7 @@ class state_generation:
             endpoints_initial = self.endpoints_from_coords_neighbors(coords)
             endpoints = endpoints_initial.copy()
             for i, endpoint in enumerate(endpoints_initial):
-                if labels[endpoint[0], endpoint[1], endpoint[2]] != component:
+                if mask[endpoint[0], endpoint[1], endpoint[2]] != 1:
                     difs = np.multiply(np.subtract(coords_mask, endpoint), self.resolution)
                     dists = np.linalg.norm(difs, axis=1)
                     argmin = np.argmin(dists)
@@ -451,7 +451,9 @@ class state_generation:
                 raise ValueError
 
             a = np.add(a, [rmin, cmin, zmin])
+            a = np.add(a, corner1)
             b = np.add(b, [rmin, cmin, zmin])
+            b = np.add(b, corner2)
             dif = b - a
             dif = dif / np.linalg.norm(dif)
 
