@@ -30,6 +30,7 @@ class state_generation:
         prob_path=None,
         fragment_path=None,
         tiered_path=None,
+        states_path = None
     ):
 
         self.image_path = image_path
@@ -53,6 +54,7 @@ class state_generation:
         self.prob_path = prob_path
         self.fragment_path = fragment_path
         self.tiered_path = tiered_path
+        self.states_path = states_path
 
     def predict_thread(self, corner1, corner2, data_bin):
         image = zarr.open(self.image_path, mode="r")
@@ -500,7 +502,6 @@ class state_generation:
         results = [item for result in results_tuple for item in result]
 
         state_num = 0
-        states = []
         G = nx.DiGraph()
         for result in results:
             component, a, b, oa, ob, sum = result
@@ -540,11 +541,38 @@ class state_generation:
         with open(states_fname, "wb") as handle:
             pickle.dump(G, handle)
 
+        self.states_path = states_fname
+
+    def compute_edge_weights(self):
+        items = self.image_path.split(".")
+        viterbrain_fname = items[0] + "_viterbrain.pickle"
+
+        with open(self.states_path, 'rb') as handle:
+            G = pickle.load(handle)
+
+        viterbrain = mpnp(G, self.tiered_path, parallel=self.parallel)
+
+        viterbrain.compute_all_costs_dist()
+
+        viterbrain.compute_all_costs_int()
+
+        print(f"# Edges: {viterbrain.nxGraph.number_of_edges()}")
+
+        with open(viterbrain_fname, "wb") as handle:
+            pickle.dump(viterbrain, handle)
+
+        self.viterbrain = viterbrain
+
+    def compute_bfs(self):
+        print(f"bfs tree: {nx.bfs_tree(self.viterbrain.nxGraph, source=0)}")
+
+
 
 class mpnp:
-    def __init__(self, G, parallel=1):
+    def __init__(self, G, tiered_path, parallel=1):
         self.nxGraph = G
         self.num_states = G.number_of_nodes()
+        self.tiered_path = tiered_path
         self.parallel = parallel
 
     def compute_out_costs_dist(self, states, frag_frag_func, frag_soma_func):
@@ -602,16 +630,59 @@ class mpnp:
             if soma_pt != None:
                 G.nodes[state1]["soma_pt"] = soma_pt
 
+    def line_int(self, loc1, loc2):
+        image_tiered = zarr.open(self.tiered_path, mode="r")
+        corner1 = [np.amin([loc1[i], loc2[i]]) for i in len(loc1)]
+        corner2 = [np.amax([loc1[i], loc2[i]]) for i in len(loc1)]
+
+        image_tiered_cutout = image_tiered[corner1[0]:corner2[0]+1, corner1[1]:corner2[1]+1, corner1[2]:corner2[2]+1]
+
+        loc1 = [int(loc1[i])-corner1[i] for i in len(loc1)]
+        loc2 = [int(loc2[i])-corner1[i] for i in len(loc1)]
+
+        xlist, ylist, zlist = Bresenham3D(
+            loc1[0], loc1[1], loc1[2], loc2[0], loc2[1], loc2[2]
+        )
+        # exclude first and last points because they are included in the component intensity sum
+        xlist = xlist[1:-1]
+        ylist = ylist[1:-1]
+        zlist = zlist[1:-1]
+
+        sum = np.sum(image_tiered_cutout[xlist, ylist, zlist])
+
+        return sum
+
     def compute_out_int_costs(self, states):
         num_states = self.num_states
+        G = self.nxGraph
 
+        results = []
         for state1 in tqdm(states, desc="Computing state costs (intensity)"):
             for state2 in range(num_states):
                 if (
                     G.nodes[state1]["fragment"] == G.nodes[state2]["fragment"]
-                    or G.edges[state1, state2]["dist_cost"]
+                    or G.edges[state1, state2]["dist_cost"] == np.inf
                 ):
                     int_cost = np.inf
+                elif G.nodes[state1]["type"] == "soma":
+                    int_cost = np.inf
+                elif G.nodes[state1]["type"] == "fragment" and G.nodes[state2]["type"] == "fragment":
+                    line_int_cost = self.line_int(
+                        G.nodes[state1]["point2"], G.nodes[state2]["point1"]
+                    )
+                    int_cost = line_int_cost + G.nodes[state2]["image_cost"]
+                elif G.nodes[state1]["type"] == "fragment" and G.nodes[state2]["type"] == "soma":
+                    line_int_cost = self.line_int(
+                        G.nodes[state1]["point2"], G.nodes[state1]["soma_pt"]
+                    )
+                else:
+                    raise ValueError("No cases caught int")
+                results.append((state1, state2, int_cost))
+
+        return results
+
+
+
 
     def compute_all_costs_int(self):
         parallel = self.parallel
@@ -627,4 +698,5 @@ class mpnp:
         for result in results:
             state1, state2, int_cost = result
             if int_cost != np.inf:
-                G.add_edge(state1, state2, dist_cost=int_cost)
+                G.edges[state1, state2]["int_cost"] = int_cost
+                G.edges[state1, state2]["total_cost"] = G.edges[state1, state2]["int_cost"] + G.edges[state1, state2]["dist_cost"]
