@@ -533,12 +533,98 @@ class state_generation:
                 )
 
             state_num += 1
-        print(f"*****************Number of states: {len(states)}*******************")
+        print(
+            f"*****************Number of states: {G.number_of_nodes()}*******************"
+        )
 
         with open(states_fname, "wb") as handle:
             pickle.dump(G, handle)
 
 
 class mpnp:
-    def __init__(self, G):
+    def __init__(self, G, parallel=1):
         self.nxGraph = G
+        self.num_states = G.number_of_nodes()
+        self.parallel = parallel
+
+    def compute_out_costs_dist(self, states, frag_frag_func, frag_soma_func):
+        num_states = self.num_states
+        G = self.nxGraph
+
+        results = []
+        for state1 in tqdm(states, desc="computing state costs (geometry)"):
+            for state2 in range(num_states):
+                soma_pt = None
+
+                if G.nodes[state1]["fragment"] == G.nodes[state2]["fragment"]:
+                    dist_cost = np.inf
+                elif G.nodes[state1]["type"] == "soma":
+                    dist_cost = np.inf
+                elif (
+                    G.nodes[state1]["type"] == "fragment"
+                    and G.nodes[state2]["type"] == "fragment"
+                ):
+                    dist_cost = frag_frag_func(
+                        G.nodes[state1]["point2"],
+                        G.nodes[state1]["orientation2"],
+                        G.nodes[state2]["point1"],
+                        G.nodes[state2]["orientation1"],
+                    )
+                elif (
+                    G.nodes[state1]["type"] == "fragment"
+                    and G.nodes[state2]["type"] == "soma"
+                ):
+                    dist_cost, soma_pt = point_blob_func(
+                        G.nodes[state1]["point2"],
+                        G.nodes[state1]["orientation2"],
+                        G.nodes[state2]["fragment"],
+                    )
+                results.append((state1, state2, dist_cost, soma_pt))
+
+        return results
+
+    def compute_all_costs_dist(self, frag_frag_func, frag_soma_func):
+        parallel = self.parallel
+        G = self.nxGraph
+
+        state_sets = np.array_split(np.arange(self.num_states), parallel)
+
+        results_tuple = Parallel(n_jobs=parallel)(
+            delayed(self.compute_out_costs_dist)(states, frag_frag_func, frag_soma_func)
+            for states in state_sets
+        )
+
+        results = [item for result in results_tuple for item in result]
+        for result in results:
+            state1, state2, dist_cost, soma_pt = result
+            if dist_cost != np.inf:
+                G.add_edge(state1, state2, dist_cost=dist_cost)
+            if soma_pt != None:
+                G.nodes[state1]["soma_pt"] = soma_pt
+
+    def compute_out_int_costs(self, states):
+        num_states = self.num_states
+
+        for state1 in tqdm(states, desc="Computing state costs (intensity)"):
+            for state2 in range(num_states):
+                if (
+                    G.nodes[state1]["fragment"] == G.nodes[state2]["fragment"]
+                    or G.edges[state1, state2]["dist_cost"]
+                ):
+                    int_cost = np.inf
+
+    def compute_all_costs_int(self):
+        parallel = self.parallel
+        G = self.nxGraph
+
+        state_sets = np.array_split(np.arange(self.num_states), parallel)
+
+        results_tuple = Parallel(n_jobs=parallel)(
+            delayed(self.compute_out_int_costs)(states) for states in state_sets
+        )
+
+        results = [item for result in results_tuple for item in result]
+        for result in results:
+            state1, state2, int_cost = result
+            if int_cost != np.inf:
+                G.add_edge(state1, state2, dist_cost=int_cost)
