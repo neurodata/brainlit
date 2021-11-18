@@ -752,7 +752,7 @@ class mpnp:
         loc2 = [int(loc2[i])-corner1[i] for i in range(len(loc1))]
 
         xlist, ylist, zlist = Bresenham3D(
-            loc1[0], loc1[1], loc1[2], loc2[0], loc2[1], loc2[2]
+            int(loc1[0]), int(loc1[1]), int(loc1[2]), int(loc2[0]), int(loc2[1]), int(loc2[2])
         )
         # exclude first and last points because they are included in the component intensity sum
         xlist = xlist[1:-1]
