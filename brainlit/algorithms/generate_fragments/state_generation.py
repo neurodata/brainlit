@@ -424,6 +424,7 @@ class state_generation:
                 results.append((component, np.sum(np.argwhere(mask),corner1), None, None, None, None))
 
             rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
+            # now in bounding box coordinates
             mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
 
             skel = morphology.skeletonize_3d(mask)
@@ -450,10 +451,9 @@ class state_generation:
                 print(f"only 1 endpoint for component {component}")
                 raise ValueError
 
+            # now in chunk coordinates
             a = np.add(a, [rmin, cmin, zmin])
-            a = np.add(a, corner1)
             b = np.add(b, [rmin, cmin, zmin])
-            b = np.add(b, corner2)
             dif = b - a
             dif = dif / np.linalg.norm(dif)
 
@@ -464,6 +464,10 @@ class state_generation:
             sum = np.sum(image_tiered[xlist, ylist, zlist])
             if sum < 0:
                 warnings.warn(f"Negative int cost for comp {component}: {sum}")
+
+            # now in full image coordinates
+            a = np.add(a, corner1)
+            b = np.add(b, corner2)
 
             results.append((component, a, b, -dif, dif, sum))
         return results
