@@ -20,7 +20,8 @@ sg = state_generation(
     parallel=12,
     prob_path="/data/tathey1/mouselight/250_probs.zarr",
     fragment_path="/data/tathey1/mouselight/250_labels.zarr",
-    tiered_path="/data/tathey1/mouselight/250_tiered.zarr")
+    tiered_path="/data/tathey1/mouselight/250_tiered.zarr",
+    states_fname="/data/tathey1/mouselight/250_nx.pickle")
 print(f"create object in {time.perf_counter()-t1} seconds")
 
 # t1 = time.perf_counter()

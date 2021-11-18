@@ -418,10 +418,11 @@ class state_generation:
         for component in tqdm(
             components, desc=f"Computing state representations @corner {corner1}"
         ):
-            if component in self.soma_lbls:
-                results.append((component, None, None, None, None, None))
-
             mask = labels == component
+
+            if component in self.soma_lbls:
+                results.append((component, np.sum(np.argwhere(mask),corner1), None, None, None, None))
+
             rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
             mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
 
@@ -506,7 +507,9 @@ class state_generation:
         for result in results:
             component, a, b, oa, ob, sum = result
             if component in self.soma_lbls:
-                G.add_node(state_num, type="soma", fragment=component)
+                if b != None:
+                    raise ValueError(f"Component {component} is a soma component but the state is not a soma")
+                G.add_node(state_num, type="soma", fragment=component, soma_coords=a)
             else:
                 G.add_node(
                     state_num,
@@ -550,9 +553,9 @@ class state_generation:
         with open(self.states_path, 'rb') as handle:
             G = pickle.load(handle)
 
-        viterbrain = mpnp(G, self.tiered_path, parallel=self.parallel)
+        viterbrain = mpnp(G, self.tiered_path, resolution = self.resolution, coef_curv=1000, coef_dist=10, coef_int=1, parallel=self.parallel)
 
-        viterbrain.compute_all_costs_dist()
+        viterbrain.compute_all_costs_dist(frag_frag_func=viterbrain.frag_frag_dist, frag_soma_func=viterbrain.frag_soma_dist)
 
         viterbrain.compute_all_costs_int()
 
@@ -569,11 +572,103 @@ class state_generation:
 
 
 class mpnp:
-    def __init__(self, G, tiered_path, parallel=1):
+    def __init__(self, G, tiered_path, fragment_path, resolution, coef_curv, coef_dist, coef_int, parallel=1):
         self.nxGraph = G
         self.num_states = G.number_of_nodes()
         self.tiered_path = tiered_path
+        self.fragment_path = fragment_path
+        self.resolution = resolution
+        self.coef_curv = coef_curv
+        self.coef_dist = coef_dist
+        self.coef_int = coef_int
         self.parallel = parallel
+
+        soma_fragment2coords = {}
+        for node in G.nodes:
+            if G.nodes[node]["type"] == "soma":
+                soma_fragment2coords[G.nodes[node]["fragment"]] = G.nodes[node]["soma_coords"]
+
+        self.soma_fragment2coords = soma_fragment2coords
+
+
+    def frag_frag_dist(self, pt1, orientation1, pt2, orientation2, verbose=False):
+        res = self.resolution
+
+        dif = np.multiply(np.subtract(pt2, pt1), res)
+
+        dist = np.linalg.norm(dif)
+
+        if (
+            dist == 0
+            or not math.isclose(np.linalg.norm(orientation1), 1, abs_tol=1e-5)
+            or not math.isclose(np.linalg.norm(orientation2), 1, abs_tol=1e-5)
+        ):
+            raise ValueError(
+                f"pt1: {pt1} pt2: {pt2} dist: {dist}, o1: {orientation1} o2: {orientation2}"
+            )
+
+        if dist > 15:
+            return np.inf
+
+        k1_sq = 1 - np.dot(dif, orientation1) / dist
+        k2_sq = 1 - np.dot(dif, orientation2) / dist
+
+        k_cost = np.mean([k1_sq, k2_sq])
+
+        if np.isnan(dist) or np.isnan(k_cost):
+            raise ValueError(f"NAN cost: distance - {dist}, curv - {k_cost}")
+
+        # if combined  average angle is tighter than 45 deg or either is tighter than 30 deg
+        if 1 - k1_sq < -0.87 or 1 - k2_sq < -0.87:
+            return np.inf
+
+        cost = k_cost * self.coef_curv + self.coef_dist * (dist ** 2)
+        if verbose:
+            print(
+                f"Distance: {dist}, Curv penalty: {k_cost} (dots {1-k1_sq}, {1-k2_sq}, from dif-{dif}), Total cost: {cost}"
+            )
+
+        return cost
+
+    def frag_soma_dist(self, point, orientation, soma_lbl, verbose=False):
+        coords = self.soma_fragment2coords[soma_lbl]
+        image_fragment = zarr.open(self.fragment_path, mode="r")
+
+        difs = np.multiply(np.subtract(coords, point), self.resolution)
+        dists = np.linalg.norm(difs, axis=1)
+        argmin = np.argmin(dists)
+        dif = difs[argmin, :]
+        dist = dists[argmin]
+
+        dot = np.dot(dif, orientation) / (
+            np.linalg.norm(dif) * np.linalg.norm(orientation)
+        )
+        k_cost = 1 - dot
+
+        if np.isnan(k_cost) or np.isnan(dist):
+            raise ValueError(f"NAN cost: distance - {dist}, curv - {k_cost}")
+
+        if dist > 15:
+            cost = np.inf
+        else:
+            cost = k_cost * self.coef_curv + self.coef_dist * (dist ** 2)
+
+        nonline_point = coords[argmin, :]
+        if (
+            image_fragment[
+                nonline_point[0],
+                nonline_point[1],
+                nonline_point[2],
+            ]
+            != soma_lbl
+        ):
+            raise ValueError("Error in setting connection_mat")
+        if verbose:
+            print(
+                f"Distance: {dist}, Curv penalty: {k_cost}, Total cost: {cost}, connection point: {nonline_point}"
+            )
+
+        return cost, nonline_point
 
     def compute_out_costs_dist(self, states, frag_frag_func, frag_soma_func):
         num_states = self.num_states
