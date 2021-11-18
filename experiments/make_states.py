@@ -9,8 +9,8 @@ sg = state_generation(
     chunk_size=[300, 300, 300],
     parallel=12,
     prob_path="/data/tathey1/mouselight/1mm_probs.zarr",
-    fragment_path="/data/tathey1/mouselight/1mm_labels.zarr")
-    # tiered_path="/data/tathey1/mouselight/250_tiered.zarr")
+    fragment_path="/data/tathey1/mouselight/1mm_labels.zarr",
+    tiered_path="/data/tathey1/mouselight/250_tiered.zarr")
 print(f"create object in {time.perf_counter()-t1} seconds")
 
 # t1 = time.perf_counter()
@@ -21,14 +21,14 @@ print(f"create object in {time.perf_counter()-t1} seconds")
 # sg.compute_frags()
 # print(f"computed fragments in {time.perf_counter()-t1} seconds")
 
-t1 = time.perf_counter()
-sg.compute_image_tiered()
-print(f"computed tiered image in {time.perf_counter()-t1} seconds")
+# t1 = time.perf_counter()
+# sg.compute_image_tiered()
+# print(f"computed tiered image in {time.perf_counter()-t1} seconds")
 
 t1 = time.perf_counter()
 sg.compute_soma_lbls()
 print(f"computed soma labels in {time.perf_counter()-t1} seconds")
 
-t1 = time.perf_counter()
-sg.compute_states()
-print(f"computed states in {time.perf_counter()-t1} seconds")
+# t1 = time.perf_counter()
+# sg.compute_states()
+# print(f"computed states in {time.perf_counter()-t1} seconds")

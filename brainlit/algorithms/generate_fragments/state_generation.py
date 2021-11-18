@@ -14,6 +14,7 @@ import warnings
 import subprocess
 import random
 import pickle
+import networkx as nx
 
 
 class state_generation:
@@ -174,7 +175,7 @@ class state_generation:
             comp_to_states,
             new_soma_masks,
         ) = image_process.remove_somas(
-            soma_coords, labels, im_processed, res=self.resolution, verbose = False
+            soma_coords, labels, im_processed, res=self.resolution, verbose=False
         )
         mask = labels > 0
         mask2 = image_process.removeSmallCCs(mask, 25)
@@ -188,17 +189,21 @@ class state_generation:
             threshold=threshold,
             states=states,
             comp_to_states=comp_to_states,
-            verbose = False
+            verbose=False,
         )
 
         new_labels = image_process.split_frags_split_comps(
-            labels, new_soma_masks, states, comp_to_states, verbose = False
+            labels, new_soma_masks, states, comp_to_states, verbose=False
         )
 
-        new_labels = image_process.split_frags_split_fractured_components(new_labels, verbose=False)
+        new_labels = image_process.split_frags_split_fractured_components(
+            new_labels, verbose=False
+        )
 
         props = measure.regionprops(new_labels)
-        for _, prop in enumerate(tqdm(props, desc="remove small fragments", disable=True)):
+        for _, prop in enumerate(
+            tqdm(props, desc="remove small fragments", disable=True)
+        ):
             if prop.area < 15:
                 new_labels[new_labels == prop.label] = 0
 
@@ -258,9 +263,6 @@ class state_generation:
             soma_lbls.append(soma_label)
 
         self.soma_lbls = soma_lbls
-
-
-
 
     def compute_image_tiered_thread(self, corner1, corner2):
         print(f"Processing @corner: {corner1}")
@@ -456,22 +458,35 @@ class state_generation:
 
     class state:
         def __init__(
-            self, id, fragment, point1, point2, orientation1, orientation2, image_cost
+            self,
+            id,
+            type,
+            fragment,
+            point1=None,
+            point2=None,
+            orientation1=None,
+            orientation2=None,
+            image_cost=None,
+            twin=None,
         ):
             self.id = id
+            self.type = type
             self.fragment = fragment
-            self.point1 = point1
-            self.point2 = point2
-            self.orientation1 = orientation1
-            self.orientation2 = orientation2
-            self.image_cost = image_cost
 
-            self.soma_connection_point = None
+            if type == "fragment":
+                self.point1 = point1
+                self.point2 = point2
+                self.orientation1 = orientation1
+                self.orientation2 = orientation2
+                self.image_cost = image_cost
+                self.twin = twin
+
+                self.soma_connection_point = None
 
     def compute_states(self):
         print(f"Computing states")
         items = self.image_path.split(".")
-        states_fname = items[0] + "_states.pickle"
+        states_fname = items[0] + "_nx.pickle"
 
         specifications = self._get_frag_specifications()
 
@@ -486,31 +501,44 @@ class state_generation:
 
         state_num = 0
         states = []
+        G = nx.DiGraph()
         for result in results:
             component, a, b, oa, ob, sum = result
-            state = self.state(
-                id=state_num,
-                fragment=component,
-                point1=a,
-                point2=b,
-                orientation1=-oa,
-                orientation2=ob,
-                image_cost=sum,
-            )
-            states.append(state)
+            if component in self.soma_lbls:
+                G.add_node(state_num, type="soma", fragment=component)
+            else:
+                G.add_node(
+                    state_num,
+                    type="fragment",
+                    fragment=component,
+                    point1=a,
+                    point2=b,
+                    orientation1=-oa,
+                    orientation2=ob,
+                    image_cost=sum,
+                    twin=state_num + 1,
+                )
+
+                state_num += 1
+                G.add_node(
+                    state_num,
+                    type="fragment",
+                    fragment=component,
+                    point1=b,
+                    point2=a,
+                    orientation1=-ob,
+                    orientation2=oa,
+                    image_cost=sum,
+                    twin=state_num - 1,
+                )
+
             state_num += 1
-            state = self.state(
-                id=state_num,
-                fragment=component,
-                point1=a,
-                point2=b,
-                orientation1=-oa,
-                orientation2=ob,
-                image_cost=sum,
-            )
-            state_num += 1
-            states.append(state)
         print(f"*****************Number of states: {len(states)}*******************")
 
         with open(states_fname, "wb") as handle:
-            pickle.dump(states, handle)
+            pickle.dump(G, handle)
+
+
+class mpnp:
+    def __init__(self, G):
+        self.nxGraph = G
