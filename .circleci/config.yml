@@ -55,5 +55,6 @@ jobs:
             pytest --cov=brainlit brainlit/
             black --check --diff ./brainlit
             codecov
+    parallelism: 4
     
 
