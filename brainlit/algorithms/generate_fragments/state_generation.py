@@ -687,17 +687,20 @@ class mpnp:
                     G.nodes[state1]["type"] == "fragment"
                     and G.nodes[state2]["type"] == "fragment"
                 ):
-                    dist_cost = frag_frag_func(
-                        G.nodes[state1]["point2"],
-                        G.nodes[state1]["orientation2"],
-                        G.nodes[state2]["point1"],
-                        G.nodes[state2]["orientation1"],
-                    )
+                    try:
+                        dist_cost = frag_frag_func(
+                            G.nodes[state1]["point2"],
+                            G.nodes[state1]["orientation2"],
+                            G.nodes[state2]["point1"],
+                            G.nodes[state2]["orientation1"],
+                        )
+                    except:
+                        raise ValueError(f"state1: {state1}, state2: {state2}, node1: {G.nodes[state1]}, node2 = {G.nodes[state2]}")
                 elif (
                     G.nodes[state1]["type"] == "fragment"
                     and G.nodes[state2]["type"] == "soma"
                 ):
-                    dist_cost, soma_pt = point_blob_func(
+                    dist_cost, soma_pt = frag_soma_func(
                         G.nodes[state1]["point2"],
                         G.nodes[state1]["orientation2"],
                         G.nodes[state2]["fragment"],
