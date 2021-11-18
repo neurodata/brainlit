@@ -467,7 +467,7 @@ class state_generation:
 
             # now in full image coordinates
             a = np.add(a, corner1)
-            b = np.add(b, corner2)
+            b = np.add(b, corner1)
 
             results.append((component, a, b, -dif, dif, sum))
         return results
@@ -772,7 +772,7 @@ class mpnp:
             for state2 in range(num_states):
                 if (
                     G.nodes[state1]["fragment"] == G.nodes[state2]["fragment"]
-                    or G.edges[state1, state2]["dist_cost"] == np.inf
+                    or not G.has_edge(state1, state2)
                 ):
                     int_cost = np.inf
                 elif G.nodes[state1]["type"] == "soma":
