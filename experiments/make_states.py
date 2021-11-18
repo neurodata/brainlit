@@ -7,7 +7,7 @@ sg = state_generation(
     "/home/tathey1/ilastik-1.3.3post3-Linux/run_ilastik.sh",
     "/data/tathey1/mouselight/octopus_exp.ilp",
     chunk_size=[300, 300, 300],
-    parallel=30,
+    parallel=24,
     prob_path="/data/tathey1/mouselight/1mm_probs.zarr",
     fragment_path="/data/tathey1/mouselight/1mm_labels.zarr",
     tiered_path="/data/tathey1/mouselight/1mm_tiered.zarr",

@@ -695,9 +695,9 @@ class mpnp:
                 soma_pt = None
 
                 if G.nodes[state1]["fragment"] == G.nodes[state2]["fragment"]:
-                    dist_cost = np.inf
+                    continue
                 elif G.nodes[state1]["type"] == "soma":
-                    dist_cost = np.inf
+                    continue
                 elif (
                     G.nodes[state1]["type"] == "fragment"
                     and G.nodes[state2]["type"] == "fragment"
@@ -709,8 +709,9 @@ class mpnp:
                             G.nodes[state2]["point1"],
                             G.nodes[state2]["orientation1"],
                         )
+                        results.append((state1, state2, dist_cost, soma_pt))
                     except:
-                        raise ValueError(f"state1: {state1}, state2: {state2}, node1: {G.nodes[state1]}, node2 = {G.nodes[state2]}")
+                        raise ValueError(f"Cant compute cost between fragments: state1: {state1}, state2: {state2}, node1: {G.nodes[state1]}, node2 = {G.nodes[state2]}")
                 elif (
                     G.nodes[state1]["type"] == "fragment"
                     and G.nodes[state2]["type"] == "soma"
@@ -720,7 +721,7 @@ class mpnp:
                         G.nodes[state1]["orientation2"],
                         G.nodes[state2]["fragment"],
                     )
-                results.append((state1, state2, dist_cost, soma_pt))
+                    results.append((state1, state2, dist_cost, soma_pt))
 
         return results
 
@@ -776,21 +777,22 @@ class mpnp:
                     G.nodes[state1]["fragment"] == G.nodes[state2]["fragment"]
                     or not G.has_edge(state1, state2)
                 ):
-                    int_cost = np.inf
+                    continue
                 elif G.nodes[state1]["type"] == "soma":
-                    int_cost = np.inf
+                    continue
                 elif G.nodes[state1]["type"] == "fragment" and G.nodes[state2]["type"] == "fragment":
                     line_int_cost = self.line_int(
                         G.nodes[state1]["point2"], G.nodes[state2]["point1"]
                     )
                     int_cost = line_int_cost + G.nodes[state2]["image_cost"]
+                    results.append((state1, state2, int_cost))
                 elif G.nodes[state1]["type"] == "fragment" and G.nodes[state2]["type"] == "soma":
                     line_int_cost = self.line_int(
                         G.nodes[state1]["point2"], G.nodes[state1]["soma_pt"]
                     )
+                    results.append((state1, state2, int_cost))
                 else:
                     raise ValueError("No cases caught int")
-                results.append((state1, state2, int_cost))
 
         return results
 
