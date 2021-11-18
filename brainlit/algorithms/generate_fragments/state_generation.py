@@ -435,10 +435,14 @@ class state_generation:
             else:
                 coords = coords_skel
 
-            endpoints = self.endpoints_from_coords_neighbors(coords)
-            for endpoint in endpoints:
+            endpoints_initial = self.endpoints_from_coords_neighbors(coords)
+            endpoints = endpoints_initial.copy()
+            for i, endpoint in enumerate(endpoints_initial):
                 if labels[endpoint[0], endpoint[1], endpoint[2]] != component:
-                    raise ValueError(f"Endpoint: {endpoint} of component: {component} lies off the component! coords mask: {coords_mask}, coords skel {coords_skel}")
+                    difs = np.multiply(np.subtract(coords_mask, endpoint), self.resolution)
+                    dists = np.linalg.norm(difs, axis=1)
+                    argmin = np.argmin(dists)
+                    endpoints[i] = coords_mask[argmin, :]
             a = endpoints[0]
             try:
                 b = endpoints[1]
