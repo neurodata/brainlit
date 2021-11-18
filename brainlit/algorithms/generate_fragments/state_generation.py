@@ -553,7 +553,7 @@ class state_generation:
         with open(self.states_path, 'rb') as handle:
             G = pickle.load(handle)
 
-        viterbrain = mpnp(G, self.tiered_path, resolution = self.resolution, coef_curv=1000, coef_dist=10, coef_int=1, parallel=self.parallel)
+        viterbrain = mpnp(G, self.tiered_path, fragment_path=self.fragment_path, resolution = self.resolution, coef_curv=1000, coef_dist=10, coef_int=1, parallel=self.parallel)
 
         viterbrain.compute_all_costs_dist(frag_frag_func=viterbrain.frag_frag_dist, frag_soma_func=viterbrain.frag_soma_dist)
 
