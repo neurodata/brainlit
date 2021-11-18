@@ -11,7 +11,7 @@ t1 = time.perf_counter()
 #     prob_path="/data/tathey1/mouselight/1mm_probs.zarr",
 #     fragment_path="/data/tathey1/mouselight/1mm_labels.zarr",
 #     tiered_path="/data/tathey1/mouselight/1mm_tiered.zarr",
-#     states_fname="/data/tathey1/mouselight/1mm_nx.pickle")
+#     states_path="/data/tathey1/mouselight/1mm_nx.pickle")
 sg = state_generation(
     "/data/tathey1/mouselight/250.zarr",
     "/home/tathey1/ilastik-1.3.3post3-Linux/run_ilastik.sh",
@@ -21,7 +21,7 @@ sg = state_generation(
     prob_path="/data/tathey1/mouselight/250_probs.zarr",
     fragment_path="/data/tathey1/mouselight/250_labels.zarr",
     tiered_path="/data/tathey1/mouselight/250_tiered.zarr",
-    states_fname="/data/tathey1/mouselight/250_nx.pickle")
+    states_path="/data/tathey1/mouselight/250_nx.pickle")
 print(f"create object in {time.perf_counter()-t1} seconds")
 
 # t1 = time.perf_counter()
@@ -36,13 +36,13 @@ print(f"create object in {time.perf_counter()-t1} seconds")
 # sg.compute_image_tiered()
 # print(f"computed tiered image in {time.perf_counter()-t1} seconds")
 
-t1 = time.perf_counter()
-sg.compute_soma_lbls()
-print(f"computed soma labels in {time.perf_counter()-t1} seconds")
+# t1 = time.perf_counter()
+# sg.compute_soma_lbls()
+# print(f"computed soma labels in {time.perf_counter()-t1} seconds")
 
-t1 = time.perf_counter()
-sg.compute_states()
-print(f"computed states in {time.perf_counter()-t1} seconds")
+# t1 = time.perf_counter()
+# sg.compute_states()
+# print(f"computed states in {time.perf_counter()-t1} seconds")
 
 
 t1 = time.perf_counter()
