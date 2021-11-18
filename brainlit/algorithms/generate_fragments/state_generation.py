@@ -743,13 +743,13 @@ class mpnp:
 
     def line_int(self, loc1, loc2):
         image_tiered = zarr.open(self.tiered_path, mode="r")
-        corner1 = [np.amin([loc1[i], loc2[i]]) for i in len(loc1)]
-        corner2 = [np.amax([loc1[i], loc2[i]]) for i in len(loc1)]
+        corner1 = [np.amin([loc1[i], loc2[i]]) for i in range(len(loc1))]
+        corner2 = [np.amax([loc1[i], loc2[i]]) for i in range(len(loc1))]
 
         image_tiered_cutout = image_tiered[corner1[0]:corner2[0]+1, corner1[1]:corner2[1]+1, corner1[2]:corner2[2]+1]
 
-        loc1 = [int(loc1[i])-corner1[i] for i in len(loc1)]
-        loc2 = [int(loc2[i])-corner1[i] for i in len(loc1)]
+        loc1 = [int(loc1[i])-corner1[i] for i in range(len(loc1))]
+        loc2 = [int(loc2[i])-corner1[i] for i in range(len(loc1))]
 
         xlist, ylist, zlist = Bresenham3D(
             loc1[0], loc1[1], loc1[2], loc2[0], loc2[1], loc2[2]
