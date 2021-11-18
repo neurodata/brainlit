@@ -580,7 +580,9 @@ class state_generation:
         self.viterbrain = viterbrain
 
     def compute_bfs(self):
-        print(f"bfs tree: {nx.bfs_tree(self.viterbrain.nxGraph, source=0)}")
+        nodes_sorted = sorted(self.viterbrain.nxGraph.degree, key=lambda x: x[1], reverse=True)
+
+        print(f"bfs tree: {nx.bfs_tree(self.viterbrain.nxGraph, source=nodes_sorted[0][0])}")
 
 
 
@@ -791,8 +793,6 @@ class mpnp:
                 results.append((state1, state2, int_cost))
 
         return results
-
-
 
 
     def compute_all_costs_int(self):
