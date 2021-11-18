@@ -721,7 +721,7 @@ class mpnp:
                         G.nodes[state2]["fragment"],
                     )
 
-                if dist_cost != np.inf:
+                if np.isfinite(dist_cost):
                     results.append((state1, state2, dist_cost, soma_pt))
         return results
 
