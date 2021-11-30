@@ -30,17 +30,19 @@ from brainlit.utils.Neuron_trace import NeuronTrace
 scale = [0.3, 0.3, 1]
 num = 0
 path = (
-    "/Users/thomasathey/Documents/mimlab/mouselight/input/images/first10_quantitative/viterbi_"
+    "/Users/thomasathey/Documents/mimlab/mouselight/input/images/octopus/viterbi_"
     + str(num)
-    + ".pickle"
+    + "_multisoma.pickle"
 )
 #path = '/Users/thomasathey/Documents/mimlab/mouselight/input/images/big/1_viterbi_nx.pkl'
 #path = '/Users/thomasathey/Documents/mimlab/mouselight/input/images/gui/viterbi_250.pickle'
 
 with open(path, "rb") as handle:
     viterbi = pickle.load(handle)
+print(viterbi.nxGraph.edges[2517, 2300])
+print(viterbi.nxGraph.edges[2517, 2513])
 
-im = viterbi.image_raw
+im = viterbi.image
 print(f"Image shape: {im.shape}")
 new_labels = viterbi.labels
 
