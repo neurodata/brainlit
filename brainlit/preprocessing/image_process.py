@@ -267,14 +267,11 @@ def _get_chunked_args(soma_coords, labels, im_processed, chunk_size=[200, 200, 2
                         ).all()
                     ):
                         soma_coords_new.append(np.subtract(soma_coord, [x1, y1, z1]))
-                args.append(
-                    {
-                        "soma_coords": soma_coords_new,
-                        "labels": labels[x1:x2, y1:y2, z1:z2],
-                        "im_processed": im_processed[x1:x2, y1:y2, z1:z2],
-                    }
-                )
-    return args
+                yield {
+                    "soma_coords": soma_coords_new,
+                    "labels": labels[x1:x2, y1:y2, z1:z2],
+                    "im_processed": im_processed[x1:x2, y1:y2, z1:z2],
+                }
 
 
 def _merge_chunked_labels(labels, new_shape, chunk_size=[200, 200, 200]):
@@ -328,7 +325,6 @@ def compute_frags(
     if chunk_size is None:
         new_labels = split_frags(soma_coords, labels, im_processed, threshold, res)
     else:
-        print(f"Parallelizing with {ncpu} cpus")
         args = _get_chunked_args(
             soma_coords, labels, im_processed, chunk_size=chunk_size
         )
