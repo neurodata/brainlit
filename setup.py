@@ -27,6 +27,7 @@ REQUIRED_PACKAGES = [
 "feather-format==0.4.1",
 "nibabel>=2.4.1",
 "nilearn>=0.5.2",
+"zarr>=2.10.2"
 
 ]
 

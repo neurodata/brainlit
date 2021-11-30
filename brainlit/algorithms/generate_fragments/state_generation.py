@@ -9,6 +9,7 @@ from tqdm import tqdm
 from skimage import morphology
 from sklearn.neighbors import radius_neighbors_graph, KernelDensity
 from brainlit.viz.swc2voxel import Bresenham3D
+from brainlit.algorithms.connect_fragments import ViterBrain
 import math
 import warnings
 import subprocess
@@ -30,7 +31,7 @@ class state_generation:
         prob_path=None,
         fragment_path=None,
         tiered_path=None,
-        states_path = None
+        states_path=None,
     ):
 
         self.image_path = image_path
@@ -57,6 +58,13 @@ class state_generation:
         self.states_path = states_path
 
     def predict_thread(self, corner1, corner2, data_bin):
+        """Execute ilastik on an image chunk
+
+        Args:
+            corner1 (list of ints): first corner of image chunk
+            corner2 (list of ints): second corner of image chunk
+            data_bin (str): path to directory to store intermediate files
+        """
         image = zarr.open(self.image_path, mode="r")
         image_chunk = np.squeeze(
             image[
@@ -80,6 +88,11 @@ class state_generation:
         )
 
     def predict(self, data_bin):
+        """Run ilastik on zarr image
+
+        Args:
+            data_bin (str): path to directory to store intermediate files
+        """
         image = zarr.open(self.image_path, mode="r")
         probabilities = zarr.zeros(
             np.squeeze(image.shape), chunks=image.chunks, dtype="float"
@@ -159,6 +172,16 @@ class state_generation:
         return specifications
 
     def split_frags_thread(self, corner1, corner2, soma_coords=[]):
+        """Compute fragments of image chunk
+
+        Args:
+            corner1 (list of ints): first corner of image chunk
+            corner2 (list of ints): second corner of image chunk
+            soma_coords (list, optional): list of soma centerpoint coordinates. Defaults to [].
+
+        Returns:
+            tuple: tuple containing corner coordinates and fragment image
+        """
         print(f"Processing @corner: {corner1}")
         threshold = 0.9
 
@@ -214,6 +237,7 @@ class state_generation:
         return (corner1, corner2, new_labels)
 
     def compute_frags(self):
+        """Compute all fragments for image"""
         image = zarr.open(self.image_path, mode="r")
         fragments = zarr.zeros(
             np.squeeze(image.shape), chunks=image.chunks, dtype="uint16"
@@ -250,6 +274,7 @@ class state_generation:
         self.fragment_path = frag_fname
 
     def compute_soma_lbls(self):
+        """Compute fragment ids of soma coordinates."""
         fragments = zarr.open(self.fragment_path, mode="r")
 
         soma_lbls = []
@@ -267,6 +292,15 @@ class state_generation:
         self.soma_lbls = soma_lbls
 
     def compute_image_tiered_thread(self, corner1, corner2):
+        """Compute tiered image (image likelihood costs)
+
+        Args:
+            corner1 (list of ints): first corner of image chunk
+            corner2 (list of ints): second corner of image chunk
+
+        Returns:
+            tuple: tuple containing corner coordinates and tiered image
+        """
         print(f"Processing @corner: {corner1}")
         kde = self.kde
         image = zarr.open(self.image_path, mode="r")
@@ -288,6 +322,7 @@ class state_generation:
         return (corner1, corner2, image_tiered)
 
     def compute_image_tiered(self):
+        """Compute entire tiered image then reassemble and save as zarr"""
         image = zarr.open(self.image_path, mode="r")
         fragments = zarr.open(self.fragment_path, mode="r")
         tiered = zarr.zeros(
@@ -403,6 +438,18 @@ class state_generation:
         return ends
 
     def compute_states_thread(self, corner1, corner2):
+        """Compute states of fragments within image chunk
+
+        Args:
+            corner1 (list of ints): first corner of image chunk
+            corner2 (list of ints): second corner of image chunk
+
+        Raises:
+            ValueError: only one endpoint found for fragment
+
+        Returns:
+            [list]: list of tuples containing fragment and state information
+        """
         fragments_zarr = zarr.open(self.fragment_path, mode="r")
         tiered_zarr = zarr.open(self.tiered_path, mode="r")
         labels = fragments_zarr[
@@ -421,7 +468,16 @@ class state_generation:
             mask = labels == component
 
             if component in self.soma_lbls:
-                results.append((component, np.sum(np.argwhere(mask),corner1), None, None, None, None))
+                results.append(
+                    (
+                        component,
+                        np.sum(np.argwhere(mask), corner1),
+                        None,
+                        None,
+                        None,
+                        None,
+                    )
+                )
 
             rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
             # now in bounding box coordinates
@@ -440,7 +496,9 @@ class state_generation:
             endpoints = endpoints_initial.copy()
             for i, endpoint in enumerate(endpoints_initial):
                 if mask[endpoint[0], endpoint[1], endpoint[2]] != 1:
-                    difs = np.multiply(np.subtract(coords_mask, endpoint), self.resolution)
+                    difs = np.multiply(
+                        np.subtract(coords_mask, endpoint), self.resolution
+                    )
                     dists = np.linalg.norm(difs, axis=1)
                     argmin = np.argmin(dists)
                     endpoints[i] = coords_mask[argmin, :]
@@ -472,34 +530,41 @@ class state_generation:
             results.append((component, a, b, -dif, dif, sum))
         return results
 
-    class state:
-        def __init__(
-            self,
-            id,
-            type,
-            fragment,
-            point1=None,
-            point2=None,
-            orientation1=None,
-            orientation2=None,
-            image_cost=None,
-            twin=None,
-        ):
-            self.id = id
-            self.type = type
-            self.fragment = fragment
+    # class state:
+    #     """State
+    #     """
+    #     def __init__(
+    #         self,
+    #         id,
+    #         type,
+    #         fragment,
+    #         point1=None,
+    #         point2=None,
+    #         orientation1=None,
+    #         orientation2=None,
+    #         image_cost=None,
+    #         twin=None,
+    #     ):
+    #         self.id = id
+    #         self.type = type
+    #         self.fragment = fragment
 
-            if type == "fragment":
-                self.point1 = point1
-                self.point2 = point2
-                self.orientation1 = orientation1
-                self.orientation2 = orientation2
-                self.image_cost = image_cost
-                self.twin = twin
+    #         if type == "fragment":
+    #             self.point1 = point1
+    #             self.point2 = point2
+    #             self.orientation1 = orientation1
+    #             self.orientation2 = orientation2
+    #             self.image_cost = image_cost
+    #             self.twin = twin
 
-                self.soma_connection_point = None
+    #             self.soma_connection_point = None
 
     def compute_states(self):
+        """Compute entire collection of states
+
+        Raises:
+            ValueError: erroneously computed endpoints of soma state
+        """
         print(f"Computing states")
         items = self.image_path.split(".")
         states_fname = items[0] + "_nx.pickle"
@@ -521,7 +586,9 @@ class state_generation:
             component, a, b, oa, ob, sum = result
             if component in self.soma_lbls:
                 if b != None:
-                    raise ValueError(f"Component {component} is a soma component but the state is not a soma")
+                    raise ValueError(
+                        f"Component {component} is a soma component but the state is not a soma"
+                    )
                 G.add_node(state_num, type="soma", fragment=component, soma_coords=a)
             else:
                 G.add_node(
@@ -560,15 +627,28 @@ class state_generation:
         self.states_path = states_fname
 
     def compute_edge_weights(self):
+        """Create viterbrain object and compute edge weights"""
         items = self.image_path.split(".")
         viterbrain_fname = items[0] + "_viterbrain.pickle"
 
-        with open(self.states_path, 'rb') as handle:
+        with open(self.states_path, "rb") as handle:
             G = pickle.load(handle)
 
-        viterbrain = mpnp(G, self.tiered_path, fragment_path=self.fragment_path, resolution = self.resolution, coef_curv=1000, coef_dist=10, coef_int=1, parallel=self.parallel)
+        viterbrain = ViterBrain(
+            G,
+            self.tiered_path,
+            fragment_path=self.fragment_path,
+            resolution=self.resolution,
+            coef_curv=1000,
+            coef_dist=10,
+            coef_int=1,
+            parallel=self.parallel,
+        )
 
-        viterbrain.compute_all_costs_dist(frag_frag_func=viterbrain.frag_frag_dist, frag_soma_func=viterbrain.frag_soma_dist)
+        viterbrain.compute_all_costs_dist(
+            frag_frag_func=viterbrain.frag_frag_dist,
+            frag_soma_func=viterbrain.frag_soma_dist,
+        )
 
         viterbrain.compute_all_costs_int()
 
@@ -580,236 +660,11 @@ class state_generation:
         self.viterbrain = viterbrain
 
     def compute_bfs(self):
-        nodes_sorted = sorted(self.viterbrain.nxGraph.degree, key=lambda x: x[1], reverse=True)
-
-        print(f"bfs tree: {nx.bfs_tree(self.viterbrain.nxGraph, source=nodes_sorted[0][0])}")
-
-
-
-class mpnp:
-    def __init__(self, G, tiered_path, fragment_path, resolution, coef_curv, coef_dist, coef_int, parallel=1):
-        self.nxGraph = G
-        self.num_states = G.number_of_nodes()
-        self.tiered_path = tiered_path
-        self.fragment_path = fragment_path
-        self.resolution = resolution
-        self.coef_curv = coef_curv
-        self.coef_dist = coef_dist
-        self.coef_int = coef_int
-        self.parallel = parallel
-
-        soma_fragment2coords = {}
-        for node in G.nodes:
-            if G.nodes[node]["type"] == "soma":
-                soma_fragment2coords[G.nodes[node]["fragment"]] = G.nodes[node]["soma_coords"]
-
-        self.soma_fragment2coords = soma_fragment2coords
-
-
-    def frag_frag_dist(self, pt1, orientation1, pt2, orientation2, verbose=False):
-        res = self.resolution
-
-        dif = np.multiply(np.subtract(pt2, pt1), res)
-
-        dist = np.linalg.norm(dif)
-
-        if (
-            dist == 0
-            or not math.isclose(np.linalg.norm(orientation1), 1, abs_tol=1e-5)
-            or not math.isclose(np.linalg.norm(orientation2), 1, abs_tol=1e-5)
-        ):
-            raise ValueError(
-                f"pt1: {pt1} pt2: {pt2} dist: {dist}, o1: {orientation1} o2: {orientation2}"
-            )
-
-        if dist > 15:
-            return np.inf
-
-        k1_sq = 1 - np.dot(dif, orientation1) / dist
-        k2_sq = 1 - np.dot(dif, orientation2) / dist
-
-        k_cost = np.mean([k1_sq, k2_sq])
-
-        if np.isnan(dist) or np.isnan(k_cost):
-            raise ValueError(f"NAN cost: distance - {dist}, curv - {k_cost}")
-
-        # if combined  average angle is tighter than 45 deg or either is tighter than 30 deg
-        if 1 - k1_sq < -0.87 or 1 - k2_sq < -0.87:
-            return np.inf
-
-        cost = k_cost * self.coef_curv + self.coef_dist * (dist ** 2)
-        if verbose:
-            print(
-                f"Distance: {dist}, Curv penalty: {k_cost} (dots {1-k1_sq}, {1-k2_sq}, from dif-{dif}), Total cost: {cost}"
-            )
-
-        return cost
-
-    def frag_soma_dist(self, point, orientation, soma_lbl, verbose=False):
-        coords = self.soma_fragment2coords[soma_lbl]
-        image_fragment = zarr.open(self.fragment_path, mode="r")
-
-        difs = np.multiply(np.subtract(coords, point), self.resolution)
-        dists = np.linalg.norm(difs, axis=1)
-        argmin = np.argmin(dists)
-        dif = difs[argmin, :]
-        dist = dists[argmin]
-
-        dot = np.dot(dif, orientation) / (
-            np.linalg.norm(dif) * np.linalg.norm(orientation)
-        )
-        k_cost = 1 - dot
-
-        if np.isnan(k_cost) or np.isnan(dist):
-            raise ValueError(f"NAN cost: distance - {dist}, curv - {k_cost}")
-
-        if dist > 15:
-            cost = np.inf
-        else:
-            cost = k_cost * self.coef_curv + self.coef_dist * (dist ** 2)
-
-        nonline_point = coords[argmin, :]
-        if (
-            image_fragment[
-                nonline_point[0],
-                nonline_point[1],
-                nonline_point[2],
-            ]
-            != soma_lbl
-        ):
-            raise ValueError("Error in setting connection_mat")
-        if verbose:
-            print(
-                f"Distance: {dist}, Curv penalty: {k_cost}, Total cost: {cost}, connection point: {nonline_point}"
-            )
-
-        return cost, nonline_point
-
-    def compute_out_costs_dist(self, states, frag_frag_func, frag_soma_func):
-        num_states = self.num_states
-        G = self.nxGraph
-
-        results = []
-        for state1 in tqdm(states, desc="computing state costs (geometry)"):
-            for state2 in range(num_states):
-                soma_pt = None
-
-                if G.nodes[state1]["fragment"] == G.nodes[state2]["fragment"]:
-                    continue
-                elif G.nodes[state1]["type"] == "soma":
-                    continue
-                elif (
-                    G.nodes[state1]["type"] == "fragment"
-                    and G.nodes[state2]["type"] == "fragment"
-                ):
-                    try:
-                        dist_cost = frag_frag_func(
-                            G.nodes[state1]["point2"],
-                            G.nodes[state1]["orientation2"],
-                            G.nodes[state2]["point1"],
-                            G.nodes[state2]["orientation1"],
-                        )
-                    except:
-                        raise ValueError(f"Cant compute cost between fragments: state1: {state1}, state2: {state2}, node1: {G.nodes[state1]}, node2 = {G.nodes[state2]}")
-                elif (
-                    G.nodes[state1]["type"] == "fragment"
-                    and G.nodes[state2]["type"] == "soma"
-                ):
-                    dist_cost, soma_pt = frag_soma_func(
-                        G.nodes[state1]["point2"],
-                        G.nodes[state1]["orientation2"],
-                        G.nodes[state2]["fragment"],
-                    )
-
-                if np.isfinite(dist_cost):
-                    results.append((state1, state2, dist_cost, soma_pt))
-        return results
-
-    def compute_all_costs_dist(self, frag_frag_func, frag_soma_func):
-        parallel = self.parallel
-        G = self.nxGraph
-
-        state_sets = np.array_split(np.arange(self.num_states), parallel)
-
-        results_tuple = Parallel(n_jobs=parallel)(
-            delayed(self.compute_out_costs_dist)(states, frag_frag_func, frag_soma_func)
-            for states in state_sets
+        """Compute bfs from highest degree node"""
+        nodes_sorted = sorted(
+            self.viterbrain.nxGraph.degree, key=lambda x: x[1], reverse=True
         )
 
-        results = [item for result in results_tuple for item in result]
-        for result in results:
-            state1, state2, dist_cost, soma_pt = result
-            if dist_cost != np.inf:
-                G.add_edge(state1, state2, dist_cost=dist_cost)
-            if soma_pt != None:
-                G.nodes[state1]["soma_pt"] = soma_pt
-
-    def line_int(self, loc1, loc2):
-        image_tiered = zarr.open(self.tiered_path, mode="r")
-        corner1 = [np.amin([loc1[i], loc2[i]]) for i in range(len(loc1))]
-        corner2 = [np.amax([loc1[i], loc2[i]]) for i in range(len(loc1))]
-
-        image_tiered_cutout = image_tiered[corner1[0]:corner2[0]+1, corner1[1]:corner2[1]+1, corner1[2]:corner2[2]+1]
-
-        loc1 = [int(loc1[i])-corner1[i] for i in range(len(loc1))]
-        loc2 = [int(loc2[i])-corner1[i] for i in range(len(loc1))]
-
-        xlist, ylist, zlist = Bresenham3D(
-            int(loc1[0]), int(loc1[1]), int(loc1[2]), int(loc2[0]), int(loc2[1]), int(loc2[2])
+        print(
+            f"bfs tree: {nx.bfs_tree(self.viterbrain.nxGraph, source=nodes_sorted[0][0])}"
         )
-        # exclude first and last points because they are included in the component intensity sum
-        xlist = xlist[1:-1]
-        ylist = ylist[1:-1]
-        zlist = zlist[1:-1]
-
-        sum = np.sum(image_tiered_cutout[xlist, ylist, zlist])
-
-        return sum
-
-    def compute_out_int_costs(self, states):
-        num_states = self.num_states
-        G = self.nxGraph
-
-        results = []
-        for state1 in tqdm(states, desc="Computing state costs (intensity)"):
-            for state2 in range(num_states):
-                if (
-                    G.nodes[state1]["fragment"] == G.nodes[state2]["fragment"]
-                    or not G.has_edge(state1, state2)
-                ):
-                    continue
-                elif G.nodes[state1]["type"] == "soma":
-                    continue
-                elif G.nodes[state1]["type"] == "fragment" and G.nodes[state2]["type"] == "fragment":
-                    line_int_cost = self.line_int(
-                        G.nodes[state1]["point2"], G.nodes[state2]["point1"]
-                    )
-                    int_cost = line_int_cost + G.nodes[state2]["image_cost"]
-                    results.append((state1, state2, int_cost))
-                elif G.nodes[state1]["type"] == "fragment" and G.nodes[state2]["type"] == "soma":
-                    line_int_cost = self.line_int(
-                        G.nodes[state1]["point2"], G.nodes[state1]["soma_pt"]
-                    )
-                    results.append((state1, state2, int_cost))
-                else:
-                    raise ValueError("No cases caught int")
-
-        return results
-
-
-    def compute_all_costs_int(self):
-        parallel = self.parallel
-        G = self.nxGraph
-
-        state_sets = np.array_split(np.arange(self.num_states), parallel)
-
-        results_tuple = Parallel(n_jobs=parallel)(
-            delayed(self.compute_out_int_costs)(states) for states in state_sets
-        )
-
-        results = [item for result in results_tuple for item in result]
-        for result in results:
-            state1, state2, int_cost = result
-            if int_cost != np.inf:
-                G.edges[state1, state2]["int_cost"] = int_cost
-                G.edges[state1, state2]["total_cost"] = G.edges[state1, state2]["int_cost"] + G.edges[state1, state2]["dist_cost"]
