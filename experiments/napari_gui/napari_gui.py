@@ -26,6 +26,7 @@ import similaritymeasures
 from cloudvolume import Skeleton
 import re
 from brainlit.utils.Neuron_trace import NeuronTrace
+import zarr
 
 scale = [0.3, 0.3, 1]
 num = 0
@@ -42,9 +43,11 @@ with open(path, "rb") as handle:
 print(viterbi.nxGraph.edges[2517, 2300])
 print(viterbi.nxGraph.edges[2517, 2513])
 
-im = viterbi.image
+z = zarr.open(viterbi.fragment_path[:-12]+".zarr", 'r')
+im = z[:,:,:]
 print(f"Image shape: {im.shape}")
-new_labels = viterbi.labels
+z = zarr.open(viterbi.fragment_path, 'r')
+new_labels = z[:,:,:]
 
 nt = NeuronTrace(
     path="/Users/thomasathey/Documents/mimlab/mouselight/pres/mim_slides/SNT_Data.swc"
@@ -97,9 +100,9 @@ def remove_layers(layers):
 
 def draw_arrow(val, state):
     factor = 7
-    if viterbi.state_to_comp[state][0] == "fragment":
-        pt1 = viterbi.state_to_comp[state][2]["coord1"]
-        pt2 = viterbi.state_to_comp[state][2]["coord2"]
+    if viterbi.nxGraph.nodes[state]["type"] == "fragment":
+        pt1 = viterbi.nxGraph.nodes[state]["point1"]
+        pt2 = viterbi.nxGraph.nodes[state]["point2"]
 
         orient = np.subtract(pt1, pt2) / np.linalg.norm(np.subtract(pt1, pt2))
         base = np.add(pt2, orient * factor)
@@ -134,7 +137,7 @@ def draw_arrow(val, state):
             scale=scale
         )
     else:
-        pt2 = viterbi.soma_locs[val][0, :]
+        pt2 = viterbi.soma_fragment2coords[val][0, :]
         viewer.add_points(
             [pt2], face_color="red", size=7, name=f"state {state} label {val} end", scale=scale
         )
@@ -171,7 +174,7 @@ def switch_state(viewer):
     last_state = state_order[-1]
 
     if last_state is not None:
-        label = viterbi.state_to_comp[last_state][1]
+        label = viterbi.nxGraph.nodes[last_state]["fragment"]
         if last_state == viterbi.comp_to_states[label][0]:
             new_state = viterbi.comp_to_states[label][1]
         else:
@@ -192,7 +195,7 @@ def drawpath(state1, state2):
 
     path_comps = []
     for state in path_states:
-        path_comps.append(viterbi.state_to_comp[state][1])
+        path_comps.append(viterbi.nxGraph.nodes[state]["fragment"])
     print(f"path sequence: {path_states}")
     print(f"component sequence: {path_comps}")
 
@@ -204,21 +207,21 @@ def drawpath(state1, state2):
     cumul_cost = 0
     for s, state in enumerate(path_states):
         if s > 0:
-            dist_cost = viterbi.cost_mat_dist[path_states[s - 1], state]
-            int_cost = viterbi.cost_mat_int[path_states[s - 1], state]
+            dist_cost = viterbi.nxGraph.edges[path_states[s - 1], state]["dist_cost"]
+            int_cost = viterbi.nxGraph.edges[path_states[s - 1], state]["int_cost"]
             cumul_cost += dist_cost + int_cost
+            comp1 = viterbi.nxGraph.nodes[path_states[s-1]]["fragment"]
+            comp2 = viterbi.nxGraph.nodes[state]["fragment"]
             print(
-                f"Trans. #{s}: dist cost state {path_states[s-1]}->state {state}, comp {viterbi.state_to_comp[path_states[s-1]][1]}->comp {viterbi.state_to_comp[state][1]}: {dist_cost:.2f}, int cost: {int_cost:.2f}, cum. cost: {cumul_cost:.2f}"
+                f"Trans. #{s}: dist cost state {path_states[s-1]}->state {state}, comp {comp1}->comp {comp2}: {dist_cost:.2f}, int cost: {int_cost:.2f}, cum. cost: {cumul_cost:.2f}"
             )
-        if viterbi.state_to_comp[state][0] == "fragment":
-            lines.append(list(viterbi.state_to_comp[state][2]["coord1"]))
-            lines.append(list(viterbi.state_to_comp[state][2]["coord2"]))
-        elif viterbi.state_to_comp[path_states[s - 1]][0] == "fragment":
+        if viterbi.nxGraph.nodes[state]["type"] == "fragment":
+            lines.append(list(viterbi.nxGraph.nodes[state]["point1"]))
+            lines.append(list(viterbi.nxGraph.nodes[state]["point2"]))
+        elif viterbi.nxGraph.nodes[path_states[s - 1]]["type"] == "fragment":
             lines.append(
                 list(
-                    viterbi.state_to_comp[path_states[s - 1]][2][
-                        "soma connection point"
-                    ]
+                    viterbi.nxGraph.nodes[path_states[s - 1]]["soma_pt"]
                 )
             )
 
