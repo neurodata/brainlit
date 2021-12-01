@@ -278,15 +278,16 @@ class state_generation:
         fragments = zarr.open(self.fragment_path, mode="r")
 
         soma_lbls = []
+        radius = 20
         for soma_coord in self.soma_coords:
             local_labels = fragments[
-                soma_coord[0] - 20 : soma_coord[0] - 20,
-                soma_coord[1] - 20 : soma_coord[1] - 20,
-                soma_coord[2] - 20 : soma_coord[2] - 20,
+                soma_coord[0] - radius : soma_coord[0] + radius,
+                soma_coord[1] - radius : soma_coord[1] + radius,
+                soma_coord[2] - radius : soma_coord[2] + radius,
             ]
             soma_label = image_process.label_points(
-                local_labels, [soma_coord], res=self.resolution
-            )[0]
+                local_labels, [[radius, radius, radius]], res=self.resolution
+            )[1][0]
             soma_lbls.append(soma_label)
 
         self.soma_lbls = soma_lbls
@@ -301,7 +302,7 @@ class state_generation:
         Returns:
             tuple: tuple containing corner coordinates and tiered image
         """
-        print(f"Processing @corner: {corner1}")
+        print(f"Processing @corner: {corner1}-{corner2}")
         kde = self.kde
         image = zarr.open(self.image_path, mode="r")
 
@@ -311,7 +312,7 @@ class state_generation:
 
         vals = np.array([np.unique(image)]).T
         scores_neg = -1 * kde.score_samples(vals)
-        vals = np.squeeze(vals)
+        vals = np.squeeze(vals, axis=-1)
 
         data = np.reshape(np.copy(image), (image.size,))
         sort_idx = np.argsort(vals)
@@ -463,7 +464,8 @@ class state_generation:
 
         results = []
         for component in tqdm(
-            components, desc=f"Computing state representations @corner {corner1}"
+            components,
+            desc=f"Computing state representations @corner {corner1}-{corner2}",
         ):
             mask = labels == component
 
@@ -471,13 +473,14 @@ class state_generation:
                 results.append(
                     (
                         component,
-                        np.sum(np.argwhere(mask), corner1),
+                        np.add(np.argwhere(mask), corner1),
                         None,
                         None,
                         None,
                         None,
                     )
                 )
+                continue
 
             rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
             # now in bounding box coordinates
@@ -530,35 +533,6 @@ class state_generation:
             results.append((component, a, b, -dif, dif, sum))
         return results
 
-    # class state:
-    #     """State
-    #     """
-    #     def __init__(
-    #         self,
-    #         id,
-    #         type,
-    #         fragment,
-    #         point1=None,
-    #         point2=None,
-    #         orientation1=None,
-    #         orientation2=None,
-    #         image_cost=None,
-    #         twin=None,
-    #     ):
-    #         self.id = id
-    #         self.type = type
-    #         self.fragment = fragment
-
-    #         if type == "fragment":
-    #             self.point1 = point1
-    #             self.point2 = point2
-    #             self.orientation1 = orientation1
-    #             self.orientation2 = orientation2
-    #             self.image_cost = image_cost
-    #             self.twin = twin
-
-    #             self.soma_connection_point = None
-
     def compute_states(self):
         """Compute entire collection of states
 
@@ -582,14 +556,24 @@ class state_generation:
 
         state_num = 0
         G = nx.DiGraph()
+        soma_comp2state = {}
         for result in results:
             component, a, b, oa, ob, sum = result
             if component in self.soma_lbls:
-                if b != None:
+                if b is not None:
                     raise ValueError(
-                        f"Component {component} is a soma component but the state is not a soma"
+                        f"Component {component} is a soma component but the state is not a soma: {result}"
                     )
-                G.add_node(state_num, type="soma", fragment=component, soma_coords=a)
+                if component in soma_comp2state.keys():
+                    coords1 = G.nodes[soma_comp2state[component]]["soma_coords"]
+                    coords2 = a
+                    coords = np.concatenate((coords1, coords2))
+                    G.nodes[soma_comp2state[component]]["soma_coords"] = coords
+                else:
+                    G.add_node(
+                        state_num, type="soma", fragment=component, soma_coords=a
+                    )
+                    soma_comp2state[component] = state_num
             else:
                 G.add_node(
                     state_num,

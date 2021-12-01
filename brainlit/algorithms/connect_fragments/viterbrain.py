@@ -237,7 +237,7 @@ class ViterBrain:
             state1, state2, dist_cost, soma_pt = result
             if dist_cost != np.inf:
                 G.add_edge(state1, state2, dist_cost=dist_cost)
-            if soma_pt != None:
+            if soma_pt is not None:
                 G.nodes[state1]["soma_pt"] = soma_pt
 
     def line_int(self, loc1, loc2):
@@ -312,7 +312,7 @@ class ViterBrain:
                         G.nodes[state1]["point2"], G.nodes[state2]["point1"]
                     )
                     int_cost = line_int_cost + G.nodes[state2]["image_cost"]
-                    results.append((state1, state2, int_cost))
+                    results.append((state1, state2, line_int_cost))
                 elif (
                     G.nodes[state1]["type"] == "fragment"
                     and G.nodes[state2]["type"] == "soma"
@@ -320,7 +320,7 @@ class ViterBrain:
                     line_int_cost = self.line_int(
                         G.nodes[state1]["point2"], G.nodes[state1]["soma_pt"]
                     )
-                    results.append((state1, state2, int_cost))
+                    results.append((state1, state2, line_int_cost))
                 else:
                     raise ValueError("No cases caught int")
 
