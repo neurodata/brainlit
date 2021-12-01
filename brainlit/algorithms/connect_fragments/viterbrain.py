@@ -228,7 +228,9 @@ class ViterBrain:
         state_sets = np.array_split(np.arange(self.num_states), parallel)
 
         results_tuple = Parallel(n_jobs=parallel)(
-            delayed(self._compute_out_costs_dist)(states, frag_frag_func, frag_soma_func)
+            delayed(self._compute_out_costs_dist)(
+                states, frag_frag_func, frag_soma_func
+            )
             for states in state_sets
         )
 
