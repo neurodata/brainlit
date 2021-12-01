@@ -392,7 +392,7 @@ class state_generation:
         zmax = np.amin((image_shape[2], math.ceil(zmax + (pad + 1) / res[2])))
         return int(rmin), int(rmax), int(cmin), int(cmax), int(zmin), int(zmax)
 
-    def endpoints_from_coords_neighbors(self, coords):
+    def _endpoints_from_coords_neighbors(self, coords):
         """Compute endpoints of fragment.
 
         Args:
@@ -438,7 +438,7 @@ class state_generation:
 
         return ends
 
-    def compute_states_thread(self, corner1, corner2):
+    def _compute_states_thread(self, corner1, corner2):
         """Compute states of fragments within image chunk
 
         Args:
@@ -495,7 +495,7 @@ class state_generation:
             else:
                 coords = coords_skel
 
-            endpoints_initial = self.endpoints_from_coords_neighbors(coords)
+            endpoints_initial = self._endpoints_from_coords_neighbors(coords)
             endpoints = endpoints_initial.copy()
             for i, endpoint in enumerate(endpoints_initial):
                 if mask[endpoint[0], endpoint[1], endpoint[2]] != 1:
@@ -546,7 +546,7 @@ class state_generation:
         specifications = self._get_frag_specifications()
 
         results_tuple = Parallel(n_jobs=self.parallel)(
-            delayed(self.compute_states_thread)(
+            delayed(self._compute_states_thread)(
                 specification["corner1"],
                 specification["corner2"],
             )
