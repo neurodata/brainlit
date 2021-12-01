@@ -57,7 +57,7 @@ class state_generation:
         self.tiered_path = tiered_path
         self.states_path = states_path
 
-    def predict_thread(self, corner1, corner2, data_bin):
+    def _predict_thread(self, corner1, corner2, data_bin):
         """Execute ilastik on an image chunk
 
         Args:
@@ -113,7 +113,7 @@ class state_generation:
             for y in tqdm(np.arange(0, image.shape[1], chunk_size[1]), leave=False):
                 y2 = np.amin([y + chunk_size[1], image.shape[1]])
                 Parallel(n_jobs=self.parallel)(
-                    delayed(self.predict_thread)(
+                    delayed(self._predict_thread)(
                         [x, y, z],
                         [x2, y2, np.amin([z + chunk_size[2], image.shape[2]])],
                         data_bin,
@@ -171,7 +171,7 @@ class state_generation:
 
         return specifications
 
-    def split_frags_thread(self, corner1, corner2, soma_coords=[]):
+    def _split_frags_thread(self, corner1, corner2, soma_coords=[]):
         """Compute fragments of image chunk
 
         Args:
@@ -250,7 +250,7 @@ class state_generation:
         specifications = self._get_frag_specifications()
 
         results = Parallel(n_jobs=self.parallel)(
-            delayed(self.split_frags_thread)(
+            delayed(self._split_frags_thread)(
                 specification["corner1"],
                 specification["corner2"],
                 specification["soma_coords"],
@@ -292,7 +292,7 @@ class state_generation:
 
         self.soma_lbls = soma_lbls
 
-    def compute_image_tiered_thread(self, corner1, corner2):
+    def _compute_image_tiered_thread(self, corner1, corner2):
         """Compute tiered image (image likelihood costs)
 
         Args:
@@ -347,7 +347,7 @@ class state_generation:
         specifications = self._get_frag_specifications()
 
         results = Parallel(n_jobs=self.parallel)(
-            delayed(self.compute_image_tiered_thread)(
+            delayed(self._compute_image_tiered_thread)(
                 specification["corner1"],
                 specification["corner2"],
             )
@@ -365,7 +365,7 @@ class state_generation:
         zarr.save(tiered_fname, tiered)
         self.tiered_path = tiered_fname
 
-    def compute_bounds(self, label, pad):
+    def _compute_bounds(self, label, pad):
         """compute coordinates of bounding box around a masked object, with given padding
 
         Args:
@@ -482,7 +482,7 @@ class state_generation:
                 )
                 continue
 
-            rmin, rmax, cmin, cmax, zmin, zmax = self.compute_bounds(mask, pad=1)
+            rmin, rmax, cmin, cmax, zmin, zmax = self._compute_bounds(mask, pad=1)
             # now in bounding box coordinates
             mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
 

@@ -160,11 +160,11 @@ class ViterBrain:
 
         return cost, nonline_point
 
-    def compute_out_costs_dist(self, states, frag_frag_func, frag_soma_func):
-        """Compute pairwise distance costs.
+    def _compute_out_costs_dist(self, states, frag_frag_func, frag_soma_func):
+        """Compute outgoing distance costs for specified list of states.
 
         Args:
-            states (list of ints): list of states between which to compute transition costs.
+            states (list of ints): list of states from which to compute transition costs.
             frag_frag_func (function): function that computes transition cost between fragments
             frag_soma_func (function): function that computes transition cost between fragments
 
@@ -228,7 +228,7 @@ class ViterBrain:
         state_sets = np.array_split(np.arange(self.num_states), parallel)
 
         results_tuple = Parallel(n_jobs=parallel)(
-            delayed(self.compute_out_costs_dist)(states, frag_frag_func, frag_soma_func)
+            delayed(self._compute_out_costs_dist)(states, frag_frag_func, frag_soma_func)
             for states in state_sets
         )
 
@@ -240,7 +240,7 @@ class ViterBrain:
             if soma_pt is not None:
                 G.nodes[state1]["soma_pt"] = soma_pt
 
-    def line_int(self, loc1, loc2):
+    def _line_int(self, loc1, loc2):
         """Compute line integral of image likelihood costs between two coordinates
 
         Args:
@@ -280,7 +280,7 @@ class ViterBrain:
 
         return sum
 
-    def compute_out_int_costs(self, states):
+    def _compute_out_int_costs(self, states):
         """Compute pairwise image likelihood costs.
 
         Args:
@@ -308,7 +308,7 @@ class ViterBrain:
                     G.nodes[state1]["type"] == "fragment"
                     and G.nodes[state2]["type"] == "fragment"
                 ):
-                    line_int_cost = self.line_int(
+                    line_int_cost = self._line_int(
                         G.nodes[state1]["point2"], G.nodes[state2]["point1"]
                     )
                     int_cost = line_int_cost + G.nodes[state2]["image_cost"]
@@ -317,7 +317,7 @@ class ViterBrain:
                     G.nodes[state1]["type"] == "fragment"
                     and G.nodes[state2]["type"] == "soma"
                 ):
-                    line_int_cost = self.line_int(
+                    line_int_cost = self._line_int(
                         G.nodes[state1]["point2"], G.nodes[state1]["soma_pt"]
                     )
                     results.append((state1, state2, line_int_cost))
@@ -334,7 +334,7 @@ class ViterBrain:
         state_sets = np.array_split(np.arange(self.num_states), parallel)
 
         results_tuple = Parallel(n_jobs=parallel)(
-            delayed(self.compute_out_int_costs)(states) for states in state_sets
+            delayed(self._compute_out_int_costs)(states) for states in state_sets
         )
 
         results = [item for result in results_tuple for item in result]
