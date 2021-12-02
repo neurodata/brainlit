@@ -65,11 +65,15 @@ viewer.window.add_dock_widget(animation_widget, area="right")
 viewer.camera.angles = [0, -90, 180]
 viewer.scale_bar.visible = True
 
+colors = ['green','blue','red']
+
+keys = {"o":"switch state", "t": "trace", "s":"save", "c":"clear selected states", "q":"clear all annotations", "n":"next color"}
 
 def get_layers():
     state_layers = {}
     trace_layers = {}
     state_order = []
+    soma_end = False
 
     for l in range(len(viewer.layers)):
         layer = viewer.layers[l]
@@ -85,10 +89,12 @@ def get_layers():
                 else:
                     layer_list = [l] + state_layers[state]
                     state_layers[state] = layer_list
+                if type(layer) == napari.layers.points.points.Points:
+                    soma_end = True
             elif label_name[0] == "trace":
                 trace_layers[l] = layer.data[0]
 
-    return state_layers, trace_layers, state_order
+    return state_layers, trace_layers, state_order, soma_end
 
 
 def remove_layers(layers):
@@ -122,7 +128,7 @@ def draw_arrow(val, state):
         viewer.add_shapes(
             [pt1, pt2],
             shape_type="path",
-            edge_color="red",
+            edge_color=colors[-1],
             edge_width=1,
             name=f"state {state} label {val} stem",
             scale=scale
@@ -130,8 +136,8 @@ def draw_arrow(val, state):
         viewer.add_shapes(
             [poly1, poly2],
             shape_type="polygon",
-            edge_color="red",
-            face_color="red",
+            edge_color=colors[-1],
+            face_color=colors[-1],
             edge_width=1,
             name=f"state {state} label {val} head",
             scale=scale
@@ -139,7 +145,7 @@ def draw_arrow(val, state):
     else:
         pt2 = viterbi.soma_fragment2coords[val][0, :]
         viewer.add_points(
-            [pt2], face_color="red", size=7, name=f"state {state} label {val} end", scale=scale
+            [pt2], face_color=colors[-1], size=7, name=f"state {state} label {val} end", scale=scale
         )
     return pt2
 
@@ -158,7 +164,7 @@ def select_state(viewer, event):
         return
     elif val != 0:
         state = viterbi.comp_to_states[val][0]
-        states, _, _ = get_layers()
+        states, _, _, _ = get_layers()
         if state in states.keys():
             print(f"State {state} already selected")
         else:
@@ -170,7 +176,7 @@ def select_state(viewer, event):
 
 @viewer.bind_key("o")
 def switch_state(viewer):
-    states, _, state_order = get_layers()
+    states, _, state_order, _ = get_layers()
     last_state = state_order[-1]
 
     if last_state is not None:
@@ -230,7 +236,7 @@ def drawpath(state1, state2):
 
 @viewer.bind_key("t")
 def trace(viewer):
-    states, traces, state_order = get_layers()
+    states, traces, state_order, soma_end = get_layers()
     if len(state_order) >= 2:
         state1 = state_order[-2]
         state2 = state_order[-1]
@@ -239,13 +245,16 @@ def trace(viewer):
         viewer.add_shapes(
             lines,
             shape_type="path",
-            edge_color="red",
+            edge_color=colors[-1],
             edge_width=1,
             name=f"trace {state1} to {state2}",
             scale=scale
         )
 
         layers = states[state1] #+ states[state2]
+        if soma_end:
+            layers += states[state2]
+        
         remove_layers(layers)
     else:
         print("Not enough states selected")
@@ -290,5 +299,8 @@ def clear_all(viewer):
     layers_to_remove += list(traces.keys())
     remove_layers(layers_to_remove)
 
+@viewer.bind_key("n")
+def clear_all(viewer):
+    colors.pop()
 
 napari.run()
