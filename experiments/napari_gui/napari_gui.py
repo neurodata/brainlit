@@ -284,7 +284,7 @@ def save_traces(viewer):
 @viewer.bind_key("c")
 def clear(viewer):
     layers_to_remove = []
-    states, traces, _ = get_layers()
+    states, traces, _, _ = get_layers()
     for state in states.keys():
         layers_to_remove += states[state]
     remove_layers(layers_to_remove)
