@@ -49,6 +49,17 @@ class ViterBrain:
 
         self.soma_fragment2coords = soma_fragment2coords
 
+        comp_to_states = {}
+        for node in G.nodes:
+            frag = G.nodes[node]["fragment"]
+            if frag in comp_to_states.keys():
+                prev = comp_to_states[frag]
+                states = prev + [node]
+                comp_to_states[frag] = states
+            else:
+                comp_to_states[frag] = [node]
+        self.comp_to_states = comp_to_states
+
     def frag_frag_dist(self, pt1, orientation1, pt2, orientation2, verbose=False):
         """Compute cost of transition between two fragment states
 
