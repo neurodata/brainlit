@@ -311,7 +311,7 @@ class state_generation:
             corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
         ]
 
-        vals = np.unique(image) 
+        vals = np.unique(image)
         scores_neg = -1 * kde.logpdf(vals)
 
         data = np.reshape(np.copy(image), (image.size,))
@@ -342,7 +342,7 @@ class state_generation:
             data_sample = data_fg
 
         kde = gaussian_kde(data_sample)
-        
+
         self.kde = kde
 
         specifications = self._get_frag_specifications()
