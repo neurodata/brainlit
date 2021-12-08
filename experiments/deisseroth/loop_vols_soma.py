@@ -64,7 +64,7 @@ def process_chunk(i, j, k):
 
     results = []
     for prop in props:
-        if prop["area"] > 50:
+        if prop["area"] > 500:
             location = list(np.add((i,j,k), prop["centroid"]))
             results.append(location)
     return results
