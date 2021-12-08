@@ -39,18 +39,22 @@ def process_chunk(i, j, k):
     
     dir_fg = "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_647"
     vol_fg = CloudVolume(dir_fg, parallel=1, mip=mip, fill_missing=True)
+    dir_bg = "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_561"
+    vol_bg = CloudVolume(dir_bg, parallel=1, mip=mip, fill_missing=True)
+    dir_endo = "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_488"
+    vol_endo = CloudVolume(dir_endo, parallel=1, mip=mip, fill_missing=True)
 
     shape = vol_fg.shape
 
     i2 = np.amin([i+chunk_size[0], shape[0]])
     j2 = np.amin([j+chunk_size[1], shape[1]])
     k2 = np.amin([k+chunk_size[2], shape[2]])
-    image_1channel = np.squeeze(np.stack([vol_fg[i:i2,j:j2,k:k2]], axis=0))
+    image_3channel = np.squeeze(np.stack([vol_fg[i:i2,j:j2,k:k2],vol_bg[i:i2,j:j2,k:k2],vol_endo[i:i2,j:j2,k:k2]], axis=0))
 
 
     fname = data_dir + "/image_" + str(k) + ".h5"
     with h5py.File(fname, "w") as f:
-        dset = f.create_dataset("image_3channel", data=image_1channel)
+        dset = f.create_dataset("image_3channel", data=image_3channel)
     
     subprocess.run(["/home/tathey1/ilastik-1.3.3post3-Linux/run_ilastik.sh", "--headless", "--project=/data/tathey1/matt_wright/ilastik/soma_model/matt_soma_rabies_pix_3ch.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     #subprocess.run(["/Applications/ilastik-1.3.3post3-OSX.app/Contents/ilastik-release/run_ilastik.sh", "--headless", "--project=/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain3/matt_benchmark_formal_brain3.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
