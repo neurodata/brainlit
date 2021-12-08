@@ -34,6 +34,8 @@ def process_chunk(i, j, k):
     data_dir = "/data/tathey1/matt_wright/brainr1/"
     chunk_size = [256, 256, 300]
     mip = 0
+    threshold = 0.55
+    area_threshold = 500
     
     dir_fg = "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_647"
     vol_fg = CloudVolume(dir_fg, parallel=1, mip=mip, fill_missing=True)
@@ -58,13 +60,13 @@ def process_chunk(i, j, k):
 
     pred = pred[:,:,:,0]
 
-    mask = pred > 0.65
+    mask = pred > threshold
     labels = measure.label(mask)
     props = measure.regionprops(labels)
 
     results = []
     for prop in props:
-        if prop["area"] > 500:
+        if prop["area"] > area_threshold:
             location = list(np.add((i,j,k), prop["centroid"]))
             results.append(location)
     return results
