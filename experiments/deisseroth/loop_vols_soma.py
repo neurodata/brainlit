@@ -62,7 +62,7 @@ def process_chunk(i, j, k):
     f = h5py.File(data_dir + "image_" + str(k) + "_Probabilities.h5", "r")
     pred = f.get("exported_data")
 
-    pred = pred[:,:,:,0]
+    pred = pred[0,:,:,:]
 
     mask = pred > threshold
     labels = measure.label(mask)
