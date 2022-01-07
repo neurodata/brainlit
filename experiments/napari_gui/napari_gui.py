@@ -40,8 +40,10 @@ path = (
 
 with open(path, "rb") as handle:
     viterbi = pickle.load(handle)
-print(viterbi.nxGraph.edges[2517, 2300])
-print(viterbi.nxGraph.edges[2517, 2513])
+
+state2centroid = {}
+for soma_frag in viterbi.soma_fragment2coords.keys():
+    state2centroid[soma_frag] = np.mean(viterbi.soma_fragment2coords[soma_frag], axis=0)
 
 z = zarr.open(viterbi.fragment_path[:-12]+".zarr", 'r')
 im = z[:,:,:]
@@ -230,6 +232,13 @@ def drawpath(state1, state2):
                     viterbi.nxGraph.nodes[path_states[s - 1]]["soma_pt"]
                 )
             )
+            soma_frag = viterbi.nxGraph.nodes[state]["fragment"]
+            lines.append(
+                list(
+                    state2centroid[soma_frag]
+                )
+            )
+            
 
     return lines
 
@@ -293,7 +302,7 @@ def clear(viewer):
 @viewer.bind_key("q")
 def clear_all(viewer):
     layers_to_remove = []
-    states, traces, _ = get_layers()
+    states, traces, _, _ = get_layers()
     for state in states.keys():
         layers_to_remove += states[state]
     layers_to_remove += list(traces.keys())
