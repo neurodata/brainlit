@@ -34,7 +34,7 @@ def process_chunk(i, j, k):
     data_dir = "/data/tathey1/matt_wright/brainr1/"
     chunk_size = [256, 256, 300]
     mip = 0
-    threshold = 0.55
+    threshold = 0.34
     area_threshold = 500
     
     dir_fg = "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_647"
