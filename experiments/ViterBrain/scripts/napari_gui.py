@@ -35,8 +35,6 @@ path = (
     + str(num)
     + "_multisoma.pickle"
 )
-#path = '/Users/thomasathey/Documents/mimlab/mouselight/input/images/big/1_viterbi_nx.pkl'
-#path = '/Users/thomasathey/Documents/mimlab/mouselight/input/images/gui/viterbi_250.pickle'
 
 with open(path, "rb") as handle:
     viterbi = pickle.load(handle)
