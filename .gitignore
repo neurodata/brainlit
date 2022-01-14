@@ -64,9 +64,6 @@ data/test_state_generation
 # Documentation notebook data
 docs/notebooks/utils/data
 
-# PyTest data
-data/test_state_generation
-
 # PyBuilder
 target/
 
