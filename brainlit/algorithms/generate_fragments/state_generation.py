@@ -282,9 +282,9 @@ class state_generation:
         radius = 20
         for soma_coord in self.soma_coords:
             local_labels = fragments[
-                soma_coord[0] - radius : soma_coord[0] + radius,
-                soma_coord[1] - radius : soma_coord[1] + radius,
-                soma_coord[2] - radius : soma_coord[2] + radius,
+                np.amax([soma_coord[0] - radius, 0]) : soma_coord[0] + radius,
+                np.amax([soma_coord[1] - radius, 0]) : soma_coord[1] + radius,
+                np.amax([soma_coord[2] - radius, 0]) : soma_coord[2] + radius,
             ]
             soma_label = image_process.label_points(
                 local_labels, [[radius, radius, radius]], res=self.resolution
