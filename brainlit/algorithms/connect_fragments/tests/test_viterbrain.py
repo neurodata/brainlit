@@ -197,3 +197,4 @@ def test_viterbrain():
     vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
     vb.compute_all_costs_int()
     assert_array_equal(nx.shortest_path(vb.nxGraph, source=0, target=8), [0, 2, 4, 8])
+    assert len(vb.shortest_path([49, 10, 0], [44, 90, 0])) == 8
