@@ -251,7 +251,7 @@ def _get_chunked_args(soma_coords, labels, im_processed, chunk_size=[200, 200, 2
         dict: dictionary of arguments that depend on chunking
     """
     shp = labels.shape
-    args = []
+
     for x1 in np.arange(0, shp[0], chunk_size[0]):
         x2 = np.amin([x1 + chunk_size[0], shp[0]])
         for y1 in np.arange(0, shp[1], chunk_size[1]):
