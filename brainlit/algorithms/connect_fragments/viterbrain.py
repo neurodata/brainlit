@@ -364,11 +364,14 @@ class ViterBrain:
 
     def shortest_path(self, coord1, coord2):
         """Compute coordinate path from one coordinate to another.
+
         Args:
             coord1 (list): voxel coordinate of start point
             coord2 (list): voxel coordinate of end point
+
         Raises:
             ValueError: if state sequence contains a soma state that is not at the end
+
         Returns:
             list: list of voxel coordinates of path
         """
