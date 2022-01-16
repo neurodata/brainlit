@@ -16,6 +16,7 @@ import networkx as nx
 import scipy.ndimage as ndi
 from tqdm import tqdm
 import random
+import os
 
 # from scipy import stats
 from mouselight_code.src.swc2voxel import Bresenham3D
@@ -30,11 +31,10 @@ import zarr
 
 scale = [0.3, 0.3, 1]
 num = 0
-path = (
-    "/Users/thomasathey/Documents/mimlab/mouselight/input/images/octopus/viterbi_"
-    + str(num)
-    + "_multisoma.pickle"
-)
+
+root_dir = Path(os.path.abspath(''))
+data_dir = os.path.join(root_dir, "data", "example")
+path = os.path.join(data_dir, "viterbi_0_multisoma.pickle")
 
 with open(path, "rb") as handle:
     viterbi = pickle.load(handle)

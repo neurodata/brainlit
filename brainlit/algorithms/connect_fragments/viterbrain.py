@@ -4,6 +4,8 @@ import zarr
 from joblib import Parallel, delayed
 from tqdm import tqdm
 from brainlit.viz.swc2voxel import Bresenham3D
+from brainlit.preprocessing import image_process
+import networkx as nx
 
 
 class ViterBrain:
@@ -359,3 +361,64 @@ class ViterBrain:
                     G.edges[state1, state2]["int_cost"]
                     + G.edges[state1, state2]["dist_cost"]
                 )
+
+    def shortest_path(self, coord1, coord2):
+        """Compute coordinate path from one coordinate to another.
+        Args:
+            coord1 (list): voxel coordinate of start point
+            coord2 (list): voxel coordinate of end point
+        Raises:
+            ValueError: if state sequence contains a soma state that is not at the end
+        Returns:
+            list: list of voxel coordinates of path
+        """
+        fragments = zarr.open(self.fragment_path, mode="r")
+
+        # compute labels of coordinates
+        labels = []
+        radius = 20
+        for coord in [coord1, coord2]:
+            local_labels = fragments[
+                np.amax([coord[0] - radius, 0]) : coord[0] + radius,
+                np.amax([coord[1] - radius, 0]) : coord[1] + radius,
+                np.amax([coord[2] - radius, 0]) : coord[2] + radius,
+            ]
+            label = image_process.label_points(
+                local_labels, [[radius, radius, radius]], res=self.resolution
+            )[1][0]
+            labels.append(label)
+
+        # find shortest path for all state combinations
+        states1 = self.comp_to_states[labels[0]]
+        states2 = self.comp_to_states[labels[1]]
+        min_cost = -1
+
+        for state1 in states1:
+            for state2 in states2:
+                try:
+                    cost = nx.shortest_path_length(
+                        self.nxGraph, state1, state2, weight="total_cost"
+                    )
+                except nx.NetworkXNoPath:
+                    continue
+                if cost < min_cost or min_cost == -1:
+                    min_cost = cost
+                    states = nx.shortest_path(
+                        self.nxGraph, state1, state2, weight="total_cost"
+                    )
+
+        # create coordinate list
+        coords = [coord1]
+        coords.append(self.nxGraph.nodes[states[0]]["point2"])
+        for i, state in enumerate(states[1:]):
+            if self.nxGraph.nodes[state]["type"] == "fragment":
+                coords.append(self.nxGraph.nodes[state]["point1"])
+                coords.append(self.nxGraph.nodes[state]["point2"])
+            elif self.nxGraph.nodes[state]["type"] == "soma":
+                coords.append(self.nxGraph.nodes[states[i]]["soma_pt"])
+                if i != len(states) - 2:
+                    raise ValueError("Soma state is not last state")
+
+        coords.append(coord2)
+
+        return coords
