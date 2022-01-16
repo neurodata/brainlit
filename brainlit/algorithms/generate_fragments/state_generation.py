@@ -8,6 +8,7 @@ from brainlit.preprocessing import image_process
 from tqdm import tqdm
 from skimage import morphology
 from sklearn.neighbors import radius_neighbors_graph, KernelDensity
+from scipy.stats import gaussian_kde
 from brainlit.viz.swc2voxel import Bresenham3D
 from brainlit.algorithms.connect_fragments import ViterBrain
 import math
@@ -281,9 +282,9 @@ class state_generation:
         radius = 20
         for soma_coord in self.soma_coords:
             local_labels = fragments[
-                soma_coord[0] - radius : soma_coord[0] + radius,
-                soma_coord[1] - radius : soma_coord[1] + radius,
-                soma_coord[2] - radius : soma_coord[2] + radius,
+                np.amax([soma_coord[0] - radius, 0]) : soma_coord[0] + radius,
+                np.amax([soma_coord[1] - radius, 0]) : soma_coord[1] + radius,
+                np.amax([soma_coord[2] - radius, 0]) : soma_coord[2] + radius,
             ]
             soma_label = image_process.label_points(
                 local_labels, [[radius, radius, radius]], res=self.resolution
@@ -310,9 +311,8 @@ class state_generation:
             corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
         ]
 
-        vals = np.array([np.unique(image)]).T
-        scores_neg = -1 * kde.score_samples(vals)
-        vals = np.squeeze(vals, axis=-1)
+        vals = np.unique(image)
+        scores_neg = -1 * kde.logpdf(vals)
 
         data = np.reshape(np.copy(image), (image.size,))
         sort_idx = np.argsort(vals)
@@ -340,8 +340,9 @@ class state_generation:
             data_sample = random.sample(list(data_fg), k=10000)
         else:
             data_sample = data_fg
-        data_2d = np.expand_dims(np.sort(np.array(data_sample)), axis=1)
-        kde = KernelDensity(kernel="gaussian", bandwidth=100).fit(data_2d)
+
+        kde = gaussian_kde(data_sample)
+
         self.kde = kde
 
         specifications = self._get_frag_specifications()
