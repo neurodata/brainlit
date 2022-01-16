@@ -204,7 +204,7 @@ def removeSmallCCs(segmentation: np.ndarray, size: Union[int, float]) -> np.ndar
     labels = label(segmentation, return_num=False)
     counts = np.bincount(labels.flat)[1:]
 
-    for v, count in enumerate(counts):
+    for v, count in enumerate(tqdm(counts, desc="looking for components to remove")):
         if count < size:
             labels[labels == v + 1] = 0
 
@@ -322,7 +322,6 @@ def compute_frags(
     Returns:
         np.array: new image segmentation - different numbers indicate different fragments, 0 is background
     """
-
     og_shape = labels.shape
     if chunk_size is None:
         new_labels = split_frags(soma_coords, labels, im_processed, threshold, res)
@@ -406,7 +405,6 @@ def remove_somas(soma_coords, labels, im_processed, res, verbose=True):
     """
     states = []
     comp_to_states = {}
-    int_comp_costs = []
     # probability image, with all soma regions set to 0
     image_iterative = np.copy(im_processed)
     # list of soma region masks

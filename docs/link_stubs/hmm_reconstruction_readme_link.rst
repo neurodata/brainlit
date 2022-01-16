@@ -1,4 +1,4 @@
 README
 ******
 
-.. include:: ../../experiments/mpnp/README.rst
+.. include:: ../../experiments/ViterBrain/README.rst
