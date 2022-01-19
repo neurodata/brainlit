@@ -11,10 +11,11 @@ lines = file1.readlines()
 
 coords = []
 for line in tqdm(lines):
-    elements = line.split(",")
-    coord = [elements[0][1:], elements[1], elements[2][:-1]]
-    coord = [int(round(float(e))) for e in coord]
-    coords.append(coord)
+    if line != '\n':
+        elements = line.split(",")
+        coord = [elements[0][1:], elements[1], elements[2][:-1]]
+        coord = [int(round(float(e))) for e in coord]
+        coords.append(coord)
 
 dict = {}
 for coord in tqdm(coords):
