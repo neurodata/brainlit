@@ -6,6 +6,8 @@ Algorithms
 Fragment Generation
 -------------------
 
+.. autoapiclass:: state_generation
+	:members:
 .. autoapifunction:: get_seed
 .. autoapifunction:: get_img_T1
 .. autoapifunction:: thres_from_gmm
@@ -21,10 +23,19 @@ Fragment Generation
 
 Connect Fragments
 -----------------
-.. autoapiclass:: most_probable_neuron_path
+.. autoapiclass:: ViterBrain
 	:members:
 
-.. autoapiclass:: viterbi_algorithm
+
+.. currentmodule:: brainlit.algorithms.trace_analysis
+
+Trace Analysis
+--------------
+
+.. autoapifunction:: speed
+.. autoapifunction:: curvature
+.. autoapifunction:: torsion
+.. autoapiclass:: GeometricGraph
 	:members:
 
 .. currentmodule:: brainlit.algorithms.trace_analysis

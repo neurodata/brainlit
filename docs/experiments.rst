@@ -13,8 +13,8 @@ DOI: https://doi.org/10.3389/fninf.2021.704627
 
     link_stubs/axon_geometry_readme_link
 
-Maximum Probability Neuron Path
-===============================
+Viterbrain
+==========
 
 Paper: **Hidden Markov Modeling for Maximum Likelihood Neuron Reconstruction**
 

@@ -5,12 +5,7 @@ from brainlit.preprocessing.image_process import (
     getLargestCC,
     removeSmallCCs,
     label_points,
-    split_frags,
-    remove_somas,
-    split_frags_place_points,
-    split_frags_split_comps,
-    split_frags_split_fractured_components,
-    rename_states_consecutively,
+    compute_frags,
 )
 from brainlit.preprocessing.preprocess import (
     center,
@@ -304,8 +299,6 @@ def test_removeSmallCCs_bad_input():
         removeSmallCCs(1, 2)
     with pytest.raises(TypeError):
         removeSmallCCs(np.ones((5, 5)), [2])
-    with pytest.raises(ValueError):
-        removeSmallCCs(np.zeros((5, 5)), 2)
 
 
 def test_removeSmallCCs_valid_input():
@@ -322,7 +315,7 @@ def test_label_points_valid_input():
     label_points(labels, points, res)
 
 
-def test_split_frags_valid_input():
+def test_compute_frags_valid_input():
     soma_coords = [[0, 0, 0]]
     labels = np.zeros((10, 10, 10), dtype=int)
     labels[0, 0, 0] = 1
@@ -336,7 +329,10 @@ def test_split_frags_valid_input():
 
     res = [1, 1, 1]
 
-    split_frags(soma_coords, labels, im_processed, threshold, res)
+    compute_frags(soma_coords, labels, im_processed, threshold, res)
+    compute_frags(
+        soma_coords, labels, im_processed, threshold, res, chunk_size=[5, 5, 5], ncpu=2
+    )
 
 
 ############################
@@ -524,7 +520,7 @@ def test_label_points():
     assert_array_equal(expected_output, point_labels)
 
 
-def test_split_frags():
+def test_compute_frags():
     soma_coords = [[0, 0, 0]]
     labels = np.zeros((100, 100, 100), dtype=int)
     labels[0:5, 0:5, 0:10] = 1
@@ -540,5 +536,16 @@ def test_split_frags():
 
     res = [1, 1, 1]
 
-    new_labels = split_frags(soma_coords, labels, im_processed, threshold, res)
+    new_labels = compute_frags(soma_coords, labels, im_processed, threshold, res)
+    assert len(np.unique(new_labels)) > 8
+
+    new_labels = compute_frags(
+        soma_coords,
+        labels,
+        im_processed,
+        threshold,
+        res,
+        chunk_size=[50, 50, 50],
+        ncpu=2,
+    )
     assert len(np.unique(new_labels)) > 8
