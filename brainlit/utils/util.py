@@ -5,7 +5,7 @@ import numpy as np
 from collections.abc import Iterable
 import numbers
 
-numerical = (numbers.Number, np.float)
+numerical = (numbers.Number, float)
 
 
 @contextlib.contextmanager
