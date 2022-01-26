@@ -15,11 +15,8 @@ from brainlit.utils.util import (
 import collections
 import numbers
 from tqdm import tqdm
-<<<<<<< HEAD
-=======
 from joblib import Parallel, delayed
 import multiprocessing as mp
->>>>>>> develop
 
 
 def gabor_filter(

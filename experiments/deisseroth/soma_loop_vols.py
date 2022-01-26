@@ -14,8 +14,8 @@ chunk_size = [256, 256, 300]
 ncpu = 11
 dir = "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_647"
 progress_file = "/home/tathey1/progress_soma.txt" #"/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/tracing/progress.txt" 
-files_dir = "/data/tathey1/matt_wright/brainr1/"
-somas_file = "/home/tathey1/somas_brainir2.txt"
+files_dir = "/data/tathey1/matt_wright/brainr_temp/"
+somas_file = "/home/tathey1/somas_brainr2.txt"
 
 with open(progress_file) as f:
     for line in f:
