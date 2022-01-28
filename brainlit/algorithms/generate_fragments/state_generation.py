@@ -18,6 +18,8 @@ import random
 import pickle
 import networkx as nx
 
+import pcurve
+
 
 class state_generation:
     def __init__(
@@ -436,6 +438,45 @@ class state_generation:
                     ends.append(coord)
                     break
             close_enough = close_enough / 2
+
+        return ends
+
+    def _pc_endpoints_from_coords_neighbors(self, coords):
+        """Compute endpoints of fragment with Principal Curves.
+
+        Args:
+            coords (np.array): coordinates of voxels in the fragment
+
+        Returns:
+            list: endpoints of the fragment
+
+        References
+        ----------
+        .. [1] Hastie, Trevor, and Werner Stuetzle. “Principal Curves.”
+        Journal of the American Statistical Association, vol. 84, no. 406,
+        [American Statistical Association, Taylor & Francis, Ltd.], 1989,
+        pp. 502–16, https://doi.org/10.2307/2289936.
+        .. [2] Principal Curves Code written by zsteve,
+        https://github.com/zsteve
+        https://github.com/zsteve/pcurvepy
+        """
+
+        ends = []
+
+        # Make sure x, y, z ascending & don't repeat
+        sorter = np.lexsort((coords[:, 2], coords[:, 1], coords[:, 0]))
+        coords = coords[sorter]
+        coords = np.unique(coords, axis=0)
+
+        p_curve = pcurve.PrincipalCurve(k=1, s_factor=5)
+        p_curve.fit(coords, max_iter=50)
+        pc = p_curve.p
+
+        pc = np.floor(pc + 0.5)
+        pc_frag_list = [i for i in pc if i in coords]
+
+        ends.append(pc_frag_list[0])
+        ends.append(pc_frag_list[-1])
 
         return ends
 
