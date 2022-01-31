@@ -242,7 +242,7 @@ class _Lddmm:
         )
         self.fourier_high_pass_filter = (
             1
-            - self.velocity_smooth_length ** 2
+            - self.velocity_smooth_length**2
             * np.sum(
                 (
                     -2
@@ -254,7 +254,7 @@ class _Lddmm:
                         * self.template_resolution
                     )
                 )
-                / self.template_resolution ** 2,
+                / self.template_resolution**2,
                 axis=-1,
             )
         ) ** self.fourier_filter_power
@@ -266,7 +266,7 @@ class _Lddmm:
         self.low_pass_filter = 1 / (
             (
                 1
-                - self.velocity_smooth_length ** 2
+                - self.velocity_smooth_length**2
                 * (
                     np.sum(
                         (
@@ -279,7 +279,7 @@ class _Lddmm:
                                 * fourier_template_coords
                             )
                         )
-                        / self.template_resolution ** 2,
+                        / self.template_resolution**2,
                         -1,
                     )
                 )
@@ -290,7 +290,7 @@ class _Lddmm:
         self.preconditioner_low_pass_filter = 1 / (
             (
                 1
-                - self.preconditioner_velocity_smooth_length ** 2
+                - self.preconditioner_velocity_smooth_length**2
                 * (
                     np.sum(
                         (
@@ -303,7 +303,7 @@ class _Lddmm:
                                 * fourier_template_coords
                             )
                         )
-                        / self.template_resolution ** 2,
+                        / self.template_resolution**2,
                         -1,
                     )
                 )
@@ -317,7 +317,7 @@ class _Lddmm:
         )
         self.contrast_high_pass_filter = (
             1
-            - self.contrast_smooth_length ** 2
+            - self.contrast_smooth_length**2
             * (
                 np.sum(
                     (
@@ -327,7 +327,7 @@ class _Lddmm:
                             2 * np.pi * self.target_resolution * fourier_target_coords
                         )
                     )
-                    / self.target_resolution ** 2,
+                    / self.target_resolution**2,
                     -1,
                 )
             )
@@ -398,7 +398,7 @@ class _Lddmm:
             (*self.target.shape, self.contrast_order + 1)
         )
         for power in range(self.contrast_order + 1):
-            self.contrast_polynomial_basis[..., power] = self.deformed_template ** power
+            self.contrast_polynomial_basis[..., power] = self.deformed_template**power
         self.contrast_deformed_template = np.sum(
             self.contrast_polynomial_basis * self.contrast_coefficients, axis=-1
         )  # Initialized value not used.
@@ -644,16 +644,16 @@ class _Lddmm:
 
         likelihood_matching = np.exp(
             (self.contrast_deformed_template - self.target) ** 2
-            * (-1 / (2 * self.sigma_matching ** 2))
-        ) / np.sqrt(2 * np.pi * self.sigma_matching ** 2)
+            * (-1 / (2 * self.sigma_matching**2))
+        ) / np.sqrt(2 * np.pi * self.sigma_matching**2)
         likelihood_artifact = np.exp(
             (self.artifact_mean_value - self.target) ** 2
-            * (-1 / (2 * self.sigma_artifact ** 2))
-        ) / np.sqrt(2 * np.pi * self.sigma_artifact ** 2)
+            * (-1 / (2 * self.sigma_artifact**2))
+        ) / np.sqrt(2 * np.pi * self.sigma_artifact**2)
         likelihood_background = np.exp(
             (self.background_mean_value - self.target) ** 2
-            * (-1 / (2 * self.sigma_background ** 2))
-        ) / np.sqrt(2 * np.pi * self.sigma_background ** 2)
+            * (-1 / (2 * self.sigma_background**2))
+        ) / np.sqrt(2 * np.pi * self.sigma_background**2)
 
         # Account for priors.
         likelihood_matching *= 1 - self.artifact_prior - self.background_prior
@@ -712,17 +712,17 @@ class _Lddmm:
                 * self.matching_weights
             )
             * 1
-            / (2 * self.sigma_matching ** 2)
+            / (2 * self.sigma_matching**2)
             * np.prod(self.target_resolution)
         )
 
         regularization_energy = np.sum(
             np.sum(np.abs(self.fourier_velocity_fields) ** 2, axis=(-1, -2))
-            * self.fourier_high_pass_filter ** 2
+            * self.fourier_high_pass_filter**2
         ) * (
             np.prod(self.template_resolution)
             * self.delta_t
-            / (2 * self.sigma_regularization ** 2)
+            / (2 * self.sigma_regularization**2)
             / self.template.size
         )
 
@@ -757,7 +757,7 @@ class _Lddmm:
 
         # Update self.contrast_polynomial_basis.
         for power in range(self.contrast_order + 1):
-            self.contrast_polynomial_basis[..., power] = self.deformed_template ** power
+            self.contrast_polynomial_basis[..., power] = self.deformed_template**power
 
         if self.spatially_varying_contrast_map:
             # Compute and set self.contrast_coefficients for self.spatially_varying_contrast_map == True.
@@ -781,7 +781,7 @@ class _Lddmm:
 
             # Represents the right hand side of the equation.
             right_hand_side = (
-                self.contrast_polynomial_basis * (weights ** 2 * self.target)[..., None]
+                self.contrast_polynomial_basis * (weights**2 * self.target)[..., None]
             )
 
             # Reformulate with block elimination.
@@ -812,7 +812,7 @@ class _Lddmm:
                                     * self.contrast_polynomial_basis,
                                     axis=-1,
                                 )
-                                * weights ** 2
+                                * weights**2
                             )[..., None]
                             * self.contrast_polynomial_basis,
                             axes=range(spatial_ndim),
@@ -840,7 +840,7 @@ class _Lddmm:
                                     * self.contrast_polynomial_basis,
                                     axis=-1,
                                 )
-                                * weights ** 2
+                                * weights**2
                             )[..., None]
                             * self.contrast_polynomial_basis,
                             axes=range(spatial_ndim),
@@ -850,7 +850,7 @@ class _Lddmm:
                     ).real
                     + residual
                 )
-                optimal_stepsize = np.sum(residual ** 2) / np.sum(
+                optimal_stepsize = np.sum(residual**2) / np.sum(
                     linear_operator_residual * residual
                 )
                 # Take gradient descent step at half the optimal step size.
@@ -973,7 +973,7 @@ class _Lddmm:
         matching_error_prime = (
             (self.contrast_deformed_template - self.target)
             * self.matching_weights
-            / self.sigma_matching ** 2
+            / self.sigma_matching**2
         )
         contrast_map_prime = np.zeros_like(self.target, float)
         for power in range(1, self.contrast_order + 1):
@@ -1119,7 +1119,7 @@ class _Lddmm:
         matching_error_prime = (
             (self.contrast_deformed_template - self.target)
             * self.matching_weights
-            / self.sigma_matching ** 2
+            / self.sigma_matching**2
         )
         contrast_map_prime = np.zeros_like(self.target, float)
         for power in range(1, self.contrast_order + 1):
@@ -1215,7 +1215,7 @@ class _Lddmm:
                     self.velocity_fields[..., timestep, :],
                     axes=tuple(range(self.template.ndim)),
                 )
-                / self.sigma_regularization ** 2
+                / self.sigma_regularization**2
             )
             # Multiply by a voxel-unit low-pass filter to further smooth.
             matching_cost_at_t_gradient *= np.expand_dims(
@@ -1254,7 +1254,7 @@ class _Lddmm:
             )
             # Apply a sigmoid squashing function to the velocity_fields_update to ensure they yield an update of less than self.maximum_velocity_fields_update voxels while remaining smooth.
             velocity_fields_update_norm = np.sqrt(
-                np.sum(velocity_fields_update ** 2, axis=-1)
+                np.sum(velocity_fields_update**2, axis=-1)
             )
             # When the norm is 0 the update is zero so we can change the norm to 1 and avoid division by 0.
             velocity_fields_update_norm[velocity_fields_update_norm == 0] = 1
@@ -1276,7 +1276,7 @@ class _Lddmm:
 
         # Save maximum velocity for calibration plotting.
         if self.calibrate:
-            maximum_velocity = np.sqrt(np.sum(self.velocity_fields ** 2, axis=-1)).max()
+            maximum_velocity = np.sqrt(np.sum(self.velocity_fields**2, axis=-1)).max()
             self.maximum_velocities.append(maximum_velocity)
 
     def _compute_affine_phi(self):
@@ -2032,7 +2032,7 @@ def lddmm_transform_image(
         output_shape = _validate_ndarray(output_shape, required_shape=subject.ndim)
     # Validate extrapolation_fill_value.
     if extrapolation_fill_value is None:
-        extrapolation_fill_value = np.quantile(subject, 10 ** -subject.ndim)
+        extrapolation_fill_value = np.quantile(subject, 10**-subject.ndim)
 
     # Define position_field and position_field_resolution.
 

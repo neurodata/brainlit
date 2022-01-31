@@ -7,7 +7,7 @@ Created on Wed Apr  7 21:39:28 2021
 
 import numpy as np
 from skimage import measure
-from brainlit.algorithms.connect_fragments.dynamic_programming_viterbi import (
+from brainlit.archive.dynamic_programming_viterbi import (
     viterbi_algorithm,
 )
 

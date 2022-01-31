@@ -17,6 +17,7 @@ import subprocess
 import random
 import pickle
 import networkx as nx
+from typing import List, Tuple
 
 from brainlit.algorithms.generate_fragments import pcurve
 
@@ -24,18 +25,18 @@ from brainlit.algorithms.generate_fragments import pcurve
 class state_generation:
     def __init__(
         self,
-        image_path,
-        ilastik_program_path,
-        ilastik_project_path,
-        chunk_size=[375, 375, 125],
-        soma_coords=[],
-        resolution=[0.3, 0.3, 1],
-        parallel=1,
-        prob_path=None,
-        fragment_path=None,
-        tiered_path=None,
-        states_path=None,
-    ):
+        image_path: str,
+        ilastik_program_path: str,
+        ilastik_project_path: str,
+        chunk_size: List[float] = [375, 375, 125],
+        soma_coords: List[list] = [],
+        resolution: List[float] = [0.3, 0.3, 1],
+        parallel: int = 1,
+        prob_path: str = None,
+        fragment_path: str = None,
+        tiered_path: str = None,
+        states_path: str = None,
+    ) -> None:
 
         self.image_path = image_path
         image = zarr.open(image_path, mode="r")
@@ -60,7 +61,9 @@ class state_generation:
         self.tiered_path = tiered_path
         self.states_path = states_path
 
-    def _predict_thread(self, corner1, corner2, data_bin):
+    def _predict_thread(
+        self, corner1: List[int], corner2: List[int], data_bin: str
+    ) -> None:
         """Execute ilastik on an image chunk
 
         Args:
@@ -90,7 +93,7 @@ class state_generation:
             stderr=subprocess.PIPE,
         )
 
-    def predict(self, data_bin):
+    def predict(self, data_bin: str) -> None:
         """Run ilastik on zarr image
 
         Args:
@@ -140,7 +143,7 @@ class state_generation:
         zarr.save(prob_fname, probabilities)
         self.prob_path = prob_fname
 
-    def _get_frag_specifications(self):
+    def _get_frag_specifications(self) -> list:
         image = zarr.open(self.image_path, mode="r")
         chunk_size = self.chunk_size
         soma_coords = self.soma_coords
@@ -174,7 +177,9 @@ class state_generation:
 
         return specifications
 
-    def _split_frags_thread(self, corner1, corner2, soma_coords=[]):
+    def _split_frags_thread(
+        self, corner1: List[int], corner2: List[int], soma_coords: List[list] = []
+    ) -> Tuple[List[int], List[int], np.ndarray]:
         """Compute fragments of image chunk
 
         Args:
@@ -239,7 +244,7 @@ class state_generation:
 
         return (corner1, corner2, new_labels)
 
-    def compute_frags(self):
+    def compute_frags(self) -> None:
         """Compute all fragments for image"""
         image = zarr.open(self.image_path, mode="r")
         fragments = zarr.zeros(
@@ -276,7 +281,7 @@ class state_generation:
 
         self.fragment_path = frag_fname
 
-    def compute_soma_lbls(self):
+    def compute_soma_lbls(self) -> None:
         """Compute fragment ids of soma coordinates."""
         fragments = zarr.open(self.fragment_path, mode="r")
 
@@ -295,7 +300,9 @@ class state_generation:
 
         self.soma_lbls = soma_lbls
 
-    def _compute_image_tiered_thread(self, corner1, corner2):
+    def _compute_image_tiered_thread(
+        self, corner1: List[int], corner2: List[int]
+    ) -> Tuple[List[int], List[int], np.ndarray]:
         """Compute tiered image (image likelihood costs)
 
         Args:
@@ -324,7 +331,7 @@ class state_generation:
 
         return (corner1, corner2, image_tiered)
 
-    def compute_image_tiered(self):
+    def compute_image_tiered(self) -> None:
         """Compute entire tiered image then reassemble and save as zarr"""
         image = zarr.open(self.image_path, mode="r")
         fragments = zarr.open(self.fragment_path, mode="r")
@@ -368,7 +375,9 @@ class state_generation:
         zarr.save(tiered_fname, tiered)
         self.tiered_path = tiered_fname
 
-    def _compute_bounds(self, label, pad):
+    def _compute_bounds(
+        self, label: np.ndarray, pad: float
+    ) -> Tuple[int, int, int, int, int, int]:
         """compute coordinates of bounding box around a masked object, with given padding
 
         Args:
@@ -395,7 +404,7 @@ class state_generation:
         zmax = np.amin((image_shape[2], math.ceil(zmax + (pad + 1) / res[2])))
         return int(rmin), int(rmax), int(cmin), int(cmax), int(zmin), int(zmax)
 
-    def _endpoints_from_coords_neighbors(self, coords):
+    def _endpoints_from_coords_neighbors(self, coords: np.ndarray) -> List[list]:
         """Compute endpoints of fragment.
 
         Args:
@@ -407,7 +416,7 @@ class state_generation:
         res = self.resolution
 
         dims = np.multiply(np.amax(coords, axis=0) - np.amin(coords, axis=0), res)
-        max_length = np.sqrt(np.sum([dim ** 2 for dim in dims]))
+        max_length = np.sqrt(np.sum([dim**2 for dim in dims]))
 
         r = 15
         if max_length < r:
@@ -479,7 +488,9 @@ class state_generation:
 
         return ends
 
-    def _compute_states_thread(self, corner1, corner2):
+    def _compute_states_thread(
+        self, corner1: List[int], corner2: List[int]
+    ) -> List[tuple]:
         """Compute states of fragments within image chunk
 
         Args:
@@ -574,7 +585,7 @@ class state_generation:
             results.append((component, a, b, -dif, dif, sum))
         return results
 
-    def compute_states(self):
+    def compute_states(self) -> None:
         """Compute entire collection of states
 
         Raises:
@@ -651,7 +662,7 @@ class state_generation:
 
         self.states_path = states_fname
 
-    def compute_edge_weights(self):
+    def compute_edge_weights(self) -> None:
         """Create viterbrain object and compute edge weights"""
         items = self.image_path.split(".")
         viterbrain_fname = items[0] + "_viterbrain.pickle"
@@ -684,7 +695,7 @@ class state_generation:
 
         self.viterbrain = viterbrain
 
-    def compute_bfs(self):
+    def compute_bfs(self) -> None:
         """Compute bfs from highest degree node"""
         nodes_sorted = sorted(
             self.viterbrain.nxGraph.degree, key=lambda x: x[1], reverse=True
