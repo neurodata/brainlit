@@ -91,7 +91,7 @@ def locally_rotate_velocity_fields(
     )
     blob_weights = np.exp(
         -np.sum(
-            (identity_position_field - blob_center) ** 2 / (2 * blob_width ** 2),
+            (identity_position_field - blob_center) ** 2 / (2 * blob_width**2),
             axis=-1,
         )
     )
@@ -161,7 +161,7 @@ def locally_translate_velocity_fields(
     )
     blob_weights = np.exp(
         -np.sum(
-            (identity_position_field - blob_center) ** 2 / (2 * blob_width ** 2),
+            (identity_position_field - blob_center) ** 2 / (2 * blob_width**2),
             axis=-1,
         )
     )

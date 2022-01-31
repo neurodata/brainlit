@@ -117,7 +117,7 @@ class ViterBrain:
         if 1 - k1_sq < -0.87 or 1 - k2_sq < -0.87:
             return np.inf
 
-        cost = k_cost * self.coef_curv + self.coef_dist * (dist ** 2)
+        cost = k_cost * self.coef_curv + self.coef_dist * (dist**2)
         if verbose:
             print(
                 f"Distance: {dist}, Curv penalty: {k_cost} (dots {1-k1_sq}, {1-k2_sq}, from dif-{dif}), Total cost: {cost}"
@@ -168,7 +168,7 @@ class ViterBrain:
         if dist > 15:
             cost = np.inf
         else:
-            cost = k_cost * self.coef_curv + self.coef_dist * (dist ** 2)
+            cost = k_cost * self.coef_curv + self.coef_dist * (dist**2)
 
         nonline_point = coords[argmin, :]
         if (
