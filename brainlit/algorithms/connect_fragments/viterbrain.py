@@ -395,7 +395,7 @@ class ViterBrain:
         """
         fragments = zarr.open(self.fragment_path, mode="r")
 
-        # compute labels of coordinates
+        # Compute labels of coordinates
         labels = []
         radius = 20
         for coord in [coord1, coord2]:
