@@ -6,7 +6,7 @@ Created on Wed Feb 17 23:47:23 2021
 """
 import numpy as np
 import pytest
-from grid_generator import grid_gen, grid_builder
+from brainlit.archive.grid_generator import grid_gen, grid_builder
 
 
 def testInit():
