@@ -18,7 +18,7 @@ import random
 import pickle
 import networkx as nx
 
-import pcurve
+from brainlit.algorithms.generate_fragments import pcurve
 
 
 class state_generation:
@@ -457,8 +457,7 @@ class state_generation:
         [American Statistical Association, Taylor & Francis, Ltd.], 1989,
         pp. 502–16, https://doi.org/10.2307/2289936.
         .. [2] Principal Curves Code written by zsteve,
-        https://github.com/zsteve
-        https://github.com/zsteve/pcurvepy
+        https://github.com/zsteve, https://github.com/zsteve/pcurvepy
         """
 
         ends = []

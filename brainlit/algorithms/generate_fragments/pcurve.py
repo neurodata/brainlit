@@ -1,7 +1,9 @@
 #Copyright 2020, zsteve
 #Written entirely by https://github.com/zsteve
 #https://github.com/zsteve/pcurvepy
-#slightly modified by https://github.com/CaseyWeiner, 2022
+#This code was slightly modified by https://github.com/CaseyWeiner, 2022
+#CaseyWeiner added an "s_factor" parameter to init to allow smoothing factor
+#customization in the univariate spline interpolation step.
 
 import sklearn
 import numpy as np
@@ -18,13 +20,18 @@ class PrincipalCurve:
         self.s_factor = s_factor
         
     def project(self, X, p, s):
-        '''
-        Get interpolating s values for projection of X onto the curve defined by (p, s)
-        @param X: data
-        @param p: curve points
-        @param s: curve parameterisation
-        @returns: interpolating parameter values, projected points on curve, sum of square distances
-        '''
+        """Get interpolating s values for projection of X onto the curve defined by (p, s)
+
+        Args:
+            X (np.ndarray): data
+            p (np.ndarray): curve points
+            s (np.ndarray): curve parameterisation
+
+        Returns:
+            np.ndarray: interpolating parameter values
+            np.ndarray: projected points on curve
+            np.ndarray: sum of square distances
+        """
         s_interp = np.zeros(X.shape[0])
         p_interp = np.zeros(X.shape)
         d_sq = 0
@@ -45,11 +52,14 @@ class PrincipalCurve:
         return s_interp, p_interp, d_sq
      
     def renorm_parameterisation(self, p):
-        '''
-        Renormalise curve to unit speed 
-        @param p: curve points
-        @returns: new parameterisation
-        '''
+        """Renormalise curve to unit speed
+
+        Args:
+            p (np.ndarray): curve points
+
+        Returns:
+            np.ndarray: new parameterisation
+        """
         seg_lens = np.linalg.norm(p[1:] - p[0:-1], axis = 1)
         s = np.zeros(p.shape[0])
         s[1:] = np.cumsum(seg_lens)
@@ -57,15 +67,15 @@ class PrincipalCurve:
         return s
     
     def fit(self, X, p = None, w = None, max_iter = 10, tol = 1e-3):
-        '''
-        Fit principal curve to data
-        @param X: data
-        @param p: starting curve (optional)
-        @param w: data weights (optional)
-        @param max_iter: maximum number of iterations 
-        @param tol: tolerance for stopping condition
-        @returns: None
-        '''
+        """Fit principal curve to data
+
+        Args:
+            X (np.ndarray): data
+            p (np.ndarray): starting curve (optional)
+            w (np.ndarray): data weights (optional)
+            max_iter (int): maximum number of iterations 
+            tol (float): tolerance for stopping condition
+        """
         pca = sklearn.decomposition.PCA(n_components = X.shape[1])
         pca.fit(X)
         pc1 = pca.components_[:, 0]

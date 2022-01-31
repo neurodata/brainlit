@@ -65,5 +65,8 @@ def test_state_generation():
         print(G.nodes[node])
     assert len(G.nodes) == 9  # 2 states per fragment plus one soma state
 
+    test_coords = np.argwhere(labels == 1)
+    sg._pc_endpoints_from_coords_neighbors(test_coords)
+
     sg.compute_edge_weights()
     sg.compute_bfs()
