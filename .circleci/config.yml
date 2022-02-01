@@ -43,7 +43,6 @@ jobs:
     # Then run your tests!
     # CircleCI will report the results back to your VCS provider.
     steps:
-      - early_return_for_forked_pull_requests
       - checkout
       - python/install-packages:
           pkg-manager: pip
@@ -61,6 +60,7 @@ jobs:
             . venv/bin/activate
             pip install pytest pytest-cov codecov black
             pip install -e .
+      - early_return_for_forked_pull_requests
       - run:
           name: run tests
           # This assumes pytest is installed via the install-package step above
