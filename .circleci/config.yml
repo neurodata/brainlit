@@ -13,7 +13,7 @@ workflows:
     # For more details on extending your workflow, see the configuration docs: https://circleci.com/docs/2.0/configuration-reference/#workflows 
     jobs:
       - build-and-test
-      
+
 commands:
   early_return_for_forked_pull_requests:
     description: >-
@@ -43,6 +43,7 @@ jobs:
     # Then run your tests!
     # CircleCI will report the results back to your VCS provider.
     steps:
+      - early_return_for_forked_pull_requests
       - checkout
       - python/install-packages:
           pkg-manager: pip
@@ -61,17 +62,12 @@ jobs:
             pip install pytest pytest-cov codecov black
             pip install -e .
       - run:
-        name: format and docs
-        command: |
-            . venv/bin/activate
-            black --check --diff ./brainlit
-            codecov
-      - early_return_for_forked_pull_requests
-      - run:
           name: run tests
           # This assumes pytest is installed via the install-package step above
           command: |
             . venv/bin/activate
             pytest --cov=brainlit brainlit/
+            black --check --diff ./brainlit
+            codecov
     
 
