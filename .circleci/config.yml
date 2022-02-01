@@ -60,6 +60,13 @@ jobs:
             . venv/bin/activate
             pip install pytest pytest-cov codecov black
             pip install -e .
+      - run:
+          name: run tests
+          # This assumes pytest is installed via the install-package step above
+          command: |
+            . venv/bin/activate
+            black --check --diff ./brainlit
+            codecov
       - early_return_for_forked_pull_requests
       - run:
           name: run tests
@@ -67,7 +74,5 @@ jobs:
           command: |
             . venv/bin/activate
             pytest --cov=brainlit brainlit/
-            black --check --diff ./brainlit
-            codecov
     
 
