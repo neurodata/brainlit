@@ -61,7 +61,7 @@ jobs:
             pip install pytest pytest-cov codecov black
             pip install -e .
       - run:
-          name: run tests
+          name: formatting and code coverage
           # This assumes pytest is installed via the install-package step above
           command: |
             . venv/bin/activate
@@ -69,7 +69,7 @@ jobs:
             codecov
       - early_return_for_forked_pull_requests
       - run:
-          name: run tests
+          name: run pytests
           # This assumes pytest is installed via the install-package step above
           command: |
             . venv/bin/activate
