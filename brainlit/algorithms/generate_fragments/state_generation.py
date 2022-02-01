@@ -450,7 +450,10 @@ class state_generation:
 
         return ends
 
-    def _pc_endpoints_from_coords_neighbors(self, coords):
+    def _pc_endpoints_from_coords_neighbors(
+        self,
+        coords: np.ndarray
+    ) -> List[list]:
         """Compute endpoints of fragment with Principal Curves.
 
         Args:

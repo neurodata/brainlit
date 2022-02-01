@@ -9,9 +9,14 @@ import sklearn
 import numpy as np
 from sklearn.decomposition import PCA
 from scipy.interpolate import UnivariateSpline
+from typing import Tuple
 
 class PrincipalCurve:
-    def __init__(self, k = 3, s_factor=1):
+    def __init__(
+        self,
+        k: int = 3,
+        s_factor: int = 1
+    ) -> None:
         self.k = k
         self.p = None
         self.s = None
@@ -19,7 +24,12 @@ class PrincipalCurve:
         self.s_interp = None
         self.s_factor = s_factor
         
-    def project(self, X, p, s):
+    def project(
+        self,
+        X: np.ndarray,
+        p: np.ndarray,
+        s: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Get interpolating s values for projection of X onto the curve defined by (p, s)
 
         Args:
@@ -49,9 +59,12 @@ class PrincipalCurve:
             p_interp[i] = (s_interp[i] - s[idx_min])*(p[idx_min+1, :] - p[idx_min, :]) + p[idx_min, :]
             d_sq = d_sq + np.linalg.norm(proj_dist[idx_min])**2
             
-        return s_interp, p_interp, d_sq
+        return (s_interp, p_interp, d_sq)
      
-    def renorm_parameterisation(self, p):
+    def renorm_parameterisation(
+        self,
+        p: int
+    ) -> np.ndarray:
         """Renormalise curve to unit speed
 
         Args:
@@ -66,7 +79,14 @@ class PrincipalCurve:
         s = s/sum(seg_lens)
         return s
     
-    def fit(self, X, p = None, w = None, max_iter = 10, tol = 1e-3):
+    def fit(
+        self,
+        X: np.ndarray,
+        p: np.ndarray = None,
+        w: np.ndarray = None,
+        max_iter: int = 10,
+        tol: float = 1e-3
+    ) -> None:
         """Fit principal curve to data
 
         Args:
