@@ -67,12 +67,13 @@ jobs:
             . venv/bin/activate
             black --check --diff ./brainlit
             codecov
+            pytest --cov=brainlit brainlit/algorithms/ brainlit/archive/ brainlit/cloudreg/ brainlit/data/ brainlit/feature_extraction/ brainlit/preprocessing/ brainlit/registration/ brainlit/viz/
       - early_return_for_forked_pull_requests
       - run:
           name: run pytests
           # This assumes pytest is installed via the install-package step above
           command: |
             . venv/bin/activate
-            pytest --cov=brainlit brainlit/
+            pytest --cov=brainlit brainlit/utils/
     
 
