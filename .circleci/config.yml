@@ -66,8 +66,8 @@ jobs:
           command: |
             . venv/bin/activate
             black --check --diff ./brainlit ./experiments
-            codecov
             pytest --cov=brainlit brainlit/algorithms/ brainlit/archive/ brainlit/cloudreg/ brainlit/feature_extraction/ brainlit/preprocessing/ brainlit/registration/ brainlit/viz/
+            codecov
       - early_return_for_forked_pull_requests
       - run:
           name: run pytests
