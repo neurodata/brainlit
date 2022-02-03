@@ -58,14 +58,14 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip install pytest pytest-cov codecov black
+            pip install pytest pytest-cov codecov black[jupyter]
             pip install -e .
       - run:
           name: formatting and code coverage
           # This assumes pytest is installed via the install-package step above
           command: |
             . venv/bin/activate
-            black --check --diff ./brainlit
+            black --check --diff ./brainlit ./experiments
             codecov
             pytest --cov=brainlit brainlit/algorithms/ brainlit/archive/ brainlit/cloudreg/ brainlit/feature_extraction/ brainlit/preprocessing/ brainlit/registration/ brainlit/viz/
       - early_return_for_forked_pull_requests
