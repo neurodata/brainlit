@@ -41,6 +41,7 @@ res = [0.1, 0.1, 0.1]
 ### functionality checks ###
 ############################
 
+test_coords = np.hstack((np.arange(100).reshape(100, 1), np.arange(100).reshape(100, 1), np.arange(100).reshape(100, 1)))
 
 def test_state_generation():
     sg = state_generation(
@@ -65,7 +66,6 @@ def test_state_generation():
         print(G.nodes[node])
     assert len(G.nodes) == 9  # 2 states per fragment plus one soma state
 
-    test_coords = np.argwhere(labels == 1)
     sg._pc_endpoints_from_coords_neighbors(test_coords)
 
     sg.compute_edge_weights()
