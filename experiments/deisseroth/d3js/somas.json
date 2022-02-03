@@ -1,0 +1,2286 @@
+{
+    "name": "root",
+    "children": [
+        {
+            "name": "Basic cell groups and regions",
+            "children": [
+                {
+                    "name": "Cerebrum",
+                    "children": [
+                        {
+                            "name": "Cerebral cortex",
+                            "children": [
+                                {
+                                    "name": "Cortical plate",
+                                    "children": [
+                                        {
+                                            "name": "Isocortex",
+                                            "children": [
+                                                {
+                                                    "name": "Frontal pole, cerebral cortex",
+                                                    "children": [
+                                                        {
+                                                            "name": "Frontal pole, layer 1",
+                                                            "value": 1
+                                                        },
+                                                        {
+                                                            "name": "Frontal pole, layer 2/3",
+                                                            "value": 2
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Somatomotor areas",
+                                                    "children": [
+                                                        {
+                                                            "name": "Primary motor area",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Primary motor area, Layer 1",
+                                                                    "value": 1
+                                                                },
+                                                                {
+                                                                    "name": "Primary motor area, Layer 2/3",
+                                                                    "value": 11
+                                                                },
+                                                                {
+                                                                    "name": "Primary motor area, Layer 5",
+                                                                    "value": 15
+                                                                },
+                                                                {
+                                                                    "name": "Primary motor area, Layer 6a",
+                                                                    "value": 2
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Secondary motor area",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Secondary motor area, layer 1",
+                                                                    "value": 2
+                                                                },
+                                                                {
+                                                                    "name": "Secondary motor area, layer 2/3",
+                                                                    "value": 30
+                                                                },
+                                                                {
+                                                                    "name": "Secondary motor area, layer 5",
+                                                                    "value": 69
+                                                                },
+                                                                {
+                                                                    "name": "Secondary motor area, layer 6a",
+                                                                    "value": 8
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Somatosensory areas",
+                                                    "children": [
+                                                        {
+                                                            "name": "Primary somatosensory area",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Primary somatosensory area, nose",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "name": "Primary somatosensory area, barrel field",
+                                                                    "children": [
+                                                                        {
+                                                                            "name": "Primary somatosensory area, barrel field, layer 4",
+                                                                            "value": 1
+                                                                        },
+                                                                        {
+                                                                            "name": "Primary somatosensory area, barrel field, layer 5",
+                                                                            "value": 2
+                                                                        },
+                                                                        {
+                                                                            "name": "Rostrolateral lateral visual area",
+                                                                            "children": []
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "name": "Primary somatosensory area, lower limb",
+                                                                    "children": [
+                                                                        {
+                                                                            "name": "Primary somatosensory area, lower limb, layer 5",
+                                                                            "value": 3
+                                                                        },
+                                                                        {
+                                                                            "name": "Primary somatosensory area, lower limb, layer 6a",
+                                                                            "value": 1
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "name": "Primary somatosensory area, mouth",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "name": "Primary somatosensory area, upper limb",
+                                                                    "children": [
+                                                                        {
+                                                                            "name": "Primary somatosensory area, upper limb, layer 1",
+                                                                            "value": 1
+                                                                        },
+                                                                        {
+                                                                            "name": "Primary somatosensory area, upper limb, layer 5",
+                                                                            "value": 2
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "name": "Primary somatosensory area, trunk",
+                                                                    "children": [
+                                                                        {
+                                                                            "name": "Primary somatosensory area, trunk, layer 2/3",
+                                                                            "value": 1
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "name": "Primary somatosensory area, unassigned",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Supplemental somatosensory area",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Supplemental somatosensory area, layer 1",
+                                                                    "value": 1
+                                                                },
+                                                                {
+                                                                    "name": "Supplemental somatosensory area, layer 2/3",
+                                                                    "value": 3
+                                                                },
+                                                                {
+                                                                    "name": "Supplemental somatosensory area, layer 4",
+                                                                    "value": 1
+                                                                },
+                                                                {
+                                                                    "name": "Supplemental somatosensory area, layer 5",
+                                                                    "value": 2
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Gustatory areas",
+                                                    "children": [
+                                                        {
+                                                            "name": "Gustatory areas, layer 5",
+                                                            "value": 3
+                                                        },
+                                                        {
+                                                            "name": "Gustatory areas, layer 6a",
+                                                            "value": 2
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Visceral area",
+                                                    "children": [
+                                                        {
+                                                            "name": "Visceral area, layer 5",
+                                                            "value": 1
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Auditory areas",
+                                                    "children": [
+                                                        {
+                                                            "name": "Dorsal auditory area",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Laterolateral anterior visual area",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Primary auditory area",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Posterior auditory area",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Ventral auditory area",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Visual areas",
+                                                    "children": [
+                                                        {
+                                                            "name": "Anterolateral visual area",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Anteromedial visual area",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Lateral visual area",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Primary visual area",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Posterolateral visual area",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "posteromedial visual area",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Laterointermediate area",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Postrhinal area",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Anterior cingulate area",
+                                                    "children": [
+                                                        {
+                                                            "name": "Anterior cingulate area, dorsal part",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Anterior cingulate area, dorsal part, layer 1",
+                                                                    "value": 1
+                                                                },
+                                                                {
+                                                                    "name": "Anterior cingulate area, dorsal part, layer 2/3",
+                                                                    "value": 2
+                                                                },
+                                                                {
+                                                                    "name": "Anterior cingulate area, dorsal part, layer 5",
+                                                                    "value": 7
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Anterior cingulate area, ventral part",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Prelimbic area",
+                                                    "children": [
+                                                        {
+                                                            "name": "Prelimbic area, layer 1",
+                                                            "value": 7
+                                                        },
+                                                        {
+                                                            "name": "Prelimbic area, layer 2/3",
+                                                            "value": 5
+                                                        },
+                                                        {
+                                                            "name": "Prelimbic area, layer 5",
+                                                            "value": 21
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Infralimbic area",
+                                                    "children": [
+                                                        {
+                                                            "name": "Infralimbic area, layer 1",
+                                                            "value": 7
+                                                        },
+                                                        {
+                                                            "name": "Infralimbic area, layer 2/3",
+                                                            "value": 5
+                                                        },
+                                                        {
+                                                            "name": "Infralimbic area, layer 5",
+                                                            "value": 5
+                                                        },
+                                                        {
+                                                            "name": "Infralimbic area, layer 6a",
+                                                            "value": 2
+                                                        },
+                                                        {
+                                                            "name": "Infralimbic area, layer 6b",
+                                                            "value": 1
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Orbital area",
+                                                    "children": [
+                                                        {
+                                                            "name": "Orbital area, lateral part",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Orbital area, lateral part, layer 1",
+                                                                    "value": 8
+                                                                },
+                                                                {
+                                                                    "name": "Orbital area, lateral part, layer 2/3",
+                                                                    "value": 15
+                                                                },
+                                                                {
+                                                                    "name": "Orbital area, lateral part, layer 5",
+                                                                    "value": 31
+                                                                },
+                                                                {
+                                                                    "name": "Orbital area, lateral part, layer 6a",
+                                                                    "value": 4
+                                                                },
+                                                                {
+                                                                    "name": "Orbital area, lateral part, layer 6b",
+                                                                    "value": 3
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Orbital area, medial part",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Orbital area, medial part, layer 1",
+                                                                    "value": 1
+                                                                },
+                                                                {
+                                                                    "name": "Orbital area, medial part, layer 2/3",
+                                                                    "value": 1
+                                                                },
+                                                                {
+                                                                    "name": "Orbital area, medial part, layer 5",
+                                                                    "value": 4
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Orbital area, ventrolateral part",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Orbital area, ventrolateral part, layer 1",
+                                                                    "value": 16
+                                                                },
+                                                                {
+                                                                    "name": "Orbital area, ventrolateral part, layer 2/3",
+                                                                    "value": 27
+                                                                },
+                                                                {
+                                                                    "name": "Orbital area, ventrolateral part, layer 5",
+                                                                    "value": 6
+                                                                },
+                                                                {
+                                                                    "name": "Orbital area, ventrolateral part, layer 6a",
+                                                                    "value": 1
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Agranular insular area",
+                                                    "children": [
+                                                        {
+                                                            "name": "Agranular insular area, dorsal part",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Agranular insular area, dorsal part, layer 2/3",
+                                                                    "value": 4
+                                                                },
+                                                                {
+                                                                    "name": "Agranular insular area, dorsal part, layer 5",
+                                                                    "value": 15
+                                                                },
+                                                                {
+                                                                    "name": "Agranular insular area, dorsal part, layer 6a",
+                                                                    "value": 1
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Agranular insular area, posterior part",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Agranular insular area, posterior part, layer 1",
+                                                                    "value": 1
+                                                                },
+                                                                {
+                                                                    "name": "Agranular insular area, posterior part, layer 2/3",
+                                                                    "value": 2
+                                                                },
+                                                                {
+                                                                    "name": "Agranular insular area, posterior part, layer 5",
+                                                                    "value": 2
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Agranular insular area, ventral part",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Agranular insular area, ventral part, layer 5",
+                                                                    "value": 6
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Retrosplenial area",
+                                                    "children": [
+                                                        {
+                                                            "name": "Retrosplenial area, lateral agranular part",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Retrosplenial area, lateral agranular part, layer 2/3",
+                                                                    "value": 2
+                                                                },
+                                                                {
+                                                                    "name": "Retrosplenial area, lateral agranular part, layer 5",
+                                                                    "value": 3
+                                                                },
+                                                                {
+                                                                    "name": "Retrosplenial area, lateral agranular part, layer 6a",
+                                                                    "value": 1
+                                                                },
+                                                                {
+                                                                    "name": "Mediomedial anterior visual area",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "name": "Mediomedial posterior visual area",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "name": "Medial visual area",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Retrosplenial area, dorsal part",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Retrosplenial area, dorsal part, layer 2/3",
+                                                                    "value": 1
+                                                                },
+                                                                {
+                                                                    "name": "Retrosplenial area, dorsal part, layer 5",
+                                                                    "value": 4
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Retrosplenial area, ventral part",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Posterior parietal association areas",
+                                                    "children": [
+                                                        {
+                                                            "name": "Anterior area",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Rostrolateral visual area",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Temporal association areas",
+                                                    "children": [
+                                                        {
+                                                            "name": "Temporal association areas, layer 5",
+                                                            "value": 1
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Perirhinal area",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "Ectorhinal area",
+                                                    "children": []
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Olfactory areas",
+                                            "children": [
+                                                {
+                                                    "name": "Main olfactory bulb",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "Accessory olfactory bulb",
+                                                    "children": [
+                                                        {
+                                                            "name": "Accessory olfactory bulb, glomerular layer",
+                                                            "value": 1
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Anterior olfactory nucleus",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 1
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Taenia tecta",
+                                                    "children": [
+                                                        {
+                                                            "name": "Taenia tecta, dorsal part",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Taenia tecta, ventral part",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Dorsal peduncular area",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 1
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Piriform area",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 1
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Nucleus of the lateral olfactory tract",
+                                                    "children": [
+                                                        {
+                                                            "name": "Nucleus of the lateral olfactory tract, pyramidal layer",
+                                                            "value": 1
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Cortical amygdalar area",
+                                                    "children": [
+                                                        {
+                                                            "name": "Cortical amygdalar area, anterior part",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Cortical amygdalar area, posterior part",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Cortical amygdalar area, posterior part, lateral zone",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "name": "Cortical amygdalar area, posterior part, medial zone",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Piriform-amygdalar area",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "Postpiriform transition area",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "other",
+                                                    "value": 14
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Hippocampal formation",
+                                            "children": [
+                                                {
+                                                    "name": "Hippocampal region",
+                                                    "children": [
+                                                        {
+                                                            "name": "Ammon's horn",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Field CA1",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "name": "Field CA2",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "name": "Field CA3",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Dentate gyrus",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Dentate gyrus crest",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "name": "Dentate gyrus lateral blade",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "name": "Dentate gyrus medial blade",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Retrohippocampal region",
+                                                    "children": [
+                                                        {
+                                                            "name": "Entorhinal area",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Entorhinal area, lateral part",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "name": "Entorhinal area, medial part, dorsal zone",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "name": "Entorhinal area, medial part, ventral zone",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Parasubiculum",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Postsubiculum",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Presubiculum",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Subiculum",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Subiculum, dorsal part",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "name": "Subiculum, ventral part",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Prosubiculum",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Prosubiculum, dorsal part",
+                                                                    "children": []
+                                                                },
+                                                                {
+                                                                    "name": "Prosubiculum, ventral part",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Cortical subplate",
+                                    "children": [
+                                        {
+                                            "name": "Endopiriform nucleus",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "Lateral amygdalar nucleus",
+                                            "value": 2
+                                        },
+                                        {
+                                            "name": "Basolateral amygdalar nucleus",
+                                            "children": [
+                                                {
+                                                    "name": "Basolateral amygdalar nucleus, anterior part",
+                                                    "value": 5
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Basomedial amygdalar nucleus",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Cerebral nuclei",
+                            "children": [
+                                {
+                                    "name": "Striatum",
+                                    "children": [
+                                        {
+                                            "name": "Striatum dorsal region",
+                                            "children": [
+                                                {
+                                                    "name": "Caudoputamen",
+                                                    "value": 46
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Striatum ventral region",
+                                            "children": [
+                                                {
+                                                    "name": "Nucleus accumbens",
+                                                    "value": 42
+                                                },
+                                                {
+                                                    "name": "Fundus of striatum",
+                                                    "value": 6
+                                                },
+                                                {
+                                                    "name": "Olfactory tubercle",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 1
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Lateral septal complex",
+                                            "children": [
+                                                {
+                                                    "name": "Lateral septal nucleus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Lateral septal nucleus, rostral (rostroventral) part",
+                                                            "value": 2
+                                                        },
+                                                        {
+                                                            "name": "Lateral septal nucleus, ventral part",
+                                                            "value": 1
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Striatum-like amygdalar nuclei",
+                                            "children": [
+                                                {
+                                                    "name": "Anterior amygdalar area",
+                                                    "value": 5
+                                                },
+                                                {
+                                                    "name": "Central amygdalar nucleus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Central amygdalar nucleus, capsular part",
+                                                            "value": 15
+                                                        },
+                                                        {
+                                                            "name": "Central amygdalar nucleus, lateral part",
+                                                            "value": 10
+                                                        },
+                                                        {
+                                                            "name": "Central amygdalar nucleus, medial part",
+                                                            "value": 10
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Medial amygdalar nucleus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Medial amygdalar nucleus, posterodorsal part",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "other",
+                                                            "value": 5
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "other",
+                                            "value": 42
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Pallidum",
+                                    "children": [
+                                        {
+                                            "name": "Pallidum, dorsal region",
+                                            "children": [
+                                                {
+                                                    "name": "Globus pallidus, external segment",
+                                                    "value": 2
+                                                },
+                                                {
+                                                    "name": "Globus pallidus, internal segment",
+                                                    "value": 1
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Pallidum, ventral region",
+                                            "children": [
+                                                {
+                                                    "name": "Substantia innominata",
+                                                    "value": 39
+                                                },
+                                                {
+                                                    "name": "Magnocellular nucleus",
+                                                    "value": 12
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Pallidum, medial region",
+                                            "children": [
+                                                {
+                                                    "name": "Medial septal complex",
+                                                    "children": [
+                                                        {
+                                                            "name": "Diagonal band nucleus",
+                                                            "value": 1
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Pallidum, caudal region",
+                                            "children": [
+                                                {
+                                                    "name": "Bed nuclei of the stria terminalis",
+                                                    "children": [
+                                                        {
+                                                            "name": "Bed nuclei of the stria terminalis, anterior division",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Bed nuclei of the stria terminalis, posterior division",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "other",
+                                                            "value": 25
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "other",
+                                            "value": 17
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Brain stem",
+                    "children": [
+                        {
+                            "name": "Interbrain",
+                            "children": [
+                                {
+                                    "name": "Thalamus",
+                                    "children": [
+                                        {
+                                            "name": "Thalamus, sensory-motor cortex related",
+                                            "children": [
+                                                {
+                                                    "name": "Ventral group of the dorsal thalamus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Ventral medial nucleus of the thalamus",
+                                                            "value": 14
+                                                        },
+                                                        {
+                                                            "name": "Ventral posterior complex of the thalamus",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Subparafascicular nucleus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Subparafascicular nucleus, parvicellular part",
+                                                            "value": 1
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Geniculate group, dorsal thalamus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Medial geniculate complex",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Medial geniculate complex, ventral part",
+                                                                    "value": 1
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Dorsal part of the lateral geniculate complex",
+                                                            "children": []
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Thalamus, polymodal association cortex related",
+                                            "children": [
+                                                {
+                                                    "name": "Lateral group of the dorsal thalamus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Posterior limiting nucleus of the thalamus",
+                                                            "value": 2
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Anterior group of the dorsal thalamus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Anteromedial nucleus",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Anterodorsal nucleus",
+                                                            "value": 2
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Medial group of the dorsal thalamus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Mediodorsal nucleus of thalamus",
+                                                            "children": [
+                                                                {
+                                                                    "name": "other",
+                                                                    "value": 20
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Midline group of the dorsal thalamus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Nucleus of reuniens",
+                                                            "value": 2
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Intralaminar nuclei of the dorsal thalamus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Central lateral nucleus of the thalamus",
+                                                            "value": 7
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Reticular nucleus of the thalamus",
+                                                    "value": 1
+                                                },
+                                                {
+                                                    "name": "Geniculate group, ventral thalamus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Ventral part of the lateral geniculate complex",
+                                                            "children": [
+                                                                {
+                                                                    "name": "other",
+                                                                    "value": 3
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Epithalamus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Lateral habenula",
+                                                            "value": 41
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "other",
+                                            "value": 6
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Hypothalamus",
+                                    "children": [
+                                        {
+                                            "name": "Periventricular zone",
+                                            "children": [
+                                                {
+                                                    "name": "Accessory supraoptic group",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "Paraventricular hypothalamic nucleus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Paraventricular hypothalamic nucleus, magnocellular division",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Paraventricular hypothalamic nucleus, magnocellular division, posterior magnocellular part",
+                                                                    "children": []
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "Paraventricular hypothalamic nucleus, parvicellular division",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "other",
+                                                            "value": 1
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Periventricular hypothalamic nucleus, anterior part",
+                                                    "value": 1
+                                                },
+                                                {
+                                                    "name": "Periventricular hypothalamic nucleus, intermediate part",
+                                                    "value": 2
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Periventricular region",
+                                            "children": [
+                                                {
+                                                    "name": "Anterodorsal preoptic nucleus",
+                                                    "value": 1
+                                                },
+                                                {
+                                                    "name": "Anteroventral preoptic nucleus",
+                                                    "value": 1
+                                                },
+                                                {
+                                                    "name": "Anteroventral periventricular nucleus",
+                                                    "value": 1
+                                                },
+                                                {
+                                                    "name": "Dorsomedial nucleus of the hypothalamus",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 3
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Medial preoptic area",
+                                                    "value": 28
+                                                },
+                                                {
+                                                    "name": "Posterodorsal preoptic nucleus",
+                                                    "value": 1
+                                                },
+                                                {
+                                                    "name": "Parastrial nucleus",
+                                                    "value": 8
+                                                },
+                                                {
+                                                    "name": "Periventricular hypothalamic nucleus, preoptic part",
+                                                    "value": 1
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Hypothalamic medial zone",
+                                            "children": [
+                                                {
+                                                    "name": "Anterior hypothalamic nucleus",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 7
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Mammillary body",
+                                                    "children": [
+                                                        {
+                                                            "name": "Lateral mammillary nucleus",
+                                                            "value": 3
+                                                        },
+                                                        {
+                                                            "name": "Medial mammillary nucleus",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Supramammillary nucleus",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Tuberomammillary nucleus",
+                                                            "children": [
+                                                                {
+                                                                    "name": "Tuberomammillary nucleus, ventral part",
+                                                                    "value": 9
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Medial preoptic nucleus",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 19
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Dorsal premammillary nucleus",
+                                                    "value": 11
+                                                },
+                                                {
+                                                    "name": "Ventral premammillary nucleus",
+                                                    "value": 7
+                                                },
+                                                {
+                                                    "name": "Paraventricular hypothalamic nucleus, descending division",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "Ventromedial hypothalamic nucleus",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "Posterior hypothalamic nucleus",
+                                                    "value": 5
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Hypothalamic lateral zone",
+                                            "children": [
+                                                {
+                                                    "name": "Lateral hypothalamic area",
+                                                    "value": 45
+                                                },
+                                                {
+                                                    "name": "Lateral preoptic area",
+                                                    "value": 29
+                                                },
+                                                {
+                                                    "name": "Preparasubthalamic nucleus",
+                                                    "value": 1
+                                                },
+                                                {
+                                                    "name": "Parasubthalamic nucleus",
+                                                    "value": 7
+                                                },
+                                                {
+                                                    "name": "Tuberal nucleus",
+                                                    "value": 2
+                                                },
+                                                {
+                                                    "name": "Zona incerta",
+                                                    "children": [
+                                                        {
+                                                            "name": "Fields of Forel",
+                                                            "value": 6
+                                                        },
+                                                        {
+                                                            "name": "other",
+                                                            "value": 75
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "other",
+                                            "value": 50
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Midbrain",
+                            "children": [
+                                {
+                                    "name": "Midbrain, sensory related",
+                                    "children": [
+                                        {
+                                            "name": "Superior colliculus, sensory related",
+                                            "children": [
+                                                {
+                                                    "name": "Superior colliculus, optic layer",
+                                                    "value": 1
+                                                },
+                                                {
+                                                    "name": "Superior colliculus, superficial gray layer",
+                                                    "value": 1
+                                                },
+                                                {
+                                                    "name": "Superior colliculus, zonal layer",
+                                                    "value": 2
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Inferior colliculus",
+                                            "children": [
+                                                {
+                                                    "name": "Inferior colliculus, central nucleus",
+                                                    "value": 46
+                                                },
+                                                {
+                                                    "name": "Inferior colliculus, dorsal nucleus",
+                                                    "value": 78
+                                                },
+                                                {
+                                                    "name": "Inferior colliculus, external nucleus",
+                                                    "value": 14
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Nucleus of the brachium of the inferior colliculus",
+                                            "value": 1
+                                        },
+                                        {
+                                            "name": "Nucleus sagulum",
+                                            "value": 2
+                                        },
+                                        {
+                                            "name": "Midbrain trigeminal nucleus",
+                                            "value": 2
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Midbrain, motor related",
+                                    "children": [
+                                        {
+                                            "name": "Substantia nigra, reticular part",
+                                            "value": 22
+                                        },
+                                        {
+                                            "name": "Ventral tegmental area",
+                                            "value": 4
+                                        },
+                                        {
+                                            "name": "Midbrain reticular nucleus, retrorubral area",
+                                            "value": 14
+                                        },
+                                        {
+                                            "name": "Midbrain reticular nucleus",
+                                            "children": [
+                                                {
+                                                    "name": "other",
+                                                    "value": 238
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Superior colliculus, motor related",
+                                            "children": [
+                                                {
+                                                    "name": "Superior colliculus, motor related, deep gray layer",
+                                                    "value": 76
+                                                },
+                                                {
+                                                    "name": "Superior colliculus, motor related, deep white layer",
+                                                    "value": 19
+                                                },
+                                                {
+                                                    "name": "Superior colliculus, motor related, intermediate white layer",
+                                                    "value": 129
+                                                },
+                                                {
+                                                    "name": "Superior colliculus, motor related, intermediate gray layer",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 18
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Periaqueductal gray",
+                                            "children": [
+                                                {
+                                                    "name": "Precommissural nucleus",
+                                                    "value": 2
+                                                },
+                                                {
+                                                    "name": "Interstitial nucleus of Cajal",
+                                                    "value": 1
+                                                },
+                                                {
+                                                    "name": "other",
+                                                    "value": 438
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Pretectal region",
+                                            "children": [
+                                                {
+                                                    "name": "Anterior pretectal nucleus",
+                                                    "value": 7
+                                                },
+                                                {
+                                                    "name": "Nucleus of the posterior commissure",
+                                                    "value": 1
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Cuneiform nucleus",
+                                            "value": 45
+                                        },
+                                        {
+                                            "name": "Red nucleus",
+                                            "value": 4
+                                        },
+                                        {
+                                            "name": "Oculomotor nucleus",
+                                            "value": 1
+                                        },
+                                        {
+                                            "name": "Anterior tegmental nucleus",
+                                            "value": 2
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Midbrain, behavioral state related",
+                                    "children": [
+                                        {
+                                            "name": "Substantia nigra, compact part",
+                                            "value": 5
+                                        },
+                                        {
+                                            "name": "Pedunculopontine nucleus",
+                                            "value": 67
+                                        },
+                                        {
+                                            "name": "Midbrain raphe nuclei",
+                                            "children": [
+                                                {
+                                                    "name": "Interfascicular nucleus raphe",
+                                                    "value": 2
+                                                },
+                                                {
+                                                    "name": "Interpeduncular nucleus",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "Dorsal nucleus raphe",
+                                                    "value": 12
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "other",
+                                    "value": 205
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Hindbrain",
+                            "children": [
+                                {
+                                    "name": "Pons",
+                                    "children": [
+                                        {
+                                            "name": "Pons, sensory related",
+                                            "children": [
+                                                {
+                                                    "name": "Nucleus of the lateral lemniscus",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 2
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Principal sensory nucleus of the trigeminal",
+                                                    "value": 3
+                                                },
+                                                {
+                                                    "name": "Parabrachial nucleus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Parabrachial nucleus, lateral division",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "Parabrachial nucleus, medial division",
+                                                            "children": []
+                                                        },
+                                                        {
+                                                            "name": "other",
+                                                            "value": 148
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Superior olivary complex",
+                                                    "children": []
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Pons, motor related",
+                                            "children": [
+                                                {
+                                                    "name": "Barrington's nucleus",
+                                                    "value": 4
+                                                },
+                                                {
+                                                    "name": "Dorsal tegmental nucleus",
+                                                    "value": 8
+                                                },
+                                                {
+                                                    "name": "Pontine central gray",
+                                                    "value": 61
+                                                },
+                                                {
+                                                    "name": "Pontine reticular nucleus, caudal part",
+                                                    "value": 19
+                                                },
+                                                {
+                                                    "name": "Supragenual nucleus",
+                                                    "value": 2
+                                                },
+                                                {
+                                                    "name": "Supratrigeminal nucleus",
+                                                    "value": 7
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Pons, behavioral state related",
+                                            "children": [
+                                                {
+                                                    "name": "Superior central nucleus raphe",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 6
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Locus ceruleus",
+                                                    "value": 2
+                                                },
+                                                {
+                                                    "name": "Laterodorsal tegmental nucleus",
+                                                    "value": 25
+                                                },
+                                                {
+                                                    "name": "Nucleus incertus",
+                                                    "value": 1
+                                                },
+                                                {
+                                                    "name": "Pontine reticular nucleus",
+                                                    "value": 35
+                                                },
+                                                {
+                                                    "name": "Subceruleus nucleus",
+                                                    "value": 2
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "other",
+                                            "value": 60
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Medulla",
+                                    "children": [
+                                        {
+                                            "name": "Medulla, sensory related",
+                                            "children": [
+                                                {
+                                                    "name": "Cochlear nuclei",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "Dorsal column nuclei",
+                                                    "children": [
+                                                        {
+                                                            "name": "Cuneate nucleus",
+                                                            "value": 1
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Nucleus of the solitary tract",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 2
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Spinal nucleus of the trigeminal, oral part",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 2
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Medulla, motor related",
+                                            "children": [
+                                                {
+                                                    "name": "Facial motor nucleus",
+                                                    "value": 1
+                                                },
+                                                {
+                                                    "name": "Nucleus ambiguus",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "Gigantocellular reticular nucleus",
+                                                    "value": 23
+                                                },
+                                                {
+                                                    "name": "Infracerebellar nucleus",
+                                                    "value": 1
+                                                },
+                                                {
+                                                    "name": "Intermediate reticular nucleus",
+                                                    "value": 11
+                                                },
+                                                {
+                                                    "name": "Lateral reticular nucleus",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "Medullary reticular nucleus",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "Parvicellular reticular nucleus",
+                                                    "value": 10
+                                                },
+                                                {
+                                                    "name": "Paragigantocellular reticular nucleus",
+                                                    "children": [
+                                                        {
+                                                            "name": "Paragigantocellular reticular nucleus, dorsal part",
+                                                            "value": 5
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Perihypoglossal nuclei",
+                                                    "children": [
+                                                        {
+                                                            "name": "Nucleus prepositus",
+                                                            "value": 11
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Parapyramidal nucleus",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "Vestibular nuclei",
+                                                    "children": [
+                                                        {
+                                                            "name": "Lateral vestibular nucleus",
+                                                            "value": 2
+                                                        },
+                                                        {
+                                                            "name": "Medial vestibular nucleus",
+                                                            "value": 72
+                                                        },
+                                                        {
+                                                            "name": "Superior vestibular nucleus",
+                                                            "value": 3
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Hypoglossal nucleus",
+                                                    "value": 2
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Medulla, behavioral state related",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "other",
+                                            "value": 6
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Cerebellum",
+                    "children": [
+                        {
+                            "name": "Cerebellar cortex",
+                            "children": [
+                                {
+                                    "name": "Vermal regions",
+                                    "children": [
+                                        {
+                                            "name": "Lingula (I)",
+                                            "children": [
+                                                {
+                                                    "name": "other",
+                                                    "value": 1
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Central lobule",
+                                            "children": [
+                                                {
+                                                    "name": "Lobule II",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 158
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Lobule III",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 67
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Culmen",
+                                            "children": [
+                                                {
+                                                    "name": "Lobule IV",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "Lobule V",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "Lobules IV-V",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 7
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Declive (VI)",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "Folium-tuber vermis (VII)",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "Pyramus (VIII)",
+                                            "children": [
+                                                {
+                                                    "name": "other",
+                                                    "value": 1
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Uvula (IX)",
+                                            "children": [
+                                                {
+                                                    "name": "other",
+                                                    "value": 1
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Nodulus (X)",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Hemispheric regions",
+                                    "children": [
+                                        {
+                                            "name": "Simple lobule",
+                                            "children": [
+                                                {
+                                                    "name": "other",
+                                                    "value": 3
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Ansiform lobule",
+                                            "children": [
+                                                {
+                                                    "name": "Crus 1",
+                                                    "children": []
+                                                },
+                                                {
+                                                    "name": "Crus 2",
+                                                    "children": [
+                                                        {
+                                                            "name": "other",
+                                                            "value": 3
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Paramedian lobule",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "Copula pyramidis",
+                                            "children": [
+                                                {
+                                                    "name": "other",
+                                                    "value": 29
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Paraflocculus",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "Flocculus",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Cerebellar nuclei",
+                            "children": [
+                                {
+                                    "name": "Fastigial nucleus",
+                                    "value": 11
+                                },
+                                {
+                                    "name": "Interposed nucleus",
+                                    "value": 19
+                                },
+                                {
+                                    "name": "Dentate nucleus",
+                                    "value": 8
+                                }
+                            ]
+                        },
+                        {
+                            "name": "other",
+                            "value": 37
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "fiber tracts",
+            "children": [
+                {
+                    "name": "cranial nerves",
+                    "children": [
+                        {
+                            "name": "olfactory nerve",
+                            "children": [
+                                {
+                                    "name": "lateral olfactory tract, general",
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "name": "optic nerve",
+                            "children": [
+                                {
+                                    "name": "superior colliculus commissure",
+                                    "value": 1
+                                }
+                            ]
+                        },
+                        {
+                            "name": "oculomotor nerve",
+                            "children": [
+                                {
+                                    "name": "medial longitudinal fascicle",
+                                    "value": 6
+                                },
+                                {
+                                    "name": "posterior commissure",
+                                    "value": 2
+                                }
+                            ]
+                        },
+                        {
+                            "name": "trochlear nerve",
+                            "children": []
+                        },
+                        {
+                            "name": "trigeminal nerve",
+                            "children": [
+                                {
+                                    "name": "sensory root of the trigeminal nerve",
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "name": "facial nerve",
+                            "children": [
+                                {
+                                    "name": "other",
+                                    "value": 1
+                                }
+                            ]
+                        },
+                        {
+                            "name": "vestibulocochlear nerve",
+                            "children": [
+                                {
+                                    "name": "cochlear nerve",
+                                    "children": [
+                                        {
+                                            "name": "lateral lemniscus",
+                                            "value": 11
+                                        },
+                                        {
+                                            "name": "brachium of the inferior colliculus",
+                                            "value": 2
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "vagus nerve",
+                            "children": []
+                        },
+                        {
+                            "name": "dorsal roots",
+                            "children": [
+                                {
+                                    "name": "cervicothalamic tract",
+                                    "children": [
+                                        {
+                                            "name": "dorsal column",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "medial lemniscus",
+                                            "value": 6
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "spinothalamic tract",
+                            "children": [
+                                {
+                                    "name": "spinotelenchephalic pathway",
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "cerebellum related fiber tracts",
+                    "children": [
+                        {
+                            "name": "cerebellar peduncles",
+                            "children": [
+                                {
+                                    "name": "superior cerebelar peduncles",
+                                    "children": [
+                                        {
+                                            "name": "superior cerebellar peduncle decussation",
+                                            "children": [
+                                                {
+                                                    "name": "other",
+                                                    "value": 1
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "uncinate fascicle",
+                                            "value": 12
+                                        },
+                                        {
+                                            "name": "ventral spinocerebellar tract",
+                                            "value": 7
+                                        },
+                                        {
+                                            "name": "other",
+                                            "value": 31
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "inferior cerebellar peduncle",
+                                    "children": [
+                                        {
+                                            "name": "bulbocerebellar tract",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "arbor vitae",
+                            "value": 60
+                        }
+                    ]
+                },
+                {
+                    "name": "lateral forebrain bundle system",
+                    "children": [
+                        {
+                            "name": "corpus callosum",
+                            "children": [
+                                {
+                                    "name": "corpus callosum, anterior forceps",
+                                    "children": [
+                                        {
+                                            "name": "other",
+                                            "value": 9
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "genu of corpus callosum",
+                                    "value": 1
+                                }
+                            ]
+                        },
+                        {
+                            "name": "corticospinal tract",
+                            "children": [
+                                {
+                                    "name": "internal capsule",
+                                    "value": 13
+                                },
+                                {
+                                    "name": "cerebal peduncle",
+                                    "value": 9
+                                }
+                            ]
+                        },
+                        {
+                            "name": "thalamus related",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "extrapyramidal fiber systems",
+                    "children": [
+                        {
+                            "name": "cerebral nuclei related",
+                            "children": [
+                                {
+                                    "name": "nigrostriatal tract",
+                                    "value": 2
+                                }
+                            ]
+                        },
+                        {
+                            "name": "tectospinal pathway",
+                            "children": [
+                                {
+                                    "name": "crossed tectospinal pathway",
+                                    "value": 8
+                                }
+                            ]
+                        },
+                        {
+                            "name": "rubrospinal tract",
+                            "children": [
+                                {
+                                    "name": "other",
+                                    "value": 7
+                                }
+                            ]
+                        },
+                        {
+                            "name": "retriculospinal tract",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "medial forebrain bundle system",
+                    "children": [
+                        {
+                            "name": "cerebrum related",
+                            "children": [
+                                {
+                                    "name": "anterior commissure, temporal limb",
+                                    "value": 1
+                                },
+                                {
+                                    "name": "fornix system",
+                                    "children": [
+                                        {
+                                            "name": "precommissural fornix, general",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "postcommissural fornix",
+                                            "children": [
+                                                {
+                                                    "name": "columns of the fornix",
+                                                    "value": 2
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "hippocampal commissures",
+                                            "children": [
+                                                {
+                                                    "name": "dorsal hippocampal commissure",
+                                                    "value": 1
+                                                },
+                                                {
+                                                    "name": "ventral hippocampal commissure",
+                                                    "value": 1
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "stria terminalis",
+                                    "children": [
+                                        {
+                                            "name": "other",
+                                            "value": 3
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "hypothalamus related",
+                            "children": [
+                                {
+                                    "name": "supraoptic commissures",
+                                    "children": []
+                                },
+                                {
+                                    "name": "propriohypothalamic pathways",
+                                    "children": []
+                                },
+                                {
+                                    "name": "mammillary related",
+                                    "children": [
+                                        {
+                                            "name": "mammillothalamic tract",
+                                            "value": 1
+                                        },
+                                        {
+                                            "name": "mammillotegmental tract",
+                                            "value": 1
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "dorsal thalamus related",
+                                    "children": []
+                                },
+                                {
+                                    "name": "epithalamus related",
+                                    "children": [
+                                        {
+                                            "name": "stria medullaris",
+                                            "value": 1
+                                        },
+                                        {
+                                            "name": "fasciculus retroflexus",
+                                            "value": 3
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "midbrain related",
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "other",
+                    "value": 6
+                }
+            ]
+        },
+        {
+            "name": "ventricular systems",
+            "children": [
+                {
+                    "name": "lateral ventricle",
+                    "children": [
+                        {
+                            "name": "choroid plexus",
+                            "value": 9
+                        },
+                        {
+                            "name": "other",
+                            "value": 8
+                        }
+                    ]
+                },
+                {
+                    "name": "third ventricle",
+                    "value": 2
+                },
+                {
+                    "name": "cerebral aqueduct",
+                    "value": 123
+                },
+                {
+                    "name": "fourth ventricle",
+                    "children": [
+                        {
+                            "name": "other",
+                            "value": 34
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "grooves",
+            "children": [
+                {
+                    "name": "grooves of the cerebral cortex",
+                    "children": []
+                },
+                {
+                    "name": "grooves of the cerebellar cortex",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "other",
+            "value": 7
+        }
+    ]
+}
