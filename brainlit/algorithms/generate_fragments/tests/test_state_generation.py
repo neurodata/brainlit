@@ -41,7 +41,14 @@ res = [0.1, 0.1, 0.1]
 ### functionality checks ###
 ############################
 
-test_coords = np.hstack((np.arange(100).reshape(100, 1), np.arange(100).reshape(100, 1), np.arange(100).reshape(100, 1)))
+test_coords = np.hstack(
+    (
+        np.arange(100).reshape(100, 1),
+        np.arange(100).reshape(100, 1),
+        np.arange(100).reshape(100, 1),
+    )
+)
+
 
 def test_state_generation():
     sg = state_generation(
