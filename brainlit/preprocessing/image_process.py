@@ -142,7 +142,7 @@ def gabor_filter(
     new_shape = np.append(new_shape, -1).astype(int)
     sigmas = np.reshape(sigmas, new_shape)
 
-    g = np.zeros(filter_size, dtype=np.complex)
+    g = np.zeros(filter_size, dtype=complex)
     g[:] = np.exp(-0.5 * np.sum(np.divide(coords, sigmas) ** 2, axis=-1))
 
     g /= (2 * np.pi) ** (input.ndim / 2) * np.prod(sigmas)
@@ -157,7 +157,7 @@ def gabor_filter(
     if isinstance(output, (type, np.dtype)):
         otype = output
     elif isinstance(output, str):
-        otype = np.typeDict[output]
+        otype = np.sctypeDict[output]
     else:
         otype = None
 
