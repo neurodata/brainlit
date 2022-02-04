@@ -32,7 +32,7 @@ import zarr
 scale = [0.3, 0.3, 1]
 num = 0
 
-root_dir = Path(os.path.abspath(''))
+root_dir = Path(os.path.abspath(""))
 data_dir = os.path.join(root_dir, "data", "example")
 path = os.path.join(data_dir, "viterbi_0_multisoma.pickle")
 
@@ -43,11 +43,11 @@ state2centroid = {}
 for soma_frag in viterbi.soma_fragment2coords.keys():
     state2centroid[soma_frag] = np.mean(viterbi.soma_fragment2coords[soma_frag], axis=0)
 
-z = zarr.open(viterbi.fragment_path[:-12]+".zarr", 'r')
-im = z[:,:,:]
+z = zarr.open(viterbi.fragment_path[:-12] + ".zarr", "r")
+im = z[:, :, :]
 print(f"Image shape: {im.shape}")
-z = zarr.open(viterbi.fragment_path, 'r')
-new_labels = z[:,:,:]
+z = zarr.open(viterbi.fragment_path, "r")
+new_labels = z[:, :, :]
 
 nt = NeuronTrace(
     path="/Users/thomasathey/Documents/mimlab/mouselight/pres/mim_slides/SNT_Data.swc"
@@ -65,9 +65,17 @@ viewer.window.add_dock_widget(animation_widget, area="right")
 viewer.camera.angles = [0, -90, 180]
 viewer.scale_bar.visible = True
 
-colors = ['green','blue','red']
+colors = ["green", "blue", "red"]
 
-keys = {"o":"switch state", "t": "trace", "s":"save", "c":"clear selected states", "q":"clear all annotations", "n":"next color"}
+keys = {
+    "o": "switch state",
+    "t": "trace",
+    "s": "save",
+    "c": "clear selected states",
+    "q": "clear all annotations",
+    "n": "next color",
+}
+
 
 def get_layers():
     state_layers = {}
@@ -77,7 +85,10 @@ def get_layers():
 
     for l in range(len(viewer.layers)):
         layer = viewer.layers[l]
-        if type(layer) == napari.layers.shapes.shapes.Shapes or type(layer) == napari.layers.points.points.Points:
+        if (
+            type(layer) == napari.layers.shapes.shapes.Shapes
+            or type(layer) == napari.layers.points.points.Points
+        ):
             label_name = layer.name.split(" ")
             if label_name[0] == "state":
                 state = int(label_name[1])
@@ -113,7 +124,7 @@ def draw_arrow(val, state):
         orient = np.subtract(pt1, pt2) / np.linalg.norm(np.subtract(pt1, pt2))
         base = np.add(pt2, orient * factor)
         orient2 = orient.copy()
-        for i,term in enumerate(orient):
+        for i, term in enumerate(orient):
             if term != 0:
                 orient2[i] = -orient[i]
                 break
@@ -131,7 +142,7 @@ def draw_arrow(val, state):
             edge_color=colors[-1],
             edge_width=1,
             name=f"state {state} label {val} stem",
-            scale=scale
+            scale=scale,
         )
         viewer.add_shapes(
             [poly1, poly2],
@@ -140,12 +151,16 @@ def draw_arrow(val, state):
             face_color=colors[-1],
             edge_width=1,
             name=f"state {state} label {val} head",
-            scale=scale
+            scale=scale,
         )
     else:
         pt2 = viterbi.soma_fragment2coords[val][0, :]
         viewer.add_points(
-            [pt2], face_color=colors[-1], size=7, name=f"state {state} label {val} end", scale=scale
+            [pt2],
+            face_color=colors[-1],
+            size=7,
+            name=f"state {state} label {val} end",
+            scale=scale,
         )
     return pt2
 
@@ -216,7 +231,7 @@ def drawpath(state1, state2):
             dist_cost = viterbi.nxGraph.edges[path_states[s - 1], state]["dist_cost"]
             int_cost = viterbi.nxGraph.edges[path_states[s - 1], state]["int_cost"]
             cumul_cost += dist_cost + int_cost
-            comp1 = viterbi.nxGraph.nodes[path_states[s-1]]["fragment"]
+            comp1 = viterbi.nxGraph.nodes[path_states[s - 1]]["fragment"]
             comp2 = viterbi.nxGraph.nodes[state]["fragment"]
             print(
                 f"Trans. #{s}: dist cost state {path_states[s-1]}->state {state}, comp {comp1}->comp {comp2}: {dist_cost:.2f}, int cost: {int_cost:.2f}, cum. cost: {cumul_cost:.2f}"
@@ -225,18 +240,9 @@ def drawpath(state1, state2):
             lines.append(list(viterbi.nxGraph.nodes[state]["point1"]))
             lines.append(list(viterbi.nxGraph.nodes[state]["point2"]))
         elif viterbi.nxGraph.nodes[path_states[s - 1]]["type"] == "fragment":
-            lines.append(
-                list(
-                    viterbi.nxGraph.nodes[path_states[s - 1]]["soma_pt"]
-                )
-            )
+            lines.append(list(viterbi.nxGraph.nodes[path_states[s - 1]]["soma_pt"]))
             soma_frag = viterbi.nxGraph.nodes[state]["fragment"]
-            lines.append(
-                list(
-                    state2centroid[soma_frag]
-                )
-            )
-            
+            lines.append(list(state2centroid[soma_frag]))
 
     return lines
 
@@ -255,13 +261,13 @@ def trace(viewer):
             edge_color=colors[-1],
             edge_width=1,
             name=f"trace {state1} to {state2}",
-            scale=scale
+            scale=scale,
         )
 
-        layers = states[state1] #+ states[state2]
+        layers = states[state1]  # + states[state2]
         if soma_end:
             layers += states[state2]
-        
+
         remove_layers(layers)
     else:
         print("Not enough states selected")
@@ -306,8 +312,10 @@ def clear_all(viewer):
     layers_to_remove += list(traces.keys())
     remove_layers(layers_to_remove)
 
+
 @viewer.bind_key("n")
 def clear_all(viewer):
     colors.pop()
+
 
 napari.run()

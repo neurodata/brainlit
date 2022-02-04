@@ -60,7 +60,7 @@ def speed(
         raise ValueError("t must be one-dimensional")
     if len(t) == 0:
         raise ValueError("t must be non-empty")
-    check_iterable_type(t, (np.integer, np.float))
+    check_iterable_type(t, (np.integer, float))
     if (np.diff(t) < 0).any():
         raise ValueError("t must be a non-decreasing sequence")
 
@@ -71,12 +71,12 @@ def speed(
     if len(c.flatten()) == 0:
         raise ValueError("c must be non-empty")
     if c_dim == 1:
-        check_iterable_type(c, (np.integer, np.float))
+        check_iterable_type(c, (np.integer, float))
         # expand dims so that we can cycle through a single dimension
         c = np.expand_dims(c, axis=0)
     if c_dim == 2:
         for d in c:
-            check_iterable_type(d, (np.integer, np.float))
+            check_iterable_type(d, (np.integer, float))
     n_dim = len(c)
 
     check_type(x, np.ndarray)
@@ -85,7 +85,7 @@ def speed(
         raise ValueError("x must be one-dimensional")
     if len(x) == 0:
         raise ValueError("x must be non-empty")
-    check_iterable_type(x, (np.integer, np.float))
+    check_iterable_type(x, (np.integer, float))
     L = len(x)
 
     # evaluate first and second derivatives
@@ -172,7 +172,7 @@ def curvature(
         raise ValueError("t must be one-dimensional")
     if len(t) == 0:
         raise ValueError("t must be non-empty")
-    check_iterable_type(t, (np.integer, np.float))
+    check_iterable_type(t, (np.integer, float))
     if (np.diff(t) < 0).any():
         raise ValueError("t must be a non-decreasing sequence")
 
@@ -183,12 +183,12 @@ def curvature(
     if len(c.flatten()) == 0:
         raise ValueError("c must be non-empty")
     if c_dim == 1:
-        check_iterable_type(c, (np.integer, np.float))
+        check_iterable_type(c, (np.integer, float))
         # expand dims so that we can cycle through a single dimension
         c = np.expand_dims(c, axis=0)
     if c_dim == 2:
         for d in c:
-            check_iterable_type(d, (np.integer, np.float))
+            check_iterable_type(d, (np.integer, float))
     n_dim = len(c)
 
     check_type(x, np.ndarray)
@@ -197,7 +197,7 @@ def curvature(
         raise ValueError("x must be one-dimensional")
     if len(x) == 0:
         raise ValueError("x must be non-empty")
-    check_iterable_type(x, (np.integer, np.float))
+    check_iterable_type(x, (np.integer, float))
     L = len(x)
 
     # evaluate first and second derivatives
@@ -288,7 +288,7 @@ def torsion(
         raise ValueError("t must be one-dimensional")
     if len(t) == 0:
         raise ValueError("t must be non-empty")
-    check_iterable_type(t, (np.integer, np.float))
+    check_iterable_type(t, (np.integer, float))
     if (np.diff(t) < 0).any():
         raise ValueError("t must be a non-decreasing sequence")
 
@@ -299,12 +299,12 @@ def torsion(
     if len(c.flatten()) == 0:
         raise ValueError("c must be non-empty")
     if c_dim == 1:
-        check_iterable_type(c, (np.integer, np.float))
+        check_iterable_type(c, (np.integer, float))
         # expand dims so that we can cycle through a single dimension
         c = np.expand_dims(c, axis=0)
     if c_dim == 2:
         for d in c:
-            check_iterable_type(d, (np.integer, np.float))
+            check_iterable_type(d, (np.integer, float))
     n_dim = len(c)
 
     check_type(x, np.ndarray)
@@ -313,7 +313,7 @@ def torsion(
         raise ValueError("x must be one-dimensional")
     if len(x) == 0:
         raise ValueError("x must be non-empty")
-    check_iterable_type(x, (np.integer, np.float))
+    check_iterable_type(x, (np.integer, float))
     L = len(x)
 
     # evaluate first, second, and third derivatives

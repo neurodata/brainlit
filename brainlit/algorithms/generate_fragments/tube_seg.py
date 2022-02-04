@@ -167,7 +167,7 @@ def tubes_from_paths(
     for path in paths:
         [check_iterable_type(vert, (int, np.integer)) for vert in path]
     if radius is not None:
-        check_type(radius, (int, np.integer, float, np.float))
+        check_type(radius, (int, np.integer, float, float))
         if radius <= 0:
             raise ValueError(f"Radius {radius} must be positive.")
 

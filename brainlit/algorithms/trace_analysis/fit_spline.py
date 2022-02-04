@@ -97,7 +97,7 @@ class GeometricGraph(nx.Graph):
         if any([len(self.nodes[node].get("loc")) == 0 for node in self.nodes]):
             raise ValueError("nodes cannot have empty 'loc' attributes")
         for node in self.nodes:
-            check_iterable_type(self.nodes[node].get("loc"), (np.integer, np.float))
+            check_iterable_type(self.nodes[node].get("loc"), (np.integer, float))
         if any([len(self.nodes[node].get("loc")) != 3 for node in self.nodes]):
             raise ValueError("'loc' attributes must contain 3 coordinates")
 
