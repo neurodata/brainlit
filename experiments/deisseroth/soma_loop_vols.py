@@ -12,10 +12,10 @@ import os
 
 chunk_size = [256, 256, 300]
 ncpu = 11
-dir = "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_647"
+dir = "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_647"
 progress_file = "/home/tathey1/progress_soma.txt" #"/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/tracing/progress.txt" 
 files_dir = "/data/tathey1/matt_wright/brainr_temp/"
-somas_file = "/home/tathey1/somas_brainr2.txt"
+somas_file = "/home/tathey1/somas_brainr3.txt"
 
 with open(progress_file) as f:
     for line in f:
@@ -34,14 +34,14 @@ def process_chunk(i, j, k):
     data_dir = "/data/tathey1/matt_wright/brainr_temp/"
     chunk_size = [256, 256, 300]
     mip = 0
-    threshold = 0.84
+    threshold = 0.4
     area_threshold = 500
     
-    dir_fg = "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_647"
+    dir_fg = "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_647"
     vol_fg = CloudVolume(dir_fg, parallel=1, mip=mip, fill_missing=True)
-    dir_bg = "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_561"
+    dir_bg = "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_561"
     vol_bg = CloudVolume(dir_bg, parallel=1, mip=mip, fill_missing=True)
-    dir_endo = "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_488"
+    dir_endo = "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_488"
     vol_endo = CloudVolume(dir_endo, parallel=1, mip=mip, fill_missing=True)
 
     shape = vol_fg.shape
