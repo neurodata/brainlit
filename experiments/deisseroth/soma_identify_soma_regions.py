@@ -3,8 +3,8 @@ from cloudvolume import CloudVolume
 from tqdm import tqdm
 import pickle
 
-atlas_vol = CloudVolume("file:///mnt/data/Neuroglancer_Data/2021_10_06/8557/atlas_to_target/", parallel=1, mip=0, fill_missing=True)
-somas = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/soma_detection/misc_results/somas_brainr1.txt"
+atlas_vol = CloudVolume("file:///mnt/data/Neuroglancer_Data/2021_12_02/8607/atlas_to_target/", parallel=1, mip=0, fill_missing=True)
+somas = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/soma_detection/misc_results/somas_brainr3.txt"
 
 file1 = open(somas, 'r')
 lines = file1.readlines()
