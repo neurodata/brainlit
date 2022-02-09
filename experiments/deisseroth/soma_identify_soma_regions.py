@@ -25,8 +25,7 @@ for line in tqdm(lines, desc="parsing coordinates"):
 
 dict = {}
 for coord in tqdm(coords, desc="identiifynig rois"):
-    roi = atlas_vol[coord[0], coord[1], coord[2]]
-    print(roi)
+    roi = np.squeeze(atlas_vol[coord[0], coord[1], coord[2]])
     if roi not in dict.keys():
         dict[roi] = 1
     else:
