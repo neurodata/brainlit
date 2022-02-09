@@ -14,9 +14,11 @@ lines = file1.readlines()
 coords = []
 for line in tqdm(lines):
     if line != '\n':
+        line = ' '.join(line.split())
         elements = line.split(",")
         print(elements)
-        coord = [elements[0][1:], elements[1], elements[2][:-1]]
+        raise ValueError
+        coord = [elements[0][1:], elements[1], elements[2].split()[0]]
         
         coord = [int(round(float(e.strip()))) for e in coord]
         coords.append(coord)
