@@ -16,7 +16,7 @@ for line in tqdm(lines):
     if line != '\n':
         elements = line.split(",")
         coord = [elements[0][1:], elements[1], elements[2][:-1]]
-        coord = [int(round(float(e))) for e in coord]
+        coord = [int(round(float(e.strip()))) for e in coord]
         coords.append(coord)
 
 dict = {}
