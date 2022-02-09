@@ -4,6 +4,7 @@ from tqdm import tqdm
 import pickle
 
 brain = "r3"
+div_factor = [8,8,1]
 
 atlas_vol = CloudVolume("file:///mnt/data/Neuroglancer_Data/2021_12_02/8607/atlas_to_target/", parallel=1, mip=0, fill_missing=True)
 print(f"size: {atlas_vol.shape} ")
@@ -19,7 +20,7 @@ for line in tqdm(lines, desc="parsing coordinates"):
         elements = line.split(",")
         coord = [elements[0][1:], elements[1], elements[2][:-1]]
         
-        coord = [int(round(float(e.strip()))) for e in coord]
+        coord = [int(round(float(e.strip())/f)) for e,f in zip(coord, div_factor)]
         coords.append(coord)
 
 dict = {}
