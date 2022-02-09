@@ -5,7 +5,7 @@ import pickle
 
 brain = "r3"
 
-atlas_vol = CloudVolume("file:///mnt/data/Neuroglancer_Data/2021_12_02/8607/atlas_to_target/", parallel=1, mip=0, fill_missing=True)
+atlas_vol = CloudVolume("file:///mnt/data/Neuroglancer_Data/2021_12_02/8607/atlas_to_target2/", parallel=1, mip=0, fill_missing=True)
 print(f"size: {atlas_vol.shape} ")
 somas = "/home/user/misc_tommy/somas_brain" + brain + ".txt"
 
