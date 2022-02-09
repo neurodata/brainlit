@@ -3,8 +3,10 @@ from cloudvolume import CloudVolume
 from tqdm import tqdm
 import pickle
 
+brain = "r3"
+
 atlas_vol = CloudVolume("file:///mnt/data/Neuroglancer_Data/2021_12_02/8607/atlas_to_target/", parallel=1, mip=0, fill_missing=True)
-somas = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/soma_detection/misc_results/somas_brainr3.txt"
+somas = "/home/user/misc_tommy/somas_brain" + brain + ".txt"
 
 file1 = open(somas, 'r')
 lines = file1.readlines()
@@ -26,5 +28,5 @@ for coord in tqdm(coords):
         dict[roi] = dict[roi] + 1
 
 print(dict)
-with open('soma_counts.pickle', 'wb') as handle:
+with open('/home/user/misc_tommy/soma_counts_brain' + brain + '.pickle', 'wb') as handle:
     pickle.dump(dict, handle)
