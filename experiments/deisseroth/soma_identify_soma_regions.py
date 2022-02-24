@@ -3,7 +3,7 @@ from cloudvolume import CloudVolume
 from tqdm import tqdm
 import pickle
 
-brain = "r2
+brain = "r2"
 div_factor = [8,8,1]
 
 atlas_vol = CloudVolume("file:///mnt/data/Neuroglancer_Data/2021_12_02/8555/atlas_to_target/", parallel=1, mip=0, fill_missing=True)
