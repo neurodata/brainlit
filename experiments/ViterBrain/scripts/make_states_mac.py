@@ -7,7 +7,8 @@ sg = state_generation(
     "/Applications/ilastik-1.3.3post3-OSX.app/Contents/ilastik-release/run_ilastik.sh",
     "/Users/thomasathey/Documents/mimlab/mouselight/octopus_experiment/octopus_exp.ilp",
     chunk_size=[300, 300, 300],
-    parallel=12)
+    parallel=12,
+)
 print(f"create object in {time.perf_counter()-t1} seconds")
 
 t1 = time.perf_counter()

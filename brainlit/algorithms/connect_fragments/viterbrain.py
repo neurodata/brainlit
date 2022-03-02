@@ -6,20 +6,21 @@ from tqdm import tqdm
 from brainlit.viz.swc2voxel import Bresenham3D
 from brainlit.preprocessing import image_process
 import networkx as nx
+from typing import List, Tuple, Callable
 
 
 class ViterBrain:
     def __init__(
         self,
-        G,
-        tiered_path,
-        fragment_path,
-        resolution,
-        coef_curv,
-        coef_dist,
-        coef_int,
-        parallel=1,
-    ):
+        G: nx.Graph,
+        tiered_path: str,
+        fragment_path: str,
+        resolution: List[float],
+        coef_curv: float,
+        coef_dist: float,
+        coef_int: float,
+        parallel: int = 1,
+    ) -> None:
         """Initialize ViterBrain object
 
         Args:
@@ -62,7 +63,14 @@ class ViterBrain:
                 comp_to_states[frag] = [node]
         self.comp_to_states = comp_to_states
 
-    def frag_frag_dist(self, pt1, orientation1, pt2, orientation2, verbose=False):
+    def frag_frag_dist(
+        self,
+        pt1: List[float],
+        orientation1: List[float],
+        pt2: List[float],
+        orientation2: List[float],
+        verbose: bool = False,
+    ) -> float:
         """Compute cost of transition between two fragment states
 
         Args:
@@ -109,7 +117,7 @@ class ViterBrain:
         if 1 - k1_sq < -0.87 or 1 - k2_sq < -0.87:
             return np.inf
 
-        cost = k_cost * self.coef_curv + self.coef_dist * (dist ** 2)
+        cost = k_cost * self.coef_curv + self.coef_dist * (dist**2)
         if verbose:
             print(
                 f"Distance: {dist}, Curv penalty: {k_cost} (dots {1-k1_sq}, {1-k2_sq}, from dif-{dif}), Total cost: {cost}"
@@ -117,7 +125,13 @@ class ViterBrain:
 
         return cost
 
-    def frag_soma_dist(self, point, orientation, soma_lbl, verbose=False):
+    def frag_soma_dist(
+        self,
+        point: List[float],
+        orientation: List[float],
+        soma_lbl: int,
+        verbose: bool = False,
+    ) -> Tuple[float, List]:
         """Compute cost of transition from fragment state to soma state
 
         Args:
@@ -154,7 +168,7 @@ class ViterBrain:
         if dist > 15:
             cost = np.inf
         else:
-            cost = k_cost * self.coef_curv + self.coef_dist * (dist ** 2)
+            cost = k_cost * self.coef_curv + self.coef_dist * (dist**2)
 
         nonline_point = coords[argmin, :]
         if (
@@ -173,7 +187,9 @@ class ViterBrain:
 
         return cost, nonline_point
 
-    def _compute_out_costs_dist(self, states, frag_frag_func, frag_soma_func):
+    def _compute_out_costs_dist(
+        self, states: List[int], frag_frag_func: Callable, frag_soma_func: Callable
+    ) -> List[tuple]:
         """Compute outgoing distance costs for specified list of states.
 
         Args:
@@ -228,7 +244,9 @@ class ViterBrain:
                     results.append((state1, state2, dist_cost, soma_pt))
         return results
 
-    def compute_all_costs_dist(self, frag_frag_func, frag_soma_func):
+    def compute_all_costs_dist(
+        self, frag_frag_func: Callable, frag_soma_func: Callable
+    ) -> None:
         """Splits up transition computation tasks then assembles them into networkx graph
 
         Args:
@@ -255,7 +273,7 @@ class ViterBrain:
             if soma_pt is not None:
                 G.nodes[state1]["soma_pt"] = soma_pt
 
-    def _line_int(self, loc1, loc2):
+    def _line_int(self, loc1: List[int], loc2: List[int]) -> float:
         """Compute line integral of image likelihood costs between two coordinates
 
         Args:
@@ -295,7 +313,7 @@ class ViterBrain:
 
         return sum
 
-    def _compute_out_int_costs(self, states):
+    def _compute_out_int_costs(self, states: List[int]) -> List[tuple]:
         """Compute pairwise image likelihood costs.
 
         Args:
@@ -341,7 +359,7 @@ class ViterBrain:
 
         return results
 
-    def compute_all_costs_int(self):
+    def compute_all_costs_int(self) -> None:
         """Splits up transition computation tasks then assembles them into networkx graph"""
         parallel = self.parallel
         G = self.nxGraph
@@ -362,7 +380,7 @@ class ViterBrain:
                     + G.edges[state1, state2]["dist_cost"]
                 )
 
-    def shortest_path(self, coord1, coord2):
+    def shortest_path(self, coord1: List[int], coord2: List[int]) -> List[List[int]]:
         """Compute coordinate path from one coordinate to another.
 
         Args:
@@ -377,7 +395,7 @@ class ViterBrain:
         """
         fragments = zarr.open(self.fragment_path, mode="r")
 
-        # compute labels of coordinates
+        # Compute labels of coordinates
         labels = []
         radius = 20
         for coord in [coord1, coord2]:
