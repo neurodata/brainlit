@@ -19,6 +19,7 @@ from brainlit.utils.util import (
     check_iterable_type,
     check_iterable_nonnegative,
 )
+from collections import Iterable
 
 Bounds = Union[Bbox, Tuple[int, int, int, int, int, int]]
 
@@ -244,7 +245,7 @@ class NeuroglancerSession:
         self,
         seg_id: int,
         v_id_list: List[int],
-        buffer: int = 1,
+        buffer: List[int] = [1, 1, 1],
         expand: bool = False,
     ) -> Tuple[np.ndarray, Bbox, List[Tuple[int, int, int]]]:
         """Pull a subvolume containing all listed vertices.
@@ -252,7 +253,7 @@ class NeuroglancerSession:
         Arguments:
             seg_id: ID of the segment to use, depends on data in s3.
             v_id_list: list of vertex IDs to use.
-            buffer: Buffer around the bounding box (in voxels). Default 1, set to 0 if expand is True.
+            buffer: Buffer around the bounding box (in voxels). Can be int or list of ints. Default [1, 1, 1], set to [0, 0, 0] if expand is True.
             expand: Flag whether to expand subvolume to closest set of chunks.
 
         Returns:
@@ -262,13 +263,13 @@ class NeuroglancerSession:
         """
         check_type(seg_id, (int, np.integer))
         check_iterable_type(v_id_list, (int, np.integer))
-        check_type(buffer, (int, np.integer))
-        if buffer < 0:
-            raise ValueError(f"Buffer {buffer} shouild not be negative.")
         check_type(expand, bool)
         if expand:
             buffer = 0
-        buffer = [buffer] * 3
+        if not isinstance(buffer, Iterable):
+            buffer = [buffer] * 3
+        check_iterable_type(buffer, (int, np.integer))
+        check_iterable_nonnegative(buffer)
 
         voxel_list = [self._get_voxel(seg_id, i) for i in v_id_list]
         if len(voxel_list) == 1:  # edge case of 1 vertex
