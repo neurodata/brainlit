@@ -2,12 +2,16 @@
 How to use ViterBrain
 ---------------------
 
+* This folder is associated with the publication Hidden Markov Modeling for Maximum Likelihood Neuron Reconstruction (Athey et. al. 2022).
+
 * First, make sure that you have installed the ``brainlit`` package [`Documentation <https://brainlit.netlify.app/readme#installation>`_].
 
 * Second, uncompress the data ``brainlit/experiments/ViterBrain/data/example.zip``.
 
-* Then, you can run the tutorial notebooks in the ``notebooks`` folder:
+* Then, you can run some of the tutorial notebooks in the ``notebooks`` folder:
     * ``ViterBrain.ipynb`` - shows a programmatic example of the pipeline, based on zarr inputs.
+    * ``fig3-voxels.ipynb`` - generates Figure 3 from the paper.
+    * ``fig7-results.ipynb`` - generates Figure 7 from the paper.
     * other notebooks can be useful for referemce, they were used in generating results in the paper.
 
 * The files in the ``scripts`` folder also can be useful:
