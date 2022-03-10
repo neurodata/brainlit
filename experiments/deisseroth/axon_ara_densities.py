@@ -34,7 +34,7 @@ for x in tqdm(np.arange(0, vol_mask.shape[0], 128)):
             mask = mask[:width, :height, :]
             labels = labels[:width, :height, :]
 
-            labels_unique = np.unique(labels)
+            labels_unique = np.unique(labels[labels > 0])
 
             for unq in labels_unique:
                 if unq in volumes.keys():
