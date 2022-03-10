@@ -345,7 +345,7 @@ class ViterBrain:
                         G.nodes[state1]["point2"], G.nodes[state2]["point1"]
                     )
                     int_cost = line_int_cost + G.nodes[state2]["image_cost"]
-                    results.append((state1, state2, line_int_cost))
+                    results.append((state1, state2, int_cost))
                 elif (
                     G.nodes[state1]["type"] == "fragment"
                     and G.nodes[state2]["type"] == "soma"
