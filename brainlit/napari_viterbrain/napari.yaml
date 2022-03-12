@@ -1,0 +1,17 @@
+name: brainlit
+display_name: ViterBrain
+contributions:
+  commands:
+    - id: brainlit.get_reader
+      python_name: brainlit.napari_viterbrain.viterbrain_plugin:napari_get_reader
+      title: Open data with napari ViterBrain
+    - id: brainlit.make_qwidget
+      python_name: brainlit.napari_viterbrain.viterbrain_plugin:NapariViterBrain
+      title: Make example QWidget
+  readers:
+    - command: brainlit.get_reader
+      accepts_directories: false
+      filename_patterns: ['*.pickle'] 
+  widgets:
+    - command: brainlit.make_qwidget
+      display_name: ViterBrain
