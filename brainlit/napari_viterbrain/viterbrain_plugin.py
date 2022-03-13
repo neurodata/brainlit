@@ -1,8 +1,12 @@
 import pickle
+
+from numpy import uint32
 import zarr
 from napari_plugin_engine import napari_hook_implementation
 from qtpy.QtWidgets import QWidget, QHBoxLayout, QPushButton
 from magicgui import magic_factory
+import pathlib
+import napari
 
 def viterbrain_reader(path):
     
@@ -27,39 +31,35 @@ def napari_get_reader(path):
     else:
         return None
 
-class NapariViterBrain(QWidget):
-    def __init__(self, napari_viewer):
-        super().__init__()
-        self.viewer = napari_viewer
+@magic_factory(call_button="Trace", start_comp={'max': 2**20}, end_comp={'max': 2**20})
+def comp_trace(v: napari.Viewer, start_comp: int, end_comp: int, filename=pathlib.Path('/some/path.ext')):
+    with open(filename, "rb") as handle:
+        viterbi = pickle.load(handle)
+
+    def comp2point(comp):
+        state = viterbi.comp_to_states[comp][0]
+        if viterbi.nxGraph.nodes[state]["type"] == "fragment":
+            return viterbi.nxGraph.nodes[state]["point1"]
+        else:
+            return viterbi.soma_fragment2coords[comp][0]
+
+    start_pt = comp2point(start_comp)
+    end_pt = comp2point(end_comp)
+
+    path = viterbi.shortest_path(start_pt, end_pt)
+
+    v.add_shapes(
+            path,
+            shape_type="path",
+            edge_color="r",
+            edge_width=1,
+            name=f"trace {start_comp} to {end_comp}",
+            scale=viterbi.resolution,
+        )
 
 
-        btn_start = QPushButton("Select Start")
-        btn_start.clicked.connect(self._click_start)
 
-        btn_end = QPushButton("Select End")
-        btn_end.clicked.connect(self._click_end)
 
-        btn_trace = QPushButton("Trace")
-        btn_trace.clicked.connect(self._click_trace)
 
-        self.setLayout(QHBoxLayout())
-        self.layout().addWidget(btn_start)
-        self.layout().addWidget(btn_end)
-        self.layout().addWidget(btn_trace)
 
-    def _click_start(self,):
-        print("start")
-
-    def _click_end(self,):
-        print("end")
-
-    def _click_trace(self,):
-        print("trace")
-
-@magic_factory
-def ViterBrain(img_layer: "napari.layers.Image"):
-    print(f"you have selected {img_layer}")
-
-@napari_hook_implementation
-def napari_experimental_provide_dock_widget():
-    return ViterBrain
+    
