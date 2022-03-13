@@ -19,6 +19,7 @@ Documentation
     tutorial
     reference/index
     license
+    napari_plugin
 
 .. toctree::
     :maxdepth: 1

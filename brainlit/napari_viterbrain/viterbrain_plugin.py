@@ -8,8 +8,9 @@ from magicgui import magic_factory
 import pathlib
 import napari
 
+
 def viterbrain_reader(path):
-    
+
     with open(path, "rb") as handle:
         viterbi = pickle.load(handle)
 
@@ -19,20 +20,29 @@ def viterbrain_reader(path):
 
     scale = viterbi.resolution
 
-    meta_labels = {'name': 'fragments', 'scale': scale}
-    meta_image = {'name': 'image', 'scale': scale}
+    meta_labels = {"name": "fragments", "scale": scale}
+    meta_image = {"name": "image", "scale": scale}
 
-    return [(layer_image,meta_image,'image'),(layer_labels,meta_labels,'labels')]
+    return [(layer_image, meta_image, "image"), (layer_labels, meta_labels, "labels")]
+
 
 def napari_get_reader(path):
-    parts = path.split('.')
+    parts = path.split(".")
     if parts[-1] == "pickle" or parts[-1] == "pkl":
         return viterbrain_reader
     else:
         return None
 
-@magic_factory(call_button="Trace", start_comp={'max': 2**20}, end_comp={'max': 2**20})
-def comp_trace(v: napari.Viewer, start_comp: int, end_comp: int, filename=pathlib.Path('/some/path.ext')):
+
+@magic_factory(
+    call_button="Trace", start_comp={"max": 2**20}, end_comp={"max": 2**20}
+)
+def comp_trace(
+    v: napari.Viewer,
+    start_comp: int,
+    end_comp: int,
+    filename=pathlib.Path("/some/path.ext"),
+):
     with open(filename, "rb") as handle:
         viterbi = pickle.load(handle)
 
@@ -49,17 +59,10 @@ def comp_trace(v: napari.Viewer, start_comp: int, end_comp: int, filename=pathli
     path = viterbi.shortest_path(start_pt, end_pt)
 
     v.add_shapes(
-            path,
-            shape_type="path",
-            edge_color="r",
-            edge_width=1,
-            name=f"trace {start_comp} to {end_comp}",
-            scale=viterbi.resolution,
-        )
-
-
-
-
-
-
-    
+        path,
+        shape_type="path",
+        edge_color="r",
+        edge_width=1,
+        name=f"trace {start_comp} to {end_comp}",
+        scale=viterbi.resolution,
+    )
