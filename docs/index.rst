@@ -19,6 +19,7 @@ Documentation
     tutorial
     reference/index
     license
+    license
     napari_plugin
 
 .. toctree::

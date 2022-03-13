@@ -1,5 +1,5 @@
 import numpy as np
-from brainlit.napari_viterbrain import viterbrain_reader
+from brainlit.napari_viterbrain.viterbrain_plugin import viterbrain_reader
 from brainlit.algorithms.connect_fragments.tests.test_viterbrain import create_vb
 import pickle
 
