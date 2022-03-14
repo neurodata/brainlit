@@ -41,7 +41,7 @@ def comp_trace(
     v: napari.Viewer,
     start_comp: int,
     end_comp: int,
-    filename=pathlib.Path("/some/path.ext"),
+    filename=pathlib.Path("/some/path.pickle"),
 ):
     with open(filename, "rb") as handle:
         viterbi = pickle.load(handle)
@@ -55,6 +55,8 @@ def comp_trace(
 
     start_pt = comp2point(start_comp)
     end_pt = comp2point(end_comp)
+
+    print(f"tracing from {start_pt} to {end_pt}")
 
     path = viterbi.shortest_path(start_pt, end_pt)
 
