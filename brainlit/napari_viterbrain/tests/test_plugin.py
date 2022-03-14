@@ -1,5 +1,5 @@
 import numpy as np
-from brainlit.napari_viterbrain.viterbrain_plugin import viterbrain_reader
+from brainlit.napari_viterbrain.viterbrain_plugin import napari_get_reader
 from brainlit.algorithms.connect_fragments.tests.test_viterbrain import create_vb
 import pickle
 
@@ -12,7 +12,7 @@ def test_reader(tmp_path):
         pickle.dump(vb, handle)
 
     # try to read it back in
-    reader = viterbrain_reader(my_test_file)
+    reader = napari_get_reader(my_test_file)
     assert callable(reader)
 
     # make sure we're delivering the right format
@@ -21,5 +21,5 @@ def test_reader(tmp_path):
     layer_data_tuple = layer_data_list[0]
     assert isinstance(layer_data_tuple, tuple) and len(layer_data_tuple) > 0
 
-    reader = viterbrain_reader("fake.file")
+    reader = napari_get_reader("fake.file")
     assert reader is None
