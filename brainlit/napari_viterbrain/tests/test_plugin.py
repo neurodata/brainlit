@@ -1,5 +1,5 @@
 import numpy as np
-from brainlit.napari_viterbrain.viterbrain_plugin import napari_get_reader
+from brainlit.napari_viterbrain.viterbrain_plugin import napari_get_reader, comp_trace
 from brainlit.algorithms.connect_fragments.tests.test_viterbrain import create_vb
 import pickle
 
@@ -23,3 +23,18 @@ def test_reader(tmp_path):
 
     reader = napari_get_reader("fake.file")
     assert reader is None
+
+
+def test_example_magic_widget(make_napari_viewer, tmp_path):
+    my_test_file = str(tmp_path / "viterbrain.pickle")
+    with open(my_test_file, "wb") as handle:
+        pickle.dump(vb, handle)
+
+    viewer = make_napari_viewer()
+
+    start_layernum = len(list(viewer.layers))
+
+    comp_trace(v=viewer, start_comp=1, end_comp=5, filename=my_test_file)
+
+    # test that a layer was added
+    assert len(list(viewer.layers)) == start_layernum + 1

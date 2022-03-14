@@ -349,7 +349,7 @@ class state_generation:
             data_sample = random.sample(list(data_fg), k=10000)
         else:
             data_sample = data_fg
-            
+
         kde = gaussian_kde(data_sample)
 
         self.kde = kde
