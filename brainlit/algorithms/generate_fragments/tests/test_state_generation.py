@@ -41,11 +41,15 @@ test_coords = np.hstack(
 
 def test_state_generation(tmp_path):
     im_file = str(tmp_path / "image.zarr")
-    z_im = zarr.open(im_file, mode="w", shape=(100, 100, 1), chunks=(50, 50, 1), dtype="float")
-    z_im[:,:,:] = image
+    z_im = zarr.open(
+        im_file, mode="w", shape=(100, 100, 1), chunks=(50, 50, 1), dtype="float"
+    )
+    z_im[:, :, :] = image
     lab_file = str(tmp_path / "fragments.zarr")
-    z_lab = zarr.open(lab_file, mode="w", shape=(100, 100, 1), chunks=(50, 50, 1), dtype="int")
-    z_lab[:,:,:] = labels
+    z_lab = zarr.open(
+        lab_file, mode="w", shape=(100, 100, 1), chunks=(50, 50, 1), dtype="int"
+    )
+    z_lab[:, :, :] = labels
 
     sg = state_generation(
         image_path=im_file,
