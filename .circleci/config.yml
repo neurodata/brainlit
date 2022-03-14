@@ -58,7 +58,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip install pytest pytest-cov pytest-qt codecov black[jupyter]
+            pip install pytest pytest-cov pytest-xvfb codecov black[jupyter]
             pip install -e .
       - run:
           name: formatting and code coverage

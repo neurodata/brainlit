@@ -350,6 +350,7 @@ class state_generation:
         else:
             data_sample = data_fg
 
+        print(f"data_sample: {data_sample}")
         kde = gaussian_kde(data_sample)
 
         self.kde = kde

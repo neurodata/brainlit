@@ -3,9 +3,9 @@ ViterBrain Napari Plugin Installation
 
 * First, install ``brainlit`` [`Documentation <https://brainlit.netlify.app/readme#installation>`_] (you may need to install from source with `pip install -e .`, since our pypi version may not reflect the latest changes in the repo).
 
-* Second, install [`napari <https://napari.org/>`_].
+* Second, install `napari <https://napari.org/>`_.
 
-* The `Plugins` tab of napari should automatically find the brainlit plugin ([`Documentation <https://napari.org/plugins/find_and_install_plugin.html#find-and-install-plugins>`_]).
+* The `Plugins` tab of napari should automatically find the brainlit plugin (`Documentation <https://napari.org/plugins/find_and_install_plugin.html#find-and-install-plugins>`_).
 
 How to Use the ViterBrain Napari Plugin
 ---------------------------------------
