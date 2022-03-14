@@ -70,4 +70,10 @@ setup(
     ],
     packages=find_packages(),
     include_package_data=True,
+    entry_points={
+        "napari.manifest": [
+            "brainlit = brainlit.napari_viterbrain:napari.yaml",
+        ],
+    },
+    package_data={"brainlit.napari_viterbrain": ["napari.yaml"]},
 )

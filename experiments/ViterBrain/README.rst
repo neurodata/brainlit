@@ -1,8 +1,11 @@
+Manuscript
+----------
+
+Athey, T. L., Tward, D. J., Mueller, U., & Miller, M. I. (2021). Hidden Markov Modeling for Maximum Likelihood Neuron Reconstruction. *arXiv preprint arXiv*:2106.02701.
+
 
 How to use ViterBrain
 ---------------------
-
-* This folder is associated with the publication Hidden Markov Modeling for Maximum Likelihood Neuron Reconstruction (Athey et. al. 2022).
 
 * First, make sure that you have installed the ``brainlit`` package [`Documentation <https://brainlit.netlify.app/readme#installation>`_].
 

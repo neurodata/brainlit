@@ -18,13 +18,16 @@ Documentation
 
     tutorial
     reference/index
+    napari_plugin
     license
 
 .. toctree::
     :maxdepth: 1
     :caption: Publication Related Code
 
-    experiments
+    splines
+    viterbrain
+
 
 .. toctree::
     :maxdepth: 1
