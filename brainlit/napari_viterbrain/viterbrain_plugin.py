@@ -1,6 +1,7 @@
 import pickle
 
 from numpy import uint32
+import numpy as np
 import zarr
 from napari_plugin_engine import napari_hook_implementation
 from qtpy.QtWidgets import QWidget, QHBoxLayout, QPushButton
@@ -51,7 +52,10 @@ def comp_trace(
         if viterbi.nxGraph.nodes[state]["type"] == "fragment":
             return viterbi.nxGraph.nodes[state]["point1"]
         else:
-            return viterbi.soma_fragment2coords[comp][0]
+            coords = viterbi.soma_fragment2coords[comp]
+            centroid = np.mean(coords, axis=0)
+            centroid = [int(c) for c in centroid]
+            return centroid
 
     start_pt = comp2point(start_comp)
     end_pt = comp2point(end_comp)
