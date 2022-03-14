@@ -30,17 +30,17 @@ def test_reader(tmp_path):
     assert reader is None
 
 
-def test_example_magic_widget(make_napari_viewer, tmp_path):
-    my_test_file = str(tmp_path / "viterbrain.pickle")
-    with open(my_test_file, "wb") as handle:
-        pickle.dump(vb, handle)
+# def test_example_magic_widget(make_napari_viewer, tmp_path):
+#     my_test_file = str(tmp_path / "viterbrain.pickle")
+#     with open(my_test_file, "wb") as handle:
+#         pickle.dump(vb, handle)
 
-    viewer = make_napari_viewer()
+#     viewer = make_napari_viewer()
 
-    start_layernum = len(list(viewer.layers))
+#     start_layernum = len(list(viewer.layers))
 
-    my_widget = comp_trace()
-    my_widget(v=viewer, start_comp=1, end_comp=5, filename=my_test_file)
+#     my_widget = comp_trace()
+#     my_widget(v=viewer, start_comp=1, end_comp=5, filename=my_test_file)
 
-    # test that a layer was added
-    assert len(list(viewer.layers)) == start_layernum + 1
+#     # test that a layer was added
+#     assert len(list(viewer.layers)) == start_layernum + 1
