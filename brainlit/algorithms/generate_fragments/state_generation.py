@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import zarr
 import numpy as np
 import h5py
@@ -350,7 +349,7 @@ class state_generation:
             data_sample = random.sample(list(data_fg), k=10000)
         else:
             data_sample = data_fg
-        print(data_sample)
+            
         kde = gaussian_kde(data_sample)
 
         self.kde = kde
