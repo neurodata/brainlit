@@ -8,7 +8,7 @@ vb = create_vb()
 
 def test_reader(tmp_path):
     my_test_file = str(tmp_path / "viterbrain.pickle")
-    with open(my_test_file, "rb") as handle:
+    with open(my_test_file, "wb") as handle:
         pickle.dump(vb, handle)
 
     # try to read it back in
