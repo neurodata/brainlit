@@ -7,8 +7,6 @@ Athey, T. L., Tward, D. J., Mueller, U., & Miller, M. I. (2021). Hidden Markov M
 How to use ViterBrain
 ---------------------
 
-* This folder is associated with the publication Hidden Markov Modeling for Maximum Likelihood Neuron Reconstruction (Athey et. al. 2022).
-
 * First, make sure that you have installed the ``brainlit`` package [`Documentation <https://brainlit.netlify.app/readme#installation>`_].
 
 * Second, uncompress the data ``brainlit/experiments/ViterBrain/data/example.zip``.
