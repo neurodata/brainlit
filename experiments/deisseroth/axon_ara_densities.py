@@ -12,7 +12,7 @@ vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 print(f"Atlas shape: {vol_reg.shape}")
 
 outdir = "/data/tathey1/matt_wright/brain4/vols_densities/"
-outdir = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4"
+#outdir = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4"
 
 volumes = {}
 for x in tqdm(np.arange(2816, vol_mask.shape[0], 128)):
@@ -27,7 +27,7 @@ for x in tqdm(np.arange(2816, vol_mask.shape[0], 128)):
         for z in tqdm(np.arange(0, vol_mask.shape[2], 128), leave=False):
             z2 = np.amin([z+128, vol_mask.shape[2]])
             labels = vol_reg[x_reg:x2_reg,y_reg:y2_reg,z:z2]
-            
+
             print(f"Acquiiring mask {[x,x2,y,y2,z,z2]}")
             mask = vol_mask[x:x2,y:y2,z:z2]
 
