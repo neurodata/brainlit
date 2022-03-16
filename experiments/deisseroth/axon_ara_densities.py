@@ -15,7 +15,7 @@ outdir = "/data/tathey1/matt_wright/brain4/vols_densities/"
 #outdir = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4"
 
 volumes = {}
-for x in tqdm(np.arange(2816, vol_mask.shape[0], 128)):
+for x in tqdm(np.arange(0, vol_mask.shape[0], 128)):
     x2 = np.amin([x+128, vol_mask.shape[0]])
     x_reg = int(x/8)
     x2_reg = np.amin([int(x2/8), vol_reg.shape[0]])
