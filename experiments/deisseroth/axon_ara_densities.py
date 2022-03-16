@@ -33,8 +33,6 @@ for x in tqdm(np.arange(2816, vol_mask.shape[0], 128)):
 
             corners.append([[x_reg, y_reg, z], [x2_reg, y2_reg, z2], [x,y,z], [x2,y2,z2]])
 
-corners = corners[5000:5100]
-
 block_size = int(np.ceil(len(corners)/n_jobs))
 corners_blocks = [corners[i:i+block_size] for i in range(0, len(corners), block_size)]
 print(f"corners len: {len(corners)}")
