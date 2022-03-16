@@ -1,3 +1,9 @@
+Publication
+-----------
+
+Athey, T. L., Teneggi, J., Vogelstein, J. T., Tward, D. J., Mueller, U., & Miller, M. I. (2021). Fitting splines to axonal arbors quantifies relationship between branch order and geometry. *Frontiers in Neuroinformatics*, 38.
+
+DOI: https://doi.org/10.3389/fninf.2021.704627
 
 How to reproduce this experiment
 --------------------------------

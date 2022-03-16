@@ -11,7 +11,8 @@ sg = state_generation(
     prob_path="/data/tathey1/mouselight/1mm_probs.zarr",
     fragment_path="/data/tathey1/mouselight/1mm_labels.zarr",
     tiered_path="/data/tathey1/mouselight/1mm_tiered.zarr",
-    states_path="/data/tathey1/mouselight/1mm_nx.pickle")
+    states_path="/data/tathey1/mouselight/1mm_nx.pickle",
+)
 # sg = state_generation(
 #     "/data/tathey1/mouselight/250.zarr",
 #     "/home/tathey1/ilastik-1.3.3post3-Linux/run_ilastik.sh",

@@ -1,3 +1,8 @@
+Manuscript
+----------
+
+Athey, T. L., Tward, D. J., Mueller, U., & Miller, M. I. (2021). Hidden Markov Modeling for Maximum Likelihood Neuron Reconstruction. *arXiv preprint arXiv*:2106.02701.
+
 
 How to use ViterBrain
 ---------------------
@@ -6,8 +11,10 @@ How to use ViterBrain
 
 * Second, uncompress the data ``brainlit/experiments/ViterBrain/data/example.zip``.
 
-* Then, you can run the tutorial notebooks in the ``notebooks`` folder:
+* Then, you can run some of the tutorial notebooks in the ``notebooks`` folder:
     * ``ViterBrain.ipynb`` - shows a programmatic example of the pipeline, based on zarr inputs.
+    * ``fig3-voxels.ipynb`` - generates Figure 3 from the paper.
+    * ``fig7-results.ipynb`` - generates Figure 7 from the paper.
     * other notebooks can be useful for referemce, they were used in generating results in the paper.
 
 * The files in the ``scripts`` folder also can be useful:

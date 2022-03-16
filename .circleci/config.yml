@@ -14,6 +14,19 @@ workflows:
     jobs:
       - build-and-test
 
+commands:
+  early_return_for_forked_pull_requests:
+    description: >-
+      If this build is from a fork, stop executing the current job and return success.
+      This is useful to avoid steps that will fail due to missing credentials.
+    steps:
+      - run:
+          name: Early return if this build is from a forked PR
+          command: |
+            if [ -n "$CIRCLE_PR_NUMBER" ]; then
+              echo "Nothing to do for forked PRs, so marking this step successful"
+              circleci step halt
+            fi
 
 jobs:
   build-and-test:  # This is the name of the job, feel free to change it to better match what you're trying to do!
@@ -45,15 +58,22 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip install pytest pytest-cov codecov black
+            pip install pytest pytest-cov codecov black[jupyter]
             pip install -e .
       - run:
-          name: run tests
+          name: formatting and code coverage
           # This assumes pytest is installed via the install-package step above
           command: |
             . venv/bin/activate
-            pytest --cov=brainlit brainlit/
-            black --check --diff ./brainlit
+            black --check --diff ./brainlit ./experiments
+            pytest brainlit/algorithms/ brainlit/archive/ brainlit/cloudreg/ brainlit/feature_extraction/ brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/registration/ brainlit/viz/
+      - early_return_for_forked_pull_requests
+      - run:
+          name: run pytests
+          # This assumes pytest is installed via the install-package step above
+          command: |
+            . venv/bin/activate
+            pytest --cov=brainlit ./brainlit
             codecov
     
 

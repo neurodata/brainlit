@@ -1,0 +1,17 @@
+name: brainlit
+display_name: ViterBrain
+contributions:
+  commands:
+    - id: brainlit.get_reader
+      python_name: brainlit.napari_viterbrain.viterbrain_plugin:napari_get_reader
+      title: Open data with napari ViterBrain
+    - id: brainlit.make_magic_widget
+      python_name: brainlit.napari_viterbrain.viterbrain_plugin:comp_trace
+      title: Trace between compoonents
+  readers:
+    - command: brainlit.get_reader
+      accepts_directories: false
+      filename_patterns: ['*.pickle'] 
+  widgets:
+    - command: brainlit.make_magic_widget
+      display_name: Trace between compoonents

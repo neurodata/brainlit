@@ -24,34 +24,42 @@ labels[45:60, 85:, 0] = 5
 
 soma_coords = [[50, 90, 0]]
 
-z_im = zarr.zeros((100, 100, 1), chunks=(50, 50, 1), dtype="float")
-z_im[:, :, :] = image
-z_im_out = Path(__file__).parents[4] / "data" / "test_state_generation" / "image.zarr"
-zarr.save(z_im_out, z_im)
-z_lab = zarr.zeros((100, 100, 1), chunks=(50, 50, 1), dtype="int")
-z_lab[:, :, :] = labels
-z_frag_out = (
-    Path(__file__).parents[4] / "data" / "test_state_generation" / "fragments.zarr"
-)
-zarr.save(z_frag_out, z_lab)
-
 res = [0.1, 0.1, 0.1]
 
 ############################
 ### functionality checks ###
 ############################
 
+test_coords = np.hstack(
+    (
+        np.arange(100).reshape(100, 1),
+        np.arange(100).reshape(100, 1),
+        np.arange(100).reshape(100, 1),
+    )
+)
 
-def test_state_generation():
+
+def test_state_generation(tmp_path):
+    im_file = str(tmp_path / "image.zarr")
+    z_im = zarr.open(
+        im_file, mode="w", shape=(100, 100, 1), chunks=(50, 50, 1), dtype="float"
+    )
+    z_im[:, :, :] = image
+    lab_file = str(tmp_path / "fragments.zarr")
+    z_lab = zarr.open(
+        lab_file, mode="w", shape=(100, 100, 1), chunks=(50, 50, 1), dtype="int"
+    )
+    z_lab[:, :, :] = labels
+
     sg = state_generation(
-        image_path=str(z_im_out),
+        image_path=im_file,
         ilastik_program_path=None,
         ilastik_project_path=None,
         chunk_size=[50, 50, 1],
         soma_coords=soma_coords,
         resolution=res,
-        prob_path=str(z_im_out),
-        fragment_path=str(z_frag_out),
+        prob_path=im_file,
+        fragment_path=lab_file,
     )
 
     sg.compute_image_tiered()
@@ -64,6 +72,8 @@ def test_state_generation():
     for node in G.nodes:
         print(G.nodes[node])
     assert len(G.nodes) == 9  # 2 states per fragment plus one soma state
+
+    sg._pc_endpoints_from_coords_neighbors(test_coords)
 
     sg.compute_edge_weights()
     sg.compute_bfs()

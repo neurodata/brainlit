@@ -13,4 +13,4 @@ warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 warnings.simplefilter("always", category=UserWarning)
 
 
-__version__ = "0.3.2"
+__version__ = "0.3.3"
