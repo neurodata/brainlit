@@ -28,7 +28,6 @@ for x in tqdm(np.arange(0, vol_mask.shape[0], 128)):
             z2 = np.amin([z+128, vol_mask.shape[2]])
             labels = vol_reg[x_reg:x2_reg,y_reg:y2_reg,z:z2]
 
-            print(f"Acquiiring mask {[x,x2,y,y2,z,z2]}")
             mask = vol_mask[x:x2,y:y2,z:z2]
 
             width = np.amin([mask.shape[0], labels.shape[0]])
