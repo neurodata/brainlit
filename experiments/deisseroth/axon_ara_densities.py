@@ -14,10 +14,10 @@ vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 print(f"Atlas shape: {vol_reg.shape}")
 
 outdir = "/data/tathey1/matt_wright/brain4/vols_densities/"
-#outdir = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/"
+outdir = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/"
 
-n_jobs = 36
-n_blocks = 10
+n_jobs = 32
+n_blocks = 100
 
 corners = []
 for x in tqdm(np.arange(2816, vol_mask.shape[0], 128)):
@@ -41,7 +41,7 @@ sum_len = np.sum([len(block) for block in corners_blocks])
 print(f"{len(corners_blocks)} blocks with total len {sum_len}")
 
 
-def compute_composition_block(corners_block):
+def compute_composition_block(corners_chunk):
     dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/axon_mask"
     vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 
@@ -49,7 +49,7 @@ def compute_composition_block(corners_block):
     vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 
     volumes = {}
-    for corners in tqdm(corners_block, desc="going through chunk", leave=False):
+    for corners in tqdm(corners_chunk, desc="going through chunk", leave=False):
         l_c1 = corners[0]
         l_c2 = corners[1]
         m_c1 = corners[2]
@@ -86,7 +86,7 @@ for block_num,corners_block in enumerate(tqdm(corners_blocks, desc="Processing b
     chunk_size = int(np.ceil(len(corners_block)/n_jobs))
     corners_chunks = [corners_block[i:i+chunk_size] for i in range(0, len(corners_block), chunk_size)]
 
-    results = Parallel(n_jobs=n_jobs)(delayed(compute_composition_block)(corners) for corners in corners_chunks)
+    results = Parallel(n_jobs=n_jobs)(delayed(compute_composition_block)(corners_chunk) for corners_chunk in corners_chunks)
 
     for result in tqdm(results, desc="Assembling results"):
         for key in result.keys():
