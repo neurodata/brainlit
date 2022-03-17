@@ -14,7 +14,7 @@ vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 print(f"Atlas shape: {vol_reg.shape}")
 
 outdir = "/data/tathey1/matt_wright/brain4/vols_densities/"
-outdir = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/"
+#outdir = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/"
 
 n_jobs = 32
 n_blocks = 100
