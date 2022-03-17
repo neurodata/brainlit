@@ -16,8 +16,8 @@ print(f"Atlas shape: {vol_reg.shape}")
 outdir = "/data/tathey1/matt_wright/brain4/vols_densities/"
 #outdir = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/"
 
-n_jobs = 32
-n_blocks = 100
+n_jobs = 36
+n_blocks = 20
 
 corners = []
 for x in tqdm(np.arange(2816, vol_mask.shape[0], 128)):
