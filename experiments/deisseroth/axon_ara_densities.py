@@ -30,8 +30,8 @@ for x in tqdm(np.arange(0, vol_mask.shape[0], block_size[0])):
         y2_reg = np.amin([int(y2/8), vol_reg.shape[1]])
         for z in tqdm(np.arange(0, vol_mask.shape[2], block_size[2]), leave=False):
             z2 = np.amin([z+block_size[2], vol_mask.shape[2]])
-
-            corners.append([[x_reg, y_reg, z], [x2_reg, y2_reg, z2], [x,y,z], [x2,y2,z2]])
+            if x_reg == 64:
+                corners.append([[x_reg, y_reg, z], [x2_reg, y2_reg, z2], [x,y,z], [x2,y2,z2]])
 
 
 def compute_composition_corner(corners, outdir):
@@ -41,7 +41,7 @@ def compute_composition_corner(corners, outdir):
     m_c2 = corners[3]
 
     fname = outdir + str(l_c1[0]) + "_" + str(l_c1[1]) + "_" + str(l_c1[2]) + ".pickle"
-    if os.path.exists(fname) or l_c1[0] != 64:
+    if os.path.exists(fname):
         return
 
     dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/axon_mask"
