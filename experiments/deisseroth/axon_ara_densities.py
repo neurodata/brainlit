@@ -4,6 +4,7 @@ import numpy as np
 from cloudvolume import CloudVolume
 import pickle
 from joblib import Parallel, delayed
+import os
 
 dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/axon_mask"
 vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
@@ -34,11 +35,39 @@ for x in tqdm(np.arange(2816, vol_mask.shape[0], 128)):
 
             corners.append([[x_reg, y_reg, z], [x2_reg, y2_reg, z2], [x,y,z], [x2,y2,z2]])
 
-block_size = int(np.ceil(len(corners)/n_blocks))
-corners_blocks = [corners[i:i+block_size] for i in range(0, len(corners), block_size)]
-print(f"corners len: {len(corners)}")
-sum_len = np.sum([len(block) for block in corners_blocks])
-print(f"{len(corners_blocks)} blocks with total len {sum_len}")
+
+def compute_composition_corner(corners, outdir):
+    dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/axon_mask"
+    vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
+
+    dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/atlas_to_target"
+    vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
+
+    l_c1 = corners[0]
+    l_c2 = corners[1]
+    m_c1 = corners[2]
+    m_c2 = corners[3]
+
+    labels = vol_reg[l_c1[0]:l_c2[0],l_c1[1]:l_c2[1],l_c1[2]:l_c2[2]]
+    labels = np.repeat(np.repeat(labels, 8, axis=0), 8, axis=1)
+    mask = vol_mask[m_c1[0]:m_c2[0],m_c1[1]:m_c2[1],m_c1[2]:m_c2[2]]
+
+    width = np.amin([mask.shape[0], labels.shape[0]])
+    height = np.amin([mask.shape[1], labels.shape[1]])
+    mask = mask[:width, :height, :]
+    labels = labels[:width, :height, :]
+
+    labels_unique = np.unique(labels[labels > 0])
+
+    volumes = {}
+    for unq in labels_unique:
+        cur_vol = np.sum(mask[labels == unq])
+        cur_total = np.sum(labels == unq)
+        volumes[unq] = [cur_total, cur_vol]
+
+    fname = outdir + str(l_c1[0]) + "_" + str(l_c1[1]) + "_" + str(l_c1[2]) + ".pickle"
+    with open(fname, 'wb') as f:
+        pickle.dump(volumes, f)
 
 
 def compute_composition_block(corners_chunk):
@@ -80,17 +109,16 @@ def compute_composition_block(corners_chunk):
 
 
 
+
+Parallel(n_jobs=-1)(delayed(compute_composition_corner)(corner, outdir) for corner in corners)
+
+files = os.listdir(outdir)
+
 volumes = {}
-
-for block_num,corners_block in enumerate(tqdm(corners_blocks, desc="Processing blocks")):
-    if block_num < 12:
-        continue
-    chunk_size = int(np.ceil(len(corners_block)/n_jobs))
-    corners_chunks = [corners_block[i:i+chunk_size] for i in range(0, len(corners_block), chunk_size)]
-
-    results = Parallel(n_jobs=n_jobs)(delayed(compute_composition_block)(corners_chunk) for corners_chunk in corners_chunks)
-
-    for result in tqdm(results, desc="Assembling results"):
+for file in tqdm(files, desc="Assembling results"):
+    if "pickle" in file:
+        with open(file, 'wb') as f:
+            result = pickle.load(f)
         for key in result.keys():
             addition = result[key]
             if key in volumes.keys():
@@ -103,11 +131,7 @@ for block_num,corners_block in enumerate(tqdm(corners_blocks, desc="Processing b
             cur_vol += addition[1]
             cur_total += addition[0]
             volumes[key] = [cur_total, cur_vol]
-
-
-    outpath = outdir + "vol_density_" + str(block_num) + ".pkl"
-    with open(outpath, 'wb') as f:
-        pickle.dump(volumes, f)
+        
 
 outpath = outdir + "vol_density.pkl"
 with open(outpath, 'wb') as f:
