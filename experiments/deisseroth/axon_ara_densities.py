@@ -110,7 +110,7 @@ def compute_composition_block(corners_chunk):
 
 
 
-Parallel(n_jobs=-1)(delayed(compute_composition_corner)(corner, outdir) for corner in corners)
+Parallel(n_jobs=-1)(delayed(compute_composition_corner)(corner, outdir) for corner in tqdm(corners, desc="Finding labels"))
 
 files = os.listdir(outdir)
 
