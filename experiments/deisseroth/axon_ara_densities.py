@@ -73,8 +73,18 @@ def compute_composition_corner(corners, outdir):
 
 
 
-Parallel(n_jobs=-10)(delayed(compute_composition_corner)(corner, outdir) for corner in tqdm(corners, desc="Finding labels"))
+#Parallel(n_jobs=-10)(delayed(compute_composition_corner)(corner, outdir) for corner in tqdm(corners, desc="Finding labels"))
+counter = 0
+for corner in corners:
+    if counter > 48:
+        raise ValueError()
+    l_c1 = corner[0]
+    fname = outdir + str(l_c1[0]) + "_" + str(l_c1[1]) + "_" + str(l_c1[2]) + ".pickle"
+    if not os.path.exists(fname):
+        print(fname)
+        counter += 1
 
+raise ValueError()
 files = os.listdir(outdir)
 
 volumes = {}
