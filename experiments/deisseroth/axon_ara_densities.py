@@ -41,7 +41,7 @@ def compute_composition_corner(corners, outdir):
     m_c2 = corners[3]
 
     fname = outdir + str(l_c1[0]) + "_" + str(l_c1[1]) + "_" + str(l_c1[2]) + ".pickle"
-    if os.path.exists(fname):
+    if os.path.exists(fname) or l_c1[0] != 64:
         return
 
     dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/axon_mask"
@@ -73,16 +73,16 @@ def compute_composition_corner(corners, outdir):
 
 
 
-#Parallel(n_jobs=-10)(delayed(compute_composition_corner)(corner, outdir) for corner in tqdm(corners, desc="Finding labels"))
-counter = 0
-for corner in corners:
-    if counter > 48:
-        raise ValueError()
-    l_c1 = corner[0]
-    fname = outdir + str(l_c1[0]) + "_" + str(l_c1[1]) + "_" + str(l_c1[2]) + ".pickle"
-    if not os.path.exists(fname):
-        print(fname)
-        counter += 1
+Parallel(n_jobs=-10)(delayed(compute_composition_corner)(corner, outdir) for corner in tqdm(corners, desc="Finding labels"))
+# counter = 0
+# for corner in corners:
+#     if counter > 48:
+#         raise ValueError()
+#     l_c1 = corner[0]
+#     fname = outdir + str(l_c1[0]) + "_" + str(l_c1[1]) + "_" + str(l_c1[2]) + ".pickle"
+#     if not os.path.exists(fname):
+#         print(fname)
+#         counter += 1
 
 raise ValueError()
 files = os.listdir(outdir)
