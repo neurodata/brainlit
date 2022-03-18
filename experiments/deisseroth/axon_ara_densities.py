@@ -19,7 +19,7 @@ outdir = "/data/tathey1/matt_wright/brain4/vols_densities/"
 block_size = [256, 256, 256]
 
 corners = []
-for x in tqdm(np.arange(2816, vol_mask.shape[0], block_size[0])):
+for x in tqdm(np.arange(0, vol_mask.shape[0], block_size[0])):
     x2 = np.amin([x+block_size[0], vol_mask.shape[0]])
     x_reg = int(x/8)
     x2_reg = np.amin([int(x2/8), vol_reg.shape[0]])
