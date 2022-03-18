@@ -83,6 +83,8 @@ def compute_composition_block(corners_chunk):
 volumes = {}
 
 for block_num,corners_block in enumerate(tqdm(corners_blocks, desc="Processing blocks")):
+    if block_num < 12:
+        continue
     chunk_size = int(np.ceil(len(corners_block)/n_jobs))
     corners_chunks = [corners_block[i:i+chunk_size] for i in range(0, len(corners_block), chunk_size)]
 
