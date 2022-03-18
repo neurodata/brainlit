@@ -35,6 +35,10 @@ for x in tqdm(np.arange(0, vol_mask.shape[0], block_size[0])):
 
 
 def compute_composition_corner(corners, outdir):
+    fname = outdir + str(l_c1[0]) + "_" + str(l_c1[1]) + "_" + str(l_c1[2]) + ".pickle"
+    if os.path.exists(fname):
+        return
+        
     dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/axon_mask"
     vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 
@@ -63,7 +67,6 @@ def compute_composition_corner(corners, outdir):
         cur_total = np.sum(labels == unq)
         volumes[unq] = [cur_total, cur_vol]
 
-    fname = outdir + str(l_c1[0]) + "_" + str(l_c1[1]) + "_" + str(l_c1[2]) + ".pickle"
     with open(fname, 'wb') as f:
         pickle.dump(volumes, f)
 
