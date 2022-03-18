@@ -39,7 +39,7 @@ def compute_composition_corner(corners, outdir):
     l_c2 = corners[1]
     m_c1 = corners[2]
     m_c2 = corners[3]
-    
+
     fname = outdir + str(l_c1[0]) + "_" + str(l_c1[1]) + "_" + str(l_c1[2]) + ".pickle"
     if os.path.exists(fname):
         return
@@ -73,7 +73,7 @@ def compute_composition_corner(corners, outdir):
 
 
 
-Parallel(n_jobs=-1)(delayed(compute_composition_corner)(corner, outdir) for corner in tqdm(corners, desc="Finding labels"))
+Parallel(n_jobs=-10)(delayed(compute_composition_corner)(corner, outdir) for corner in tqdm(corners, desc="Finding labels"))
 
 files = os.listdir(outdir)
 
