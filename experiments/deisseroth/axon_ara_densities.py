@@ -30,8 +30,7 @@ for x in tqdm(np.arange(0, vol_mask.shape[0], block_size[0])):
         y2_reg = np.amin([int(y2/8), vol_reg.shape[1]])
         for z in tqdm(np.arange(0, vol_mask.shape[2], block_size[2]), leave=False):
             z2 = np.amin([z+block_size[2], vol_mask.shape[2]])
-            if x_reg == 64:
-                corners.append([[x_reg, y_reg, z], [x2_reg, y2_reg, z2], [x,y,z], [x2,y2,z2]])
+            corners.append([[x_reg, y_reg, z], [x2_reg, y2_reg, z2], [x,y,z], [x2,y2,z2]])
 
 
 def compute_composition_corner(corners, outdir):
@@ -84,7 +83,6 @@ Parallel(n_jobs=-10)(delayed(compute_composition_corner)(corner, outdir) for cor
 #         print(fname)
 #         counter += 1
 
-raise ValueError()
 files = os.listdir(outdir)
 
 volumes = {}
