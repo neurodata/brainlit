@@ -35,20 +35,21 @@ for x in tqdm(np.arange(0, vol_mask.shape[0], block_size[0])):
 
 
 def compute_composition_corner(corners, outdir):
+    l_c1 = corners[0]
+    l_c2 = corners[1]
+    m_c1 = corners[2]
+    m_c2 = corners[3]
+    
     fname = outdir + str(l_c1[0]) + "_" + str(l_c1[1]) + "_" + str(l_c1[2]) + ".pickle"
     if os.path.exists(fname):
         return
-        
+
     dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/axon_mask"
     vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 
     dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/atlas_to_target"
     vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 
-    l_c1 = corners[0]
-    l_c2 = corners[1]
-    m_c1 = corners[2]
-    m_c2 = corners[3]
 
     labels = vol_reg[l_c1[0]:l_c2[0],l_c1[1]:l_c2[1],l_c1[2]:l_c2[2]]
     labels = np.repeat(np.repeat(labels, 8, axis=0), 8, axis=1)
