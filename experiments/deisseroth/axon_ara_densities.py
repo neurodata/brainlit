@@ -72,7 +72,7 @@ def compute_composition_corner(corners, outdir):
 
 
 
-Parallel(n_jobs=-10)(delayed(compute_composition_corner)(corner, outdir) for corner in tqdm(corners, desc="Finding labels"))
+Parallel(n_jobs=-1)(delayed(compute_composition_corner)(corner, outdir) for corner in tqdm(corners, desc="Finding labels"))
 # counter = 0
 # for corner in corners:
 #     if counter > 48:
@@ -88,7 +88,7 @@ files = os.listdir(outdir)
 volumes = {}
 for file in tqdm(files, desc="Assembling results"):
     if "pickle" in file:
-        with open(file, 'wb') as f:
+        with open(file, 'rb') as f:
             result = pickle.load(f)
         for key in result.keys():
             addition = result[key]
