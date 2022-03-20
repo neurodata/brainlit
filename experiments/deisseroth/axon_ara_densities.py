@@ -88,8 +88,8 @@ files = os.listdir(outdir)
 volumes = {}
 for file in tqdm(files, desc="Assembling results"):
     if "pickle" in file:
-        print(file)
-        with open(file, 'rb') as f:
+        filename = outdir + file
+        with open(filename, 'rb') as f:
             result = pickle.load(f)
         for key in result.keys():
             addition = result[key]
