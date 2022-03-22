@@ -51,9 +51,9 @@ def process_chunk(c1, c2, data_dir, threshold):
     dir_endo = dir_base + "Ch_488"
     vol_endo = CloudVolume(dir_endo, parallel=1, mip=mip, fill_missing=True)
 
-    subvol_fg = np.squeeze(vol_fg[c1[0]:c2[0],c1[1]]:c2[1],c1[1]:c2[1]])
-    subvol_bg = np.squeeze(vol_bg[c1[0]:c2[0],c1[1]]:c2[1],c1[1]:c2[1]])
-    subvol_endo = np.squeeze(vol_endo[c1[0]:c2[0],c1[1]]:c2[1],c1[1]:c2[1]])
+    subvol_fg = np.squeeze(vol_fg[c1[0]:c2[0],c1[1]:c2[1],c1[1]:c2[1]])
+    subvol_bg = np.squeeze(vol_bg[c1[0]:c2[0],c1[1]:c2[1],c1[1]:c2[1]])
+    subvol_endo = np.squeeze(vol_endo[c1[0]:c2[0],c1[1]:c2[1],c1[1]:c2[1]])
 
     image_3channel = np.stack([subvol_bg, subvol_fg, subvol_endo], axis=0)
 
