@@ -61,10 +61,10 @@ def process_chunk(c1, c2, data_dir, threshold):
     with h5py.File(fname, "w") as f:
         dset = f.create_dataset("image_3channel", data=image_3channel)
     
-    subprocess.run(["/home/tathey1/ilastik-1.3.3post3-Linux/run_ilastik.sh", "--headless", "--project=/data/tathey1/matt_wright/ilastik/model1/matt_benchmark_formal_brain3.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.run(["/home/tathey1/ilastik-1.3.3post3-Linux/run_ilastik.sh", "--headless", "--project=/data/tathey1/matt_wright/ilastik/model1/brain3/matt_benchmark_formal_brain3.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     #subprocess.run(["/Applications/ilastik-1.3.3post3-OSX.app/Contents/ilastik-release/run_ilastik.sh", "--headless", "--project=/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain3/matt_benchmark_formal_brain3.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    fname_prob = data_dir + "image_" + str(k) + "_Probabilities.h5"
+    fname_prob = fname[:-3] + "_Probabilities.h5"
     f = h5py.File(fname_prob, "r")
     pred = f.get("exported_data")
 
