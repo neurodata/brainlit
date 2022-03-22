@@ -65,8 +65,8 @@ def process_chunk(c1, c2, data_dir, threshold):
     #subprocess.run(["/Applications/ilastik-1.3.3post3-OSX.app/Contents/ilastik-release/run_ilastik.sh", "--headless", "--project=/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain3/matt_benchmark_formal_brain3.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     fname_prob = fname[:-3] + "_Probabilities.h5"
-    f = h5py.File(fname_prob, "r")
-    pred = f.get("exported_data")
+    with h5py.File(fname_prob, "r") as f:
+        pred = f.get("exported_data")
 
     pred = pred[1,:,:,:]
 
