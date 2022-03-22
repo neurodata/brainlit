@@ -57,7 +57,7 @@ def process_chunk(c1, c2, data_dir, threshold):
 
     image_3channel = np.stack([subvol_bg, subvol_fg, subvol_endo], axis=0)
 
-    fname = data_dir + "/image_" + str(c1[0]) + "_" + str(c1[1]) + "_" + str(c1[2]) + ".h5"
+    fname = data_dir + "image_" + str(c1[0]) + "_" + str(c1[1]) + "_" + str(c1[2]) + ".h5"
     with h5py.File(fname, "w") as f:
         dset = f.create_dataset("image_3channel", data=image_3channel)
     
@@ -73,13 +73,11 @@ def process_chunk(c1, c2, data_dir, threshold):
     mask = np.array(pred > threshold).astype('uint64')
     vol_mask[c1[0]:c2[0],c1[1]:c2[1],c1[1]:c2[1]] = mask
 
-    print(f"Removing {fname} and {fname_prob}")
     os.remove(fname)
     os.remove(fname_prob)
-    print(f"Finished {c1}-{c2}")
+    print(f"Finished removing {fname}")
 
 
-#Parallel(n_jobs=-5)(delayed(process_chunk)(corner[0],corner[1], data_dir, threshold) for corner in tqdm(corners))
-for corner in corners:
-       process_chunk(corner[0],corner[1], data_dir, threshold)  
+Parallel(n_jobs=-5)(delayed(process_chunk)(corner[0],corner[1], data_dir, threshold) for corner in tqdm(corners))
+
 
