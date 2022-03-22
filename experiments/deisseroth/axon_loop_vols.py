@@ -79,6 +79,7 @@ def process_chunk(c1, c2, data_dir, threshold):
     print(f"Finished {c1}-{c2}")
 
 
-Parallel(n_jobs=-5)(delayed(process_chunk)(corner[0],corner[1], data_dir, threshold) for corner in tqdm(corners))
-        
+#Parallel(n_jobs=-5)(delayed(process_chunk)(corner[0],corner[1], data_dir, threshold) for corner in tqdm(corners))
+for corner in corners:
+       process_chunk(corner[0],corner[1], data_dir, threshold)  
 
