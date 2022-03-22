@@ -73,9 +73,10 @@ def process_chunk(c1, c2, data_dir, threshold):
     mask = np.array(pred > threshold).astype('uint64')
     vol_mask[c1[0]:c2[0],c1[1]:c2[1],c1[1]:c2[1]] = mask
 
+    print(f"Removing {fname} and {fname_prob}")
     os.remove(fname)
     os.remove(fname_prob)
-    #print(f"Finished {c1}-{c2}")
+    print(f"Finished {c1}-{c2}")
 
 
 Parallel(n_jobs=-5)(delayed(process_chunk)(corner[0],corner[1], data_dir, threshold) for corner in tqdm(corners))
