@@ -34,8 +34,7 @@ for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
             corners.append([c1,c2])
     coords[1] = 0
 
-corners_chunk_size = int(len(corners)/100)
-corners_chunks = [corners[i:i+corners_chunk_size] for i in range(0, len(corners), corners_chunk_size)]
+corners_chunks = [corners[i:i+100] for i in range(0, len(corners), 100)]
 
 def process_chunk(c1, c2, data_dir, threshold):
     mip = 0
