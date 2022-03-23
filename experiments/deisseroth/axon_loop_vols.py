@@ -34,6 +34,9 @@ for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
             corners.append([c1,c2])
     coords[1] = 0
 
+corners_chunk_size = int(len(corners)/100)
+corners_chunks = [corners[i:i+corners_chunk_size] for i in range(0, len(corners), corners_chunk_size)]
+
 def process_chunk(c1, c2, data_dir, threshold):
     mip = 0
 
@@ -73,11 +76,10 @@ def process_chunk(c1, c2, data_dir, threshold):
     mask = np.array(pred > threshold).astype('uint64')
     vol_mask[c1[0]:c2[0],c1[1]:c2[1],c1[1]:c2[1]] = mask
 
-    os.remove(fname)
-    os.remove(fname_prob)
-    print(f"Finished removing {fname}")
 
-
-Parallel(n_jobs=-5)(delayed(process_chunk)(corner[0],corner[1], data_dir, threshold) for corner in tqdm(corners))
+for corners_chunk in corners_chunks:
+    Parallel(n_jobs=-5)(delayed(process_chunk)(corner[0],corner[1], data_dir, threshold) for corner in tqdm(corners_chunk))
+    for f in os.listdir(data_dir):
+        os.remove(os.path.join(data_dir, f))
 
 
