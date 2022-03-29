@@ -12,7 +12,7 @@ import os
 
 threshold = 0.5
 chunk_size = [256, 256, 300]
-dir = "s3://smartspim-precomputed-volumes/2022_01_14/8613/Ch_647"
+dir_base = "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/"
 data_dir = "/data/tathey1/matt_wright/brain_temp/"
 
 coords = [0, 0]
@@ -22,7 +22,7 @@ print(f"Number cpus: {multiprocessing.cpu_count()}")
 warnings.filterwarnings("ignore")
 
 mip = 0
-vol = CloudVolume(dir, parallel=True, mip=mip, fill_missing=True)
+vol = CloudVolume(dir_base + "Ch_647", parallel=True, mip=mip, fill_missing=True)
 shape = vol.shape
 
 corners = []
@@ -36,10 +36,8 @@ for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
 
 corners_chunks = [corners[i:i+100] for i in range(0, len(corners), 100)]
 
-def process_chunk(c1, c2, data_dir, threshold):
+def process_chunk(c1, c2, data_dir, threshold, dir_base):
     mip = 0
-
-    dir_base = "s3://smartspim-precomputed-volumes/2022_01_14/8613/"
     
     dir_mask = dir_base + "axon_mask"
     vol_mask = CloudVolume(dir_mask, parallel=1, mip=mip, fill_missing=True)
@@ -77,7 +75,7 @@ def process_chunk(c1, c2, data_dir, threshold):
 for corners_chunk in corners_chunks:
     # for corner in tqdm(corners_chunk):
     #      process_chunk(corner[0],corner[1], data_dir, threshold)
-    Parallel(n_jobs=1)(delayed(process_chunk)(corner[0],corner[1], data_dir, threshold) for corner in tqdm(corners_chunk))
+    Parallel(n_jobs=4)(delayed(process_chunk)(corner[0],corner[1], data_dir, threshold, dir_base) for corner in tqdm(corners_chunk))
     for f in os.listdir(data_dir):
         os.remove(os.path.join(data_dir, f))
 
