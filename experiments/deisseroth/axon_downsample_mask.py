@@ -2,7 +2,7 @@ import igneous.task_creation as tc
 from taskqueue import LocalTaskQueue
 
 layer_path = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/axon_mask"
-layer_path = "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/"
+layer_path = "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/axon_mask"
 
 tq = LocalTaskQueue(parallel=8)
 
