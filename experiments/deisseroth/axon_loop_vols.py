@@ -13,6 +13,8 @@ import os
 threshold = 0.5
 chunk_size = [256, 256, 300]
 dir_base = "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/"
+dir_base = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/"
+
 data_dir = "/data/tathey1/matt_wright/brain_temp/"
 
 coords = [0, 0]
