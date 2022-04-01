@@ -38,6 +38,8 @@ for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
 
 corners_chunks = [corners[i:i+100] for i in range(0, len(corners), 100)]
 
+print(f"Processing brain of size {vol.shape}")
+
 def process_chunk(c1, c2, data_dir, threshold, dir_base):
     mip = 0
     
@@ -77,7 +79,7 @@ def process_chunk(c1, c2, data_dir, threshold, dir_base):
 for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
     # for corner in tqdm(corners_chunk):
     #      process_chunk(corner[0],corner[1], data_dir, threshold)
-    Parallel(n_jobs=16)(delayed(process_chunk)(corner[0],corner[1], data_dir, threshold, dir_base) for corner in tqdm(corners_chunk, leave=False))
+    Parallel(n_jobs=18)(delayed(process_chunk)(corner[0],corner[1], data_dir, threshold, dir_base) for corner in tqdm(corners_chunk, leave=False))
     for f in os.listdir(data_dir):
         os.remove(os.path.join(data_dir, f))
 
