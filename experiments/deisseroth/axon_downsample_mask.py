@@ -4,7 +4,7 @@ from taskqueue import LocalTaskQueue
 layer_path = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/axon_mask"
 layer_path = "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/axon_mask"
 
-tq = LocalTaskQueue(parallel=8)
+tq = LocalTaskQueue(parallel=24)
 
 tasks = tc.create_downsampling_tasks(
     layer_path, # e.g. 'gs://bucket/dataset/layer'
