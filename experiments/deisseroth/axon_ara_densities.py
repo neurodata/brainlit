@@ -6,15 +6,19 @@ import pickle
 from joblib import Parallel, delayed
 import os
 
-dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/axon_mask"
+dir_base="precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/"
+
+dir_base= "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/"
+
+dir = dir_base+"axon_mask"
 vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 print(f"Mask shape: {vol_mask.shape}")
 
-dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/atlas_to_target"
+dir = dir_base+"atlas_to_target"
 vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 print(f"Atlas shape: {vol_reg.shape}")
 
-outdir = "/data/tathey1/matt_wright/brain4/vols_densities/"
+outdir = "/data/tathey1/matt_wright/brain3/"
 #outdir = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/"
 block_size = [256, 256, 256]
 
@@ -33,7 +37,7 @@ for x in tqdm(np.arange(0, vol_mask.shape[0], block_size[0])):
             corners.append([[x_reg, y_reg, z], [x2_reg, y2_reg, z2], [x,y,z], [x2,y2,z2]])
 
 
-def compute_composition_corner(corners, outdir):
+def compute_composition_corner(corners, outdir, dir_base):
     l_c1 = corners[0]
     l_c2 = corners[1]
     m_c1 = corners[2]
@@ -43,10 +47,10 @@ def compute_composition_corner(corners, outdir):
     if os.path.exists(fname):
         return
 
-    dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/axon_mask"
+    dir = dir_base + "axon_mask"
     vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 
-    dir = "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/atlas_to_target"
+    dir = dir_base+"atlas_to_target"
     vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 
 
@@ -72,7 +76,7 @@ def compute_composition_corner(corners, outdir):
 
 
 
-Parallel(n_jobs=-1)(delayed(compute_composition_corner)(corner, outdir) for corner in tqdm(corners, desc="Finding labels"))
+Parallel(n_jobs=-1)(delayed(compute_composition_corner)(corner, outdir, dir_base) for corner in tqdm(corners, desc="Finding labels"))
 # counter = 0
 # for corner in corners:
 #     if counter > 48:
