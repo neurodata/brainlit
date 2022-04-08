@@ -19,6 +19,12 @@ brain2paths = {
         "bg" : "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/Ch_561",
         "endo" : "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/Ch_488",
         "mask" : "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/axon_mask"
+    },
+    "8613": {
+        "ab" : "precomputed://https://dlab-colm.neurodata.io/2022_01_14/8613/Ch_647",
+        "bg" : "precomputed://https://dlab-colm.neurodata.io/2022_01_14/8613/Ch_561",
+        "endo" : "precomputed://https://dlab-colm.neurodata.io/2022_01_14/8613/Ch_488",
+        "mask" : "precomputed://https://dlab-colm.neurodata.io/2022_01_14/8613/axon_mask",
     }
 }
 
