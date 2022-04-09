@@ -1,35 +1,35 @@
 brain2paths = {
     "2": {
-        "ab" : "precomputed://https://dlab-colm.neurodata.io/2021_06_02_Sert_Cre/Ch_647"
-        },
+        "ab": "precomputed://https://dlab-colm.neurodata.io/2021_06_02_Sert_Cre/Ch_647"
+    },
     "1": {
         "ab": "precomputed://https://dlab-colm.neurodata.io/2021_04_08/gad2cre_tph2flp_con_fon_8291/642",
-        "bg" : "precomputed://https://dlab-colm.neurodata.io/2021_04_08/gad2cre_tph2flp_con_fon_8291/561",
-        "mask": "precomputed://https://dlab-colm.neurodata.io/2021_04_08/gad2cre_tph2flp_con_fon_8291/axon_mask"
-        },
-    "3": {
-        "ab" : "precomputed://https://dlab-colm.neurodata.io/2021_07_01_Sert_Cre_B/Ch_647",
-        "bg" : "precomputed://https://dlab-colm.neurodata.io/2021_07_01_Sert_Cre_B/Ch_561",
-        "endo" : "precomputed://https://dlab-colm.neurodata.io/2021_07_01_Sert_Cre_B/Ch_488",
-        "mask" : "precomputed://https://dlab-colm.neurodata.io/2021_07_01_Sert_Cre_B/axon_mask",
-        "atlas" : "precomputed://https://dlab-colm.neurodata.io/2021_07_01_Sert_Cre_B/atlas_to_target"
+        "bg": "precomputed://https://dlab-colm.neurodata.io/2021_04_08/gad2cre_tph2flp_con_fon_8291/561",
+        "mask": "precomputed://https://dlab-colm.neurodata.io/2021_04_08/gad2cre_tph2flp_con_fon_8291/axon_mask",
     },
-    "4" : {
-        "ab" : "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/Ch_647",
-        "bg" : "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/Ch_561",
-        "endo" : "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/Ch_488",
-        "mask" : "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/axon_mask"
+    "3": {
+        "ab": "precomputed://https://dlab-colm.neurodata.io/2021_07_01_Sert_Cre_B/Ch_647",
+        "bg": "precomputed://https://dlab-colm.neurodata.io/2021_07_01_Sert_Cre_B/Ch_561",
+        "endo": "precomputed://https://dlab-colm.neurodata.io/2021_07_01_Sert_Cre_B/Ch_488",
+        "mask": "precomputed://https://dlab-colm.neurodata.io/2021_07_01_Sert_Cre_B/axon_mask",
+        "atlas": "precomputed://https://dlab-colm.neurodata.io/2021_07_01_Sert_Cre_B/atlas_to_target",
+    },
+    "4": {
+        "ab": "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/Ch_647",
+        "bg": "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/Ch_561",
+        "endo": "precomputed://https://dlab-colm.neurodata.io/2021_07_15_Sert_Cre_R/Ch_488",
+        "mask": "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/axon_mask",
     },
     "8613": {
-        "ab" : "precomputed://https://dlab-colm.neurodata.io/2022_01_14/8613/Ch_647",
-        "bg" : "precomputed://https://dlab-colm.neurodata.io/2022_01_14/8613/Ch_561",
-        "endo" : "precomputed://https://dlab-colm.neurodata.io/2022_01_14/8613/Ch_488",
-        "mask" : "precomputed://https://dlab-colm.neurodata.io/2022_01_14/8613/axon_mask",
-    }
+        "ab": "precomputed://https://dlab-colm.neurodata.io/2022_01_14/8613/Ch_647",
+        "bg": "precomputed://https://dlab-colm.neurodata.io/2022_01_14/8613/Ch_561",
+        "endo": "precomputed://https://dlab-colm.neurodata.io/2022_01_14/8613/Ch_488",
+        "mask": "precomputed://https://dlab-colm.neurodata.io/2022_01_14/8613/axon_mask",
+    },
 }
 
 brain2centers = {
-    "2" : [
+    "2": [
         [
             [2626, 3837, 2366],
             [799, 3315, 2366],
@@ -44,7 +44,7 @@ brain2centers = {
         ]
     ],
     "1": [
-        [ #train
+        [  # train
             [2477, 3638, 2409],
             [3605, 2873, 2405],
             [4939, 5186, 2398],
@@ -71,7 +71,7 @@ brain2centers = {
             [3970, 3496, 2877],
             [1277, 2284, 2877],
         ],
-        [ #val
+        [  # val
             [5701, 3357, 4137],
             [3610, 2346, 4137],
             [2564, 4086, 2829],
@@ -82,10 +82,10 @@ brain2centers = {
             [3223, 3294, 2514],
             [3564, 3847, 2516],
             [2620, 7237, 4610],
-        ]
+        ],
     ],
     "3": [
-        [ #train
+        [  # train
             [3007, 4546, 2697],
             [4466, 4467, 2697],
             [2670, 606, 2700],
@@ -117,9 +117,9 @@ brain2centers = {
             [2153, 1863, 676],
             [2043, 2587, 676],
             [2558, 1950, 1965],
-            [4310, 1665, 1202]
+            [4310, 1665, 1202],
         ],
-        [ #val
+        [  # val
             [2639, 513, 2432],
             [4592, 4209, 2432],
             [4234, 4105, 3331],
@@ -140,11 +140,11 @@ brain2centers = {
             [1880, 2255, 695],
             [3184, 2487, 695],
             [3826, 1842, 696],
-            [2843, 1240, 2198]
-        ]
+            [2843, 1240, 2198],
+        ],
     ],
-    "4" : [
-        [ # train
+    "4": [
+        [  # train
             [2835, 1768, 1906],
             [4284, 2059, 998],
             [4805, 3306, 998],
@@ -154,9 +154,9 @@ brain2centers = {
             [2628, 3998, 2479],
             [2757, 7391, 1988],
             [332, 3555, 1988],
-            [4227, 3671, 2608]
+            [4227, 3671, 2608],
         ],
-        [ #val
+        [  # val
             [4781, 3581, 1861],
             [2982, 482, 1841],
             [2258, 6504, 1392],
@@ -166,8 +166,24 @@ brain2centers = {
             [2850, 5163, 3116],
             [2091, 3731, 2608],
             [3026, 6285, 2606],
-            [678, 5501, 1388]
-        ]
-    ]
-}
+            [678, 5501, 1388],
+        ],
+    ],
+    "8613": [
+        [ #train
 
+        ],
+        [ #val
+            [3058.365478515625, 4692.974609375, 1025.5],
+            [649.9442749023438, 2539.990966796875, 1031.5],
+            [3439.125732421875, 1684.6531982421875, 1031.5],
+            [1713.416259765625, 2330.409912109375, 1591.4998779296875],
+            [3269.08984375, 5614.2373046875, 1590.5001220703125],
+            [3188.93701171875, 5547.95703125, 1590.5001220703125],
+            [1201.314697265625, 5000.23828125, 1590.4998779296875],
+            [2525.391845703125, 4362.392578125, 471.5],
+            [3439.92431640625, 5827.6337890625, 1310.5],
+            [2789.37060546875, 3125.13525390625, 2005.5],
+        ]
+    ],
+}

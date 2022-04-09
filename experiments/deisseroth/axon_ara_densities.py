@@ -7,34 +7,36 @@ from joblib import Parallel, delayed
 import os
 
 
-#dir_base= "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/"
-dir_base="s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/"
+# dir_base= "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/"
+dir_base = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/"
 outdir = "/data/tathey1/matt_wright/brain4/"
 
-dir = dir_base+"axon_mask"
+dir = dir_base + "axon_mask"
 vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 print(f"Mask shape: {vol_mask.shape}")
 
-dir = dir_base+"atlas_to_target"
+dir = dir_base + "atlas_to_target"
 vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 print(f"Atlas shape: {vol_reg.shape}")
 
-#outdir = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/"
+# outdir = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/"
 block_size = [256, 256, 256]
 
 corners = []
 for x in tqdm(np.arange(0, vol_mask.shape[0], block_size[0])):
-    x2 = np.amin([x+block_size[0], vol_mask.shape[0]])
-    x_reg = int(x/8)
-    x2_reg = np.amin([int(x2/8), vol_reg.shape[0]])
+    x2 = np.amin([x + block_size[0], vol_mask.shape[0]])
+    x_reg = int(x / 8)
+    x2_reg = np.amin([int(x2 / 8), vol_reg.shape[0]])
 
     for y in tqdm(np.arange(0, vol_mask.shape[1], block_size[1]), leave=False):
-        y2 = np.amin([y+block_size[1], vol_mask.shape[1]])
-        y_reg = int(y/8)
-        y2_reg = np.amin([int(y2/8), vol_reg.shape[1]])
+        y2 = np.amin([y + block_size[1], vol_mask.shape[1]])
+        y_reg = int(y / 8)
+        y2_reg = np.amin([int(y2 / 8), vol_reg.shape[1]])
         for z in tqdm(np.arange(0, vol_mask.shape[2], block_size[2]), leave=False):
-            z2 = np.amin([z+block_size[2], vol_mask.shape[2]])
-            corners.append([[x_reg, y_reg, z], [x2_reg, y2_reg, z2], [x,y,z], [x2,y2,z2]])
+            z2 = np.amin([z + block_size[2], vol_mask.shape[2]])
+            corners.append(
+                [[x_reg, y_reg, z], [x2_reg, y2_reg, z2], [x, y, z], [x2, y2, z2]]
+            )
 
 
 def compute_composition_corner(corners, outdir, dir_base):
@@ -50,13 +52,12 @@ def compute_composition_corner(corners, outdir, dir_base):
     dir = dir_base + "axon_mask"
     vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 
-    dir = dir_base+"atlas_to_target"
+    dir = dir_base + "atlas_to_target"
     vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 
-
-    labels = vol_reg[l_c1[0]:l_c2[0],l_c1[1]:l_c2[1],l_c1[2]:l_c2[2]]
+    labels = vol_reg[l_c1[0] : l_c2[0], l_c1[1] : l_c2[1], l_c1[2] : l_c2[2]]
     labels = np.repeat(np.repeat(labels, 8, axis=0), 8, axis=1)
-    mask = vol_mask[m_c1[0]:m_c2[0],m_c1[1]:m_c2[1],m_c1[2]:m_c2[2]]
+    mask = vol_mask[m_c1[0] : m_c2[0], m_c1[1] : m_c2[1], m_c1[2] : m_c2[2]]
 
     width = np.amin([mask.shape[0], labels.shape[0]])
     height = np.amin([mask.shape[1], labels.shape[1]])
@@ -71,12 +72,14 @@ def compute_composition_corner(corners, outdir, dir_base):
         cur_total = np.sum(labels == unq)
         volumes[unq] = [cur_total, cur_vol]
 
-    with open(fname, 'wb') as f:
+    with open(fname, "wb") as f:
         pickle.dump(volumes, f)
 
 
-
-Parallel(n_jobs=-1)(delayed(compute_composition_corner)(corner, outdir, dir_base) for corner in tqdm(corners, desc="Finding labels"))
+Parallel(n_jobs=-1)(
+    delayed(compute_composition_corner)(corner, outdir, dir_base)
+    for corner in tqdm(corners, desc="Finding labels")
+)
 # counter = 0
 # for corner in corners:
 #     if counter > 48:
@@ -93,7 +96,7 @@ volumes = {}
 for file in tqdm(files, desc="Assembling results"):
     if "pickle" in file:
         filename = outdir + file
-        with open(filename, 'rb') as f:
+        with open(filename, "rb") as f:
             result = pickle.load(f)
         for key in result.keys():
             addition = result[key]
@@ -103,12 +106,12 @@ for file in tqdm(files, desc="Assembling results"):
             else:
                 cur_vol = 0
                 cur_total = 0
-            
+
             cur_vol += addition[1]
             cur_total += addition[0]
             volumes[key] = [cur_total, cur_vol]
-        
+
 
 outpath = outdir + "vol_density.pkl"
-with open(outpath, 'wb') as f:
+with open(outpath, "wb") as f:
     pickle.dump(volumes, f)

@@ -3,15 +3,20 @@ from cloudvolume import CloudVolume
 from tqdm import tqdm
 import pickle
 
-atlas_vol = CloudVolume("file:///mnt/data/Neuroglancer_Data/2021_10_06/8557/atlas_to_target/", parallel=1, mip=0, fill_missing=True)
+atlas_vol = CloudVolume(
+    "file:///mnt/data/Neuroglancer_Data/2021_10_06/8557/atlas_to_target/",
+    parallel=1,
+    mip=0,
+    fill_missing=True,
+)
 somas = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/soma_detection/misc_results/somas_brainr1.txt"
 
-file1 = open(somas, 'r')
+file1 = open(somas, "r")
 lines = file1.readlines()
 
 coords = []
 for line in tqdm(lines):
-    if line != '\n':
+    if line != "\n":
         elements = line.split(",")
         coord = [elements[0][1:], elements[1], elements[2][:-1]]
         coord = [int(round(float(e))) for e in coord]
@@ -26,5 +31,5 @@ for coord in tqdm(coords):
         dict[roi] = dict[roi] + 1
 
 print(dict)
-with open('soma_counts.pickle', 'wb') as handle:
+with open("soma_counts.pickle", "wb") as handle:
     pickle.dump(dict, handle)
