@@ -1,0 +1,240 @@
+/*!
+ * Marp default theme.
+ *
+ * @theme default
+ * @author Yuki Hattori
+ *
+ * @auto-scaling true
+ * @size 16:9 1280px 720px
+ * @size 4:3 960px 720px
+ */
+
+//  it is sometimes helpful to go here to see what github defines
+//  https://github.com/sindresorhus/github-markdown-css/blob/main/github-markdown.css
+ @import '~github-markdown-css';
+
+ h1 {
+   border-bottom: none;
+   color: var(black);
+   font-size: 1.6em;
+ }
+ 
+ h2 {
+   border-bottom: none;
+   font-size: 1.3em;
+ }
+ 
+ h3 {
+   font-size: 1.1em;
+ }
+ 
+ h4 {
+   font-size: 1.05em;
+ }
+ 
+ h5 {
+   font-size: 1em;
+ }
+ 
+ h6 {
+   font-size: 0.9em;
+ }
+ 
+ h1,
+ h2,
+ h3,
+ h4,
+ h5,
+ h6 {
+   strong {
+     font-weight: inherit;
+     color: var(--heading-strong-color);
+   }
+ 
+   &::part(auto-scaling) {
+     max-height: 563px; // Slide height - padding * 2
+   }
+ }
+ 
+ hr {
+   height: 0;
+   padding-top: 0.25em;
+ }
+ 
+ pre {
+   border: 1px solid var(--color-border-default);
+   line-height: 1.15;
+   overflow: visible;
+ 
+   &::part(auto-scaling) {
+     // Slide height - padding * 2 - code's padding * 3 - code's border * 2
+     max-height: 529px;
+   }
+ 
+   // GitHub's prettylights -> Highlight.js
+   /* stylelint-disable selector-class-pattern */
+   .hljs {
+     color: var(--color-prettylights-syntax-storage-modifier-import);
+   }
+ 
+   .hljs-doctag,
+   .hljs-keyword,
+   .hljs-meta .hljs-keyword,
+   .hljs-template-tag,
+   .hljs-template-variable,
+   .hljs-type,
+   .hljs-variable.language_ {
+     color: var(--color-prettylights-syntax-keyword);
+   }
+ 
+   .hljs-title,
+   .hljs-title.class_,
+   .hljs-title.class_.inherited__,
+   .hljs-title.function_ {
+     color: var(--color-prettylights-syntax-entity);
+   }
+ 
+   .hljs-attr,
+   .hljs-attribute,
+   .hljs-literal,
+   .hljs-meta,
+   .hljs-number,
+   .hljs-operator,
+   .hljs-selector-attr,
+   .hljs-selector-class,
+   .hljs-selector-id,
+   .hljs-variable {
+     color: var(--color-prettylights-syntax-constant);
+   }
+ 
+   .hljs-string,
+   .hljs-meta .hljs-string,
+   .hljs-regexp {
+     color: var(--color-prettylights-syntax-string);
+   }
+ 
+   .hljs-built_in,
+   .hljs-symbol {
+     color: var(--color-prettylights-syntax-variable);
+   }
+ 
+   .hljs-code,
+   .hljs-comment,
+   .hljs-formula {
+     color: var(--color-prettylights-syntax-comment);
+   }
+ 
+   .hljs-name,
+   .hljs-quote,
+   .hljs-selector-pseudo,
+   .hljs-selector-tag {
+     color: var(--color-prettylights-syntax-entity-tag);
+   }
+ 
+   .hljs-subst {
+     color: var(--color-prettylights-syntax-storage-modifier-import);
+   }
+ 
+   .hljs-section {
+     font-weight: bold;
+     color: var(--color-prettylights-syntax-markup-heading);
+   }
+ 
+   .hljs-bullet {
+     color: var(--color-prettylights-syntax-markup-list);
+   }
+ 
+   .hljs-emphasis {
+     font-style: italic;
+     color: var(--color-prettylights-syntax-markup-italic);
+   }
+ 
+   .hljs-strong {
+     font-weight: bold;
+     color: var(--color-prettylights-syntax-markup-bold);
+   }
+ 
+   .hljs-addition {
+     color: var(--color-prettylights-syntax-markup-inserted-text);
+     background-color: var(--color-prettylights-syntax-markup-inserted-bg);
+   }
+ 
+   .hljs-deletion {
+     color: var(--color-prettylights-syntax-markup-deleted-text);
+     background-color: var(--color-prettylights-syntax-markup-deleted-bg);
+   }
+   /* stylelint-enable selector-class-pattern */
+ }
+ 
+ header,
+ footer {
+   margin: 0;
+   position: absolute;
+   left: 30px;
+   color: var(--header-footer-color);
+   font-size: 18px;
+ }
+ 
+ header {
+   top: 21px;
+ }
+ 
+ footer {
+   bottom: 21px;
+ }
+ 
+ section {
+   /* stylelint-disable-next-line scss/at-extend-no-missing-placeholder */
+   @extend .markdown-body;
+ 
+   --h1-color: #246;
+   --header-footer-color: #{rgba(#666, 0.75)};
+   --heading-strong-color: #48c;
+   --paginate-color: #777;
+ 
+   align-items: stretch;
+   display: flex;
+   flex-flow: column nowrap;
+   font-size: 29px;
+   height: 720px;
+   justify-content: center;
+   padding: 78.5px;
+   width: 1280px;
+ 
+   &:where(.invert) {
+     --h1-color: #cee7ff;
+     --header-footer-color: #{rgba(#999, 0.75)};
+     --heading-strong-color: #7bf;
+     --paginate-color: #999;
+   }
+ 
+   > *:last-child,
+   &[data-footer] > :nth-last-child(2) {
+     margin-bottom: 0;
+   }
+ 
+   > *:first-child,
+   > header:first-child + * {
+     margin-top: 0;
+   }
+ 
+   &::after {
+     position: absolute;
+     padding: 0;
+     right: 30px;
+     bottom: 21px;
+     font-size: 24px;
+     color: var(--paginate-color);
+   }
+ 
+   &[data-color] {
+     h1,
+     h2,
+     h3,
+     h4,
+     h5,
+     h6 {
+       color: currentColor;
+     }
+   }
+ }
