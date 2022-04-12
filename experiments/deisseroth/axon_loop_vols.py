@@ -16,7 +16,7 @@ import os
 # dir_base = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/"
 # threshold = 0.6
 
-dir_base = "precomputed://https://dlab-colm.neurodata.io/2022_01_14/8613/"
+dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/"
 threshold = 0.36
 
 chunk_size = [256, 256, 300]
@@ -95,11 +95,11 @@ def process_chunk(c1, c2, data_dir, threshold, dir_base):
 
 
 for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
-    for corner in tqdm(corners_chunk):
-         process_chunk(corner[0],corner[1], data_dir, threshold, dir_base)
-    # Parallel(n_jobs=8)(
-    #     delayed(process_chunk)(corner[0], corner[1], data_dir, threshold, dir_base)
-    #     for corner in tqdm(corners_chunk, leave=False)
-    # )
+    # for corner in tqdm(corners_chunk):
+    #      process_chunk(corner[0],corner[1], data_dir, threshold, dir_base)
+    Parallel(n_jobs=16)(
+        delayed(process_chunk)(corner[0], corner[1], data_dir, threshold, dir_base)
+        for corner in tqdm(corners_chunk, leave=False)
+    )
     for f in os.listdir(data_dir):
         os.remove(os.path.join(data_dir, f))
