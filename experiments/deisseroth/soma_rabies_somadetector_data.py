@@ -1,15 +1,15 @@
 brain2paths = {
-    "r1": [
+    "8557": [
         "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_647",
         "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_561",
         "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_488",
     ],
-    "r2": [
+    "8555": [
         "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_647",
         "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_561",
         "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_488",
     ],
-    "r3": [
+    "8607": [
         "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_647",
         "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_561",
         "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_488",
@@ -18,7 +18,7 @@ brain2paths = {
 
 # first entry is somas, second is nonsomas
 brain2centers = {
-    "r1": [
+    "8557": [
         [
             [
                 [
@@ -315,7 +315,7 @@ brain2centers = {
             ],
         ],
     ],
-    "r2": [
+    "8555": [
         [
             [
                 [4256.267578125, 5383.6376953125, 1950.4998779296875],  # first 10 test
@@ -369,7 +369,7 @@ brain2centers = {
             ]
         ],
     ],
-    "r3": [
+    "8607": [
         [
             [
                 [3923.309814453125, 1490.7852783203125, 1574.5],  # first 10 test

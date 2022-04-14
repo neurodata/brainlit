@@ -8,8 +8,11 @@ import os
 
 
 # dir_base= "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/"
+# dir_base = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/"
 dir_base = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/"
-outdir = "/data/tathey1/matt_wright/brain4/"
+outdir = "/data/tathey1/matt_wright/brain_temp/"
+
+
 
 dir = dir_base + "axon_mask"
 vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
