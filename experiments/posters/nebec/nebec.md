@@ -42,32 +42,27 @@ size: 36:24
 <div>
 
 
-- Aimed to define bilateral symmetry for a connectome, and formally test this hypothesis.
+- Aimed to build a tool for faster neuron tracing in neuromorphological research.
 
 </div>
 <div>
 
-- Hemispheres differ in a network-wide parameter under even the simplest model of a network pair.
+- Our hidden Markov modeling based approach incorporates a geometric prior and the image appearance likelihood.
 
 </div>
 <div>
 
-- Hemispheres differ in neuron group connection probabilities, even when adjusting for the network-wide effect.
+- The globally optimal sequence of neuron fragments is computed efficiently with dynamic programming.
 
 </div>
 <div>
 
-- Detect no differences in adjusted group connections after removing a cell type or when only considering strong edges.
-
-<!-- - Removing a specific cell type and adjusting for this network-wide effect provides one notion of bilateral symmetry -->
-
-<!-- 
-- Difference between hemispheres can be explained as combination of network-wide and cell type-specific effects -->
+- *ViterBrain* outperforms state-of-the-art on a dataset of partial axons in a MouseLight brain image.
 
 </div>
 <div>
 
-- Provided a definition of bilateral symmetry exhibited by this connectome, tools for future connectome comparisons
+- Our algorithm is available as a napari plugin in our open-source Python package, brainlit.
 
 </div>
 </div>
@@ -80,7 +75,7 @@ size: 36:24
 ### Motivation
 
 - A neuron's morphology determines how it integrates into brain circuits and contributes to overall brain function.
-- Efforts to establish brain-wide atlases of neuron morphology in the mouse rely on laboroious manual tracing [1].
+- Efforts to build brain-wide atlases of neuron morphology in the mouse rely on laboroious manual tracing [1].
 - Future work in human brains will exacerbate this bottleneck.
 
 ### Data
@@ -89,114 +84,51 @@ size: 36:24
 ![](../images/ng.png)
 
 
-**Fig 1:** Sample from Janelia Mouselight project. Sparse labeling is achieved using a combination of diluted AAV Syn-iCre and a Cre-dependent reporter. Images are acquired by serial two-photon tomography at $0.3 \times 0.3 \times 1.0 \mu m^3$  resolution.
+**Fig 1:** Sample from Janelia Mouselight project. Sparse labeling is achieved using a diluted AAV Syn-iCre and a Cre-dependent reporter. Images are acquired by serial two-photon tomography at $0.3 \times 0.3 \times 1.0 \mu m^3$  resolution.
 </div>
 <div>
 
 
-### Group connection test (Model 2)
+### HMM Based Reconstruction
 
-![center w:10.5in](./../../../results/figs/sbm_unmatched_test/sbm_methods_explain.svg)
-**Fig 3A:** Testing under stochastic block model (SBM) compares probabilities of connections between groups (here using cell types [1]).
+![](../images/fig2_algorithm.jpg)
 
-<!-- START subcolumns -->
-<div class=columns2>
-<div>
+**Fig 2:** Overview of *ViterBrain* algorithm [2]. *ViterBrain* takes in an image and probability mask. The mask is processed into a set of fragments, whose endpoints and endpoint tangent vectors are estimated. Transition probabilities are computed according to image data and fragment geometry then the globally optimal fragment sequence is computed.
 
-![](../../../results/figs/sbm_unmatched_test/sbm_uncorrected_pvalues.svg)
+- Identify sequence of neuron fragments $\{ f_i \}_{i=1}^n$ that follows neuronal path.
+- Hidden Markov model incorporates:
 
-</div>
-<div>
-
-![center w:5in](../../../results/figs/sbm_unmatched_test/significant_p_comparison.svg)
-
-</div>
-</div>
-
-<div class=columns2>
-<div>
-
-
-**Fig 3B:** Test comparing group connections rejected ($p{<}10^{-7}$); five specific connections differ.
+    1. **Observed variable**: Image data $I$
+    2. **Hidden variable**: Neuron path $\{ f_i \}_{i=1}^n$
 
 </div>
 <div>
 
-**Fig 3C:** For significant group connections, denser hemisphere probability is always higher.
+### Results and Conclusions
 
-</div>
-</div>
-
-### Density-adjusted group connection test (Model 3)
-
-<div class=columns2>
-<div>
-
-<br>
-
-![center w:5in](./../../../results/figs/adjusted_sbm_unmatched_test/adjusted_methods_explain.svg)
-
-</div>
-<div>
-
-![](./../../../results/figs/adjusted_sbm_unmatched_test/sbm_pvalues.svg)
-
-</div>
-</div>
-
-<div class=columns2>
-<div>
-
-**Fig 4A:** Hypothesis from Fig 3 modified by a factor $c$ set to make densities equal.
-
-</div>
-<div>
-
-**Fig 4B:** Test comparing adjusted group connections rejected $(p{<}10^{-2})$; differences from KCs.
-
-</div>
-</div>
-
-
-</div>
-<div>
-
-### Notions of bilateral symmetry
 
 
 <div class="columns2">
 <div>
 
-#### With Kenyon cells
-| Model |                       $H_0$ (vs. $H_A \neq$)                       |    p-value    |
-| :---: | :----------------------------------------------------------------: | :-----------: |
-| **1** |  $\color{#66c2a5} p^{(L)} \color{black} = \color{#fc8d62}p^{(R)}$  | ${<}10^{-23}$ |
-| **2** | $\color{#66c2a5} B^{(L)} \color{black} = \color{#fc8d62} B^{(R)}$  | ${<}10^{-7}$  |
-| **3** | $\color{#66c2a5}B^{(L)} \color{black}  = c \color{#fc8d62}B^{(R)}$ | ${<}10^{-2}$  |
+![](../images/gui.png)
 
 
 </div>
 <div>
 
-#### Without Kenyon cells
-| Model |                       $H_0$ (vs. $H_A \neq$)                       |    p-value    |
-| :---: | :----------------------------------------------------------------: | :-----------: |
-| **1** |  $\color{#66c2a5} p^{(L)} \color{black} = \color{#fc8d62}p^{(R)}$  | ${<}10^{-26}$ |
-| **2** | $\color{#66c2a5} B^{(L)} \color{black} = \color{#fc8d62} B^{(R)}$  | ${<}10^{-2}$  |
-| **3** | $\color{#66c2a5}B^{(L)} \color{black}  = c \color{#fc8d62}B^{(R)}$ |    $0.51$     |
+**Fig 3:** A neuron that was partially traced using the *ViterBrain* napari plugin. The plugin widget is on the right toolbar. The scale bar represents 20 microns.
 
 </div>
 </div>
 
-
-### Edge weight thresholds
+- ViterBrain had a significantly higher success rate than state-of-the-art algorithms in a dataset of partial axons in a MouseLight brain sample [1].
+- We built a plugin for napari, a popular multidimensional image viewer in Python, which can be used to accelerate neuron reconstruction workflows.
 
 
 
 ### Limitations and extensions
-- Other models to consider (e.g. random dot product graph [3])
-- Other sensible neuron groupings for group connection test
-- Matching nodes across networks leads to new models, likely more power
+- More work is needed to extend the algorithm to densely tangled neurons, and to whole-brain volumes.
 
 ###
 
@@ -205,11 +137,26 @@ size: 36:24
 <div>
 
 #### Code
+<div class="columns3-np">
+<div>
 
+brainlit.neurodata.io
+
+</div>
+<div>
+
+
+</div>
+<div>
+
+![center h:0.5in](../images/brainlit_qr.jpg)
+
+</div>
+</div>
 
 #### Acknowledgements
 <footer>
-We thank the MouseLight team at HHMI Janelia for providing us with access to this data, and answering our questions about it. Thanks to Benjamin Pedigo for providing the template for this poster.
+We thank the MouseLight team at HHMI Janelia for providing us with access to this data. Thanks to Benjamin Pedigo for the poster template.
 </footer>
 
 </div>
@@ -218,14 +165,15 @@ We thank the MouseLight team at HHMI Janelia for providing us with access to thi
 #### References
 
 <footer>
-[1] Winnubst
+[1] Winnubst J. et. al. Cell. 2019;179(1):268-281.
 <br>
+[2] 2.	Athey T. L. et al. arXiv. 2022;2106.02701.
 </footer>
 
 #### Funding
 
 <footer>
-Funding
+This work is supported by the National Institutes of Health grant RF1MH121539. 
 </footer>
 
 </div>
