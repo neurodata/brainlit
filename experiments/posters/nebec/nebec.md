@@ -42,7 +42,7 @@ size: 36:24
 <div>
 
 
-- Aimed to build a tool for faster neuron tracing in neuromorphological research.
+- We aimed to build a tool for faster neuron tracing in neuromorphological research.
 
 </div>
 <div>
@@ -75,7 +75,7 @@ size: 36:24
 ### Motivation
 
 - A neuron's morphology determines how it integrates into brain circuits and contributes to overall brain function.
-- Efforts to build brain-wide atlases of neuron morphology in the mouse rely on laboroious manual tracing [1].
+- Efforts to build brain-wide atlases of neuron morphology in the mouse rely on laborious manual tracing [1].
 - Future work in human brains will exacerbate this bottleneck.
 
 ### Data
@@ -149,7 +149,7 @@ brainlit.neurodata.io
 </div>
 <div>
 
-![center h:0.5in](../images/brainlit_qr.jpg)
+![center h:0.75in](../images/brainlit_qr.jpg)
 
 </div>
 </div>
