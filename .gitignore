@@ -58,6 +58,10 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# Pytest data
+data/test_state_generation
+data/test_napari_plugin
+
 # Documentation notebook data
 docs/notebooks/utils/data
 

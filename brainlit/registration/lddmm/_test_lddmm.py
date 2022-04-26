@@ -374,7 +374,7 @@ class Test_lddmm_transform_image:
         template_resolution = 1
         target_shape = (2, 5)
         target_resolution = 1
-        extrapolation_fill_value = np.quantile(subject, 10 ** -subject.ndim)
+        extrapolation_fill_value = np.quantile(subject, 10**-subject.ndim)
 
         affine_phi = _lddmm_utilities._compute_coords(
             template_shape, template_resolution
@@ -541,7 +541,7 @@ class Test_lddmm_register:
 
         template = np.array(
             [
-                [(col - 4) ** 2 + (row - 4) ** 2 <= 4 ** 2 for col in range(9)]
+                [(col - 4) ** 2 + (row - 4) ** 2 <= 4**2 for col in range(9)]
                 for row in range(9)
             ],
             int,
@@ -562,7 +562,7 @@ class Test_lddmm_register:
         template = np.array(
             [
                 [
-                    (col - 14) ** 2 / 10 ** 2 + (row - 8) ** 2 / 4 ** 2 <= 1
+                    (col - 14) ** 2 / 10**2 + (row - 8) ** 2 / 4**2 <= 1
                     for col in range(29)
                 ]
                 for row in range(17)
@@ -589,7 +589,7 @@ class Test_lddmm_register:
         template = np.array(
             [
                 [
-                    (col - 14) ** 2 / 10 ** 2 + (row - 10) ** 2 / 6 ** 2 <= 1
+                    (col - 14) ** 2 / 10**2 + (row - 10) ** 2 / 6**2 <= 1
                     for col in range(29)
                 ]
                 for row in range(21)
@@ -615,7 +615,7 @@ class Test_lddmm_register:
         template = np.array(
             [
                 [
-                    (col - 14) ** 2 / 10 ** 2 + (row - 10) ** 2 / 6 ** 2 <= 1
+                    (col - 14) ** 2 / 10**2 + (row - 10) ** 2 / 6**2 <= 1
                     for col in range(29)
                 ]
                 for row in range(21)
@@ -640,7 +640,7 @@ class Test_lddmm_register:
         # template has shape (25, 25) and radius 8.
         template = np.array(
             [
-                [(col - 12) ** 2 + (row - 12) ** 2 <= 8 ** 2 for col in range(25)]
+                [(col - 12) ** 2 + (row - 12) ** 2 <= 8**2 for col in range(25)]
                 for row in range(25)
             ],
             int,
@@ -649,7 +649,7 @@ class Test_lddmm_register:
         target = np.array(
             [
                 [
-                    (col - 14) ** 2 / 10 ** 2 + (row - 10) ** 2 / 6 ** 2 <= 1
+                    (col - 14) ** 2 / 10**2 + (row - 10) ** 2 / 6**2 <= 1
                     for col in range(29)
                 ]
                 for row in range(21)
@@ -674,7 +674,7 @@ class Test_lddmm_register:
         template = np.array(
             [
                 [
-                    (col - 14) ** 2 / 10 ** 2 + (row - 10) ** 2 / 6 ** 2 <= 1
+                    (col - 14) ** 2 / 10**2 + (row - 10) ** 2 / 6**2 <= 1
                     for col in range(29)
                 ]
                 for row in range(21)
@@ -699,7 +699,7 @@ class Test_lddmm_register:
         template = np.array(
             [
                 [
-                    (col - 14) ** 2 / 12 ** 2 + (row - 10) ** 2 / 8 ** 2 <= 1
+                    (col - 14) ** 2 / 12**2 + (row - 10) ** 2 / 8**2 <= 1
                     for col in range(29)
                 ]
                 for row in range(21)

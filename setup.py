@@ -27,6 +27,8 @@ REQUIRED_PACKAGES = [
 "feather-format==0.4.1",
 "nibabel>=2.4.1",
 "nilearn>=0.5.2",
+"zarr>=2.10.2",
+"h5py>=3.3.0"
 
 ]
 
@@ -68,4 +70,10 @@ setup(
     ],
     packages=find_packages(),
     include_package_data=True,
+    entry_points={
+        "napari.manifest": [
+            "brainlit = brainlit.napari_viterbrain:napari.yaml",
+        ],
+    },
+    package_data={"brainlit.napari_viterbrain": ["napari.yaml"]},
 )
