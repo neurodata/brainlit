@@ -1,4 +1,3 @@
-
 # preprocessing data from tifs to tensors for evaluation
 
 from skimage import io
@@ -27,7 +26,9 @@ def get_img_and_mask(data_dir):
         image = f[0]
         num = int(f[1])
 
-        if (image == "test" and num in [9, 10, 24]) or (image == "validation" and num in [11]):
+        if (image == "test" and num in [9, 10, 24]) or (
+            image == "validation" and num in [11]
+        ):
             continue
 
         # getting image
@@ -37,9 +38,14 @@ def get_img_and_mask(data_dir):
         im_padded = np.pad(im, ((4, 4), (4, 4), (3, 3)))
 
         # getting ground truth mask
-        file_name = str(im_path)[str(im_path).find("\\", 80) + 1: (str(im_path).find("sample"))] + "/mask-location/"
-        file_num = file_name[file_name.find("_") + 1:]
-        if file_name[0] == 'v':
+        file_name = (
+            str(im_path)[
+                str(im_path).find("\\", 80) + 1 : (str(im_path).find("sample"))
+            ]
+            + "/mask-location/"
+        )
+        file_num = file_name[file_name.find("_") + 1 :]
+        if file_name[0] == "v":
             file_num = str(int(file_num) + 25)
         mask_path = Path(file_name + f[0] + "_" + f[1] + "_mask.npy")
         mask = np.load(mask_path)
@@ -49,6 +55,7 @@ def get_img_and_mask(data_dir):
 
     return X_img, y_mask
 
+
 # Train/test/split
 # INPUT
 # X_img = list of 3d np array images
@@ -57,7 +64,7 @@ def get_img_and_mask(data_dir):
 # OUTPUT
 # X_train, y_train, X_test, y_test = lists of specified
 #      training and testing size
-def train_test_split(X_img, y_mask, test_percent = 0.25):
+def train_test_split(X_img, y_mask, test_percent=0.25):
     num_images = len(X_img)
     test_images = num_images * test_percent
     train_images = int(num_images - test_images)
@@ -69,6 +76,7 @@ def train_test_split(X_img, y_mask, test_percent = 0.25):
     y_test = y_mask[train_images:num_images]
 
     return X_train, y_train, X_test, y_test
+
 
 # get subvolumes for training set
 # INPUT
@@ -98,7 +106,7 @@ def get_subvolumes(X_train, y_train, x_dim, y_dim, z_dim):
             while j < image.shape[1]:
                 k = 0
                 while k < image.shape[2]:
-                    subvol = image[i:i + x_dim, j:j + y_dim, k:k + z_dim]
+                    subvol = image[i : i + x_dim, j : j + y_dim, k : k + z_dim]
                     X_train_subvolumes.append(subvol)
                     k += z_dim
                 j += y_dim
@@ -111,13 +119,14 @@ def get_subvolumes(X_train, y_train, x_dim, y_dim, z_dim):
             while j < mask.shape[1]:
                 k = 0
                 while k < mask.shape[2]:
-                    subvol = mask[i:i + x_dim, j:j + y_dim, k:k + z_dim]
+                    subvol = mask[i : i + x_dim, j : j + y_dim, k : k + z_dim]
                     y_train_subvolumes.append(subvol)
                     k += z_dim
                 j += y_dim
             i += x_dim
 
     return X_train_subvolumes, y_train_subvolumes
+
 
 # INPUT
 # X_train_subvolumes, y_train_subvolumes, X_test, y_test
@@ -155,7 +164,7 @@ def getting_torch_objects(X_train_subvolumes, y_train_subvolumes, X_test, y_test
     print(f"Testing features shape: {test_features.size()}")
 
     # printing device torch is using (cuda or cpu)
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    print('Using {} device'.format(device))
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print("Using {} device".format(device))
 
     return train_dataloader, test_dataloader

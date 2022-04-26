@@ -12,6 +12,7 @@ from brainlit.utils.benchmarking_params import (
     type_to_date,
 )
 
+
 def make_masks(data_dir):
     im_dir = Path(os.path.join(data_dir, "sample-tif-location"))
     swc_dir = Path(os.path.join(data_dir, "sample-swc-location"))

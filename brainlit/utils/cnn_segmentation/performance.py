@@ -1,4 +1,3 @@
-
 # functions for model training and performance evaluation
 
 import numpy as np
@@ -7,7 +6,12 @@ from tqdm.notebook import tqdm
 import torch
 from torch import nn
 import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score, precision_score, recall_score, precision_recall_curve
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    precision_recall_curve,
+)
 
 # INPUT
 # train_dataloader
@@ -35,6 +39,7 @@ def train_loop(dataloader, model, loss_fn, optimizer):
             optimizer.step()
             loss, current = loss.item(), batch * len(X)
             loss_list.append(loss)
+
 
 # INPUT
 # test_dataloader
@@ -78,7 +83,7 @@ class DiceLoss(nn.Module):
         targets = targets.view(-1)
 
         intersection = (inputs * targets).sum()
-        dice = (2. * intersection + smooth) / (inputs.sum() + targets.sum() + smooth)
+        dice = (2.0 * intersection + smooth) / (inputs.sum() + targets.sum() + smooth)
 
         return 1 - dice
 
@@ -141,16 +146,26 @@ def quick_stats(stat, epoch, acc_list, precision_list, recall_list, percent_nonz
         print("Accuracy at epoch " + str(epoch) + " is " + str(acc_list[epoch - 1]))
     if stat == "all":
         print("Accuracy at epoch " + str(epoch) + " is " + str(acc_list[epoch - 1]))
-        print("Precision at epoch " + str(epoch) + " is " + str(precision_list[epoch - 1]))
+        print(
+            "Precision at epoch " + str(epoch) + " is " + str(precision_list[epoch - 1])
+        )
         print("Recall at epoch " + str(epoch) + " is " + str(recall_list[epoch - 1]))
-        print("Percent nonzero at epoch " + str(epoch) + " is " + str(percent_nonzero[epoch - 1]))
+        print(
+            "Percent nonzero at epoch "
+            + str(epoch)
+            + " is "
+            + str(percent_nonzero[epoch - 1])
+        )
+
 
 # INPUT
 # loss list, list of test loss/any loss at each epoch
 # acc_list, precision_list, recall_list, and percent_nonzero from get_metrics function
 # OUTPUT
 # plotted figures
-def plot_metrics_over_epoch(loss_list, acc_list, precision_list, recall_list, percent_nonzero):
+def plot_metrics_over_epoch(
+    loss_list, acc_list, precision_list, recall_list, percent_nonzero
+):
     plt.figure()
     plt.title("Test loss over epoch")
     plt.xlabel("Epoch")
@@ -180,6 +195,7 @@ def plot_metrics_over_epoch(loss_list, acc_list, precision_list, recall_list, pe
     plt.xlabel("Epoch")
     plt.ylabel("Nonzeros (%)")
     plt.plot(percent_nonzero)
+
 
 # INPUT
 # pred_list, y_list
@@ -213,6 +229,7 @@ def plot_pr_histograms(pred_list, y_list):
     plt.ylabel("Individual Recall")
     plt.hist(recall_list_t, bins=20)
 
+
 # INPUT
 # x_list, list of all x images from testing loop
 # pred_list, list of testing predictions
@@ -227,7 +244,7 @@ def plot_with_napari(x_list, pred_list, y_list):
 
         fpr, tpr, thresholds = roc_curve(y.flatten(), pred.flatten())
         optimal_thresh = thresholds[np.argmax(tpr - fpr)]
-        #print("Optimal Threshold for image " + str(i) + ": ", optimal_thresh)
+        # print("Optimal Threshold for image " + str(i) + ": ", optimal_thresh)
 
         pred_thresh = pred
 
@@ -241,6 +258,7 @@ def plot_with_napari(x_list, pred_list, y_list):
                             pred_thresh[i][a][b][c] = 0
 
         import napari
+
         with napari.gui_qt():
             viewer = napari.Viewer(ndisplay=3)
             viewer.add_image(x[0])
