@@ -10,6 +10,7 @@ import os
 # dir_base= "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/"
 # dir_base = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/"
 dir_base = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/"
+dir_base = "s3://smartspim-precomputed-volumes/2022_01_14/8613/"
 outdir = "/data/tathey1/matt_wright/brain_temp/"
 
 
@@ -22,7 +23,6 @@ dir = dir_base + "atlas_to_target"
 vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 print(f"Atlas shape: {vol_reg.shape}")
 
-# outdir = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/"
 block_size = [256, 256, 256]
 
 corners = []

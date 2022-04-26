@@ -14,6 +14,11 @@ brain2paths = {
         "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_561",
         "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_488",
     ],
+    "8468": {
+        "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_01_19/8468/Ch_647_iso",
+        "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_01_19/8468/Ch_561_iso",
+        "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_01_19/8468/Ch_488_iso",
+    },
 }
 
 # first entry is somas, second is nonsomas
