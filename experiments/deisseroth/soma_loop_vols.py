@@ -13,10 +13,10 @@ import os
 chunk_size = [256, 256, 300]
 ncpu = 11
 dir_base = "precomputed://https://dlab-colm.neurodata.io/2022_03_15/8606/"
+data_dir = "/data/tathey1/matt_wright/brainr_temp/"
 threshold = 0.6
 progress_file = "/home/tathey1/progress_soma.txt"  # "/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/tracing/progress.txt"
-files_dir = "/data/tathey1/matt_wright/brainr_temp/"
-somas_file = "/home/tathey1/somas_brainr3.txt"
+somas_file = "/home/tathey1/somas_brainr4.txt"
 
 with open(progress_file) as f:
     for line in f:
@@ -31,8 +31,7 @@ print(f"Number cpus: {multiprocessing.cpu_count()}")
 warnings.filterwarnings("ignore")
 
 
-def process_chunk(i, j, k, dir_base, threshold):
-    data_dir = "/data/tathey1/matt_wright/brainr_temp/"
+def process_chunk(i, j, k, dir_base, threshold, data_dir):
     chunk_size = [256, 256, 300]
     mip = 0
     area_threshold = 500
@@ -100,7 +99,7 @@ shape = vol.shape
 for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
     for j in tqdm(range(coords[1], shape[1], chunk_size[1]), leave=False):
         results = Parallel(n_jobs=ncpu)(
-            delayed(process_chunk)(i, j, k, dir_base, threshold) for k in range(0, shape[2], chunk_size[2])
+            delayed(process_chunk)(i, j, k, dir_base, threshold, data_dir) for k in range(0, shape[2], chunk_size[2])
         )
 
         with open(somas_file, "a+") as f:
@@ -113,7 +112,7 @@ for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
             f.write("\n")
             f.write(f"{i} {j}")
 
-        for f in os.listdir(files_dir):
-            os.remove(os.path.join(files_dir, f))
+        for f in os.listdir(data_dir):
+            os.remove(os.path.join(data_dir, f))
 
     coords[1] = 0
