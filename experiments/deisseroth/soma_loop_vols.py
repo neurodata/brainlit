@@ -93,7 +93,7 @@ def process_chunk(i, j, k, dir_base, threshold, data_dir):
 
 
 mip = 0
-vol = CloudVolume(dir, parallel=True, mip=mip, fill_missing=True)
+vol = CloudVolume(dir_base + "Ch_647", parallel=True, mip=mip, fill_missing=True)
 shape = vol.shape
 
 for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
