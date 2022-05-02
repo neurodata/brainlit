@@ -93,8 +93,10 @@ def process_chunk(i, j, k, dir_base, threshold, data_dir):
 
 
 mip = 0
-vol = CloudVolume(dir_base + "Ch_647", parallel=True, mip=mip, fill_missing=True)
+sample_path = dir_base + "Ch_647"
+vol = CloudVolume(sample_path, parallel=True, mip=mip, fill_missing=True)
 shape = vol.shape
+print(f"Processing: {sample_path} with shape {shape} at threshold {threshold}")
 
 for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
     for j in tqdm(range(coords[1], shape[1], chunk_size[1]), leave=False):
