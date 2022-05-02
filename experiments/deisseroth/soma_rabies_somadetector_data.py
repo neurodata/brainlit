@@ -1,23 +1,29 @@
 brain2paths = {
-    "8557": [
-        "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_647",
-        "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_561",
-        "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_488",
-    ],
-    "8555": [
-        "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_647",
-        "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_561",
-        "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_488",
-    ],
-    "8607": [
-        "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_647",
-        "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_561",
-        "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_488",
-    ],
+    "8557": {
+        "ab" : "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_647",
+        "bg": "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_561",
+        "endo": "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_488",
+    },
+    "8555": {
+        "ab" : "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_647",
+        "bg": "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_561",
+        "endo": "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_488",
+    },
+    "8607": {
+        "ab" : "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_647",
+        "bg": "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_561",
+        "endo": "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_488",
+    },
     "8468": {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_01_19/8468/Ch_647_iso",
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_01_19/8468/Ch_561_iso",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_01_19/8468/Ch_488_iso",
+    },
+    "8606": {
+        "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_03_15/8606/Ch_647",
+        "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_03_15/8606/Ch_561",
+        "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_15/8606/Ch_488",
+        "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=18lUZ-z6xx15Rg"
     },
 }
 

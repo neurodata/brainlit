@@ -12,7 +12,8 @@ import os
 
 chunk_size = [256, 256, 300]
 ncpu = 11
-dir = "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_647"
+dir_base = "precomputed://https://dlab-colm.neurodata.io/2022_03_15/8606/"
+threshold = 0.6
 progress_file = "/home/tathey1/progress_soma.txt"  # "/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain4/tracing/progress.txt"
 files_dir = "/data/tathey1/matt_wright/brainr_temp/"
 somas_file = "/home/tathey1/somas_brainr3.txt"
@@ -30,18 +31,17 @@ print(f"Number cpus: {multiprocessing.cpu_count()}")
 warnings.filterwarnings("ignore")
 
 
-def process_chunk(i, j, k):
+def process_chunk(i, j, k, dir_base, threshold):
     data_dir = "/data/tathey1/matt_wright/brainr_temp/"
     chunk_size = [256, 256, 300]
     mip = 0
-    threshold = 0.4
     area_threshold = 500
 
-    dir_fg = "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_647"
+    dir_fg = dir_base + "Ch_647"
     vol_fg = CloudVolume(dir_fg, parallel=1, mip=mip, fill_missing=True)
-    dir_bg = "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_561"
+    dir_bg = dir_base + "Ch_561"
     vol_bg = CloudVolume(dir_bg, parallel=1, mip=mip, fill_missing=True)
-    dir_endo = "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_488"
+    dir_endo = dir_base + "Ch_488"
     vol_endo = CloudVolume(dir_endo, parallel=1, mip=mip, fill_missing=True)
 
     shape = vol_fg.shape
@@ -100,7 +100,7 @@ shape = vol.shape
 for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
     for j in tqdm(range(coords[1], shape[1], chunk_size[1]), leave=False):
         results = Parallel(n_jobs=ncpu)(
-            delayed(process_chunk)(i, j, k) for k in range(0, shape[2], chunk_size[2])
+            delayed(process_chunk)(i, j, k, dir_base, threshold) for k in range(0, shape[2], chunk_size[2])
         )
 
         with open(somas_file, "a+") as f:
