@@ -91,7 +91,7 @@ def process_chunk(c1, c2, dir_base, threshold, data_dir, results_dir):
         if len(results) > 0:
             with open(fname_results, "w") as f2:
                 for location in results:
-                    f2.write(location)
+                    f2.write(str(location))
                     f2.write("\n")
 
 
@@ -104,6 +104,8 @@ print(f"Processing: {sample_path} with shape {shape} at threshold {threshold}")
 
 corners = []
 for i in tqdm(range(0, shape[0], chunk_size[0])):
+    if i < 1500:
+        continue
     for j in tqdm(range(0, shape[1], chunk_size[1]), leave=False):
         for k in range(0, shape[2], chunk_size[2]):
             c1 = [i, j, k]
