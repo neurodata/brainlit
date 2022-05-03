@@ -96,7 +96,7 @@ mip = 0
 sample_path = dir_base + "Ch_647"
 vol = CloudVolume(sample_path, parallel=True, mip=mip, fill_missing=True)
 shape = vol.shape
-print(f"Processing: {sample_path} with shape {shape} at threshold {threshold}")
+print(f"Processing: {sample_path} with shape {shape} at threshold {threshold} starting at {coords}")
 
 for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
     for j in tqdm(range(coords[1], shape[1], chunk_size[1]), leave=False):
