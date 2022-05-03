@@ -23,8 +23,6 @@ chunk_size = [256, 256, 300]
 
 data_dir = "/data/tathey1/matt_wright/brain_temp/"
 
-coords = [0, 0]
-
 print(f"Number cpus: {multiprocessing.cpu_count()}")
 
 warnings.filterwarnings("ignore")
@@ -34,13 +32,12 @@ vol = CloudVolume(dir_base + "Ch_647", parallel=True, mip=mip, fill_missing=True
 shape = vol.shape
 
 corners = []
-for i in tqdm(range(coords[0], shape[0], chunk_size[0])):
-    for j in tqdm(range(coords[1], shape[1], chunk_size[1]), leave=False):
+for i in tqdm(range(0, shape[0], chunk_size[0])):
+    for j in tqdm(range(0, shape[1], chunk_size[1]), leave=False):
         for k in range(0, shape[2], chunk_size[2]):
             c1 = [i, j, k]
             c2 = [np.amin([shape[idx], c1[idx] + chunk_size[idx]]) for idx in range(3)]
             corners.append([c1, c2])
-    coords[1] = 0
 
 corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
 

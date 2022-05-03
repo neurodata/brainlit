@@ -14,7 +14,6 @@ dir_base = "s3://smartspim-precomputed-volumes/2022_01_14/8613/"
 outdir = "/data/tathey1/matt_wright/brain_temp/"
 
 
-
 dir = dir_base + "axon_mask"
 vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 print(f"Mask shape: {vol_mask.shape}")
