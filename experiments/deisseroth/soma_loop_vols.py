@@ -11,7 +11,7 @@ import multiprocessing
 import os
 
 chunk_size = [256, 256, 300]
-ncpu = 11
+ncpu = 16
 dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_03_15/8606/"
 data_dir = "/data/tathey1/matt_wright/brainr_temp/"
 results_dir = "/data/tathey1/matt_wright/brainr_results/"
@@ -88,10 +88,11 @@ def process_chunk(c1, c2, dir_base, threshold, data_dir, results_dir):
             if prop["area"] > area_threshold:
                 location = list(np.add((i, j, k), prop["centroid"]))
                 results.append(location)
-        with open(fname_results, "w") as f2:
-            for location in results:
-                f2.write(location)
-                f2.write("\n")
+        if len(results) > 0:
+            with open(fname_results, "w") as f2:
+                for location in results:
+                    f2.write(location)
+                    f2.write("\n")
 
 
 mip = 0
