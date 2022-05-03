@@ -86,7 +86,7 @@ def process_chunk(c1, c2, dir_base, threshold, data_dir, results_dir):
         results = []
         for prop in props:
             if prop["area"] > area_threshold:
-                location = list(np.add((i, j, k), prop["centroid"]))
+                location = list(np.add(c1, prop["centroid"]))
                 results.append(location)
         if len(results) > 0:
             with open(fname_results, "w") as f2:
