@@ -38,7 +38,7 @@ size: 36:24
 
 
 <div class='box'>
-<div class="columns5">
+<div class="columns-box">
 <div>
 
 
@@ -68,7 +68,7 @@ size: 36:24
 </div>
 </div>
 
-<div class="columns3">
+<div class="columns-main">
 <div>
 
 
