@@ -46,7 +46,7 @@ else:
                 elements = line.split(",")
                 coord = [elements[0][1:], elements[1], elements[2][:-1]]
 
-                coords_target_space = [float(e.strip()) for e in coord]
+                coords_target_space.append([float(e.strip()) for e in coord])
                 coord = [int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)]
                 coords.append(coord)
 
