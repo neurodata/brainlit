@@ -32,7 +32,7 @@ if somas[:-4] == ".txt":
             coord = [int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)]
             coords.append(coord)
 else:
-    onlyfiles = [f for f in listdir(somas) if isfile(join(somas, f))]
+    onlyfiles = [join(somas, f) for f in listdir(somas) if isfile(join(somas, f))]
     for file in onlyfiles:
         file1 = open(file, "r")
         lines = file1.readlines()
