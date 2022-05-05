@@ -2,6 +2,8 @@ import numpy as np
 from cloudvolume import CloudVolume
 from tqdm import tqdm
 import pickle
+from os import listdir
+from os.path import isfile, join
 
 brain = "r2"
 div_factor = [8, 8, 1]
@@ -13,20 +15,38 @@ atlas_vol = CloudVolume(
     fill_missing=True,
 )
 print(f"size: {atlas_vol.shape} ")
-somas = "/home/user/misc_tommy/somas_brain" + brain + ".txt"
 
-file1 = open(somas, "r")
-lines = file1.readlines()
+somas = "/data/tathey1/matt_wright/brainr_results/"
 
 coords = []
-for line in tqdm(lines, desc="parsing coordinates"):
-    if line != "\n":
-        line = " ".join(line.split())
-        elements = line.split(",")
-        coord = [elements[0][1:], elements[1], elements[2][:-1]]
+if somas[:-4] = ".txt":
+    file1 = open(somas, "r")
+    lines = file1.readlines()
 
-        coord = [int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)]
-        coords.append(coord)
+    for line in tqdm(lines, desc="parsing coordinates"):
+        if line != "\n":
+            line = " ".join(line.split())
+            elements = line.split(",")
+            coord = [elements[0][1:], elements[1], elements[2][:-1]]
+
+            coord = [int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)]
+            coords.append(coord)
+else:
+    onlyfiles = [f for f in listdir(somas) if isfile(join(somas, f))]
+    for file in onlyfiles:
+        file1 = open(file, "r")
+        lines = file1.readlines()
+
+        for line in tqdm(lines, desc="parsing coordinates"):
+            if line != "\n":
+                line = " ".join(line.split())
+                elements = line.split(",")
+                coord = [elements[0][1:], elements[1], elements[2][:-1]]
+
+                coord = [int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)]
+                coords.append(coord)
+print(f"{len(coords)} somas detected, first is: {coords[0]}")
+
 
 dict = {}
 for coord in tqdm(coords, desc="identiifynig rois"):
