@@ -5,7 +5,7 @@ import pickle
 from os import listdir
 from os.path import isfile, join
 
-brain = "r2"
+brain = "r4"
 div_factor = [8, 8, 1]
 
 atlas_vol = CloudVolume(
