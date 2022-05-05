@@ -46,8 +46,8 @@ else:
                 elements = line.split(",")
                 coord = [elements[0][1:], elements[1], elements[2][:-1]]
 
-                with open(fname, "w") as f:
-                    f.write(str(coord))
+                with open(fname, "a") as f:
+                    f.write(str([float(c) for c in coord]))
                     f.write("\n")
 
                 coord = [int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)]
