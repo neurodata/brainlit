@@ -33,11 +33,11 @@ if somas[:-4] == ".txt":
             coords.append(coord)
 else:
     onlyfiles = [join(somas, f) for f in listdir(somas) if isfile(join(somas, f))]
-    for file in onlyfiles:
+    for file in tqdm(onlyfiles, desc="reading files"):
         file1 = open(file, "r")
         lines = file1.readlines()
 
-        for line in tqdm(lines, desc="parsing coordinates"):
+        for line in tqdm(lines, desc="parsing coordinates", leave=False):
             if line != "\n":
                 line = " ".join(line.split())
                 elements = line.split(",")
