@@ -43,8 +43,6 @@ else:
             if line != "\n":
                 line = " ".join(line.split())
                 elements = line.split(",")
-                print(file)
-                print(line)
                 coord = [elements[0][1:], elements[1], elements[2][:-1]]
 
                 coords_target_space.append([float(e.strip()) for e in coord])
@@ -54,7 +52,7 @@ else:
     fname = somas + "all_somas.txt"
     with open(fname, "w") as f:
         for coord in coords_target_space:
-            f.write(str(coord))
+            f.write(f'[{coord[0]},{coord[1]},{coord[2]}]')
             f.write("\n")
 
 print(f"{len(coords)} somas detected, first is: {coords[0]}")
