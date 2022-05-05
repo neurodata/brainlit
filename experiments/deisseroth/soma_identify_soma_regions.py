@@ -20,6 +20,7 @@ somas = "/data/tathey1/matt_wright/brainr_results/"
 outpath = "/home/user/misc_tommy/soma_counts_brain" + brain + ".pickle"
 
 coords = []
+coords_target_space = []
 if somas[:-4] == ".txt":
     file1 = open(somas, "r")
     lines = file1.readlines()
@@ -45,13 +46,15 @@ else:
                 elements = line.split(",")
                 coord = [elements[0][1:], elements[1], elements[2][:-1]]
 
-                with open(fname, "w") as f:
-                    for coord in coords:
-                        f.write(str(coord))
-                        f.write("\n")
-
+                coords_target_space = [float(e.strip()) for e in coord]
                 coord = [int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)]
                 coords.append(coord)
+
+    
+    with open(fname, "w") as f:
+        for coord in coords_target_space:
+            f.write(str(coord))
+            f.write("\n")
 
 print(f"{len(coords)} somas detected, first is: {coords[0]}")
 
