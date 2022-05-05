@@ -19,7 +19,7 @@ print(f"size: {atlas_vol.shape} ")
 somas = "/data/tathey1/matt_wright/brainr_results/"
 
 coords = []
-if somas[:-4] = ".txt":
+if somas[:-4] == ".txt":
     file1 = open(somas, "r")
     lines = file1.readlines()
 
