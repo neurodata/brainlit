@@ -35,7 +35,7 @@ if somas[:-4] == ".txt":
 else:
     onlyfiles = [join(somas, f) for f in listdir(somas) if isfile(join(somas, f))]
     fname = somas + "all_somas.txt"
-    
+
     for file in tqdm(onlyfiles, desc="reading files"):
         file1 = open(file, "r")
         lines = file1.readlines()
@@ -47,9 +47,8 @@ else:
                 coord = [elements[0][1:], elements[1], elements[2][:-1]]
 
                 with open(fname, "w") as f:
-                    for coord in coords:
-                        f.write(str(coord))
-                        f.write("\n")
+                    f.write(str(coord))
+                    f.write("\n")
 
                 coord = [int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)]
                 coords.append(coord)
