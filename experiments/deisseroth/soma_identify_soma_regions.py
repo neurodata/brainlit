@@ -46,7 +46,7 @@ else:
                 elements = line.split(",")
                 coord = [elements[0][1:], elements[1], elements[2][:-1]]
 
-                with open(fname, "w") as f:
+                with open(fname, "a") as f:
                     f.write(str(coord))
                     f.write("\n")
 
