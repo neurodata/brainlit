@@ -9,7 +9,7 @@ brain = "r4"
 div_factor = [8, 8, 1]
 
 atlas_vol = CloudVolume(
-    "file:///mnt/data/Neuroglancer_Data/2021_12_02/8555/atlas_to_target/",
+    "precomputed://https://dlab-colm.neurodata.io/2022_03_15/8606/atlas_to_target",
     parallel=1,
     mip=0,
     fill_missing=True,
