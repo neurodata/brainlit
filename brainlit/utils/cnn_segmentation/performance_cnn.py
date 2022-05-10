@@ -2,7 +2,6 @@
 
 import numpy as np
 from sklearn.metrics import roc_curve, auc, jaccard_score
-from tqdm.notebook import tqdm
 import torch
 from torch import nn
 import matplotlib.pyplot as plt
@@ -113,13 +112,13 @@ def get_metrics(pred_list, y_list):
     recall_list = []
     percent_nonzero = []
 
-    for i in tqdm(range(len(pred_list))):
+    for i in range(len(pred_list)):
         acc_list_t = []
         precision_list_t = []
         recall_list_t = []
         percent_nonzero_t = []
 
-        for j in tqdm(range(len(pred_list[0]))):
+        for j in range(len(pred_list[0])):
             pred = pred_list[i][j].clone().numpy()[:, 0].round().astype(int).flatten()
             target = y_list[i][j][:, 0].clone().numpy().astype(int).flatten()
 
