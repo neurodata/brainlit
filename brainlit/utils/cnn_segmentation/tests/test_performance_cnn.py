@@ -23,9 +23,12 @@ def test_get_metrics():
         torch.from_numpy(np.ones(shape=(4, 4, 4))),
     ]
 
-    acc_list, precision_list, recall_list, percent_nonzero = performance_cnn.get_metrics(
-        pred_list, y_list
-    )
+    (
+        acc_list,
+        precision_list,
+        recall_list,
+        percent_nonzero,
+    ) = performance_cnn.get_metrics(pred_list, y_list)
 
     acc_true = [0.0, 100.0]
     precision_true = [0.0, 100.0]
