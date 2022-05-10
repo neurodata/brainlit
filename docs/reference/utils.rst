@@ -27,10 +27,13 @@ S3 Helper Methods
 .. autoapifunction:: get_file_paths
 .. autoapifunction:: main
 
-.. currentmodule:: brainlit.utils.cnn_segmentation
 
 CNN Segmentation
 -------------------
 
-.. autoapifunction:: preprocess_cnn
-.. autoapifunction:: performance_cnn
+.. currentmodule:: brainlit.utils.cnn_segmentation.preprocess_cnn
+
+.. autoapifunction:: get_subvolumes
+.. autoapifunction:: getting_torch_objects
+
+#.. autoapifunction:: performance_cnn
