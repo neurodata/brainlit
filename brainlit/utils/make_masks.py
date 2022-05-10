@@ -15,11 +15,11 @@ from brainlit.utils.benchmarking_params import (
 
 def make_masks(data_dir):
     """Swc to numpy mask
-        Args:
-            data_dir: direction to base data folder that download_benchmarking points to.
-            Should contain sample-tif-location and sample-swc-location
-        Returns:
-            Saved numpy masks in data-dir/mask-location for each image in sample-tif-location
+    Args:
+        data_dir: direction to base data folder that download_benchmarking points to.
+        Should contain sample-tif-location and sample-swc-location
+    Returns:
+        Saved numpy masks in data-dir/mask-location for each image in sample-tif-location
     """
     im_dir = Path(os.path.join(data_dir, "sample-tif-location"))
     swc_dir = Path(os.path.join(data_dir, "sample-swc-location"))
