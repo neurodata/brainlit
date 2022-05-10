@@ -15,7 +15,8 @@ from sklearn.metrics import (
 
 def train_loop(dataloader, model, loss_fn, optimizer):
     """Pytorch model training loop
-    Args:
+
+    Arguments:
         train_dataloader: torch object from getting_torch_objects function in preprocess.py
         model: pytorch model, defined locally
         loss_fn: loss_fn class name, ex: BCELoss, Dice
@@ -44,7 +45,8 @@ def train_loop(dataloader, model, loss_fn, optimizer):
 
 def test_loop(dataloader, model, loss_fn):
     """Pytorch model testing loop
-    Args:
+
+    Arguments:
         test_dataloader: torch object from getting_torch_objects function in preprocess.py
         model: pytorch model, defined locally
         loss_fn: loss_fn class name, ex: BCELoss, Dice
@@ -98,7 +100,8 @@ class DiceLoss(nn.Module):
 
 def get_metrics(pred_list, y_list):
     """Getting accuracy, precision, and recall at each epoch
-    Args:
+
+    Arguments:
         pred_list: list of predictions for every image at every epoch, output of testing loop
         y_list: list of true y masks, output of testing loop
     Returns:
@@ -149,7 +152,8 @@ def get_metrics(pred_list, y_list):
 
 def quick_stats(stat, epoch, acc_list, precision_list, recall_list, percent_nonzero):
     """Printing quick test stats at specified epoch
-    Args:
+
+    Arguments:
         stat: str, "all" if you want to print all metrics (accuracy, precision, reacll, % nonzero)
         acc_list: list of average accuracy for each epoch, from get_metrics function
         precision_list: list of average precision for each epoch, from get_metrics function
@@ -178,7 +182,8 @@ def plot_metrics_over_epoch(
     loss_list, acc_list, precision_list, recall_list, percent_nonzero
 ):
     """Plotting all metrics over epoch
-    Args:
+
+    Arguments:
         loss_list: list of test loss over epoch
         acc_list: list of average accuracy for each epoch, from get_metrics function
         precision_list: list of average precision for each epoch, from get_metrics function
@@ -220,7 +225,8 @@ def plot_metrics_over_epoch(
 
 def plot_pr_histograms(pred_list, y_list):
     """Plotting histograms for precision and recall at final epoch
-    Args:
+
+    Arguments:
         pred_list: list of predictions for all images at last epoch
         y_list: lost of true y masks for all images at last epoch
     Returns:
@@ -255,7 +261,8 @@ def plot_pr_histograms(pred_list, y_list):
 
 def plot_with_napari(x_list, pred_list, y_list):
     """Plotting all test images at an epoch in napari
-    Args:
+
+    Arguments:
         x_list: list of all x images from testing loop
         pred_list: list of all testing predictions at an epoch
         y_list: list of true ground truth masks at that same epoch
