@@ -32,5 +32,5 @@ S3 Helper Methods
 CNN Segmentation
 -------------------
 
-#.. autoapifunction:: preprocess
-#.. autoapifunction:: performance
+.. autoapifunction:: preprocess_cnn
+.. autoapifunction:: performance_cnn
