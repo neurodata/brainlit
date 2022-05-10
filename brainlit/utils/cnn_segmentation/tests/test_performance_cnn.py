@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 import torch
 
-from brainlit.utils.cnn_segmentation import performance
+from brainlit.utils.cnn_segmentation import performance_cnn
 from numpy.testing import (
     assert_array_equal,
 )
