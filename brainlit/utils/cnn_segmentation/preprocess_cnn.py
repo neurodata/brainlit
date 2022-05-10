@@ -14,6 +14,7 @@ def get_img_and_mask(data_dir):
 
     Arguments:
         data_dir: str, path to tif and mask files
+
     Returns:
         X_img: list of 3d np array images
         y_mask: list of 3d np array masks
@@ -64,6 +65,7 @@ def train_test_split(X_img, y_mask, test_percent=0.25):
     Args:
         X_img: list of 3d np array images
         y_mask: list of 3d np array masks
+
     Returns:
         X_train, y_train, X_test, y_test: lists of specifie training and testing size
     """
@@ -89,6 +91,7 @@ def get_subvolumes(X_train, y_train, x_dim, y_dim, z_dim):
         x_dim: int, x_dim of subvolume, must be divisible by image shape
         y_dim: int, y_dim of subvolume, must be divisible by image shape
         z_dim: int, z_dim of subvolume, must be divisible by image shape
+
     Returns:
         X_train_subvolume: List of image subvolumes, for training
         y_train_subvolume: List of associated mask subvolumes, for training
@@ -134,6 +137,7 @@ def getting_torch_objects(X_train_subvolumes, y_train_subvolumes, X_test, y_test
         y_train_subvolumes: list, trianing masks (or subvolumes) from get_subvolumes function
         X_test: list, testing images from train_test_split function
         y_test: list, testing masks from train_test_split function
+
     Returns:
         X_train_subvolume: list of image subvolumes for training
         y_train_subvolume: list of associated mask subvolumes for training

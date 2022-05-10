@@ -50,6 +50,7 @@ def test_loop(dataloader, model, loss_fn):
         test_dataloader: torch object from getting_torch_objects function in preprocess.py
         model: pytorch model, defined locally
         loss_fn: loss_fn class name, ex: BCELoss, Dice
+
     Returns:
         x_list: list, true images
         y_pred: nested list, model predictions for each image at each epoch
@@ -104,6 +105,7 @@ def get_metrics(pred_list, y_list):
     Arguments:
         pred_list: list of predictions for every image at every epoch, output of testing loop
         y_list: list of true y masks, output of testing loop
+
     Returns:
         acc_list: list of average accuracy for each epoch
         precision_list: list of average precision for each epoch
@@ -159,6 +161,7 @@ def quick_stats(stat, epoch, acc_list, precision_list, recall_list, percent_nonz
         precision_list: list of average precision for each epoch, from get_metrics function
         recall_list: list of average recall for each epoch, from get_metrics function
         percent_nonzero: list of percent of nonzero predictions at each epoch, from get_metrics function
+
     Returns:
         Printed metrics for specified epoch
     """
@@ -189,6 +192,7 @@ def plot_metrics_over_epoch(
         precision_list: list of average precision for each epoch, from get_metrics function
         recall_list: list of average recall for each epoch, from get_metrics function
         percent_nonzero: list of percent of nonzero predictions at each epoch, from get_metrics function
+
     Returns:
         Plotted figures for accuracy, precision, recall, % nonzero, and loss over epoch
     """
@@ -229,6 +233,7 @@ def plot_pr_histograms(pred_list, y_list):
     Arguments:
         pred_list: list of predictions for all images at last epoch
         y_list: lost of true y masks for all images at last epoch
+
     Returns:
         Precision and recall plots for all images at last epoch
     """
@@ -266,6 +271,7 @@ def plot_with_napari(x_list, pred_list, y_list):
         x_list: list of all x images from testing loop
         pred_list: list of all testing predictions at an epoch
         y_list: list of true ground truth masks at that same epoch
+
     Returns:
         Visualizations of napari image, ground truth mask, and thresholded prediction mask
     """
