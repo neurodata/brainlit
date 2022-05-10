@@ -12,7 +12,7 @@ Data Helper Methods
 .. autoapiclass:: NeuronTrace
     :members:
     
-.. autoapifunction:: make_masks
+#.. autoapifunction:: make_masks
 
 .. currentmodule:: brainlit.utils.upload_to_neuroglancer
 
@@ -32,5 +32,5 @@ S3 Helper Methods
 CNN Segmentation
 -------------------
 
-.. autoapifunction:: preprocess
-.. autoapifunction:: performance
+#.. autoapifunction:: preprocess
+#.. autoapifunction:: performance
