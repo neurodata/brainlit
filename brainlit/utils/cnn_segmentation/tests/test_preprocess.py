@@ -1,7 +1,7 @@
 import pytest
 
 import numpy as np
-from brainlit.utils.cnn_segmentation import preprocess
+from brainlit.utils.cnn_segmentation import preprocess_cnn
 from numpy.testing import (
     assert_array_equal,
 )
