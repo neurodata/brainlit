@@ -12,7 +12,9 @@ Data Helper Methods
 .. autoapiclass:: NeuronTrace
     :members:
     
-#.. autoapifunction:: make_masks
+.. currentmodule:: brainlit.utils.make_masks
+    
+.. autoapifunction:: make_masks
 
 .. currentmodule:: brainlit.utils.upload_to_neuroglancer
 
