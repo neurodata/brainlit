@@ -15,7 +15,7 @@ def test_train_test_split():
     X_img = [0, 1, 2, 3]
     y_mask = [0.0, 1.1, 2.2, 3.3]
 
-    X_train, y_train, X_test, y_test = preprocess.train_test_split(X_img, y_mask)
+    X_train, y_train, X_test, y_test = preprocess_cnn.train_test_split(X_img, y_mask)
 
     X_train_true = [0, 1, 2]
     y_train_true = [0.0, 1.1, 2.2]
@@ -36,7 +36,7 @@ def test_get_subvolumes():
     y_dim = 2
     z_dim = 2
 
-    X_train_subvolumes, y_train_subvolumes = preprocess.get_subvolumes(
+    X_train_subvolumes, y_train_subvolumes = preprocess_cnn.get_subvolumes(
         X_train, y_train, x_dim, y_dim, z_dim
     )
 
@@ -72,7 +72,7 @@ def test_getting_torch_objects():
     X_test = [np.zeros(shape=(4, 4, 4))]
     y_test = [np.ones(shape=(4, 4, 4))]
 
-    train_dataloader, test_dataloader = preprocess.getting_torch_objects(
+    train_dataloader, test_dataloader = preprocess_cnn.getting_torch_objects(
         X_train, y_train, X_test, y_test
     )
 
