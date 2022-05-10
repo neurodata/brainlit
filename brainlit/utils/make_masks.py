@@ -15,9 +15,11 @@ from brainlit.utils.benchmarking_params import (
 
 def make_masks(data_dir):
     """Swc to numpy mask
-    Args:
+
+    Arguments:
         data_dir: direction to base data folder that download_benchmarking points to.
         Should contain sample-tif-location and sample-swc-location
+
     Returns:
         Saved numpy masks in data-dir/mask-location for each image in sample-tif-location
     """
@@ -74,8 +76,10 @@ def make_masks(data_dir):
 
 def get_scales(im_path):
     """Get image and swc scaling factors
-    Args:
+
+    Arguments:
         im_path: path to image
+
     Returns:
         scale: scaling image factor from benchmarking_params
         brain_offset: brain_offset image factor from benchmarking_params
@@ -106,7 +110,8 @@ def get_scales(im_path):
 
 def paths_to_Bresenham(im, paths_total, dilate_dist=1000):
     """generate Dilated Mask using paths
-    Args:
+
+    Arguments:
         im: image corresponding to mask
         paths_total: list of all paths from swc files
         dilate_dist: amount in microns to dilate mask by, default = 1000

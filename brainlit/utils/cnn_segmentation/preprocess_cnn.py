@@ -16,8 +16,8 @@ def get_img_and_mask(data_dir):
         data_dir: str, path to tif and mask files
 
     Returns:
-        X_img: list of 3d np array images
-        y_mask: list of 3d np array masks
+        List of 3d np array images: X_img
+        List of 3d np array masks: y_img
     """
     im_dir = Path(os.path.join(data_dir, "sample-tif-location"))
     gfp_files = list(im_dir.glob("**/*-gfp.tif"))
@@ -67,7 +67,7 @@ def train_test_split(X_img, y_mask, test_percent=0.25):
         y_mask: list of 3d np array masks
 
     Returns:
-        X_train, y_train, X_test, y_test: lists of specifie training and testing size
+        Lists of specifie training and testing size: X_train, y_train, X_test, y_test: l
     """
     num_images = len(X_img)
     test_images = num_images * test_percent
@@ -139,8 +139,8 @@ def getting_torch_objects(X_train_subvolumes, y_train_subvolumes, X_test, y_test
         y_test: list, testing masks from train_test_split function
 
     Returns:
-        X_train_subvolume: list of image subvolumes for training
-        y_train_subvolume: list of associated mask subvolumes for training
+        List of image subvolumes for training: X_train_subvolume
+        List of associated mask subvolumes for training: y_train_subvolumes
     """
     x_dim = X_train_subvolumes[0].shape[0]
     y_dim = X_train_subvolumes[0].shape[1]

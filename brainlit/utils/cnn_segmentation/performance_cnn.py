@@ -52,10 +52,10 @@ def test_loop(dataloader, model, loss_fn):
         loss_fn: loss_fn class name, ex: BCELoss, Dice
 
     Returns:
-        x_list: list, true images
-        y_pred: nested list, model predictions for each image at each epoch
-        y_list: nested list, true masks for each image at each epoch
-        avg_loss: list, average loss at each epoch
+        List, true images: x_list
+        Nested list, model predictions for each image at each epoch: y_pred
+        Nested list, true masks for each image at each epoch: y_list
+        List, average loss at each epoch: avg_loss
     """
     for batch, (X_all, y_all) in enumerate(dataloader):
 
@@ -107,10 +107,10 @@ def get_metrics(pred_list, y_list):
         y_list: list of true y masks, output of testing loop
 
     Returns:
-        acc_list: list of average accuracy for each epoch
-        precision_list: list of average precision for each epoch
-        recall_list: list of average recall for each epoch
-        percent_nonzero: list of percent of nonzero predictions at each epoch
+        List of average accuracy for each epoch: acc_list
+        List of average precision for each epoch: precision_list
+        List of average recall for each epoch: recall_list
+        List of percent of nonzero predictions at each epoch: percent_nonzero
     """
     acc_list = []
     precision_list = []
