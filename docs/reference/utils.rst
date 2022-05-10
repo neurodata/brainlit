@@ -36,4 +36,10 @@ CNN Segmentation
 .. autoapifunction:: get_subvolumes
 .. autoapifunction:: getting_torch_objects
 
-#.. autoapifunction:: performance_cnn
+.. currentmodule:: brainlit.utils.cnn_segmentation.performance_cnn
+
+.. autoapifunction:: train_loop
+.. autoapifunction:: test_loop
+.. autoapifunction:: get_metrics
+
+
