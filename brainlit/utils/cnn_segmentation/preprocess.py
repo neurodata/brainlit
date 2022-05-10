@@ -9,12 +9,14 @@ import torch
 from torch.utils.data import DataLoader
 
 
-# INPUT
-# data_dir = str, path to tif and mask files
-# OUTPUT
-# X_img = list of 3d np array images
-# y_mask = list of 3d np array masks
 def get_img_and_mask(data_dir):
+    """Get lists of tif images and associated ground truth masks
+        Args:
+            data_dir: str, path to tif and mask files
+        Returns:
+            X_img: list of 3d np array images
+            y_mask: list of 3d np array masks
+    """
     im_dir = Path(os.path.join(data_dir, "sample-tif-location"))
     gfp_files = list(im_dir.glob("**/*-gfp.tif"))
     X_img = []
@@ -56,15 +58,14 @@ def get_img_and_mask(data_dir):
     return X_img, y_mask
 
 
-# Train/test/split
-# INPUT
-# X_img = list of 3d np array images
-# y_mask = list of 3d np array masks
-# test_percent = % of data in test set, default = 0.25
-# OUTPUT
-# X_train, y_train, X_test, y_test = lists of specified
-#      training and testing size
 def train_test_split(X_img, y_mask, test_percent=0.25):
+    """Get train/test/split of images and masks
+        Args:
+            X_img: list of 3d np array images
+            y_mask: list of 3d np array masks
+        Returns:
+            X_train, y_train, X_test, y_test: lists of specifie training and testing size
+    """
     num_images = len(X_img)
     test_images = num_images * test_percent
     train_images = int(num_images - test_images)
@@ -78,25 +79,20 @@ def train_test_split(X_img, y_mask, test_percent=0.25):
     return X_train, y_train, X_test, y_test
 
 
-# get subvolumes for training set
-# INPUT
-# X_train, y_train from train_test_split function
-# x_dim, int, x_dim of subvolume, must be divisible by image shape
-# y_dim, int, y_dim of subvolume, must be divisible by image shape
-# z_dim, int, z_dim of subvolume, must be divisible by image shape
-# OUTPUT
-# X_train_subvolume, y_train_subvolume, lists of subvolumes for training
 def get_subvolumes(X_train, y_train, x_dim, y_dim, z_dim):
+    """Get subvolumes of specified site for training dataset
+        Args:
+            X_train: list of imgs, from train_test_split function
+            y_train: list of masks, from train_test_split function
+            x_dim: int, x_dim of subvolume, must be divisible by image shape
+            y_dim: int, y_dim of subvolume, must be divisible by image shape
+            z_dim: int, z_dim of subvolume, must be divisible by image shape
+        Returns:
+            X_train_subvolume: list of image subvolumes for training
+            y_train_subvolume: list of associated mask subvolumes for training
+    """
     X_train_subvolumes = []
     y_train_subvolumes = []
-
-    # check to see if x_dim, y_dim, and z_dim are even units of input image
-    if X_train[0].shape[0] % x_dim != 0:
-        print("note: inputted x_dim is not evenly divisible by image")
-    if X_train[0].shape[1] % y_dim != 0:
-        print("note: inputted y_dim is not evenly divisible by image")
-    if X_train[0].shape[2] % z_dim != 0:
-        print("note: inputted z_dim is not evenly divisible by image")
 
     # getting subvolumes
     for image in X_train:
@@ -128,12 +124,17 @@ def get_subvolumes(X_train, y_train, x_dim, y_dim, z_dim):
     return X_train_subvolumes, y_train_subvolumes
 
 
-# INPUT
-# X_train_subvolumes, y_train_subvolumes, X_test, y_test
-# OUTPUT
-# train_dataloader, torch object
-# test_dataloader, torch object
 def getting_torch_objects(X_train_subvolumes, y_train_subvolumes, X_test, y_test):
+    """Get training data in torch object format
+        Args:
+            X_train_subvolumes: list, training images (or subvolumes) from get_subvolumes function
+            y_train_subvolumes: list, trianing masks (or subvolumes) from get_subvolumes function
+            X_test: list, testing images from train_test_split function
+            y_test: list, testing masks from train_test_split function
+        Returns:
+            X_train_subvolume: list of image subvolumes for training
+            y_train_subvolume: list of associated mask subvolumes for training
+    """
     x_dim = X_train_subvolumes[0].shape[0]
     y_dim = X_train_subvolumes[0].shape[1]
     z_dim = X_train_subvolumes[0].shape[2]
