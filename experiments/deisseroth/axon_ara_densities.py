@@ -9,15 +9,15 @@ import os
 
 # dir_base= "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/"
 # dir_base = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/"
-dir_base = "s3://smartspim-precomputed-volumes/2022_02_02/8604"
+dir_base = "s3://smartspim-precomputed-volumes/2022_02_02/8604/"
 outdir = "/data/tathey1/matt_wright/brain_temp/"
 
 
-dir = dir_base + "axon_mask"
+dir = os.path.join(dir_base, "axon_mask")
 vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 print(f"Mask shape: {vol_mask.shape}")
 
-dir = dir_base + "atlas_to_target"
+dir = os.path.join(dir_base, "atlas_to_target")
 vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 print(f"Atlas shape: {vol_reg.shape}")
 
