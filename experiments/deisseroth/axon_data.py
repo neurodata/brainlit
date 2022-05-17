@@ -32,6 +32,13 @@ brain2paths = {
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_02_02/8604/Ch_488",
         "mask": "precomputed://s3://smartspim-precomputed-volumes/2022_02_02/8604/axon_mask",
         "val_info": {"url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=K1JfdZmA4pqr1Q", "layer": "axon_val"}
+    },
+    "8650": {
+        "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/Ch_647",
+        "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/Ch_561",
+        "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/Ch_488",
+        "mask": "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/axon_mask",
+        "val_info": {"url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=tnXt-hF7Uyuq-w", "layer": "val"}
     }
 }
 
