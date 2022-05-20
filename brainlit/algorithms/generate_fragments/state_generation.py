@@ -549,16 +549,14 @@ class state_generation:
             endpoints = endpoints_initial.copy()
             used_eps = np.zeros((len(endpoints), 3)) - 1
             for i, endpoint in enumerate(endpoints_initial):
-                difs = np.multiply(
-                    np.subtract(coords_mask, endpoint), self.resolution
-                )
+                difs = np.multiply(np.subtract(coords_mask, endpoint), self.resolution)
                 dists = np.linalg.norm(difs, axis=1)
                 argmin = np.argmin(dists)
 
                 while (coords_mask[argmin, :] == used_eps).all(1).any():
                     dists[argmin] = np.infty
                     argmin = np.argmin(dists)
-                
+
                 endpoints[i] = coords_mask[argmin, :]
                 used_eps[i, :] = endpoints[i]
             a = endpoints[0]

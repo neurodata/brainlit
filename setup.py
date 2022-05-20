@@ -14,23 +14,22 @@ AUTHOR_EMAIL = "tathey1@jhu.edu"
 URL = "https://github.com/neurodata/brainlit"
 MINIMUM_PYTHON_VERSION = 3, 7  # Minimum of Python 3.7
 REQUIRED_PACKAGES = [
-"numpy>=1.8.1",
-"scikit-image>=0.16.2",
-"simpleitk>=1.2.4",
-"networkx>=2.1",
-"scikit-learn>=0.19.1",
-"scipy>=1.1.0",
-"seaborn>=0.9.0",
-"tifffile>=2020.7.17",
-"napari[pyqt5]>=0.2.11",
-"cloud-volume>=4.2.0",
-"feather-format==0.4.1",
-"nibabel>=2.4.1",
-"nilearn>=0.5.2",
-"zarr>=2.10.2",
-"h5py>=3.3.0",
-"git+https://github.com/CaseyWeiner/pcurvepy"
-
+    "numpy>=1.8.1",
+    "scikit-image>=0.16.2",
+    "simpleitk>=1.2.4",
+    "networkx>=2.1",
+    "scikit-learn>=0.19.1",
+    "scipy>=1.1.0",
+    "seaborn>=0.9.0",
+    "tifffile>=2020.7.17",
+    "napari[pyqt5]>=0.2.11",
+    "cloud-volume>=4.2.0",
+    "feather-format==0.4.1",
+    "nibabel>=2.4.1",
+    "nilearn>=0.5.2",
+    "zarr>=2.10.2",
+    "h5py>=3.3.0",
+    "git+https://github.com/CaseyWeiner/pcurvepy",
 ]
 
 # Find savanna version.
