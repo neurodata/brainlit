@@ -19,7 +19,7 @@ import pickle
 import networkx as nx
 from typing import List, Tuple
 
-from brainlit.algorithms.generate_fragments import pcurve
+import pcurve
 
 
 class state_generation:
@@ -471,31 +471,26 @@ class state_generation:
 
         ends = []
 
-        # Make sure x, y, z ascending & don't repeat
-        sorter = np.lexsort((coords[:, 2], coords[:, 1], coords[:, 0]))
-        coords = coords[sorter]
-        coords = np.unique(coords, axis=0)
-
         p_curve = pcurve.PrincipalCurve(k=1, s_factor=5)
         p_curve.fit(coords, max_iter=50)
         pc = p_curve.p
 
-        pc = np.floor(pc + 0.5)
-        pc_frag_list = [i for i in pc if i in coords]
+        pc = np.asarray(np.floor(pc + 0.5), dtype=np.int64)
 
-        ends.append(pc_frag_list[0])
-        ends.append(pc_frag_list[-1])
+        ends.append(pc[0])
+        ends.append(pc[-1])
 
         return ends
 
     def _compute_states_thread(
-        self, corner1: List[int], corner2: List[int]
+        self, corner1: List[int], corner2: List[int], alg: str
     ) -> List[tuple]:
         """Compute states of fragments within image chunk
 
         Args:
             corner1 (list of ints): first corner of image chunk
             corner2 (list of ints): second corner of image chunk
+            alg (string): algorithm to use for endpoint estimation
 
         Raises:
             ValueError: only one endpoint found for fragment
@@ -547,16 +542,25 @@ class state_generation:
             else:
                 coords = coords_skel
 
-            endpoints_initial = self._endpoints_from_coords_neighbors(coords)
+            if alg == "pc":
+                endpoints_initial = self._pc_endpoints_from_coords_neighbors(coords)
+            else:
+                endpoints_initial = self._endpoints_from_coords_neighbors(coords)
             endpoints = endpoints_initial.copy()
+            used_eps = np.zeros((len(endpoints), 3)) - 1
             for i, endpoint in enumerate(endpoints_initial):
-                if mask[endpoint[0], endpoint[1], endpoint[2]] != 1:
-                    difs = np.multiply(
-                        np.subtract(coords_mask, endpoint), self.resolution
-                    )
-                    dists = np.linalg.norm(difs, axis=1)
+                difs = np.multiply(
+                    np.subtract(coords_mask, endpoint), self.resolution
+                )
+                dists = np.linalg.norm(difs, axis=1)
+                argmin = np.argmin(dists)
+
+                while (coords_mask[argmin, :] == used_eps).all(1).any():
+                    dists[argmin] = np.infty
                     argmin = np.argmin(dists)
-                    endpoints[i] = coords_mask[argmin, :]
+                
+                endpoints[i] = coords_mask[argmin, :]
+                used_eps[i, :] = endpoints[i]
             a = endpoints[0]
             try:
                 b = endpoints[1]
@@ -585,7 +589,7 @@ class state_generation:
             results.append((component, a, b, -dif, dif, sum))
         return results
 
-    def compute_states(self) -> None:
+    def compute_states(self, alg: str) -> None:
         """Compute entire collection of states
 
         Raises:
@@ -601,6 +605,7 @@ class state_generation:
             delayed(self._compute_states_thread)(
                 specification["corner1"],
                 specification["corner2"],
+                alg,
             )
             for specification in specifications
         )
