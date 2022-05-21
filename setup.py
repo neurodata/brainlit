@@ -29,7 +29,7 @@ REQUIRED_PACKAGES = [
     "nilearn>=0.5.2",
     "zarr>=2.10.2",
     "h5py>=3.3.0",
-    "git+https://github.com/CaseyWeiner/pcurvepy",
+    "pcurvepy @ git+https://github.com/CaseyWeiner/pcurvepy.git@master",
 ]
 
 # Find savanna version.
