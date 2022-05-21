@@ -29,10 +29,10 @@ REQUIRED_PACKAGES = [
     "nilearn>=0.5.2",
     "zarr>=2.10.2",
     "h5py>=3.3.0",
-    "pcurvepy @ git+https://github.com/CaseyWeiner/pcurvepy.git@master",
+    "pcurvepy @ git+https://git@github.com/CaseyWeiner/pcurvepy.git",
 ]
 
-# Find savanna version.
+# Find savanna version.  @master#egg=pcurvepy
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
 for line in open(os.path.join(PROJECT_PATH, "brainlit", "__init__.py")):
     if line.startswith("__version__ = "):
