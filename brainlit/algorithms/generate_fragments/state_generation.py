@@ -19,7 +19,7 @@ import pickle
 import networkx as nx
 from typing import List, Tuple
 
-import pcurve
+import pcurve.pcurve as pcurve
 
 
 class state_generation:
