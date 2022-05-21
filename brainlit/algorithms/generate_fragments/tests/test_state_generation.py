@@ -66,7 +66,8 @@ def test_state_generation(tmp_path):
     sg.compute_soma_lbls()
     assert_array_equal(sg.soma_lbls, [5])
 
-    sg.compute_states()
+    sg.compute_states("nb")
+    sg.compute_states("pc")
     with open(sg.states_path, "rb") as handle:
         G = pickle.load(handle)
     for node in G.nodes:
