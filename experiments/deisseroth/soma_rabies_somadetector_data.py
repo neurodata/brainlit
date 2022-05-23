@@ -25,6 +25,18 @@ brain2paths = {
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_15/8606/Ch_488",
         "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=18lUZ-z6xx15Rg",
     },
+    "8529": {
+        "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_03_02/8529/Ch_647_iso",
+        "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_03_02/8529/Ch_561_iso",
+        "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_02/8529/Ch_488_iso",
+        "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=IWLsOxwqVpLPew",
+    },
+    "8477": {
+        "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_03_14/8477/Ch_647_iso",
+        "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_03_14/8477/Ch_561_iso",
+        "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_14/8477/Ch_488_iso",
+        "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=KkhNpWCHUNcwGQ",
+    },
 }
 
 # first entry is somas, second is nonsomas
