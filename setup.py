@@ -18,7 +18,7 @@ REQUIRED_PACKAGES = [
 "scikit-image>=0.16.2",
 "simpleitk>=1.2.4",
 "networkx>=2.1",
-"scikit-learn>=0.19.1",
+"scikit-learn==1.0.0",
 "scipy>=1.1.0",
 "seaborn>=0.9.0",
 "tifffile>=2020.7.17",
