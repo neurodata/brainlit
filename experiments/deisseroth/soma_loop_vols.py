@@ -104,7 +104,7 @@ print(f"Processing: {sample_path} with shape {shape} at threshold {threshold}")
 
 corners = []
 for i in tqdm(range(0, shape[0], chunk_size[0])):
-    if i < 1500:
+    if i >= 1500:
         continue
     for j in tqdm(range(0, shape[1], chunk_size[1]), leave=False):
         for k in range(0, shape[2], chunk_size[2]):
