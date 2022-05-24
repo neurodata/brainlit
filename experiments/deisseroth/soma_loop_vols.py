@@ -12,10 +12,10 @@ import os
 
 chunk_size = [256, 256, 300]
 ncpu = 16
-dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_03_14/8477/"
+dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_03_10/8531/"
 data_dir = "/data/tathey1/matt_wright/brainr_temp/"
 results_dir = "/data/tathey1/matt_wright/brainr_results/"
-threshold = 0.06
+threshold = 0.66
 
 print(f"Number cpus: {multiprocessing.cpu_count()}")
 

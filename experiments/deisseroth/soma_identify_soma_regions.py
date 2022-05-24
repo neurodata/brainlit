@@ -5,11 +5,11 @@ import pickle
 from os import listdir
 from os.path import isfile, join
 
-brain = "r4"
+brain = "8477"
 div_factor = [8, 8, 1]
 
 atlas_vol = CloudVolume(
-    "precomputed://https://dlab-colm.neurodata.io/2022_03_15/8606/atlas_to_target",
+    "precomputed://https://dlab-colm.neurodata.io/2022_03_14/" + brain + "/atlas_to_target",
     parallel=1,
     mip=0, 
     fill_missing=True,
@@ -17,7 +17,7 @@ atlas_vol = CloudVolume(
 print(f"size: {atlas_vol.shape} ")
 
 somas = "/data/tathey1/matt_wright/brainr_results/"
-outpath = "/home/user/misc_tommy/soma_counts_brain" + brain + ".pickle"
+outpath = "/data/tathey1/matt_wright/brainr_results/quantification_dict_" + brain + ".pickle"
 
 coords = []
 coords_target_space = []
@@ -33,7 +33,7 @@ if somas[:-4] == ".txt":
 
             coord = [int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)]
             coords.append(coord)
-else:
+else: #directory of text files
     onlyfiles = [join(somas, f) for f in listdir(somas) if isfile(join(somas, f))]
     for file in tqdm(onlyfiles, desc="reading files"):
         file1 = open(file, "r")
@@ -56,8 +56,6 @@ else:
             f.write("\n")
 
 print(f"{len(coords)} somas detected, first is: {coords[0]}")
-
-
 
 dict = {}
 for coord in tqdm(coords, desc="identifynig rois"):
