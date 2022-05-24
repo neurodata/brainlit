@@ -66,14 +66,14 @@ def test_state_generation(tmp_path):
     sg.compute_soma_lbls()
     assert_array_equal(sg.soma_lbls, [5])
 
-    sg.compute_states()
+    sg.compute_states("nb")
+    sg.compute_states("pc")
+
     with open(sg.states_path, "rb") as handle:
         G = pickle.load(handle)
     for node in G.nodes:
         print(G.nodes[node])
     assert len(G.nodes) == 9  # 2 states per fragment plus one soma state
-
-    sg._pc_endpoints_from_coords_neighbors(test_coords)
 
     sg.compute_edge_weights()
     sg.compute_bfs()
