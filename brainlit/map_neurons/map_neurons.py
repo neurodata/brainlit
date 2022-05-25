@@ -6,16 +6,12 @@ import networkx as nx
 from scipy.interpolate import BSpline, splev, CubicHermiteSpline
 
 class DiffeomorphismAction():
-    def __init__(self):
-        pass 
 
-    def evaluate(self, position):
-        transformed_position = np.matmul(np.eye(3)*2, position.T).T
-        return transformed_position
+    def evaluate(self, position: np.array) -> np.array:
+        pass
     
-    def D(self, position, deriv, order: int = 1):
-        transformed_deriv = np.matmul(np.eye(3)*2, deriv.T).T
-        return transformed_deriv
+    def D(self, position: np.array, deriv: np.array, order: int = 1) -> np.array:
+        pass
 
 def transform_GeometricGraph(G: GeometricGraph, Phi: DiffeomorphismAction):
     if G.spline_type is not BSpline:
@@ -23,7 +19,7 @@ def transform_GeometricGraph(G: GeometricGraph, Phi: DiffeomorphismAction):
     
     if not G.spline_tree:
         G.fit_spline_tree_invariant()
-    G_tranformed = copy.copy(G)
+    G_tranformed = copy.deepcopy(G)
 
     spline_tree = G_tranformed.spline_tree
 
@@ -41,7 +37,7 @@ def transform_GeometricGraph(G: GeometricGraph, Phi: DiffeomorphismAction):
 
         chspline = CubicHermiteSpline(us, transformed_positions, transformed_derivs)
 
-        spline_tree.nodes[node]["spline"] = chspline
+        spline_tree.nodes[node]["spline"] = chspline, us
 
         for trace_node, position, deriv in zip(path, transformed_positions, transformed_derivs):
             G_tranformed.nodes[trace_node]["loc"] = position
