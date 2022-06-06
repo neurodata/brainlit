@@ -5,11 +5,11 @@ import pickle
 from os import listdir
 from os.path import isfile, join
 
-brain = "8477"
+brain = "8608"
 div_factor = [8, 8, 1]
 
 atlas_vol = CloudVolume(
-    "precomputed://https://dlab-colm.neurodata.io/2022_03_14/" + brain + "/atlas_to_target",
+    "precomputed://https://dlab-colm.neurodata.io/2022_04_13/" + brain + "/atlas_to_target",
     parallel=1,
     mip=0, 
     fill_missing=True,
