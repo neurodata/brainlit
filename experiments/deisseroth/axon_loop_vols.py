@@ -17,7 +17,7 @@ import os
 # threshold = 0.6
 
 dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_11_03/8589/"
-threshold = 0.64
+threshold = 0.54
 
 chunk_size = [256, 256, 300]
 
