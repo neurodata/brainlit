@@ -188,7 +188,7 @@ def getLargestCC(segmentation: np.ndarray) -> np.ndarray:
     return largestCC
 
 
-def removeSmallCCs(segmentation: np.ndarray, size: Union[int, float]) -> np.ndarray:
+def removeSmallCCs(segmentation: np.ndarray, size: Union[int, float], verbose=True) -> np.ndarray:
     """Removes small connected components from an image.
 
     Parameters:
@@ -204,7 +204,7 @@ def removeSmallCCs(segmentation: np.ndarray, size: Union[int, float]) -> np.ndar
     labels = label(segmentation, return_num=False)
     counts = np.bincount(labels.flat)[1:]
 
-    for v, count in enumerate(tqdm(counts, desc="looking for components to remove")):
+    for v, count in enumerate(tqdm(counts, desc="looking for components to remove", disable=not verbose)):
         if count < size:
             labels[labels == v + 1] = 0
 
