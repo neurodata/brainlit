@@ -16,7 +16,7 @@ import os
 # dir_base = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/"
 # threshold = 0.6
 
-dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/"
+dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_11_03/8589/"
 threshold = 0.64
 
 chunk_size = [256, 256, 300]
