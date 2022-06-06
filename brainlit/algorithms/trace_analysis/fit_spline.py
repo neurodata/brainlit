@@ -17,6 +17,8 @@ from brainlit.utils.util import (
 Geometric Graph class
 """
 
+# sejalsrivastava1 added type annotations
+# sejalsrivastava1: should pandas be imported? 
 
 class GeometricGraph(nx.Graph):
     r"""The shape of the neurons are expressed and fitted with splines in this undirected graph class.
@@ -26,7 +28,7 @@ class GeometricGraph(nx.Graph):
     It extends `nx.Graph` and rejects duplicate node input.
     """
 
-    def __init__(self, df=None):
+    def __init__(self, df: pandas.DataFrame = None) -> None:
         super(GeometricGraph, self).__init__()
         self.segments = None
         self.cycle = None
@@ -34,7 +36,7 @@ class GeometricGraph(nx.Graph):
         if df is not None:
             self.__init_from_df(df)
 
-    def __init_from_df(self, df_neuron):
+    def __init_from_df(self, df_neuron: pandas.DataFrame) -> brainlit.algorithms.trace_analysis.fit_spline.GeometricGraph:
         """Converts dataframe of swc in voxel coordinates into a GeometricGraph
 
         Parameters
@@ -74,7 +76,7 @@ class GeometricGraph(nx.Graph):
             if parent > min(df_neuron["parent"]):
                 self.add_edge(parent, child)
 
-    def fit_spline_tree_invariant(self):
+    def fit_spline_tree_invariant(self) -> nx.DiGraph:
         r"""Construct a spline tree based on the path lengths.
 
         Raises:
@@ -155,7 +157,7 @@ class GeometricGraph(nx.Graph):
 
         return spline_tree
 
-    def __fit_spline_path(self, path):
+    def __fit_spline_path(self, path: list) -> tuple[tuple, list]:
         r"""Fit a B-Spline to a path.
 
         Compute the knots, coefficients, and the degree of the
@@ -189,7 +191,7 @@ class GeometricGraph(nx.Graph):
 
         return tck, u
 
-    def __find_main_branch(self, tree: nx.DiGraph, starting_length: float = 0):
+    def __find_main_branch(self, tree: nx.DiGraph, starting_length: float = 0) -> tuple[list, list]:
         r"""Find the main branch in a directed graph.
 
         It is used in `fit_spline_tree_invariant` to identify the main branch
@@ -285,7 +287,7 @@ class GeometricGraph(nx.Graph):
                         )
         return list(main_branch), collateral_branches
 
-    def __path_length(self, path):
+    def __path_length(self, path: list) -> float:
         r"""Compute the length of a path.
 
         Given a path ::math::`p = (r_1, \dots, r_N)`, where

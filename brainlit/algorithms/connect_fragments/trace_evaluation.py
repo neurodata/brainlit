@@ -1,8 +1,9 @@
 import numpy as np
 from sklearn.metrics import pairwise_distances_argmin_min
 
+# sejalsrivastava1 added type annotations
 
-def resample(path, spacing=1):
+def resample(path: np.array, spacing: int = 1) -> np.array:
     """Resample a path (linearly) according to maximum distance between points
 
     Args:
@@ -31,7 +32,7 @@ def resample(path, spacing=1):
     return new_path
 
 
-def sd(pts1, pts2, substantial=False):
+def sd(pts1: np.array, pts2: np.array, substantial: bool = False) -> float:
     """Compute spatial distance between two paths according to Peng et. al. 2010.
 
     Args:

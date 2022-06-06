@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.linalg as linalg
 
+# sejalsrivastava1: need to add type annotations?
 
 def center(data):
     """Centers data by subtracting the mean
