@@ -21,6 +21,8 @@ from brainlit.utils.benchmarking_params import (
     type_to_date,
 )
 
+# sejalsrivastava1 added type annotations
+
 import time
 from tqdm.auto import tqdm
 from brainlit.utils.util import (
@@ -460,8 +462,11 @@ def create_skel_segids(
 
 
 def upload_segments(
-    input_path, precomputed_path, num_mips, benchmarking: Optional[bool] = False
-):
+    input_path: str, 
+    precomputed_path: str, 
+    num_mips: int, 
+    benchmarking: Optional[bool] = False
+) -> None:
     """Uploads segmentation data from local to precomputed path.
 
     Arguments:
@@ -513,7 +518,7 @@ def upload_segments(
         vols[0].skeleton.upload(skel)
 
 
-def upload_annotations(input_path, precomputed_path, num_mips):
+def upload_annotations(input_path: str, precomputed_path: str, num_mips: int) -> None:
     """Uploads empty annotation volume."""
     (_, _, vox_size, img_size, origin) = get_volume_info(
         input_path,

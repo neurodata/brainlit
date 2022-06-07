@@ -2,7 +2,7 @@ import numpy as np
 from skimage import draw
 import itertools
 from scipy.ndimage.morphology import distance_transform_edt
-from typing import Optional, List, Tuple, Union
+from typing import Iterable, Optional, List, Tuple, Union
 from scipy.ndimage.morphology import distance_transform_edt
 from skimage import draw
 from brainlit.utils.util import check_type, check_size, check_iterable_type
@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 # sejalsrivastava1 added type annotations
 
-def pairwise(iterable):
+def pairwise(iterable: Iterable):
     # Adapted from https://stackoverflow.com/a/5434936
     a, b = itertools.tee(iterable)
     next(b, None)
@@ -155,7 +155,7 @@ def tubes_from_paths(
     size: Tuple[int, int, int],
     paths: List[List[int]],
     radius: Optional[Union[float, int]] = None,
-):
+) -> np.ndarray:
     """Constructs tubes from list of paths.
     Returns densely labeled paths within the shape of the image.
 

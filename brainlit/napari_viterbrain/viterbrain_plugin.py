@@ -1,4 +1,5 @@
 import pickle
+from sys import intern
 
 from numpy import uint32
 import numpy as np
@@ -9,8 +10,9 @@ from magicgui import magic_factory
 import pathlib
 import napari
 
+# sejalsrivastava1 added type annotations
 
-def viterbrain_reader(path):
+def viterbrain_reader(path: str) -> list:
 
     with open(path, "rb") as handle:
         viterbi = pickle.load(handle)
@@ -27,7 +29,7 @@ def viterbrain_reader(path):
     return [(layer_image, meta_image, "image"), (layer_labels, meta_labels, "labels")]
 
 
-def napari_get_reader(path):
+def napari_get_reader(path: str) -> list:
     parts = path.split(".")
     if parts[-1] == "pickle" or parts[-1] == "pkl":
         return viterbrain_reader
@@ -43,11 +45,11 @@ def comp_trace(
     start_comp: int,
     end_comp: int,
     filename=pathlib.Path("/some/path.pickle"),
-):
+) -> None:
     with open(filename, "rb") as handle:
         viterbi = pickle.load(handle)
 
-    def comp2point(comp):
+    def comp2point(comp: int) -> list:
         state = viterbi.comp_to_states[comp][0]
         if viterbi.nxGraph.nodes[state]["type"] == "fragment":
             return viterbi.nxGraph.nodes[state]["point1"]

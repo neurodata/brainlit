@@ -218,7 +218,12 @@ def level_set_seg(
     return labels
 
 
-def connected_threshold(img: cloudvolume.volumecutout.VolumeCutout, seed: tuple, lower_threshold: float = None, upper_threshold: float = 255):
+def connected_threshold(img: cloudvolume.volumecutout.VolumeCutout, 
+seed: tuple, 
+lower_threshold: 
+float = None, 
+upper_threshold: float = 255
+) -> np.ndarray:
     """
     Compute a threshold-based segmentation via connected region growing.
 

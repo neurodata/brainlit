@@ -1,9 +1,9 @@
 import numpy as np
 import scipy.linalg as linalg
 
-# sejalsrivastava1: need to add type annotations?
+# sejalsrivastava1 added type annotations
 
-def center(data):
+def center(data: np.ndarray) -> np.ndarray:
     """Centers data by subtracting the mean
 
     Parameters
@@ -21,7 +21,7 @@ def center(data):
     return data_centered
 
 
-def contrast_normalize(data, centered=False):
+def contrast_normalize(data: np.ndarray, centered: bool = False) -> np.ndarray:
     """Normalizes image data to have variance of 1
 
     Parameters
@@ -44,7 +44,7 @@ def contrast_normalize(data, centered=False):
     return data
 
 
-def whiten(img, window_size, step_size, centered=False, epsilon=1e-5, type="PCA"):
+def whiten(img: np.ndarray, window_size: np.ndarray, step_size: np.ndarray, centered: bool = False, epsilon: float = 1e-5, type: str = "PCA") -> tuple[np.ndarray, np.ndarray]:
     """Performs PCA or ZCA whitening on an array. This preprocessing step is described
     in _[1].
 
@@ -115,7 +115,7 @@ def whiten(img, window_size, step_size, centered=False, epsilon=1e-5, type="PCA"
     return data_whitened, S
 
 
-def window_pad(img, window_size, step_size):
+def window_pad(img: np.ndarray, window_size: np.ndarray, step_size: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Pad image at edges so the window can convolve evenly.
     Padding will be a copy of the edges.
 
@@ -166,7 +166,7 @@ def window_pad(img, window_size, step_size):
     return img_padded, pad_size
 
 
-def undo_pad(img, pad_size):
+def undo_pad(img: np.ndarray, pad_size: np.ndarray) -> np.ndarray:
     """Remove padding from edges of images
 
     Parameters
@@ -198,7 +198,7 @@ def undo_pad(img, pad_size):
     return img
 
 
-def vectorize_img(img, window_size, step_size):
+def vectorize_img(img: np.ndarray, window_size: np.ndarray, step_size: np.ndarray) -> np.ndarray:
     """Reshapes an image by vectorizing different neighborhoods of the image.
 
     Parameters
@@ -245,7 +245,7 @@ def vectorize_img(img, window_size, step_size):
     return vectorized
 
 
-def imagize_vector(img, orig_shape, window_size, step_size):
+def imagize_vector(img: np.ndarray, orig_shape: tuple, window_size: np.ndarray, step_size: np.ndarray) -> np.ndarray:
     """Reshapes a vectorized image back to its original shape.
 
     Parameters

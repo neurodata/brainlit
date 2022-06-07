@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from xmlrpc.client import boolean
 from sklearn.base import BaseEstimator
 from brainlit.utils.session import NeuroglancerSession
 from brainlit.utils.util import *
@@ -11,6 +12,7 @@ import feather
 from joblib import Parallel, delayed
 from typing import Optional, List, Union, Tuple
 
+# sejalsrivastava1 added type annotations
 
 class BaseFeatures(BaseEstimator):
     """Base class for generating features from precomputed volumes.
@@ -166,15 +168,15 @@ class BaseFeatures(BaseEstimator):
 
     def _serial_processing(
         self,
-        seg_ids,
-        ngl,
-        num_verts,
-        start_vert,
-        include_neighborhood,
-        write=False,
-        batch_size=None,
-        file_path=None,
-    ):
+        seg_ids: List[int],
+        ngl: NeuroglancerSession,
+        num_verts: int,
+        start_vert: int,
+        include_neighborhood: bool,
+        write: bool = False,
+        batch_size: int =None,
+        file_path: str = None,
+    ) -> None:
         """Core code which actually extracts features."""
         voxel_dict = {}
         counter = 0
@@ -274,14 +276,14 @@ class BaseFeatures(BaseEstimator):
 
     def _parallel_processing(
         self,
-        seg_id,
-        ngl,
-        num_verts,
-        start_vert,
-        include_neighborhood,
-        batch_size=None,
-        file_path=None,
-    ):
+        seg_id: List[int],
+        ngl: NeuroglancerSession,
+        num_verts: int,
+        start_vert: int,
+        include_neighborhood: bool,
+        batch_size: int = None,
+        file_path: str = None,
+    ) -> tuple[int, int, int]:
         voxel_dict = {}
         counter = 0
         batch_id = 0
