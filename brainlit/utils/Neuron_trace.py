@@ -307,7 +307,7 @@ class NeuronTrace:
 
     def get_paths(
         self, spacing: np.array = None, origin: np.array = None
-    ) -> list[np.array]:
+    ) -> list:
         """Converts dataframe in either spatial or voxel coordinates into a list of paths.
         Will convert to voxel coordinates if spacing is specified.
 

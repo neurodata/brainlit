@@ -3,6 +3,7 @@
 import SimpleITK as sitk
 from sklearn.mixture import GaussianMixture
 import numpy as np
+import cloudvolume
 
 # sejalsrivastava1 added type annotations
 
@@ -29,7 +30,7 @@ def get_seed(voxel: tuple) -> tuple:
 
 def get_img_T1(
     img: cloudvolume.volumecutout.VolumeCutout,
-) -> tuple[SimpleITK.SimpleITK.image, SimpleITK.SimpleITK.image]:
+) -> tuple[sitk.SimpleITK.image, sitk.SimpleITK.image]:
     """
     Converts a volume cutout to a SimpleITK image, as wel
     as a SimpleITK image with scaled intensity values to 0-255.

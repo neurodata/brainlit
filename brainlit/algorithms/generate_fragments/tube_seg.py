@@ -7,6 +7,8 @@ from scipy.ndimage.morphology import distance_transform_edt
 from skimage import draw
 from brainlit.utils.util import check_type, check_size, check_iterable_type
 from tqdm import tqdm
+import cloudvolume
+
 
 # sejalsrivastava1 added type annotations
 
