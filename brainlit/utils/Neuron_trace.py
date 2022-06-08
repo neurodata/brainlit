@@ -866,14 +866,16 @@ class NeuronTrace:
 
         return df_voxel
 
-    def _df_to_graph(self, df_voxel):
-        """Converts dataframe of swc in voxel coordinates into a directed graph
+    def _df_to_graph(self, df, round = False):
+        """Converts dataframe form of neuron trace into a directed graph
 
         Parameters
         ----------
         df_voxel : :class:`pandas.DataFrame`
-            Indicies, coordinates, and parents of each node in the swc. Coordinates
-            are in voxel units.
+            Indices, coordinates, and parents of each node in the swc.
+        round : boolean
+            Whether coordinates/distances should be rounded to integers.
+
         Returns
         -------
         G : :class:`networkx.classes.digraph.DiGraph`
@@ -883,21 +885,36 @@ class NeuronTrace:
         G = nx.DiGraph()
 
         # add nodes
-        for index, row in df_voxel.iterrows():
+        for index, row in df.iterrows():
             id = int(row["sample"])
 
+            coord = [row["x"], row["y"], row["z"]]
+            if round:
+                coord = [int(c) for c in coord]
+
             G.add_node(id)
-            G.nodes[id]["x"] = int(row["x"])
-            G.nodes[id]["y"] = int(row["y"])
-            G.nodes[id]["z"] = int(row["z"])
+            G.nodes[id]["x"] = coord[0]
+            G.nodes[id]["y"] = coord[1]
+            G.nodes[id]["z"] = coord[2]
 
         # add edges
-        for index, row in df_voxel.iterrows():
+        for index, row in df.iterrows():
             child = int(row["sample"])
+            child_coord = [row["x"], row["y"], row["z"]]
             parent = int(row["parent"])
 
-            if parent > min(df_voxel["parent"]):
-                G.add_edge(parent, child)
+            if parent > min(df["parent"]):
+                parent_row = df[df["sample"] == parent]
+                parent_coord = [parent_row["x"], parent_row["y"], parent_row["z"]]
+
+                dist = np.linalg.norm(np.subtract(child_coord, parent_coord))
+                if round:
+                    dist = int(dist)
+
+                G.add_edge(parent, child, distance=dist)
+
+           
+
 
         return G
 
@@ -948,7 +965,7 @@ class NeuronTrace:
 
         return G_sub
 
-    def _graph_to_paths(self, G):
+    def _graph_to_paths(self, G, round=False):
         """Converts neuron represented as a directed graph with no cycles into a
         list of paths.
 
@@ -968,7 +985,7 @@ class NeuronTrace:
         while len(G_cp.edges) != 0:  # iterate over branches
             # get longest branch
             longest = nx.algorithms.dag.dag_longest_path(
-                G_cp
+                G_cp, weight='distance'
             )  # list of nodes on the path
             branches.append(longest)
 
@@ -981,15 +998,17 @@ class NeuronTrace:
         paths = []
         for branch in branches:
             # get vertices in branch as n by 3 numpy.array; n = length of branches
-            path = np.zeros((len(branch), 3), dtype=np.int64)
+            path = np.zeros((len(branch), 3))
             for idx, node in enumerate(branch):
-                path[idx, 0] = np.int64(G_cp.nodes[node]["x"])
-                path[idx, 1] = np.int64(G_cp.nodes[node]["y"])
-                path[idx, 2] = np.int64(G_cp.nodes[node]["z"])
+                coord = [G_cp.nodes[node][c] for c in ["x", "y", "z"]]
+                if round:
+                    coord = [np.int64(c) for c in coord]
+
+                path[idx, :] = coord
 
             paths.append(path)
 
-        return np.array(paths, dtype="object")
+        return paths
 
     def _get_bfs_subgraph(self, G, node_id, depth, df=None):
         """
