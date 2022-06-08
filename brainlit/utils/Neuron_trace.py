@@ -437,7 +437,7 @@ class NeuronTrace:
         df: pd.DataFrame = None,
         spacing: np.array = None,
         origin: np.array = None,
-    ) -> tuple[nx.classes.digraph.DiGraph, nx.classes.digraph.DiGraph, list]:
+    ) -> tuple:
         """
          Creates a spanning subgraph from a seed node and parent graph using BFS.
 
