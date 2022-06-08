@@ -9,15 +9,19 @@ brain = "8608"
 div_factor = [8, 8, 1]
 
 atlas_vol = CloudVolume(
-    "precomputed://https://dlab-colm.neurodata.io/2022_04_13/" + brain + "/atlas_to_target",
+    "precomputed://https://dlab-colm.neurodata.io/2022_04_13/"
+    + brain
+    + "/atlas_to_target",
     parallel=1,
-    mip=0, 
+    mip=0,
     fill_missing=True,
 )
 print(f"size: {atlas_vol.shape} ")
 
 somas = "/data/tathey1/matt_wright/brainr_results/"
-outpath = "/data/tathey1/matt_wright/brainr_results/quantification_dict_" + brain + ".pickle"
+outpath = (
+    "/data/tathey1/matt_wright/brainr_results/quantification_dict_" + brain + ".pickle"
+)
 
 coords = []
 coords_target_space = []
@@ -31,9 +35,11 @@ if somas[:-4] == ".txt":
             elements = line.split(",")
             coord = [elements[0][1:], elements[1], elements[2][:-1]]
 
-            coord = [int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)]
+            coord = [
+                int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)
+            ]
             coords.append(coord)
-else: #directory of text files
+else:  # directory of text files
     onlyfiles = [join(somas, f) for f in listdir(somas) if isfile(join(somas, f))]
     for file in tqdm(onlyfiles, desc="reading files"):
         file1 = open(file, "r")
@@ -46,13 +52,15 @@ else: #directory of text files
                 coord = [elements[0][1:], elements[1], elements[2][:-1]]
 
                 coords_target_space.append([float(e.strip()) for e in coord])
-                coord = [int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)]
+                coord = [
+                    int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)
+                ]
                 coords.append(coord)
 
     fname = somas + "all_somas.txt"
     with open(fname, "w") as f:
         for coord in coords_target_space:
-            f.write(f'[{coord[0]},{coord[1]},{coord[2]}]')
+            f.write(f"[{coord[0]},{coord[1]},{coord[2]}]")
             f.write("\n")
 
 print(f"{len(coords)} somas detected, first is: {coords[0]}")
@@ -66,7 +74,5 @@ for coord in tqdm(coords, desc="identifynig rois"):
         dict[roi] = dict[roi] + 1
 
 print(dict)
-with open(
-    outpath, "wb"
-) as handle:
+with open(outpath, "wb") as handle:
     pickle.dump(dict, handle)
