@@ -305,9 +305,7 @@ class NeuronTrace:
             G = self._df_to_graph(self.df)
         return G
 
-    def get_paths(
-        self, spacing: np.array = None, origin: np.array = None
-    ) -> list:
+    def get_paths(self, spacing: np.array = None, origin: np.array = None) -> list:
         """Converts dataframe in either spatial or voxel coordinates into a list of paths.
         Will convert to voxel coordinates if spacing is specified.
 
