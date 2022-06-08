@@ -866,7 +866,7 @@ class NeuronTrace:
 
         return df_voxel
 
-    def _df_to_graph(self, df, round = False):
+    def _df_to_graph(self, df, round=False):
         """Converts dataframe form of neuron trace into a directed graph
 
         Parameters
@@ -912,9 +912,6 @@ class NeuronTrace:
                     dist = int(dist)
 
                 G.add_edge(parent, child, distance=dist)
-
-           
-
 
         return G
 
@@ -985,7 +982,7 @@ class NeuronTrace:
         while len(G_cp.edges) != 0:  # iterate over branches
             # get longest branch
             longest = nx.algorithms.dag.dag_longest_path(
-                G_cp, weight='distance'
+                G_cp, weight="distance"
             )  # list of nodes on the path
             branches.append(longest)
 
