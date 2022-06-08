@@ -20,6 +20,7 @@ import multiprocessing as mp
 
 # sejalsrivastava1 added type annotations
 
+
 def gabor_filter(
     input: np.ndarray,
     sigma: Union[float, List[float]],
@@ -189,7 +190,9 @@ def getLargestCC(segmentation: np.ndarray) -> np.ndarray:
     return largestCC
 
 
-def removeSmallCCs(segmentation: np.ndarray, size: Union[int, float], verbose=True) -> np.ndarray:
+def removeSmallCCs(
+    segmentation: np.ndarray, size: Union[int, float], verbose=False
+) -> np.ndarray:
     """Removes small connected components from an image.
 
     Parameters:
@@ -205,7 +208,9 @@ def removeSmallCCs(segmentation: np.ndarray, size: Union[int, float], verbose=Tr
     labels = label(segmentation, return_num=False)
     counts = np.bincount(labels.flat)[1:]
 
-    for v, count in enumerate(tqdm(counts, desc="looking for components to remove", disable=not verbose)):
+    for v, count in enumerate(
+        tqdm(counts, desc="looking for components to remove", disable=not verbose)
+    ):
         if count < size:
             labels[labels == v + 1] = 0
 
@@ -239,7 +244,12 @@ def label_points(labels: np.array, points: list, res: list) -> tuple[list, list]
     return points, point_labels
 
 
-def _get_chunked_args(soma_coords: list, labels: np.array, im_processed: np.array, chunk_size: Optional[list] = [200, 200, 200]) -> dict:
+def _get_chunked_args(
+    soma_coords: list,
+    labels: np.array,
+    im_processed: np.array,
+    chunk_size: Optional[list] = [200, 200, 200],
+) -> dict:
     """Splits large image data into smaller chunks so fragments can be generated in parallel.
 
     Args:
@@ -276,7 +286,11 @@ def _get_chunked_args(soma_coords: list, labels: np.array, im_processed: np.arra
                 }
 
 
-def _merge_chunked_labels(labels: list, new_shape: tuple[int, int, int], chunk_size: Optional[list] = [200, 200, 200]) -> np.array:
+def _merge_chunked_labels(
+    labels: list,
+    new_shape: tuple[int, int, int],
+    chunk_size: Optional[list] = [200, 200, 200],
+) -> np.array:
     """Merges the fragments of the chunked image. Assumes that chunking was done according to method in _get_chunked_args
 
     Args:
@@ -307,13 +321,13 @@ def _merge_chunked_labels(labels: list, new_shape: tuple[int, int, int], chunk_s
 
 
 def compute_frags(
-    soma_coords: list, 
-    labels: np.array, 
-    im_processed: np.array, 
-    threshold: float, 
-    res: list, 
-    chunk_size: list = None, 
-    ncpu: int = 2
+    soma_coords: list,
+    labels: np.array,
+    im_processed: np.array,
+    threshold: float,
+    res: list,
+    chunk_size: list = None,
+    ncpu: int = 2,
 ) -> np.array:
     """Preprocesses a neuron image segmentation by splitting up non-soma components into 5 micron segments.
 
@@ -347,7 +361,14 @@ def compute_frags(
     return new_labels
 
 
-def split_frags(soma_coords: list, labels: np.array, im_processed: np.array, threshold: float, res: list, verbose=True) -> np.array:
+def split_frags(
+    soma_coords: list,
+    labels: np.array,
+    im_processed: np.array,
+    threshold: float,
+    res: list,
+    verbose=False,
+) -> np.array:
     """Preprocesses a single image chunk by splitting up non-soma components into 5 micron segments
 
     Args:
@@ -395,7 +416,13 @@ def split_frags(soma_coords: list, labels: np.array, im_processed: np.array, thr
     return new_labels
 
 
-def remove_somas(soma_coords: list, labels: np.array, im_processed: np.array, res: list, verbose=True) -> tuple[np.array, list, dict, list]:
+def remove_somas(
+    soma_coords: list,
+    labels: np.array,
+    im_processed: np.array,
+    res: list,
+    verbose=False,
+) -> tuple[np.array, list, dict, list]:
     """Helper function of split_frags. Removes area around somas.
 
     Args:
@@ -447,7 +474,7 @@ def split_frags_place_points(
     threshold: float,
     states: list,
     comp_to_states: dict,
-    verbose=True,
+    verbose=False,
 ) -> tuple[list, dict]:
     """Helper function of split_frags. Places points on high probability voxels while keeping the points a certain distance apart from each other.
 
@@ -509,7 +536,9 @@ def split_frags_place_points(
     return states, comp_to_states
 
 
-def split_frags_split_comps(labels: np.array, new_soma_masks, states: list, comp_to_states: dict, verbose=True) -> np.array:
+def split_frags_split_comps(
+    labels: np.array, new_soma_masks, states: list, comp_to_states: dict, verbose=False
+) -> np.array:
     """Helper function of split_frags. Splits the components according to the points that were placed by split_frags_place_points.
 
     Args:
@@ -549,7 +578,9 @@ def split_frags_split_comps(labels: np.array, new_soma_masks, states: list, comp
     return new_labels
 
 
-def split_frags_split_fractured_components(new_labels: np.array, verbose=True) -> np.array:
+def split_frags_split_fractured_components(
+    new_labels: np.array, verbose=False
+) -> np.array:
     """Helper function of split_frags. Some fragments from split_frags_split_comps may not be connected so this function separates those.
 
     Args:

@@ -3,6 +3,7 @@ import scipy.linalg as linalg
 
 # sejalsrivastava1 added type annotations
 
+
 def center(data: np.ndarray) -> np.ndarray:
     """Centers data by subtracting the mean
 
@@ -44,7 +45,14 @@ def contrast_normalize(data: np.ndarray, centered: bool = False) -> np.ndarray:
     return data
 
 
-def whiten(img: np.ndarray, window_size: np.ndarray, step_size: np.ndarray, centered: bool = False, epsilon: float = 1e-5, type: str = "PCA") -> tuple[np.ndarray, np.ndarray]:
+def whiten(
+    img: np.ndarray,
+    window_size: np.ndarray,
+    step_size: np.ndarray,
+    centered: bool = False,
+    epsilon: float = 1e-5,
+    type: str = "PCA",
+) -> tuple[np.ndarray, np.ndarray]:
     """Performs PCA or ZCA whitening on an array. This preprocessing step is described
     in _[1].
 
@@ -115,7 +123,9 @@ def whiten(img: np.ndarray, window_size: np.ndarray, step_size: np.ndarray, cent
     return data_whitened, S
 
 
-def window_pad(img: np.ndarray, window_size: np.ndarray, step_size: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def window_pad(
+    img: np.ndarray, window_size: np.ndarray, step_size: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
     """Pad image at edges so the window can convolve evenly.
     Padding will be a copy of the edges.
 
@@ -198,7 +208,9 @@ def undo_pad(img: np.ndarray, pad_size: np.ndarray) -> np.ndarray:
     return img
 
 
-def vectorize_img(img: np.ndarray, window_size: np.ndarray, step_size: np.ndarray) -> np.ndarray:
+def vectorize_img(
+    img: np.ndarray, window_size: np.ndarray, step_size: np.ndarray
+) -> np.ndarray:
     """Reshapes an image by vectorizing different neighborhoods of the image.
 
     Parameters
@@ -245,7 +257,9 @@ def vectorize_img(img: np.ndarray, window_size: np.ndarray, step_size: np.ndarra
     return vectorized
 
 
-def imagize_vector(img: np.ndarray, orig_shape: tuple, window_size: np.ndarray, step_size: np.ndarray) -> np.ndarray:
+def imagize_vector(
+    img: np.ndarray, orig_shape: tuple, window_size: np.ndarray, step_size: np.ndarray
+) -> np.ndarray:
     """Reshapes a vectorized image back to its original shape.
 
     Parameters

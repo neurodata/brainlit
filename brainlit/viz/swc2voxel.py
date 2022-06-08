@@ -6,7 +6,10 @@ from brainlit.utils.util import check_type
 
 # sejalsrivastava1 added type annotations
 
-def snap_points(img: np.ndarray, points: pd.DataFrame, radius: list = [3, 3, 3]) -> pd.DataFrame:
+
+def snap_points(
+    img: np.ndarray, points: pd.DataFrame, radius: list = [3, 3, 3]
+) -> pd.DataFrame:
     """Moves neuron marker points to the highest intensity within a certain radius
 
     Arguments:
@@ -101,7 +104,9 @@ def skeletonize(img: np.ndarray, points: pd.DataFrame) -> np.ndarray:
     return mask
 
 
-def skeleton_threshold_intersect(img: np.ndarray, points: pd.DataFrame) -> tuple[np.ndarray, int]:
+def skeleton_threshold_intersect(
+    img: np.ndarray, points: pd.DataFrame
+) -> tuple[np.ndarray, int]:
     """Compute intersection between two masks: thresholded image and skeletonization of points
 
     Arguments:
@@ -142,7 +147,9 @@ def skeleton_threshold_intersect(img: np.ndarray, points: pd.DataFrame) -> tuple
     return intersect, intersect_iter
 
 
-def Bresenham3D(x1: int, y1: int, z1: int, x2: int, y2: int, z2: int) -> tuple[list, list, list]:
+def Bresenham3D(
+    x1: int, y1: int, z1: int, x2: int, y2: int, z2: int
+) -> tuple[list, list, list]:
     """Takes two coordinates and gives the set of coordinates that connects them with a straight line
 
     Adapted from https://www.geeksforgeeks.org/bresenhams-algorithm-for-3-d-line-drawing/

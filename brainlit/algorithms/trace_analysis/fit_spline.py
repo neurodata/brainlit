@@ -18,7 +18,8 @@ Geometric Graph class
 """
 
 # sejalsrivastava1 added type annotations
-# sejalsrivastava1: should pandas be imported? 
+# sejalsrivastava1: should pandas be imported?
+
 
 class GeometricGraph(nx.Graph):
     r"""The shape of the neurons are expressed and fitted with splines in this undirected graph class.
@@ -36,7 +37,9 @@ class GeometricGraph(nx.Graph):
         if df is not None:
             self.__init_from_df(df)
 
-    def __init_from_df(self, df_neuron: pandas.DataFrame) -> brainlit.algorithms.trace_analysis.fit_spline.GeometricGraph:
+    def __init_from_df(
+        self, df_neuron: pandas.DataFrame
+    ) -> brainlit.algorithms.trace_analysis.fit_spline.GeometricGraph:
         """Converts dataframe of swc in voxel coordinates into a GeometricGraph
 
         Parameters
@@ -191,7 +194,9 @@ class GeometricGraph(nx.Graph):
 
         return tck, u
 
-    def __find_main_branch(self, tree: nx.DiGraph, starting_length: float = 0) -> tuple[list, list]:
+    def __find_main_branch(
+        self, tree: nx.DiGraph, starting_length: float = 0
+    ) -> tuple[list, list]:
         r"""Find the main branch in a directed graph.
 
         It is used in `fit_spline_tree_invariant` to identify the main branch

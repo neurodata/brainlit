@@ -12,6 +12,7 @@ import napari
 
 # sejalsrivastava1 added type annotations
 
+
 def viterbrain_reader(path: str) -> list:
 
     with open(path, "rb") as handle:

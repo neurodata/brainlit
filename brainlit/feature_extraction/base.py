@@ -14,6 +14,7 @@ from typing import Optional, List, Union, Tuple
 
 # sejalsrivastava1 added type annotations
 
+
 class BaseFeatures(BaseEstimator):
     """Base class for generating features from precomputed volumes.
 
@@ -174,7 +175,7 @@ class BaseFeatures(BaseEstimator):
         start_vert: int,
         include_neighborhood: bool,
         write: bool = False,
-        batch_size: int =None,
+        batch_size: int = None,
         file_path: str = None,
     ) -> None:
         """Core code which actually extracts features."""

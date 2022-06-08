@@ -462,10 +462,10 @@ def create_skel_segids(
 
 
 def upload_segments(
-    input_path: str, 
-    precomputed_path: str, 
-    num_mips: int, 
-    benchmarking: Optional[bool] = False
+    input_path: str,
+    precomputed_path: str,
+    num_mips: int,
+    benchmarking: Optional[bool] = False,
 ) -> None:
     """Uploads segmentation data from local to precomputed path.
 

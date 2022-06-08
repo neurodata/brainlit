@@ -6,6 +6,7 @@ import numpy as np
 
 # sejalsrivastava1 added type annotations
 
+
 def get_seed(voxel: tuple) -> tuple:
     """
     Get a seed point for the center of a brain volume.
@@ -26,7 +27,9 @@ def get_seed(voxel: tuple) -> tuple:
     return numpy_seed, sitk_seed
 
 
-def get_img_T1(img: cloudvolume.volumecutout.VolumeCutout) -> tuple[SimpleITK.SimpleITK.image, SimpleITK.SimpleITK.image]:
+def get_img_T1(
+    img: cloudvolume.volumecutout.VolumeCutout,
+) -> tuple[SimpleITK.SimpleITK.image, SimpleITK.SimpleITK.image]:
     """
     Converts a volume cutout to a SimpleITK image, as wel
     as a SimpleITK image with scaled intensity values to 0-255.
@@ -52,7 +55,9 @@ def get_img_T1(img: cloudvolume.volumecutout.VolumeCutout) -> tuple[SimpleITK.Si
     return img_T1, img_T1_255
 
 
-def thres_from_gmm(img: cloudvolume.volumecutout.VolumeCutOut, random_seed: int = 2) -> int:
+def thres_from_gmm(
+    img: cloudvolume.volumecutout.VolumeCutOut, random_seed: int = 2
+) -> int:
     """
     Computes a numerical threshold for segmentation based
     on a 2-Component Gaussian mixture model.
@@ -91,7 +96,12 @@ def thres_from_gmm(img: cloudvolume.volumecutout.VolumeCutOut, random_seed: int 
     return int(thres)
 
 
-def fast_marching_seg(img: cloudvolume.volumecutout.VolumeCutout, seed: tuple, stopping_value: int = 150, sigma: float = 0.5) -> np.ndarray:
+def fast_marching_seg(
+    img: cloudvolume.volumecutout.VolumeCutout,
+    seed: tuple,
+    stopping_value: int = 150,
+    sigma: float = 0.5,
+) -> np.ndarray:
     """
     Computes a fast-marching segmentation.
 
@@ -218,11 +228,11 @@ def level_set_seg(
     return labels
 
 
-def connected_threshold(img: cloudvolume.volumecutout.VolumeCutout, 
-seed: tuple, 
-lower_threshold: 
-float = None, 
-upper_threshold: float = 255
+def connected_threshold(
+    img: cloudvolume.volumecutout.VolumeCutout,
+    seed: tuple,
+    lower_threshold: float = None,
+    upper_threshold: float = 255,
 ) -> np.ndarray:
     """
     Compute a threshold-based segmentation via connected region growing.
@@ -275,12 +285,12 @@ upper_threshold: float = 255
 
 
 def confidence_connected_threshold(
-    img: cloudvolume.volumecutout.VolumeCutout, 
-    seed: tuple, 
-    num_iter: int = 1, 
-    multiplier: float = 1, 
-    initial_neighborhood_radius: int = 1, 
-    replace_value: int = 1
+    img: cloudvolume.volumecutout.VolumeCutout,
+    seed: tuple,
+    num_iter: int = 1,
+    multiplier: float = 1,
+    initial_neighborhood_radius: int = 1,
+    replace_value: int = 1,
 ) -> np.ndarray:
     """
     Compute a threshold-based segmentation via confidence-connected region growing.
@@ -347,11 +357,10 @@ def confidence_connected_threshold(
 
 
 def neighborhood_connected_threshold(
-    img: cloudvolume.volumecutout.VolumeCutout, 
-    seed: tuple, 
-    lower_threshold: 
-    float = None, 
-    upper_threshold: float = 255
+    img: cloudvolume.volumecutout.VolumeCutout,
+    seed: tuple,
+    lower_threshold: float = None,
+    upper_threshold: float = 255,
 ) -> np.ndarray:
     """
     Compute a threshold-based segmentation via neighborhood-connected region growing.
@@ -433,7 +442,9 @@ def otsu(img: cloudvolume.volumecutout.VolumeCutout, seed: tuple) -> np.ndarray:
     return labels
 
 
-def gmm_seg(img: cloudvolume.volumecutout.VolumeCutout, seed: tuple, random_seed: int = 3) -> np.ndarray:
+def gmm_seg(
+    img: cloudvolume.volumecutout.VolumeCutout, seed: tuple, random_seed: int = 3
+) -> np.ndarray:
     """
     Compute a threshold-based segmentation via a 2-component Gaussian mixture model.
 

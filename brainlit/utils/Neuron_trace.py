@@ -16,6 +16,7 @@ import warnings
 
 # sejalsrivastava1 added type annotations
 
+
 class NeuronTrace:
     """Neuron Trace class to handle neuron traces as swcs and s3 skeletons
 
@@ -173,7 +174,9 @@ class NeuronTrace:
         """
         return self.df
 
-    def get_skel(self, benchmarking: bool = False, origin: np.ndarray = None) -> Skeleton:
+    def get_skel(
+        self, benchmarking: bool = False, origin: np.ndarray = None
+    ) -> Skeleton:
         """Gets a skeleton version of dataframe, if swc input is provided
 
         Arguments
@@ -210,7 +213,9 @@ class NeuronTrace:
             skel = cv.skeleton.get(self.seg_id)
             return skel
 
-    def get_df_voxel(self, spacing: np.array, origin: np.array = np.array([0, 0, 0])) -> pd.DataFrame:
+    def get_df_voxel(
+        self, spacing: np.array, origin: np.array = np.array([0, 0, 0])
+    ) -> pd.DataFrame:
         """Converts coordinates in pd.DataFrame from spatial units to voxel units
 
         Arguments
@@ -253,7 +258,9 @@ class NeuronTrace:
         df_voxel = self._df_in_voxel(self.df, spacing, origin)
         return df_voxel
 
-    def get_graph(self, spacing: np.array = None, origin: np.array = None) -> nx.classes.digraph.DiGraph:
+    def get_graph(
+        self, spacing: np.array = None, origin: np.array = None
+    ) -> nx.classes.digraph.DiGraph:
         """Converts dataframe in either spatial or voxel coordinates into a directed graph.
         Will convert to voxel coordinates if spacing is specified.
 
@@ -298,7 +305,9 @@ class NeuronTrace:
             G = self._df_to_graph(self.df)
         return G
 
-    def get_paths(self, spacing: np.array = None, origin: np.array = None) -> list[np.array]:
+    def get_paths(
+        self, spacing: np.array = None, origin: np.array = None
+    ) -> list[np.array]:
         """Converts dataframe in either spatial or voxel coordinates into a list of paths.
         Will convert to voxel coordinates if spacing is specified.
 
@@ -355,9 +364,10 @@ class NeuronTrace:
         return paths
 
     def generate_df_subset(
-        self, vox_in_img_list: list, 
-        subneuron_start: int = None, 
-        subneuron_end: int = None
+        self,
+        vox_in_img_list: list,
+        subneuron_start: int = None,
+        subneuron_end: int = None,
     ) -> pd.DataFrame:
         """Read a new subset dataframe in coordinates in img spacing.
         Specify specific range of vertices from dataframe if desired
@@ -423,13 +433,13 @@ class NeuronTrace:
         return df_new
 
     def get_bfs_subgraph(
-        self, 
-        node_id: int, 
-        depth: int, 
-        df: pd.DataFrame = None, 
-        spacing: np.array = None, 
-        origin: np.array = None
-        ) -> tuple [nx.classes.digraph.DiGraph, nx.classes.digraph.DiGraph, list]:
+        self,
+        node_id: int,
+        depth: int,
+        df: pd.DataFrame = None,
+        spacing: np.array = None,
+        origin: np.array = None,
+    ) -> tuple[nx.classes.digraph.DiGraph, nx.classes.digraph.DiGraph, list]:
         """
          Creates a spanning subgraph from a seed node and parent graph using BFS.
 
@@ -505,7 +515,12 @@ class NeuronTrace:
 
         return G_sub, tree, paths
 
-    def get_sub_neuron(self, bounding_box: Union[tuple, list, None], spacing: np.array = None, origin: np.array = None) -> nx.classes.digraph.Digraph:
+    def get_sub_neuron(
+        self,
+        bounding_box: Union[tuple, list, None],
+        spacing: np.array = None,
+        origin: np.array = None,
+    ) -> nx.classes.digraph.Digraph:
         """Returns sub-neuron with node coordinates bounded by start and end
 
         Arguments
@@ -566,7 +581,12 @@ class NeuronTrace:
 
         return G_sub
 
-    def get_sub_neuron_paths(self, bounding_box: Union[tuple, list, None], spacing: np.array = None, origin: np.array = None) -> list:
+    def get_sub_neuron_paths(
+        self,
+        bounding_box: Union[tuple, list, None],
+        spacing: np.array = None,
+        origin: np.array = None,
+    ) -> list:
         """Returns sub-neuron with node coordinates bounded by start and end
 
         Arguments
@@ -667,7 +687,9 @@ class NeuronTrace:
         return ssd
 
     # private methods
-    def _read_swc(self, path: str) -> tuple[pd.DataFrame, list[float], list[int], int, int]:
+    def _read_swc(
+        self, path: str
+    ) -> tuple[pd.DataFrame, list[float], list[int], int, int]:
         """
         Read a single swc file
 
@@ -730,7 +752,9 @@ class NeuronTrace:
         )
         return df, offset, color, cc, branch
 
-    def _read_swc_offset(self, path: str) -> tuple[pd.DataFrame, list[float], list[int], int, int]:
+    def _read_swc_offset(
+        self, path: str
+    ) -> tuple[pd.DataFrame, list[float], list[int], int, int]:
         df, offset, color, cc, branch = self._read_swc(path)
         df["x"] = df["x"] + offset[0]
         df["y"] = df["y"] + offset[1]
@@ -738,7 +762,9 @@ class NeuronTrace:
 
         return df, color, cc, branch
 
-    def _read_s3(self, s3_path: str, seg_id: int, mip: int, rounding: Optional[bool] = True):
+    def _read_s3(
+        self, s3_path: str, seg_id: int, mip: int, rounding: Optional[bool] = True
+    ):
         """Read a s3 bucket path to a skeleton object
         into a pandas dataframe.
 
@@ -820,7 +846,12 @@ class NeuronTrace:
 
         return df_new
 
-    def _space_to_voxel(self, spatial_coord: np.array, spacing: np.array, origin: np.array = np.array([0, 0, 0])) -> np.array:
+    def _space_to_voxel(
+        self,
+        spatial_coord: np.array,
+        spacing: np.array,
+        origin: np.array = np.array([0, 0, 0]),
+    ) -> np.array:
         """Converts coordinate from spatial units to voxel units.
 
         Parameters
@@ -842,7 +873,12 @@ class NeuronTrace:
         voxel_coord = voxel_coord.astype(np.int64)
         return voxel_coord
 
-    def _df_in_voxel(self, df: pd.DataFrame, spacing: np.array, origin: np.array = np.array([0, 0, 0])) -> pd.DataFrame:
+    def _df_in_voxel(
+        self,
+        df: pd.DataFrame,
+        spacing: np.array,
+        origin: np.array = np.array([0, 0, 0]),
+    ) -> pd.DataFrame:
         """Converts coordinates in pd.DataFrame representing swc from spatial units
         to voxel units
 
@@ -913,7 +949,9 @@ class NeuronTrace:
 
         return G
 
-    def _get_sub_neuron(self, G: nx.classes.digraph.DiGraph, bounding_box: Union[tuple, list, None]) -> nx.classes.digraph.DiGraph:
+    def _get_sub_neuron(
+        self, G: nx.classes.digraph.DiGraph, bounding_box: Union[tuple, list, None]
+    ) -> nx.classes.digraph.DiGraph:
         """Returns sub-neuron with node coordinates bounded by start and end
 
         Parameters
@@ -1003,7 +1041,13 @@ class NeuronTrace:
 
         return np.array(paths, dtype="object")
 
-    def _get_bfs_subgraph(self, G: nx.classes.digraph.DiGraph, node_id: int, depth: int, df: pd.DataFrame = None) -> tuple[nx.classes.digraph.DiGraph, nx.classes.digraph.DiGraph]:
+    def _get_bfs_subgraph(
+        self,
+        G: nx.classes.digraph.DiGraph,
+        node_id: int,
+        depth: int,
+        df: pd.DataFrame = None,
+    ) -> tuple[nx.classes.digraph.DiGraph, nx.classes.digraph.DiGraph]:
         """
         Creates a spanning subgraph from a seed node and parent graph using BFS.
 
@@ -1038,7 +1082,9 @@ class NeuronTrace:
         G_sub = nx.subgraph(G, list(tree.nodes))
         return G_sub, tree
 
-    def _swc2skeleton(self, swc_file: str, benchmarking: bool = False, origin: np.array = None) -> Skeleton:
+    def _swc2skeleton(
+        self, swc_file: str, benchmarking: bool = False, origin: np.array = None
+    ) -> Skeleton:
         """Converts swc file into Skeleton object
         Arguments:
             swc_file {str} -- path to SWC file

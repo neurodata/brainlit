@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 # sejalsrivastava1 added type annotations
 
+
 def pairwise(iterable: Iterable):
     # Adapted from https://stackoverflow.com/a/5434936
     a, b = itertools.tee(iterable)
@@ -50,7 +51,12 @@ def draw_sphere(shape: tuple, center: tuple, radius: float) -> np.ndarray:
     return sphere
 
 
-def draw_tube_from_spheres(img: cloudvolume.volumecutout.VolumeCutout, vertex0: tuple, vertex1: tuple, radius: float) -> np.ndarray:
+def draw_tube_from_spheres(
+    img: cloudvolume.volumecutout.VolumeCutout,
+    vertex0: tuple,
+    vertex1: tuple,
+    radius: float,
+) -> np.ndarray:
     """
     Generate a segmentation mask of a tube (series of spheres) connecting known vertices.
 
@@ -85,7 +91,12 @@ def draw_tube_from_spheres(img: cloudvolume.volumecutout.VolumeCutout, vertex0: 
     return labels
 
 
-def draw_tube_from_edt(img: cloudvolume.volumecutout.VolumeCutout, vertex0: tuple, vertex1: tuple, radius: float) -> np.ndarray:
+def draw_tube_from_edt(
+    img: cloudvolume.volumecutout.VolumeCutout,
+    vertex0: tuple,
+    vertex1: tuple,
+    radius: float,
+) -> np.ndarray:
     """
     Generate a segmentation mask of a tube connecting known vertices.
 
@@ -117,7 +128,12 @@ def draw_tube_from_edt(img: cloudvolume.volumecutout.VolumeCutout, vertex0: tupl
     return labels
 
 
-def tubes_seg(img: cloudvolume.volumecutout.VolumeCutout, vertices: list, radius: float, spheres: bool = False) -> np.ndarray:
+def tubes_seg(
+    img: cloudvolume.volumecutout.VolumeCutout,
+    vertices: list,
+    radius: float,
+    spheres: bool = False,
+) -> np.ndarray:
     """
     Generate a segmentation mask of cylinders connecting known vertices.
 

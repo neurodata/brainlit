@@ -3,6 +3,7 @@ from sklearn.metrics import pairwise_distances_argmin_min
 
 # sejalsrivastava1 added type annotations
 
+
 def resample(path: np.array, spacing: int = 1) -> np.array:
     """Resample a path (linearly) according to maximum distance between points
 
