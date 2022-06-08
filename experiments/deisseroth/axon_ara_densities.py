@@ -9,7 +9,7 @@ import os
 
 # dir_base= "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/"
 # dir_base = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/"
-dir_base = "s3://smartspim-precomputed-volumes/2022_01_21/8650/"
+dir_base = "s3://smartspim-precomputed-volumes/2022_11_03/8589/"
 outdir = "/data/tathey1/matt_wright/brain_temp/"
 
 
