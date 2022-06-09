@@ -518,7 +518,7 @@ class NeuronTrace:
         bounding_box: Union[tuple, list, None],
         spacing: np.array = None,
         origin: np.array = None,
-    ) -> nx.classes.digraph.Digraph:
+    ) -> nx.classes.digraph.DiGraph:
         """Returns sub-neuron with node coordinates bounded by start and end
 
         Arguments
