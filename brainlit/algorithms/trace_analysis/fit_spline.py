@@ -15,7 +15,6 @@ from brainlit.utils.util import (
 )
 
 
-
 """
 Geometric Graph class
 """
