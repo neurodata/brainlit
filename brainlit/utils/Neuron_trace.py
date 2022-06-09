@@ -685,9 +685,7 @@ class NeuronTrace:
         return ssd
 
     # private methods
-    def _read_swc(
-        self, path: str
-    ) -> tuple[pd.DataFrame, list[float], list[int], int, int]:
+    def _read_swc(self, path: str) -> tuple:
         """
         Read a single swc file
 
@@ -750,9 +748,7 @@ class NeuronTrace:
         )
         return df, offset, color, cc, branch
 
-    def _read_swc_offset(
-        self, path: str
-    ) -> tuple[pd.DataFrame, list[float], list[int], int, int]:
+    def _read_swc_offset(self, path: str) -> tuple:
         df, offset, color, cc, branch = self._read_swc(path)
         df["x"] = df["x"] + offset[0]
         df["y"] = df["y"] + offset[1]
@@ -1045,7 +1041,7 @@ class NeuronTrace:
         node_id: int,
         depth: int,
         df: pd.DataFrame = None,
-    ) -> tuple[nx.classes.digraph.DiGraph, nx.classes.digraph.DiGraph]:
+    ) -> tuple:
         """
         Creates a spanning subgraph from a seed node and parent graph using BFS.
 

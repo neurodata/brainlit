@@ -30,7 +30,7 @@ def get_seed(voxel: tuple) -> tuple:
 
 def get_img_T1(
     img: cloudvolume.volumecutout.VolumeCutout,
-) -> tuple[sitk.Image, sitk.Image]:
+) -> tuple:
     """
     Converts a volume cutout to a SimpleITK image, as wel
     as a SimpleITK image with scaled intensity values to 0-255.
