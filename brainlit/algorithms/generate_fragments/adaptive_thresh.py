@@ -57,7 +57,7 @@ def get_img_T1(
 
 
 def thres_from_gmm(
-    img: cloudvolume.volumecutout.VolumeCutOut, random_seed: int = 2
+    img: cloudvolume.volumecutout.VolumeCutout, random_seed: int = 2
 ) -> int:
     """
     Computes a numerical threshold for segmentation based
