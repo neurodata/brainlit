@@ -29,7 +29,7 @@ brain2paths = {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_03_02/8529/Ch_647_iso",
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_03_02/8529/Ch_561_iso",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_02/8529/Ch_488_iso",
-        "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=IWLsOxwqVpLPew",
+        "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=kLWMLcZ066yYpQ",
     },
     "8477": {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_03_14/8477/Ch_647_iso",
