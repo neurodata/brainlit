@@ -218,7 +218,7 @@ def removeSmallCCs(
     return largeCCs
 
 
-def label_points(labels: np.array, points: list, res: list) -> tuple[list, list]:
+def label_points(labels: np.array, points: list, res: list) -> tuple:
     """Adjust points so they fall on a foreground component of labels.
 
     Args:
@@ -422,7 +422,7 @@ def remove_somas(
     im_processed: np.array,
     res: list,
     verbose=False,
-) -> tuple[np.array, list, dict, list]:
+) -> tuple:
     """Helper function of split_frags. Removes area around somas.
 
     Args:
@@ -475,7 +475,7 @@ def split_frags_place_points(
     states: list,
     comp_to_states: dict,
     verbose=False,
-) -> tuple[list, dict]:
+) -> tuple:
     """Helper function of split_frags. Places points on high probability voxels while keeping the points a certain distance apart from each other.
 
     Args:
