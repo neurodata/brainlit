@@ -1,5 +1,6 @@
 from typing import Tuple
 import numpy as np
+import pandas
 from scipy.interpolate import splprep
 import math
 import warnings
@@ -12,6 +13,7 @@ from brainlit.utils.util import (
     check_iterable_type,
     check_iterable_nonnegative,
 )
+
 
 
 """

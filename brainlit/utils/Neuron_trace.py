@@ -689,7 +689,7 @@ class NeuronTrace:
     # private methods
     def _read_swc(
         self, path: str
-    ) -> Tuple[pd.DataFrame, list[float], list[int], int, int]:
+    ) -> Tuple[pd.DataFrame, List[float], List[int], int, int]:
         """
         Read a single swc file
 
