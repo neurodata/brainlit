@@ -305,7 +305,9 @@ class NeuronTrace:
             G = self._df_to_graph(self.df)
         return G
 
-    def get_paths(self, spacing: np.array = None, origin: np.array = None) -> List[np.arrah]:
+    def get_paths(
+        self, spacing: np.array = None, origin: np.array = None
+    ) -> List[np.arrah]:
         """Converts dataframe in either spatial or voxel coordinates into a list of paths.
         Will convert to voxel coordinates if spacing is specified.
 
@@ -685,7 +687,9 @@ class NeuronTrace:
         return ssd
 
     # private methods
-    def _read_swc(self, path: str) -> Tuple[pd.DataFrame, list[float], list[int], int, int]:
+    def _read_swc(
+        self, path: str
+    ) -> Tuple[pd.DataFrame, list[float], list[int], int, int]:
         """
         Read a single swc file
 
