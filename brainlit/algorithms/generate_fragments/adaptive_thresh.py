@@ -1,9 +1,11 @@
 # Reference: http://insightsoftwareconsortium.github.io/SimpleITK-Notebooks/Python_html/300_Segmentation_Overview.html
 
+from typing import Tuple
 import SimpleITK as sitk
 from sklearn.mixture import GaussianMixture
 import numpy as np
 import cloudvolume
+
 
 # sejalsrivastava1 added type annotations
 
