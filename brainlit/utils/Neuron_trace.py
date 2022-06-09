@@ -1,5 +1,5 @@
 from curses import intrflush
-from typing import Optional, Union
+from typing import List, Optional, Tuple, Union
 import numpy as np
 import re
 import pandas as pd
@@ -305,7 +305,7 @@ class NeuronTrace:
             G = self._df_to_graph(self.df)
         return G
 
-    def get_paths(self, spacing: np.array = None, origin: np.array = None) -> list:
+    def get_paths(self, spacing: np.array = None, origin: np.array = None) -> List[np.arrah]:
         """Converts dataframe in either spatial or voxel coordinates into a list of paths.
         Will convert to voxel coordinates if spacing is specified.
 
@@ -437,7 +437,7 @@ class NeuronTrace:
         df: pd.DataFrame = None,
         spacing: np.array = None,
         origin: np.array = None,
-    ) -> tuple:
+    ) -> Tuple[nx.classes.digraph.DiGraph, nx.classes.digraph.DiGraph, List[np.array]]:
         """
          Creates a spanning subgraph from a seed node and parent graph using BFS.
 
@@ -584,7 +584,7 @@ class NeuronTrace:
         bounding_box: Union[tuple, list, None],
         spacing: np.array = None,
         origin: np.array = None,
-    ) -> list:
+    ) -> List[np.array]:
         """Returns sub-neuron with node coordinates bounded by start and end
 
         Arguments
@@ -685,7 +685,7 @@ class NeuronTrace:
         return ssd
 
     # private methods
-    def _read_swc(self, path: str) -> tuple:
+    def _read_swc(self, path: str) -> Tuple[pd.DataFrame, list[float], list[int], int, int]:
         """
         Read a single swc file
 
@@ -748,7 +748,7 @@ class NeuronTrace:
         )
         return df, offset, color, cc, branch
 
-    def _read_swc_offset(self, path: str) -> tuple:
+    def _read_swc_offset(self, path: str) -> Tuple[pd.DataFrame, list[int], int, int]:
         df, offset, color, cc, branch = self._read_swc(path)
         df["x"] = df["x"] + offset[0]
         df["y"] = df["y"] + offset[1]
@@ -992,7 +992,7 @@ class NeuronTrace:
 
         return G_sub
 
-    def _graph_to_paths(self, G: nx.classes.digraph.DiGraph) -> list:
+    def _graph_to_paths(self, G: nx.classes.digraph.DiGraph) -> List[np.array]:
         """Converts neuron represented as a directed graph with no cycles into a
         list of paths.
 
@@ -1041,7 +1041,7 @@ class NeuronTrace:
         node_id: int,
         depth: int,
         df: pd.DataFrame = None,
-    ) -> tuple:
+    ) -> Tuple[nx.classes.digraph.DiGraph, nx.classes.digraph.DiGraph]:
         """
         Creates a spanning subgraph from a seed node and parent graph using BFS.
 

@@ -1,3 +1,4 @@
+from typing import Tuple
 import numpy as np
 import scipy.linalg as linalg
 
@@ -52,7 +53,7 @@ def whiten(
     centered: bool = False,
     epsilon: float = 1e-5,
     type: str = "PCA",
-) -> tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """Performs PCA or ZCA whitening on an array. This preprocessing step is described
     in _[1].
 
@@ -125,7 +126,7 @@ def whiten(
 
 def window_pad(
     img: np.ndarray, window_size: np.ndarray, step_size: np.ndarray
-) -> tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """Pad image at edges so the window can convolve evenly.
     Padding will be a copy of the edges.
 

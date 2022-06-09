@@ -218,7 +218,7 @@ def removeSmallCCs(
     return largeCCs
 
 
-def label_points(labels: np.array, points: list, res: list) -> tuple:
+def label_points(labels: np.array, points: list, res: list) -> Tuple[list, list]:
     """Adjust points so they fall on a foreground component of labels.
 
     Args:
@@ -288,7 +288,7 @@ def _get_chunked_args(
 
 def _merge_chunked_labels(
     labels: list,
-    new_shape: tuple[int, int, int],
+    new_shape: Tuple[int, int, int],
     chunk_size: Optional[list] = [200, 200, 200],
 ) -> np.array:
     """Merges the fragments of the chunked image. Assumes that chunking was done according to method in _get_chunked_args
@@ -422,7 +422,7 @@ def remove_somas(
     im_processed: np.array,
     res: list,
     verbose=False,
-) -> tuple:
+) -> Tuple[np.array, list, dict, list]:
     """Helper function of split_frags. Removes area around somas.
 
     Args:
@@ -475,7 +475,7 @@ def split_frags_place_points(
     states: list,
     comp_to_states: dict,
     verbose=False,
-) -> tuple:
+) -> Tuple[list, dict]:
     """Helper function of split_frags. Places points on high probability voxels while keeping the points a certain distance apart from each other.
 
     Args:

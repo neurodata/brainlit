@@ -1,3 +1,4 @@
+from typing import Tuple
 import numpy as np
 from scipy.interpolate import splprep
 import math
@@ -160,7 +161,7 @@ class GeometricGraph(nx.Graph):
 
         return spline_tree
 
-    def __fit_spline_path(self, path: list) -> tuple[tuple, list]:
+    def __fit_spline_path(self, path: list) -> Tuple[tuple, list]:
         r"""Fit a B-Spline to a path.
 
         Compute the knots, coefficients, and the degree of the
@@ -196,7 +197,7 @@ class GeometricGraph(nx.Graph):
 
     def __find_main_branch(
         self, tree: nx.DiGraph, starting_length: float = 0
-    ) -> tuple[list, list]:
+    ) -> Tuple[list, list]:
         r"""Find the main branch in a directed graph.
 
         It is used in `fit_spline_tree_invariant` to identify the main branch

@@ -1,3 +1,4 @@
+from typing import Tuple
 import numpy as np
 import pandas as pd
 from scipy import ndimage as ndi
@@ -36,7 +37,7 @@ def snap_points(
     return points_new
 
 
-def point_threshold(img: np.ndarray, points: pd.DataFrame) -> tuple[np.ndarray, int]:
+def point_threshold(img: np.ndarray, points: pd.DataFrame) -> Tuple[np.ndarray, int]:
     """Threshold image according to the minimum intensity of a set of points
 
     Arguments:
@@ -106,7 +107,7 @@ def skeletonize(img: np.ndarray, points: pd.DataFrame) -> np.ndarray:
 
 def skeleton_threshold_intersect(
     img: np.ndarray, points: pd.DataFrame
-) -> tuple[np.ndarray, int]:
+) -> Tuple[np.ndarray, int]:
     """Compute intersection between two masks: thresholded image and skeletonization of points
 
     Arguments:
@@ -149,7 +150,7 @@ def skeleton_threshold_intersect(
 
 def Bresenham3D(
     x1: int, y1: int, z1: int, x2: int, y2: int, z2: int
-) -> tuple[list, list, list]:
+) -> Tuple[list, list, list]:
     """Takes two coordinates and gives the set of coordinates that connects them with a straight line
 
     Adapted from https://www.geeksforgeeks.org/bresenhams-algorithm-for-3-d-line-drawing/

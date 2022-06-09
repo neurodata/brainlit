@@ -284,7 +284,7 @@ class BaseFeatures(BaseEstimator):
         include_neighborhood: bool,
         batch_size: int = None,
         file_path: str = None,
-    ) -> tuple[int, int, int]:
+    ) -> Tuple[int, int, int]:
         voxel_dict = {}
         counter = 0
         batch_id = 0
