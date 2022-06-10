@@ -12,8 +12,6 @@ import feather
 from joblib import Parallel, delayed
 from typing import Optional, List, Union, Tuple
 
-# sejalsrivastava1 added type annotations
-
 
 class BaseFeatures(BaseEstimator):
     """Base class for generating features from precomputed volumes.

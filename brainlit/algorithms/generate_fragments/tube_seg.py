@@ -10,9 +10,6 @@ from tqdm import tqdm
 import cloudvolume
 
 
-# sejalsrivastava1 added type annotations
-
-
 def pairwise(iterable: Iterable):
     # Adapted from https://stackoverflow.com/a/5434936
     a, b = itertools.tee(iterable)

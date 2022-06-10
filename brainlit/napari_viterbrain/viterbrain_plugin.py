@@ -10,8 +10,6 @@ from magicgui import magic_factory
 import pathlib
 import napari
 
-# sejalsrivastava1 added type annotations
-
 
 def viterbrain_reader(path: str) -> list:
 

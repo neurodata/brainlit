@@ -2,8 +2,6 @@ from typing import Tuple
 import numpy as np
 import scipy.linalg as linalg
 
-# sejalsrivastava1 added type annotations
-
 
 def center(data: np.ndarray) -> np.ndarray:
     """Centers data by subtracting the mean

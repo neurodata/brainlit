@@ -1,6 +1,6 @@
 from typing import Tuple
 import numpy as np
-import pandas
+import pandas as pd
 from scipy.interpolate import splprep
 import math
 import warnings
@@ -19,9 +19,6 @@ from brainlit.utils.util import (
 Geometric Graph class
 """
 
-# sejalsrivastava1 added type annotations
-# sejalsrivastava1: should pandas be imported?
-
 
 class GeometricGraph(nx.Graph):
     r"""The shape of the neurons are expressed and fitted with splines in this undirected graph class.
@@ -31,7 +28,7 @@ class GeometricGraph(nx.Graph):
     It extends `nx.Graph` and rejects duplicate node input.
     """
 
-    def __init__(self, df: pandas.DataFrame = None) -> None:
+    def __init__(self, df: pd.DataFrame = None) -> None:
         super(GeometricGraph, self).__init__()
         self.segments = None
         self.cycle = None
@@ -39,7 +36,7 @@ class GeometricGraph(nx.Graph):
         if df is not None:
             self.__init_from_df(df)
 
-    def __init_from_df(self, df_neuron: pandas.DataFrame) -> "GeometricGraph":
+    def __init_from_df(self, df_neuron: pd.DataFrame) -> "GeometricGraph":
         """Converts dataframe of swc in voxel coordinates into a GeometricGraph
 
         Parameters

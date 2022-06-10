@@ -5,8 +5,6 @@ from scipy import ndimage as ndi
 from skimage import draw
 from brainlit.utils.util import check_type
 
-# sejalsrivastava1 added type annotations
-
 
 def snap_points(
     img: np.ndarray, points: pd.DataFrame, radius: list = [3, 3, 3]

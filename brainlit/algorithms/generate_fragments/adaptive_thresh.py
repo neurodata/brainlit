@@ -7,9 +7,6 @@ import numpy as np
 import cloudvolume
 
 
-# sejalsrivastava1 added type annotations
-
-
 def get_seed(voxel: tuple) -> tuple:
     """
     Get a seed point for the center of a brain volume.

@@ -18,8 +18,6 @@ from tqdm import tqdm
 from joblib import Parallel, delayed
 import multiprocessing as mp
 
-# sejalsrivastava1 added type annotations
-
 
 def gabor_filter(
     input: np.ndarray,

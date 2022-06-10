@@ -14,8 +14,6 @@ from brainlit.utils.util import (
 from sklearn.metrics import pairwise_distances_argmin_min
 import warnings
 
-# sejalsrivastava1 added type annotations
-
 
 class NeuronTrace:
     """Neuron Trace class to handle neuron traces as swcs and s3 skeletons

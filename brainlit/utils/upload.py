@@ -21,7 +21,6 @@ from brainlit.utils.benchmarking_params import (
     type_to_date,
 )
 
-# sejalsrivastava1 added type annotations
 
 import time
 from tqdm.auto import tqdm
