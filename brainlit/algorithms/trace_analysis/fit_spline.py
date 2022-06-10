@@ -39,9 +39,7 @@ class GeometricGraph(nx.Graph):
         if df is not None:
             self.__init_from_df(df)
 
-    def __init_from_df(
-        self, df_neuron: pandas.DataFrame
-    ) -> 'GeometricGraph':
+    def __init_from_df(self, df_neuron: pandas.DataFrame) -> "GeometricGraph":
         """Converts dataframe of swc in voxel coordinates into a GeometricGraph
 
         Parameters
