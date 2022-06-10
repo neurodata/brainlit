@@ -41,7 +41,7 @@ class GeometricGraph(nx.Graph):
 
     def __init_from_df(
         self, df_neuron: pandas.DataFrame
-    ) -> brainlit.algorithms.trace_analysis.fit_spline.GeometricGraph:
+    ) -> 'GeometricGraph':
         """Converts dataframe of swc in voxel coordinates into a GeometricGraph
 
         Parameters

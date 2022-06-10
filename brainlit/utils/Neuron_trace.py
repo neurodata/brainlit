@@ -752,7 +752,7 @@ class NeuronTrace:
         )
         return df, offset, color, cc, branch
 
-    def _read_swc_offset(self, path: str) -> Tuple[pd.DataFrame, list[int], int, int]:
+    def _read_swc_offset(self, path: str) -> Tuple[pd.DataFrame, List[int], int, int]:
         df, offset, color, cc, branch = self._read_swc(path)
         df["x"] = df["x"] + offset[0]
         df["y"] = df["y"] + offset[1]
