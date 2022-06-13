@@ -211,7 +211,7 @@ class state_generation:
             soma_coords, labels, im_processed, res=self.resolution, verbose=False
         )
         mask = labels > 0
-        mask2 = image_process.removeSmallCCs(mask, 25)
+        mask2 = image_process.removeSmallCCs(mask, 25, verbose=False)
         image_iterative[mask & (~mask2)] = 0
 
         states, comp_to_states = image_process.split_frags_place_points(

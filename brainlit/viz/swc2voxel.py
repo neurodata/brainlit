@@ -1,10 +1,14 @@
+from typing import Tuple
 import numpy as np
+import pandas as pd
 from scipy import ndimage as ndi
 from skimage import draw
 from brainlit.utils.util import check_type
 
 
-def snap_points(img, points, radius=[3, 3, 3]):
+def snap_points(
+    img: np.ndarray, points: pd.DataFrame, radius: list = [3, 3, 3]
+) -> pd.DataFrame:
     """Moves neuron marker points to the highest intensity within a certain radius
 
     Arguments:
@@ -31,7 +35,7 @@ def snap_points(img, points, radius=[3, 3, 3]):
     return points_new
 
 
-def point_threshold(img, points):
+def point_threshold(img: np.ndarray, points: pd.DataFrame) -> Tuple[np.ndarray, int]:
     """Threshold image according to the minimum intensity of a set of points
 
     Arguments:
@@ -51,7 +55,7 @@ def point_threshold(img, points):
     return thresholded, thresh
 
 
-def remove_small_components(img, size=20):
+def remove_small_components(img: np.ndarray, size: int = 20) -> np.ndarray:
     """Remove components from binary mask that are small
 
     Arguments:
@@ -70,7 +74,7 @@ def remove_small_components(img, size=20):
     return binary_img
 
 
-def skeletonize(img, points):
+def skeletonize(img: np.ndarray, points: pd.DataFrame) -> np.ndarray:
     """Draw lines between points that are connected to produce binary mask
 
     Arguments:
@@ -99,7 +103,9 @@ def skeletonize(img, points):
     return mask
 
 
-def skeleton_threshold_intersect(img, points):
+def skeleton_threshold_intersect(
+    img: np.ndarray, points: pd.DataFrame
+) -> Tuple[np.ndarray, int]:
     """Compute intersection between two masks: thresholded image and skeletonization of points
 
     Arguments:
@@ -140,7 +146,9 @@ def skeleton_threshold_intersect(img, points):
     return intersect, intersect_iter
 
 
-def Bresenham3D(x1, y1, z1, x2, y2, z2):
+def Bresenham3D(
+    x1: int, y1: int, z1: int, x2: int, y2: int, z2: int
+) -> Tuple[list, list, list]:
     """Takes two coordinates and gives the set of coordinates that connects them with a straight line
 
     Adapted from https://www.geeksforgeeks.org/bresenhams-algorithm-for-3-d-line-drawing/
