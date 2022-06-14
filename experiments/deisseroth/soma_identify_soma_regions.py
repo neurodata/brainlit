@@ -57,7 +57,7 @@ else:  # directory of text files
                 ]
                 coords.append(coord)
 
-    fname = somas + "all_somas.txt"
+    fname = somas + "all_somas_" + brain + ".txt"
     with open(fname, "w") as f:
         for coord in coords_target_space:
             f.write(f"[{coord[0]},{coord[1]},{coord[2]}]")
