@@ -10,14 +10,8 @@ from joblib import Parallel, delayed
 import multiprocessing
 import os
 
-# dir_base = "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/"
-# threshold = 0.46
-
-# dir_base = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/"
-# threshold = 0.6
-
-dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_11_03/8589/"
-threshold = 0.54
+dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_03_04/8590/"
+threshold = 0.5
 
 chunk_size = [256, 256, 300]
 

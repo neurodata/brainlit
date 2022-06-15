@@ -62,7 +62,7 @@ brain2paths = {
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_04/8590/Ch_488_iso",
         "mask": "precomputed://s3://smartspim-precomputed-volumes/2022_03_04/8590/axon_mask",
         "val_info": {
-            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=9Ie5l18RrGv_Gw",
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=gq91htCi35XdPw",
             "layer": "val",
         },
     },
