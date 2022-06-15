@@ -23,7 +23,7 @@ warnings.filterwarnings("ignore")
 
 mip = 0
 vol = CloudVolume(dir_base + "Ch_647", parallel=True, mip=mip, fill_missing=True)
-shape = vol.shape
+shape = list(vol.shape)
 shape[1] = 5888 ###*************************************************************
 
 corners = []
