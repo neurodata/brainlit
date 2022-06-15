@@ -60,62 +60,62 @@ class CloudReg_Transform(DiffeomorphismAction):
             Xs = XV + indicator*vtx[t,:,:,:]*dt
             Ys = YV + indicator*vty[t,:,:,:]*dt
             Zs = ZV + indicator*vtz[t,:,:,:]*dt
-            F = RegularGridInterpolator((xV,yV,zV),transx-XV,method='linear', bounds_error=False)
+            F = RegularGridInterpolator((xV,yV,zV),transx-XV,method='linear', bounds_error=False, fill_value=None)
             XYZs = np.reshape(np.stack((Xs,Ys,Zs), axis=-1), newshape=(-1,3))
             transx = np.reshape(F(XYZs), Xs.shape) + Xs
-            F = RegularGridInterpolator((xV,yV,zV),transy-YV,method='linear', bounds_error=False)
+            F = RegularGridInterpolator((xV,yV,zV),transy-YV,method='linear', bounds_error=False, fill_value=None)
             transy = np.reshape(F(XYZs), Ys.shape) + Ys
-            F = RegularGridInterpolator((xV,yV,zV),transz-ZV,method='linear', bounds_error=False)
+            F = RegularGridInterpolator((xV,yV,zV),transz-ZV,method='linear', bounds_error=False, fill_value=None)
             transz = np.reshape(F(XYZs), Zs.shape) + Zs
 
         Atransx = A[0,0]*transx + A[0,1]*transy + A[0,2]*transz + A[0,3]
         Atransy = A[1,0]*transx + A[1,1]*transy + A[1,2]*transz + A[1,3]
         Atransz = A[2,0]*transx + A[2,1]*transy + A[2,2]*transz + A[2,3]
 
+        Fx = RegularGridInterpolator((xV,yV,zV),Atransx,method='linear', bounds_error=False, fill_value=None)
+        Fy = RegularGridInterpolator((xV,yV,zV),Atransy,method='linear', bounds_error=False, fill_value=None)
+        Fz = RegularGridInterpolator((xV,yV,zV),Atransz,method='linear', bounds_error=False, fill_value=None)
 
-        Fx = RegularGridInterpolator((xV,yV,zV),Atransx,method='linear', bounds_error=False)
-        Fy = RegularGridInterpolator((xV,yV,zV),Atransy,method='linear', bounds_error=False)
-        Fz = RegularGridInterpolator((xV,yV,zV),Atransz,method='linear', bounds_error=False)
-
+        self.og_coords = [XV,YV,ZV]
         self.diffeomorphism = (Fx, Fy, Fz)
         
     def evaluate(self, position: np.array) -> np.array:
-        transformed_positionx = self.diffeomorphism[0](position[:,0],position[:,1],position[:,2])
-        transformed_positiony = self.diffeomorphism[1](position[:,0],position[:,1],position[:,2])
-        transformed_positionz = self.diffeomorphism[2](position[:,0],position[:,1],position[:,2])
+        Fx = self.diffeomorphism[0]
+        Fy = self.diffeomorphism[1]
+        Fz = self.diffeomorphism[2]
 
-        transformed_position = np.stack((transformed_positionx,transformed_positiony,transformed_positionz), axis=0)
+        transformed_positionx = Fx(position)
+        transformed_positiony = Fy(position)
+        transformed_positionz = Fz(position)
+
+        transformed_position = np.stack((transformed_positionx,transformed_positiony,transformed_positionz), axis=1)
 
         return transformed_position
 
 
     def D(self, position: np.array, deriv: np.array, order: int = 1) -> np.array:
-        diffx = self.diffeomorphism[0]
-        diffy = self.diffeomorphism[0]
-        diffz = self.diffeomorphism[0]
+        Fx = self.diffeomorphism[0]
+        Fy = self.diffeomorphism[1]
+        Fz = self.diffeomorphism[2]
 
         transformed_deriv = deriv.copy()
         step = 1
         for i, (pos, d) in enumerate(zip(position, deriv)):
             J = np.zeros((3,3))
-            J[0,0] = (diffx(pos[0]+step,pos[1],position[2]) - diffx(pos[:,0],pos[:,1],pos[:,2]))/step
-            J[0,1] = (diffx(pos[0],pos[1]+step,position[2]) - diffx(pos[:,0],pos[:,1],pos[:,2]))/step
-            J[0,2] = (diffx(pos[0],pos[1],position[2]+step) - diffx(pos[:,0],pos[:,1],pos[:,2]))/step
+            J[0,0] = (Fx([pos[0]+step,pos[1],pos[2]]) - Fx(pos))/step
+            J[0,1] = (Fx([pos[0],pos[1]+step,pos[2]]) - Fx(pos))/step
+            J[0,2] = (Fx([pos[0],pos[1],pos[2]+step]) - Fx(pos))/step
 
-            J[1,0] = (diffy(pos[0]+step,pos[1],position[2]) - diffy(pos[:,0],pos[:,1],pos[:,2]))/step
-            J[1,1] = (diffy(pos[0],pos[1]+step,position[2]) - diffy(pos[:,0],pos[:,1],pos[:,2]))/step
-            J[1,2] = (diffy(pos[0],pos[1],position[2]+step) - diffy(pos[:,0],pos[:,1],pos[:,2]))/step
+            J[1,0] = (Fy([pos[0]+step,pos[1],pos[2]]) - Fy(pos))/step
+            J[1,1] = (Fy([pos[0],pos[1]+step,pos[2]]) - Fy(pos))/step
+            J[1,2] = (Fy([pos[0],pos[1],pos[2]+step]) - Fy(pos))/step
 
-            J[2,0] = (diffx(pos[0]+step,pos[1],position[2]) - diffx(pos[:,0],pos[:,1],pos[:,2]))/step
-            J[2,1] = (diffx(pos[0],pos[1]+step,position[2]) - diffx(pos[:,0],pos[:,1],pos[:,2]))/step
-            J[2,2] = (diffx(pos[0],pos[1],position[2]+step) - diffx(pos[:,0],pos[:,1],pos[:,2]))/step
+            J[2,0] = (Fz([pos[0]+step,pos[1],pos[2]]) - Fz(pos))/step
+            J[2,1] = (Fz([pos[0],pos[1]+step,pos[2]]) - Fz(pos))/step
+            J[2,2] = (Fz([pos[0],pos[1],pos[2]+step]) - Fz(pos))/step
             transformed_deriv[i,:] = np.matmul(J, d).T
-
-
-
-
-
-
+        
+        return transformed_deriv
 
 
 
