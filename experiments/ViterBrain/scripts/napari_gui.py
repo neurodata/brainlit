@@ -1,31 +1,12 @@
-from mouselight_code.src import (
-    dynamic_programming_connected_double_learn,
-    image_process,
-)
-
-# import pandas as pd
 from pathlib import Path
 from networkx.algorithms.operators.unary import reverse
-from skimage import io, measure
-from sklearn.metrics import pairwise_distances_argmin_min
-import matplotlib.pyplot as plt
 import numpy as np
 import napari
 import pickle
 import networkx as nx
-import scipy.ndimage as ndi
 from tqdm import tqdm
-import random
 import os
-
-# from scipy import stats
-from mouselight_code.src.swc2voxel import Bresenham3D
-import subprocess
-import h5py
 from napari_animation import AnimationWidget
-import similaritymeasures
-from cloudvolume import Skeleton
-import re
 from brainlit.utils.Neuron_trace import NeuronTrace
 import zarr
 
@@ -34,27 +15,22 @@ num = 0
 
 root_dir = Path(os.path.abspath(""))
 data_dir = os.path.join(root_dir, "data", "example")
-path = os.path.join(data_dir, "viterbi_0_multisoma.pickle")
+path = os.path.join(data_dir, "image_viterbrain.pickle")
 
 with open(path, "rb") as handle:
     viterbi = pickle.load(handle)
 
+im_path = os.path.join(data_dir, "image.zarr")
+z = zarr.open(im_path, "r")
+im = z[:, :, :]
+print(f"Image shape: {im.shape}")
+fragment_path = os.path.join(data_dir, "image_labels.zarr")
+z = zarr.open(fragment_path, "r")
+new_labels = z[:, :, :]
+
 state2centroid = {}
 for soma_frag in viterbi.soma_fragment2coords.keys():
     state2centroid[soma_frag] = np.mean(viterbi.soma_fragment2coords[soma_frag], axis=0)
-
-z = zarr.open(viterbi.fragment_path[:-12] + ".zarr", "r")
-im = z[:, :, :]
-print(f"Image shape: {im.shape}")
-z = zarr.open(viterbi.fragment_path, "r")
-new_labels = z[:, :, :]
-
-nt = NeuronTrace(
-    path="/Users/thomasathey/Documents/mimlab/mouselight/pres/mim_slides/SNT_Data.swc"
-)
-df = nt.get_df()
-SNT = df[["x", "y", "z"]].to_numpy()
-SNT[:, [0, 1, 2]] = SNT[:, [2, 1, 0]]
 
 viewer = napari.Viewer(ndisplay=3)
 viewer.add_image(im, name="image", scale=scale)

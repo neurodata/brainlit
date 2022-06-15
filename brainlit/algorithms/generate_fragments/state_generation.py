@@ -490,7 +490,7 @@ class state_generation:
         Args:
             corner1 (list of ints): first corner of image chunk
             corner2 (list of ints): second corner of image chunk
-            alg (string): algorithm to use for endpoint estimation
+            alg (string): algorithm to use for endpoint estimation. nbr for neighborhood method, pc for principal curves method.
 
         Raises:
             ValueError: only one endpoint found for fragment
@@ -544,7 +544,7 @@ class state_generation:
 
             if alg == "pc":
                 endpoints_initial = self._pc_endpoints_from_coords_neighbors(coords)
-            else:
+            elif alg == "nbr":
                 endpoints_initial = self._endpoints_from_coords_neighbors(coords)
             endpoints = endpoints_initial.copy()
             used_eps = np.zeros((len(endpoints), 3)) - 1
@@ -587,8 +587,12 @@ class state_generation:
             results.append((component, a, b, -dif, dif, sum))
         return results
 
-    def compute_states(self, alg: str) -> None:
+    def compute_states(self, alg: str = "nbr") -> None:
         """Compute entire collection of states
+
+        Args:
+            alg (string, optional): algorithm to use for endpoint estimation.
+                "nbr" for neighborhood method, "pc" for principal curves method. Defaults to "nbr"
 
         Raises:
             ValueError: erroneously computed endpoints of soma state
