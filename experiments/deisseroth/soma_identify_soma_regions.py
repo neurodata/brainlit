@@ -83,12 +83,15 @@ if len(coords_target_space) > 2000:
     random.shuffle(coords_target_space)
     coords_target_space = coords_target_space[:2000]
     print("*********Only posting first 2000 somas to neuroglancer**********")
+    name = "detected_somas_partial"
+else:
+    name = "detected_somas"
 
 ngl_json['layers'].append(
     {
         "type": "annotation",
         "points": coords_target_space,
-        "name": "detected_somas"
+        "name": name
     }   
 )
 viz_link = create_viz_link_from_json(ngl_json, neuroglancer_link="https://viz.neurodata.io/?json_url=")
