@@ -4,14 +4,25 @@ from tqdm import tqdm
 import pickle
 from os import listdir
 from os.path import isfile, join
+from cloudreg.scripts.transform_points import NGLink
+from cloudreg.scripts.visualization import create_viz_link_from_json
 
-brain = "8529"
+viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=my8twEEDBrE0DQ"
+viz_link = NGLink(viz_link.split("json_url=")[-1])
+ngl_json = viz_link._json
+
+atlas_layer = None
+for layer in ngl_json['layers']:
+    if layer['name'] == 'atlas_to_target':
+        atlas_layer = layer['source']
+if atlas_layer is None:
+    raise ValueError(f"No atlas_to_target layer at viz link: {viz_link}")
+
+brain = atlas_layer.split("/")[-2]
 div_factor = [8, 8, 1]
 
 atlas_vol = CloudVolume(
-    "precomputed://https://dlab-colm.neurodata.io/2022_03_02/"
-    + brain
-    + "/atlas_to_target",
+    atlas_layer,
     parallel=1,
     mip=0,
     fill_missing=True,
@@ -34,7 +45,7 @@ if somas[:-4] == ".txt":
             line = " ".join(line.split())
             elements = line.split(",")
             coord = [elements[0][1:], elements[1], elements[2][:-1]]
-
+            coords_target_space.append(coord)
             coord = [
                 int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)
             ]
@@ -57,11 +68,15 @@ else:  # directory of text files
                 ]
                 coords.append(coord)
 
-    fname = somas + "all_somas_" + brain + ".txt"
-    with open(fname, "w") as f:
-        for coord in coords_target_space:
-            f.write(f"[{coord[0]},{coord[1]},{coord[2]}]")
-            f.write("\n")
+ngl_json['layers'].append(
+    {
+        "type": "annotation",
+        "points": coords_target_space,
+        "name": "transformed_points"
+    }   
+)
+viz_link = create_viz_link_from_json(ngl_json, neuroglancer_link="https://viz.neurodata.io/?json_url=")
+print(f"Viz link with detections: {viz_link}")
 
 print(f"{len(coords)} somas detected, first is: {coords[0]}")
 
