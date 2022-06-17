@@ -72,7 +72,7 @@ ngl_json['layers'].append(
     {
         "type": "annotation",
         "points": coords_target_space,
-        "name": "transformed_points"
+        "name": "detected_somas"
     }   
 )
 viz_link = create_viz_link_from_json(ngl_json, neuroglancer_link="https://viz.neurodata.io/?json_url=")
