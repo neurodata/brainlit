@@ -6,6 +6,7 @@ from os import listdir
 from os.path import isfile, join
 from cloudreg.scripts.transform_points import NGLink
 from cloudreg.scripts.visualization import create_viz_link_from_json
+import random
 
 viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=my8twEEDBrE0DQ"
 viz_link = NGLink(viz_link.split("json_url=")[-1])
@@ -34,6 +35,7 @@ outpath = (
     "/data/tathey1/matt_wright/brainr_results/quantification_dict_" + brain + ".pickle"
 )
 
+print("Reading Detected Somas...")
 coords = []
 coords_target_space = []
 if somas[:-4] == ".txt":
@@ -67,6 +69,20 @@ else:  # directory of text files
                     int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)
                 ]
                 coords.append(coord)
+print(f"{len(coords)} somas detected, first is: {coords[0]}")
+
+all_somas_path = "/data/tathey1/matt_wright/brainr_results/all_somas_" + brain + ".txt"
+print(f"Writing {all_somas_path}...")
+with open(all_somas_path, "w") as f:
+    for coord in coords_target_space:
+        f.write(f"{coord}")
+        f.write("\n")
+
+print("Posting to neuroglancer...")
+if len(coords_target_space) > 2000:
+    random.shuffle(coords_target_space)
+    coords_target_space = coords_target_space[:2000]
+    print("*********Only posting first 2000 somas to neuroglancer**********")
 
 ngl_json['layers'].append(
     {
@@ -78,8 +94,7 @@ ngl_json['layers'].append(
 viz_link = create_viz_link_from_json(ngl_json, neuroglancer_link="https://viz.neurodata.io/?json_url=")
 print(f"Viz link with detections: {viz_link}")
 
-print(f"{len(coords)} somas detected, first is: {coords[0]}")
-
+print(f"Collecting atlas data to {outpath}...")
 dict = {}
 for coord in tqdm(coords, desc="identifynig rois"):
     roi = int(np.squeeze(atlas_vol[coord[0], coord[1], coord[2]]))
