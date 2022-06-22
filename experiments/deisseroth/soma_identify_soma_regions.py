@@ -8,6 +8,7 @@ from cloudreg.scripts.transform_points import NGLink
 from cloudreg.scripts.visualization import create_viz_link_from_json
 import random
 
+#viz link that includes atlas_to_target
 viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=yBhjHFE3Q43pdg"
 viz_link = NGLink(viz_link.split("json_url=")[-1])
 ngl_json = viz_link._json
