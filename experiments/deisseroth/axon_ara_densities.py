@@ -10,6 +10,10 @@ import os
 # dir_base= "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/"
 # dir_base = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/"
 dir_base = "s3://smartspim-precomputed-volumes/2022_03_04/8590/"
+if dir_base[-1] == "/":
+    brain_id = dir_base.split("/")[-2]
+else:
+    brain_id = dir_base.split("/")[-1]
 outdir = "/data/tathey1/matt_wright/brain_temp/"
 
 
@@ -113,6 +117,6 @@ for file in tqdm(files, desc="Assembling results"):
             volumes[key] = [cur_total, cur_vol]
 
 
-outpath = outdir + "wholebrain_.pkl"
+outpath = outdir + "wholebrain_" + brain_id + ".pkl"
 with open(outpath, "wb") as f:
     pickle.dump(volumes, f)
