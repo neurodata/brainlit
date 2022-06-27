@@ -33,7 +33,7 @@ print(f"size: {atlas_vol.shape} ")
 
 somas = "/data/tathey1/matt_wright/brainr_results/"
 outpath = (
-    "/data/tathey1/matt_wright/brainr_results/quantification_dict_" + brain + ".pickle"
+    somas + "quantification_dict_" + brain + ".pickle"
 )
 
 print("Reading Detected Somas...")
@@ -72,7 +72,7 @@ else:  # directory of text files
                 coords.append(coord)
 print(f"{len(coords)} somas detected, first is: {coords[0]}")
 
-all_somas_path = "/data/tathey1/matt_wright/brainr_results/all_somas_" + brain + ".txt"
+all_somas_path = somas + "all_somas_" + brain + ".txt"
 print(f"Writing {all_somas_path}...")
 with open(all_somas_path, "w") as f:
     for coord in coords_target_space:
