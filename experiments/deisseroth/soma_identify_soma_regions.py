@@ -9,10 +9,10 @@ from cloudreg.scripts.visualization import create_viz_link_from_json
 import random
 
 
-somas = "/data/tathey1/matt_wright/brainr_results_8555/"
+somas = "/data/tathey1/matt_wright/brainr_results/"
 
 #viz link that includes atlas_to_target
-viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=5H7rTkcVSCjMpA"
+viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=hKxHmXVzUfKKZA"
 viz_link = NGLink(viz_link.split("json_url=")[-1])
 ngl_json = viz_link._json
 
