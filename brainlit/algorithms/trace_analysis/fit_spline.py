@@ -14,6 +14,22 @@ from brainlit.utils.util import (
 from typing import Union, List
 
 
+def compute_parameterization(positions: np.array) -> np.array:
+    """Computes list of parameter values to be used for a list of positions using piecewise linear arclength.
+
+        Parameters
+        ----------
+        positions : np.array
+            nxd array containing coordinates of the n points in d dimentional space.
+        Returns
+        -------
+        TotalDist : np.array
+            n array containing parameter values, first element is 0.
+    """
+    NodeDist = np.linalg.norm(np.diff(positions, axis=0), axis=1)
+    TotalDist = np.concatenate(([0], np.cumsum(NodeDist)))
+    return TotalDist
+
 """
 Geometric Graph class
 """
@@ -199,8 +215,7 @@ class GeometricGraph(nx.Graph):
         for row, node in enumerate(path):
             x[row, :] = self.nodes[node]["loc"]
         path_length = x.shape[0]
-        NodeDist = np.linalg.norm(np.diff(x, axis=0), axis=1)
-        TotalDist = np.concatenate(([0], np.cumsum(NodeDist)))
+        TotalDist = compute_parameterization(x)
         if path_length != 5:
             k = np.amin([path_length - 1, 5])
         else:
@@ -208,6 +223,8 @@ class GeometricGraph(nx.Graph):
         tck, u = splprep([x[:, 0], x[:, 1], x[:, 2]], s=0, u=TotalDist, k=k)
 
         return tck, u
+
+
 
     def __fit_chspline_path(self, path: List):
         """Fit cubic hermite spline to path of nodes that has independent variable (u), position (loc) and derivative (deriv) attributes.

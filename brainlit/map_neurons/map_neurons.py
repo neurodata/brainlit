@@ -1,4 +1,4 @@
-from brainlit.algorithms.trace_analysis.fit_spline import GeometricGraph
+from brainlit.algorithms.trace_analysis.fit_spline import GeometricGraph, compute_parameterization
 import typing
 import numpy as np
 import copy
@@ -155,12 +155,13 @@ def transform_GeometricGraph(G: GeometricGraph, Phi: DiffeomorphismAction):
         tck, us = spline_tree.nodes[node]["spline"]
         positions = np.array(splev(us, tck, der=0)).T
         transformed_positions = Phi.evaluate(positions)
+        transformed_us = compute_parameterization(transformed_positions)
         derivs = np.array(splev(us, tck, der=1)).T
         transformed_derivs = Phi.D(positions, derivs, order=1)
 
-        chspline = CubicHermiteSpline(us, transformed_positions, transformed_derivs)
+        chspline = CubicHermiteSpline(transformed_us, transformed_positions, transformed_derivs)
 
-        spline_tree.nodes[node]["spline"] = chspline, us
+        spline_tree.nodes[node]["spline"] = chspline, transformed_us
 
         for trace_node, position, deriv in zip(
             path, transformed_positions, transformed_derivs
