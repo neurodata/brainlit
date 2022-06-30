@@ -1,6 +1,3 @@
-Common Installation Issues
---------------------------
-
 Mac OS
 ^^^^^^
 
