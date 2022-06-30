@@ -220,6 +220,7 @@ class GeometricGraph(nx.Graph):
             k = np.amin([path_length - 1, 5])
         else:
             k = 3
+        k = np.amin([3, path_length - 1]) # change
         tck, u = splprep([x[:, 0], x[:, 1], x[:, 2]], s=0, u=TotalDist, k=k)
 
         return tck, u

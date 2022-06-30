@@ -136,7 +136,6 @@ class CloudReg_Transform(DiffeomorphismAction):
         return transformed_deriv
 
 
-
 def transform_GeometricGraph(G: GeometricGraph, Phi: DiffeomorphismAction):
     if G.spline_type is not BSpline:
         raise NotImplementedError("Can only transform bsplines")
