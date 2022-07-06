@@ -102,7 +102,7 @@ dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_11_03/8589/"
 ## Downsample mask
 layer_path = dir_base + "axon_mask"
 
-tq = LocalTaskQueue(parallel=16)
+tq = LocalTaskQueue(parallel=8)
 
 tasks = tc.create_downsampling_tasks(
     layer_path,  # e.g. 'gs://bucket/dataset/layer'
