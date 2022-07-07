@@ -100,26 +100,47 @@ dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_11_03/8589/"
 
 
 ## Downsample mask
-layer_path = dir_base + "axon_mask"
+# layer_path = dir_base + "axon_mask"
 
-tq = LocalTaskQueue(parallel=8)
+# tq = LocalTaskQueue(parallel=8)
 
-tasks = tc.create_downsampling_tasks(
-    layer_path,  # e.g. 'gs://bucket/dataset/layer'
-    mip=0,  # Start downsampling from this mip level (writes to next level up)
-    fill_missing=True,  # Ignore missing chunks and fill them with black
-    axis="z",
-    num_mips=5,  # number of downsamples to produce. Downloaded shape is chunk_size * 2^num_mip
-    chunk_size=None,  # manually set chunk size of next scales, overrides preserve_chunk_size
-    preserve_chunk_size=True,  # use existing chunk size, don't halve to get more downsamples
-    sparse=False,  # for sparse segmentation, allow inflation of pixels against background
-    bounds=None,  # mip 0 bounding box to downsample
-    encoding=None,  # e.g. 'raw', 'compressed_segmentation', etc
-    delete_black_uploads=False,  # issue a delete instead of uploading files containing all background
-    background_color=0,  # Designates the background color
-    compress="gzip",  # None, 'gzip', and 'br' (brotli) are options
-    factor=(2, 2, 2),  # common options are (2,2,1) and (2,2,2)
+# tasks = tc.create_downsampling_tasks(
+#     layer_path,  # e.g. 'gs://bucket/dataset/layer'
+#     mip=0,  # Start downsampling from this mip level (writes to next level up)
+#     fill_missing=True,  # Ignore missing chunks and fill them with black
+#     axis="z",
+#     num_mips=5,  # number of downsamples to produce. Downloaded shape is chunk_size * 2^num_mip
+#     chunk_size=None,  # manually set chunk size of next scales, overrides preserve_chunk_size
+#     preserve_chunk_size=True,  # use existing chunk size, don't halve to get more downsamples
+#     sparse=False,  # for sparse segmentation, allow inflation of pixels against background
+#     bounds=None,  # mip 0 bounding box to downsample
+#     encoding=None,  # e.g. 'raw', 'compressed_segmentation', etc
+#     delete_black_uploads=False,  # issue a delete instead of uploading files containing all background
+#     background_color=0,  # Designates the background color
+#     compress="gzip",  # None, 'gzip', and 'br' (brotli) are options
+#     factor=(2, 2, 2),  # common options are (2,2,1) and (2,2,2)
+# )
+
+# tq.insert(tasks)
+# tq.execute()
+
+## Make transformed layer
+layer_path = dir_base + "axon_mask_transformed"
+
+atlas_vol = CloudVolume("precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/average_10um")
+
+info = CloudVolume.create_new_info(
+    num_channels=1,
+    layer_type="image",
+    data_type="uint64",  # Channel images might be 'uint8'
+    encoding="raw",  # raw, jpeg, compressed_segmentation, fpzip, kempressed
+    resolution=atlas_vol.resolution,  # Voxel scaling, units are in nanometers
+    voxel_offset=atlas_vol.voxel_offset,  # x,y,z offset in voxels from the origin
+    # mesh            = 'mesh',
+    # Pick a convenient size for your underlying chunk representation
+    # Powers of two are recommended, doesn't need to cover image exactly
+    chunk_size=[32, 32, 32],  # units are voxels
+    volume_size=atlas_vol.volume_size,  # e.g. a cubic millimeter dataset
 )
-
-tq.insert(tasks)
-tq.execute()
+vol_mask = CloudVolume(layer_path, info=info)
+vol_mask.commit_info()
