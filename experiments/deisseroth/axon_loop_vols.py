@@ -100,6 +100,7 @@ dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_11_03/8589/"
 
 
 # Downsample mask
+print("Downsampling...")
 layer_path = dir_base + "axon_mask_test"
 
 tq = LocalTaskQueue(parallel=8)
