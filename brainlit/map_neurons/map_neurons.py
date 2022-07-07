@@ -136,7 +136,7 @@ class CloudReg_Transform(DiffeomorphismAction):
         return transformed_deriv
 
 
-def transform_GeometricGraph(G: GeometricGraph, Phi: DiffeomorphismAction):
+def transform_GeometricGraph(G: GeometricGraph, Phi: DiffeomorphismAction, deriv_method="spline"):
     if G.spline_type is not BSpline:
         raise NotImplementedError("Can only transform bsplines")
 
@@ -155,7 +155,16 @@ def transform_GeometricGraph(G: GeometricGraph, Phi: DiffeomorphismAction):
         positions = np.array(splev(us, tck, der=0)).T
         transformed_positions = Phi.evaluate(positions)
         transformed_us = compute_parameterization(transformed_positions)
-        derivs = np.array(splev(us, tck, der=1)).T
+        if deriv_method == "spline":
+            derivs = np.array(splev(us, tck, der=1)).T
+        elif deriv_method == "difference":
+            diffs = transformed_positions[2:,:] - transformed_positions[:-2,:]
+            diffs = np.concatenate(([transformed_positions[1,:]-transformed_positions[0,:]] , diffs, [transformed_positions[-1,:]-transformed_positions[-2,:]]), axis=0)
+            norms = np.linalg.norm(diffs, axis=1)
+            derivs = np.divide(diffs, np.array([norms]).T)
+        else:
+            raise ValueError(f"Invalid deriv_method argument: {deriv_method}")
+
         transformed_derivs = Phi.D(positions, derivs, order=1)
 
         chspline = CubicHermiteSpline(transformed_us, transformed_positions, transformed_derivs)
