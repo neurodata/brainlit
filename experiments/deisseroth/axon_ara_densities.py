@@ -9,7 +9,7 @@ import os
 
 # dir_base= "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/"
 # dir_base = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/"
-dir_base = "s3://smartspim-precomputed-volumes/2022_03_04/8590/"
+dir_base = "s3://smartspim-precomputed-volumes/2022_03_28/8649/"
 if dir_base[-1] == "/":
     brain_id = dir_base.split("/")[-2]
 else:
