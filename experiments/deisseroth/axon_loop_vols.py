@@ -12,7 +12,7 @@ import os
 import igneous.task_creation as tc
 from taskqueue import LocalTaskQueue
 
-dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/"
+dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_11_03/8589/"
 # threshold = 0.58
 
 # chunk_size = [256, 256, 300]
@@ -126,7 +126,7 @@ dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/"
 # tq.execute()
 
 ## Make transformed layer
-layer_path = dir_base + "axon_mask_transformed"
+layer_path = dir_base + "axon_mask_test_transformed"
 
 atlas_vol = CloudVolume("precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017")
 
