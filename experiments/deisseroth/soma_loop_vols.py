@@ -10,12 +10,17 @@ from joblib import Parallel, delayed
 import multiprocessing
 import os
 
+# DOUBLE CHECK:
+# -dir_base
+# data_dir and results_dir ARE CLEAR
+# threshold IS CORRECT
+
 chunk_size = [256, 256, 300]
 ncpu = 16
-dir_base = "precomputed://s3://smartspim-precomputed-volumes/2021_12_2/8607/"
+dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_03_25/8446/"
 data_dir = "/data/tathey1/matt_wright/brainr_temp/"
 results_dir = "/data/tathey1/matt_wright/brainr_results/"
-threshold = 0.4
+threshold = 0.02
 
 print(f"Number cpus: {multiprocessing.cpu_count()}")
 
