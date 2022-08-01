@@ -73,6 +73,14 @@ brain2paths = {
         "atlas_viz": "",
         "genotype": "gad2 vgat"
     },
+    "8454": {
+        "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_03_09/8454/Ch_647_iso",
+        "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_03_09/8454/Ch_561_iso",
+        "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_09/8454/Ch_488_iso",
+        "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=UJo1aMjjgm6KQA",
+        "atlas_viz": "",
+        "genotype": "gad2 vgat"
+    },
 }
 
 # first entry is somas, second is nonsomas
