@@ -158,7 +158,7 @@ def transform_GeometricGraph(G: GeometricGraph, Phi: DiffeomorphismAction, deriv
         if deriv_method == "spline":
             derivs = np.array(splev(us, tck, der=1)).T
         elif deriv_method == "difference":
-            diffs = transformed_positions[2:,:] - transformed_positions[:-2,:]
+            diffs = transformed_positions[2:,:] - transformed_positions[:-2,:] # not normalized by distance
             diffs = np.concatenate(([transformed_positions[1,:]-transformed_positions[0,:]] , diffs, [transformed_positions[-1,:]-transformed_positions[-2,:]]), axis=0)
             norms = np.linalg.norm(diffs, axis=1)
             derivs = np.divide(diffs, np.array([norms]).T)
