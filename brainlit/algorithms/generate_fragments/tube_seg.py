@@ -2,21 +2,22 @@ import numpy as np
 from skimage import draw
 import itertools
 from scipy.ndimage.morphology import distance_transform_edt
-from typing import Optional, List, Tuple, Union
+from typing import Iterable, Optional, List, Tuple, Union
 from scipy.ndimage.morphology import distance_transform_edt
 from skimage import draw
 from brainlit.utils.util import check_type, check_size, check_iterable_type
 from tqdm import tqdm
+import cloudvolume
 
 
-def pairwise(iterable):
+def pairwise(iterable: Iterable):
     # Adapted from https://stackoverflow.com/a/5434936
     a, b = itertools.tee(iterable)
     next(b, None)
     return zip(a, b)
 
 
-def draw_sphere(shape, center, radius):
+def draw_sphere(shape: tuple, center: tuple, radius: float) -> np.ndarray:
     """
     Generate a sphere of a radius at a point.
 
@@ -49,7 +50,12 @@ def draw_sphere(shape, center, radius):
     return sphere
 
 
-def draw_tube_from_spheres(img, vertex0, vertex1, radius):
+def draw_tube_from_spheres(
+    img: cloudvolume.volumecutout.VolumeCutout,
+    vertex0: tuple,
+    vertex1: tuple,
+    radius: float,
+) -> np.ndarray:
     """
     Generate a segmentation mask of a tube (series of spheres) connecting known vertices.
 
@@ -84,7 +90,12 @@ def draw_tube_from_spheres(img, vertex0, vertex1, radius):
     return labels
 
 
-def draw_tube_from_edt(img, vertex0, vertex1, radius):
+def draw_tube_from_edt(
+    img: cloudvolume.volumecutout.VolumeCutout,
+    vertex0: tuple,
+    vertex1: tuple,
+    radius: float,
+) -> np.ndarray:
     """
     Generate a segmentation mask of a tube connecting known vertices.
 
@@ -116,7 +127,12 @@ def draw_tube_from_edt(img, vertex0, vertex1, radius):
     return labels
 
 
-def tubes_seg(img, vertices, radius, spheres=False):
+def tubes_seg(
+    img: cloudvolume.volumecutout.VolumeCutout,
+    vertices: list,
+    radius: float,
+    spheres: bool = False,
+) -> np.ndarray:
     """
     Generate a segmentation mask of cylinders connecting known vertices.
 
@@ -154,7 +170,7 @@ def tubes_from_paths(
     size: Tuple[int, int, int],
     paths: List[List[int]],
     radius: Optional[Union[float, int]] = None,
-):
+) -> np.ndarray:
     """Constructs tubes from list of paths.
     Returns densely labeled paths within the shape of the image.
 

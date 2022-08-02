@@ -87,6 +87,9 @@ Install from source
 * cd into the repo: ``cd brainlit``
 * install brainlit: ``pip install -e .``
 
+Common Installation Issues
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. toctree::
    :maxdepth: 2
 

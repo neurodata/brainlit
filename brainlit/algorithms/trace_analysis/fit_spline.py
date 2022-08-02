@@ -1,5 +1,11 @@
+from typing import Tuple
 import numpy as np
+<<<<<<< HEAD
 from scipy.interpolate import splprep, BSpline, CubicHermiteSpline
+=======
+import pandas as pd
+from scipy.interpolate import splprep
+>>>>>>> develop
 import math
 import warnings
 import networkx as nx
@@ -43,7 +49,7 @@ class GeometricGraph(nx.Graph):
     It extends `nx.Graph` and rejects duplicate node input.
     """
 
-    def __init__(self, df=None):
+    def __init__(self, df: pd.DataFrame = None) -> None:
         super(GeometricGraph, self).__init__()
         self.segments = None
         self.cycle = None
@@ -53,7 +59,7 @@ class GeometricGraph(nx.Graph):
         if df is not None:
             self.__init_from_df(df)
 
-    def __init_from_df(self, df_neuron):
+    def __init_from_df(self, df_neuron: pd.DataFrame) -> "GeometricGraph":
         """Converts dataframe of swc in voxel coordinates into a GeometricGraph
 
         Parameters
@@ -226,7 +232,6 @@ class GeometricGraph(nx.Graph):
         return tck, u
 
 
-
     def __fit_chspline_path(self, path: List):
         """Fit cubic hermite spline to path of nodes that has independent variable (u), position (loc) and derivative (deriv) attributes.
 
@@ -345,7 +350,7 @@ class GeometricGraph(nx.Graph):
                         )
         return list(main_branch), collateral_branches
 
-    def __path_length(self, path):
+    def __path_length(self, path: list) -> float:
         r"""Compute the length of a path.
 
         Given a path ::math::`p = (r_1, \dots, r_N)`, where
