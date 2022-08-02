@@ -1,11 +1,7 @@
 from typing import Tuple
 import numpy as np
-<<<<<<< HEAD
 from scipy.interpolate import splprep, BSpline, CubicHermiteSpline
-=======
 import pandas as pd
-from scipy.interpolate import splprep
->>>>>>> develop
 import math
 import warnings
 import networkx as nx

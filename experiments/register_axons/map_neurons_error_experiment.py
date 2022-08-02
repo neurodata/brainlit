@@ -17,7 +17,6 @@ from scipy.spatial.distance import cosine
 from tqdm import tqdm
 from cloudvolume import CloudVolume
 from similaritymeasures import frechet_dist
-from frechetdist import frdist
 import seaborn as sns
 from statannotations.Annotator import Annotator
 from statannot import add_stat_annotation
