@@ -56,7 +56,6 @@ class CloudReg_Transform(DiffeomorphismAction):
         vtx = self.vtx
         vty = self.vty
         vtz = self.vtz
-        B = self.B
 
         nT = vtx.shape[0]
         dt = 1/nT 
@@ -158,10 +157,23 @@ def transform_GeometricGraph(G: GeometricGraph, Phi: DiffeomorphismAction, deriv
         if deriv_method == "spline":
             derivs = np.array(splev(us, tck, der=1)).T
         elif deriv_method == "difference":
-            diffs = transformed_positions[2:,:] - transformed_positions[:-2,:] # not normalized by distance
-            diffs = np.concatenate(([transformed_positions[1,:]-transformed_positions[0,:]] , diffs, [transformed_positions[-1,:]-transformed_positions[-2,:]]), axis=0)
+            # Sundqvist & Veronis 1970
+            f_im1 = transformed_positions[:-2,:]
+            f_i =  transformed_positions[1:-1,:]
+            f_ip1 = transformed_positions[2:,:]
+            hs = np.diff(transformed_us)
+            h_im1 = np.expand_dims(hs[:-1], axis=1)
+            h_i =  np.expand_dims(hs[1:], axis=1)
+
+            if len(transformed_us) >= 3:
+                diffs = f_ip1 - np.multiply((1 - np.divide(h_i, h_im1) ** 2), f_i) - np.multiply(np.divide(h_i, h_im1)**2, f_im1)
+                diffs = np.concatenate(([transformed_positions[1,:]-transformed_positions[0,:]] , diffs, [transformed_positions[-1,:]-transformed_positions[-2,:]]), axis=0)
+            elif len(transformed_us) == 2:
+                diffs = np.array([transformed_positions[1,:]-transformed_positions[0,:], transformed_positions[-1,:]-transformed_positions[-2,:]])
             norms = np.linalg.norm(diffs, axis=1)
             derivs = np.divide(diffs, np.array([norms]).T)
+
+
         else:
             raise ValueError(f"Invalid deriv_method argument: {deriv_method}")
 
