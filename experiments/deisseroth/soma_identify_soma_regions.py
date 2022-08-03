@@ -16,28 +16,6 @@ viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGSt
 viz_link = NGLink(viz_link.split("json_url=")[-1])
 ngl_json = viz_link._json
 
-atlas_layer = None
-for layer in ngl_json['layers']:
-    if layer['name'] == 'atlas_to_target':
-        atlas_layer = layer['source']
-if atlas_layer is None:
-    raise ValueError(f"No atlas_to_target layer at viz link: {viz_link}")
-
-brain = atlas_layer.split("/")[-2]
-div_factor = [8, 8, 1]
-
-atlas_vol = CloudVolume(
-    atlas_layer,
-    parallel=1,
-    mip=0,
-    fill_missing=True,
-)
-print(f"size: {atlas_vol.shape} ")
-
-outpath = (
-    somas + "quantification_dict_" + brain + ".pickle"
-)
-
 print("Reading Detected Somas...")
 coords = []
 coords_target_space = []
@@ -99,6 +77,28 @@ ngl_json['layers'].append(
 )
 viz_link = create_viz_link_from_json(ngl_json, neuroglancer_link="https://viz.neurodata.io/?json_url=")
 print(f"Viz link with detections: {viz_link}")
+
+atlas_layer = None
+for layer in ngl_json['layers']:
+    if layer['name'] == 'atlas_to_target':
+        atlas_layer = layer['source']
+if atlas_layer is None:
+    raise ValueError(f"No atlas_to_target layer at viz link: {viz_link}")
+
+brain = atlas_layer.split("/")[-2]
+div_factor = [8, 8, 1]
+
+atlas_vol = CloudVolume(
+    atlas_layer,
+    parallel=1,
+    mip=0,
+    fill_missing=True,
+)
+print(f"size: {atlas_vol.shape} ")
+
+outpath = (
+    somas + "quantification_dict_" + brain + ".pickle"
+)
 
 print(f"Collecting atlas data to {outpath}...")
 dict = {}
