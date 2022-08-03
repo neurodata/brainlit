@@ -147,36 +147,16 @@ def transform_GeometricGraph(G: GeometricGraph, Phi: DiffeomorphismAction, deriv
 
     # process in reverse dfs order to ensure parents are processed after
     reverse_dfs = list(reversed(list(nx.topological_sort(spline_tree))))
+    G.compute_derivs(deriv_method)
 
     for node in reverse_dfs:
         path = spline_tree.nodes[node]["path"]
         tck, us = spline_tree.nodes[node]["spline"]
         positions = np.array(splev(us, tck, der=0)).T
+        derivs = np.array([G.nodes[sample_node]['deriv'] for sample_node in path])
+
         transformed_positions = Phi.evaluate(positions)
         transformed_us = compute_parameterization(transformed_positions)
-        if deriv_method == "spline":
-            derivs = np.array(splev(us, tck, der=1)).T
-        elif deriv_method == "difference":
-            # Sundqvist & Veronis 1970
-            f_im1 = transformed_positions[:-2,:]
-            f_i =  transformed_positions[1:-1,:]
-            f_ip1 = transformed_positions[2:,:]
-            hs = np.diff(transformed_us)
-            h_im1 = np.expand_dims(hs[:-1], axis=1)
-            h_i =  np.expand_dims(hs[1:], axis=1)
-
-            if len(transformed_us) >= 3:
-                diffs = f_ip1 - np.multiply((1 - np.divide(h_i, h_im1) ** 2), f_i) - np.multiply(np.divide(h_i, h_im1)**2, f_im1)
-                diffs = np.concatenate(([transformed_positions[1,:]-transformed_positions[0,:]] , diffs, [transformed_positions[-1,:]-transformed_positions[-2,:]]), axis=0)
-            elif len(transformed_us) == 2:
-                diffs = np.array([transformed_positions[1,:]-transformed_positions[0,:], transformed_positions[-1,:]-transformed_positions[-2,:]])
-            norms = np.linalg.norm(diffs, axis=1)
-            derivs = np.divide(diffs, np.array([norms]).T)
-
-
-        else:
-            raise ValueError(f"Invalid deriv_method argument: {deriv_method}")
-
         transformed_derivs = Phi.D(positions, derivs, order=1)
 
         chspline = CubicHermiteSpline(transformed_us, transformed_positions, transformed_derivs)

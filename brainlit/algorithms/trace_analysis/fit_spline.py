@@ -1,6 +1,6 @@
 from typing import Tuple
 import numpy as np
-from scipy.interpolate import splprep, BSpline, CubicHermiteSpline
+from scipy.interpolate import splprep, splev, BSpline, CubicHermiteSpline
 import pandas as pd
 import math
 import warnings
@@ -376,3 +376,41 @@ class GeometricGraph(nx.Graph):
             ]
         )
         return length
+
+    def compute_derivs(self, deriv_method = "difference"):
+        spline_tree = self.spline_tree
+
+        if spline_tree == None:
+            raise ValueError("Need to compute spline tree before computing derivatives")
+        
+        # process in reverse dfs order to ensure parents are processed after
+        reverse_dfs = list(reversed(list(nx.topological_sort(spline_tree))))
+
+        for node in reverse_dfs:
+            path = spline_tree.nodes[node]["path"]
+            tck, us = spline_tree.nodes[node]["spline"]
+            positions = np.array(splev(us, tck, der=0)).T
+
+            if deriv_method == "spline":
+                derivs = np.array(splev(us, tck, der=1)).T
+            elif deriv_method == "difference":
+                # Sundqvist & Veronis 1970
+                f_im1 = positions[:-2,:]
+                f_i =  positions[1:-1,:]
+                f_ip1 = positions[2:,:]
+                hs = np.diff(us)
+                h_im1 = np.expand_dims(hs[:-1], axis=1)
+                h_i =  np.expand_dims(hs[1:], axis=1)
+
+                if len(us) >= 3:
+                    diffs = f_ip1 - np.multiply((1 - np.divide(h_i, h_im1) ** 2), f_i) - np.multiply(np.divide(h_i, h_im1)**2, f_im1)
+                    diffs = np.concatenate(([positions[1,:]-positions[0,:]] , diffs, [positions[-1,:]-positions[-2,:]]), axis=0)
+                elif len(us) == 2:
+                    diffs = np.array([positions[1,:]-positions[0,:], positions[-1,:]-positions[-2,:]])
+                norms = np.linalg.norm(diffs, axis=1)
+                derivs = np.divide(diffs, np.array([norms]).T)
+            else:
+                raise ValueError(f"Invalid deriv_method argument: {deriv_method}")
+
+            for sample_node, deriv in zip(path, derivs):
+                self.nodes[sample_node]["deriv"] = deriv
