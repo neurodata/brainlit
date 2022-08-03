@@ -16,6 +16,15 @@ viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGSt
 viz_link = NGLink(viz_link.split("json_url=")[-1])
 ngl_json = viz_link._json
 
+atlas_layer = None
+for layer in ngl_json['layers']:
+    if layer['name'] == 'Ch_561_iso':
+        atlas_layer = layer['source']
+if atlas_layer is None:
+    raise ValueError(f"No atlas_to_target layer at viz link: {viz_link}")
+
+brain = atlas_layer.split("/")[-2]
+
 div_factor = [8, 8, 1]
 
 print("Reading Detected Somas...")
