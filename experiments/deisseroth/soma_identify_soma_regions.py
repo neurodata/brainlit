@@ -16,6 +16,8 @@ viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGSt
 viz_link = NGLink(viz_link.split("json_url=")[-1])
 ngl_json = viz_link._json
 
+div_factor = [8, 8, 1]
+
 print("Reading Detected Somas...")
 coords = []
 coords_target_space = []
@@ -86,7 +88,6 @@ if atlas_layer is None:
     raise ValueError(f"No atlas_to_target layer at viz link: {viz_link}")
 
 brain = atlas_layer.split("/")[-2]
-div_factor = [8, 8, 1]
 
 atlas_vol = CloudVolume(
     atlas_layer,
