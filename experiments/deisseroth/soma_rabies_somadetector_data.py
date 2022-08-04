@@ -70,7 +70,6 @@ brain2paths = {
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_03_25/8446/Ch_561_iso",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_25/8446/Ch_488_iso",
         "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=CKOAX8anheNrew",
-        "atlas_viz": "",
         "genotype": "gad2 vgat"
     },
     "8454": {
@@ -78,7 +77,7 @@ brain2paths = {
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_03_09/8454/Ch_561_iso",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_09/8454/Ch_488_iso",
         "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=7ugLt3twr6RBIA",
-        "atlas_viz": "",
+        "atlas_viz": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=LgrOarq-AeFUPQ",
         "genotype": "gad2 vgat"
     },
 }
