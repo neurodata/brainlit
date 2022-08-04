@@ -1,3 +1,4 @@
+from logging import root
 from brainlit.algorithms.trace_analysis.fit_spline import GeometricGraph, compute_parameterization
 import typing
 import numpy as np
@@ -135,29 +136,57 @@ class CloudReg_Transform(DiffeomorphismAction):
         return transformed_deriv
 
 
-def transform_GeometricGraph(G: GeometricGraph, Phi: DiffeomorphismAction, deriv_method="spline"):
-    if G.spline_type is not BSpline:
+def compute_derivs(us, tck, positions, deriv_method = "difference"):
+    if deriv_method == "spline":
+        derivs = np.array(splev(us, tck, der=1)).T
+    elif deriv_method == "difference":
+        # Sundqvist & Veronis 1970
+        f_im1 = positions[:-2,:]
+        f_i =  positions[1:-1,:]
+        f_ip1 = positions[2:,:]
+        hs = np.diff(us)
+        h_im1 = np.expand_dims(hs[:-1], axis=1)
+        h_i =  np.expand_dims(hs[1:], axis=1)
+
+        if len(us) >= 3:
+            diffs = f_ip1 - np.multiply((1 - np.divide(h_i, h_im1) ** 2), f_i) - np.multiply(np.divide(h_i, h_im1)**2, f_im1)
+            diffs = np.concatenate(([positions[1,:]-positions[0,:]] , diffs, [positions[-1,:]-positions[-2,:]]), axis=0)
+        elif len(us) == 2:
+            diffs = np.array([positions[1,:]-positions[0,:], positions[-1,:]-positions[-2,:]])
+        norms = np.linalg.norm(diffs, axis=1)
+        derivs = np.divide(diffs, np.array([norms]).T)
+    else:
+        raise ValueError(f"Invalid deriv_method argument: {deriv_method}")
+
+    return derivs
+
+
+def transform_GeometricGraph(G_transformed: GeometricGraph, Phi: DiffeomorphismAction, deriv_method = "difference", derivs = None):
+    if G_transformed.spline_type is not BSpline:
         raise NotImplementedError("Can only transform bsplines")
 
-    if not G.spline_tree:
-        G.fit_spline_tree_invariant()
-    G_tranformed = copy.deepcopy(G)
+    if not G_transformed.spline_tree:
+        raise ValueError("Must compute spline tree before running this function - fit_spline_tree_invariant()")
+    # if "deriv" not in G_transformed.nodes[G_transformed.root].keys():
+    #     raise ValueError("Must compute derivatives before running this function - compute_derivs(deriv_method)")
 
-    spline_tree = G_tranformed.spline_tree
+    spline_tree = G_transformed.spline_tree
 
     # process in reverse dfs order to ensure parents are processed after
     reverse_dfs = list(reversed(list(nx.topological_sort(spline_tree))))
-    G.compute_derivs(deriv_method)
 
     for node in reverse_dfs:
         path = spline_tree.nodes[node]["path"]
         tck, us = spline_tree.nodes[node]["spline"]
         positions = np.array(splev(us, tck, der=0)).T
-        derivs = np.array([G.nodes[sample_node]['deriv'] for sample_node in path])
+        if derivs is None:
+            derivs = compute_derivs(us, tck, positions, deriv_method = deriv_method)
 
         transformed_positions = Phi.evaluate(positions)
         transformed_us = compute_parameterization(transformed_positions)
         transformed_derivs = Phi.D(positions, derivs, order=1)
+        norms = np.linalg.norm(transformed_derivs, axis=1)
+        transformed_derivs = np.divide(transformed_derivs, np.array([norms]).T)
 
         chspline = CubicHermiteSpline(transformed_us, transformed_positions, transformed_derivs)
 
@@ -166,7 +195,7 @@ def transform_GeometricGraph(G: GeometricGraph, Phi: DiffeomorphismAction, deriv
         for trace_node, position, deriv in zip(
             path, transformed_positions, transformed_derivs
         ):
-            G_tranformed.nodes[trace_node]["loc"] = position
-            G_tranformed.nodes[trace_node]["deriv"] = deriv
+            G_transformed.nodes[trace_node]["loc"] = position
+            G_transformed.nodes[trace_node]["deriv"] = deriv
 
-    return G_tranformed
+    return G_transformed
