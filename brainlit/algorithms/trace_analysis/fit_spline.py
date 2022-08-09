@@ -45,11 +45,11 @@ class GeometricGraph(nx.Graph):
     It extends `nx.Graph` and rejects duplicate node input.
     """
 
-    def __init__(self, df: pd.DataFrame = None) -> None:
+    def __init__(self, df: pd.DataFrame = None, root = 1) -> None:
         super(GeometricGraph, self).__init__()
         self.segments = None
         self.cycle = None
-        self.root = 1
+        self.root = root
         self.spline_type = None
         self.spline_tree = None
         if df is not None:
