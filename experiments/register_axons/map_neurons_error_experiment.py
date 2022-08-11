@@ -148,7 +148,7 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
             errors.append(error)
             methods.append(method)
 
-    fname = f"/cis/home/tathey1/projects/mouselight/axon_mapping/ds_experiment/derivdiff2_errsthru{id}_spac{spacing}.pickle"
+    fname = f"/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/derivdiff2_errsthru{id}_spac{spacing}.pickle"
     data = {"Method": methods, "Frechet Distance": errors, "Average Sampling": av_sample_distances}
     with open(fname, 'wb') as handle:
         pickle.dump(data, handle)
