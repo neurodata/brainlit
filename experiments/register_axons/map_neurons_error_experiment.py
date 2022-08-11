@@ -78,6 +78,8 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
     spline_tree = G_neuron.fit_spline_tree_invariant()
 
     # For each branch
+    
+    # For each branch
     for i, node in enumerate(tqdm(spline_tree.nodes, desc="Processing branches...", leave=False)):
         # Create geometric graph for the branch
         path = spline_tree.nodes[node]["path"]
@@ -112,16 +114,15 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
         if len(spline_tree_transformed.nodes) != 1:
             raise ValueError("transformed spline tree does not have 1 branch")
 
+        # Access original knots and compute sample distance
         spline = spline_tree_branch.nodes[0]["spline"]
         u = spline[1]
         tck = spline[0]
         pts = splev(u, tck)
         pts = np.stack(pts, axis=1)
-        zero_order_pts = ct.evaluate(pts)
-        zero_order_pts = np.stack(zero_order_pts, axis=0)
         av_sample_distance = np.mean(np.linalg.norm(np.diff(pts, axis=0), axis=1))
 
-        #Dense points line usnig the points from the original branch
+        # Find dense line points
         tck_line, _ = splprep(pts.T, k=1, s=0, u=u)
         u_dense = np.arange(u[0], u[-1], spacing)
         u_dense = np.append(u_dense, u[-1])
@@ -129,14 +130,21 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
         pts_line = np.stack(pts_line, axis=1)
         dense_line_pts = ct.evaluate(pts_line)
 
-        # Mappings, using the trransformed branch
+        # Find transfoormed knots
         spline = spline_tree_transformed.nodes[0]["spline"]
         chspline = spline[0]
         u = spline[1]
+        u_first_order = np.arange(u[0], u[-1], spacing)
+        u_first_order = np.append(u_first_order, u[-1])
         trans_pts = chspline(u)
 
-        u_first_order = np.arange(u[0], u[-1], spacing)
-        u_first_order = np.append(u_first_order, u[-1]) 
+        #print("0th Order Mapping...")
+        u_line = compute_parameterization(trans_pts)
+        tck_line, u_line = splprep(trans_pts.T, k=1, s=0, u=u_line)
+        u_line = np.arange(u_line[0], u_line[-1], spacing)
+        u_line = np.append(u_line, u[-1])
+        zero_order_pts = splev(u_line, tck_line)
+        zero_order_pts = np.stack(zero_order_pts, axis=1)
 
         #print("1st order mapping...")
         first_order_pts = chspline(u_first_order)  
