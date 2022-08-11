@@ -165,7 +165,7 @@ def transform_GeometricGraph(G_transformed: GeometricGraph, Phi: DiffeomorphismA
     if G_transformed.spline_type is not BSpline:
         raise NotImplementedError("Can only transform bsplines")
 
-    if derivs is not None and len(spline_tree.nodes) > 1:
+    if derivs is not None and len(G_transformed.spline_tree.nodes) > 1:
         raise ValueError("Manually gave derivatives for tree with multiple branches")
 
     if not G_transformed.spline_tree:
