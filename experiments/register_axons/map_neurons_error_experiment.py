@@ -23,6 +23,7 @@ from statannot import add_stat_annotation
 import time
 from cloudvolume.exceptions import SkeletonDecodeError
 import pickle
+from copy import deepcopy
 
 
 vol = CloudVolume("precomputed://file:///cis/home/tathey/projects/mouselight/axon_mapping/low_res/2018-12-01/precomputed/axons")
