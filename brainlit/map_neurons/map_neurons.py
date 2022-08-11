@@ -165,6 +165,9 @@ def transform_GeometricGraph(G_transformed: GeometricGraph, Phi: DiffeomorphismA
     if G_transformed.spline_type is not BSpline:
         raise NotImplementedError("Can only transform bsplines")
 
+    if derivs is not None and len(spline_tree.nodes) > 1:
+        raise ValueError("Manually gave derivatives for tree with multiple branches")
+
     if not G_transformed.spline_tree:
         raise ValueError("Must compute spline tree before running this function - fit_spline_tree_invariant()")
     # if "deriv" not in G_transformed.nodes[G_transformed.root].keys():
@@ -175,11 +178,11 @@ def transform_GeometricGraph(G_transformed: GeometricGraph, Phi: DiffeomorphismA
     # process in reverse dfs order to ensure parents are processed after
     reverse_dfs = list(reversed(list(nx.topological_sort(spline_tree))))
 
-    for node in reverse_dfs:
+    for node_n, node in enumerate(reverse_dfs):
         path = spline_tree.nodes[node]["path"]
         tck, us = spline_tree.nodes[node]["spline"]
         positions = np.array(splev(us, tck, der=0)).T
-        if derivs is None:
+        if derivs is None or node_n > 0:
             derivs = compute_derivs(us, tck, positions, deriv_method = deriv_method)
 
         transformed_positions = Phi.evaluate(positions)
