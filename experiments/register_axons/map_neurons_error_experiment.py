@@ -8,7 +8,7 @@ from matplotlib.cm import ScalarMappable
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib
 from scipy.interpolate import splev
-from brainlit.map_neurons.map_neurons import DiffeomorphismAction, transform_GeometricGraph
+from brainlit.map_neurons.map_neurons import DiffeomorphismAction, transform_GeometricGraph, compute_derivs
 import pandas as pd
 import numpy as np
 import h5py
@@ -47,10 +47,10 @@ av_sample_distances = []
 
 spacing = 2
 inter = -1
+ds_factor = 2
 
 ct = CloudReg_Transform("/cis/home/tathey/projects/mouselight/axon_mapping/low_res/2018-12-01/precomputed_ch1_otsu_iso_registration/downloop_1_v.mat",
 "/cis/home/tathey/projects/mouselight/axon_mapping/low_res/2018-12-01/precomputed_ch1_otsu_iso_registration/downloop_1_A.mat")
-
 
 for id in tqdm(valid_ids, desc="Processing neurons..."):
     if id <= inter:
@@ -78,9 +78,7 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
     spline_tree = G_neuron.fit_spline_tree_invariant()
 
     # For each branch
-    
-    # For each branch
-    for i, node in enumerate(tqdm(spline_tree.nodes, desc="Processing branches...", leave=False)):
+    for node in tqdm(spline_tree.nodes, desc="Processing branches...", leave=False):
         # Create geometric graph for the branch
         path = spline_tree.nodes[node]["path"]
         x = []
@@ -89,14 +87,14 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
         s = []
         p = [-1]
 
-        for i, node in enumerate(path):
+        for node_i, node in enumerate(path):
             loc = G_neuron.nodes[node]["loc"]
             x.append(loc[0])
             y.append(loc[1])
             z.append(loc[2])
-            s.append(i)
-            if i > 0:
-                p.append(i-1)
+            s.append(node_i)
+            if node_i > 0:
+                p.append(node_i-1)
 
         
         dict = {"x": x, "y": y, "z": z, "sample": s, "parent": p}
@@ -105,14 +103,45 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
         G_branch.fit_spline_tree_invariant()
         spline_tree_branch = G_branch.spline_tree
 
+        # downsample
+        nodes2keep = [node_i for node_i in range(0, len(s), ds_factor)]
+        if s[-1] not in nodes2keep:
+            nodes2keep += [s[-1]]
+        nodes2remove = [node_i for node_i in s if node_i not in nodes2keep]
+
+        path = spline_tree_branch.nodes[0]["path"]
+        tck, us = spline_tree_branch.nodes[0]["spline"]
+        positions = np.array(splev(us, tck, der=0)).T
+        derivs = compute_derivs(us, tck, positions)
+
+        G_branch_ds = deepcopy(G_branch)
+        G_branch_ds.remove_nodes_from(nodes2remove)
+        G_branch_ds.remove_edges_from(list(G_branch.edges))
+        for node1, node2 in zip(nodes2keep[:-1], nodes2keep[1:]):
+            G_branch_ds.add_edge(node1,node2)
+        derivs = np.delete(derivs, nodes2remove, 0)
+        G_branch_ds.fit_spline_tree_invariant(k=1)
+        spline_tree_branch_ds = G_branch_ds.spline_tree
 
         # transform the branch
         G_branch_transformed = deepcopy(G_branch)
-        G_branch_transformed = transform_GeometricGraph(G_branch_transformed, ct, deriv_method="difference")
+        G_branch_ds_transformed = deepcopy(G_branch_ds)
+        # G_branch_transformed = transform_GeometricGraph(G_branch_transformed, ct, deriv_method="difference")
+        G_branch_ds_transformed = transform_GeometricGraph(G_branch_ds_transformed, ct, derivs = derivs)
+
         spline_tree_transformed = G_branch_transformed.spline_tree
+        spline_tree_transformed_ds = G_branch_ds_transformed.spline_tree
         
-        if len(spline_tree_transformed.nodes) != 1:
+        if len(spline_tree_transformed_ds.nodes) != 1:
             raise ValueError("transformed spline tree does not have 1 branch")
+
+        # Compute sampling length from downsampled branch
+        spline = spline_tree_branch_ds.nodes[0]["spline"]
+        u = spline[1]
+        tck = spline[0]
+        pts = splev(u, tck)
+        pts = np.stack(pts, axis=1)
+        av_sample_distance = np.mean(np.linalg.norm(np.diff(pts, axis=0), axis=1))
 
         # Access original knots and compute sample distance
         spline = spline_tree_branch.nodes[0]["spline"]
@@ -120,7 +149,6 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
         tck = spline[0]
         pts = splev(u, tck)
         pts = np.stack(pts, axis=1)
-        av_sample_distance = np.mean(np.linalg.norm(np.diff(pts, axis=0), axis=1))
 
         # Find dense line points
         tck_line, _ = splprep(pts.T, k=1, s=0, u=u)
@@ -130,8 +158,8 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
         pts_line = np.stack(pts_line, axis=1)
         dense_line_pts = ct.evaluate(pts_line)
 
-        # Find transfoormed knots
-        spline = spline_tree_transformed.nodes[0]["spline"]
+        # Find transformed knots
+        spline = spline_tree_transformed_ds.nodes[0]["spline"]
         chspline = spline[0]
         u = spline[1]
         u_first_order = np.arange(u[0], u[-1], spacing)
@@ -156,7 +184,7 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
             errors.append(error)
             methods.append(method)
 
-    fname = f"/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/derivdiff2_errsthru{id}_spac{spacing}.pickle"
+    fname = f"/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/derivdiff2_errsthru{id}_spac{spacing}_ds{ds_factor}.pickle"
     data = {"Method": methods, "Frechet Distance": errors, "Average Sampling": av_sample_distances}
     with open(fname, 'wb') as handle:
         pickle.dump(data, handle)
