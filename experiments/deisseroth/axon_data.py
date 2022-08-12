@@ -25,6 +25,7 @@ brain2paths = {
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/Ch_561",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/Ch_488",
         "mask": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/axon_mask",
+        "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/axon_mask_transformed",
     },
     "8604": {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_02_02/8604/Ch_647",
@@ -58,11 +59,12 @@ brain2paths = {
             "layer": "val",
         },
     },
-    "8590_v1": {
+    "8590": {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_03_04/8590/Ch_647_iso",
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_03_04/8590/Ch_561_iso",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_04/8590/Ch_488_iso",
         "mask": "precomputed://s3://smartspim-precomputed-volumes/2022_03_04/8590/axon_mask",
+        "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_03_04/8590/axon_mask_transformed",
         "val_info": {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=gq91htCi35XdPw",
             "layer": "val",
@@ -73,12 +75,13 @@ brain2paths = {
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_03_28/8649/Ch_561_iso",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_28/8649/Ch_488_iso",
         "mask": "precomputed://s3://smartspim-precomputed-volumes/2022_03_28/8649/axon_mask",
+        "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_03_28/8649/axon_mask_transformed",
         "val_info": {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=XnKuWubHvjouyQ",
             "layer": "val",
         },
     },
-    "8590": {
+    "8590_v2": {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_07_29/8590/Ch_647_iso",
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_07_29/8590/Ch_561_iso",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_07_29/8590/Ch_488_iso",
