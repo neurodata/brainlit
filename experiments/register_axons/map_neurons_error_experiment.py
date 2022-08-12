@@ -49,6 +49,8 @@ spacing = 2
 inter = -1
 ds_factor = 2
 
+print(f"Processing neurons starting with {inter} with a spacing {spacing} and downsampling factor {ds_factor}")
+
 ct = CloudReg_Transform("/cis/home/tathey/projects/mouselight/axon_mapping/low_res/2018-12-01/precomputed_ch1_otsu_iso_registration/downloop_1_v.mat",
 "/cis/home/tathey/projects/mouselight/axon_mapping/low_res/2018-12-01/precomputed_ch1_otsu_iso_registration/downloop_1_A.mat")
 
