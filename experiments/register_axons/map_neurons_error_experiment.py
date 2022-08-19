@@ -80,23 +80,23 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
     spline_tree = G_neuron.fit_spline_tree_invariant()
 
     # For each branch
-    for node in tqdm(spline_tree.nodes, desc="Processing branches...", leave=False):
+    for branch_id in tqdm(spline_tree.nodes, desc="Processing branches...", leave=False):
         # Create geometric graph for the branch
-        path = spline_tree.nodes[node]["path"]
+        path = spline_tree.nodes[branch_id]["path"]
         x = []
         y = []
         z = []
         s = []
         p = [-1]
 
-        for node_i, node in enumerate(path):
-            loc = G_neuron.nodes[node]["loc"]
+        for point_num, point_id in enumerate(path):
+            loc = G_neuron.nodes[point_id]["loc"]
             x.append(loc[0])
             y.append(loc[1])
             z.append(loc[2])
-            s.append(node_i)
-            if node_i > 0:
-                p.append(node_i-1)
+            s.append(point_num)
+            if point_num > 0:
+                p.append(point_num-1)
 
         
         dict = {"x": x, "y": y, "z": z, "sample": s, "parent": p}
