@@ -13,7 +13,7 @@ import igneous.task_creation as tc
 from taskqueue import LocalTaskQueue
 
 dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_03_28/8649/"
-threshold = 0.36
+threshold = 0.22
 
 chunk_size = [256, 256, 300]
 
