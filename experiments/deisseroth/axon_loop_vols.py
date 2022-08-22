@@ -19,6 +19,7 @@ chunk_size = [256, 256, 300]
 
 data_dir = "/data/tathey1/matt_wright/brain_temp/"
 
+print(f"***********DID YOU REMEMBER TO UPDATE THE THRESHOLD**********")
 print(f"Number cpus: {multiprocessing.cpu_count()}")
 
 warnings.filterwarnings("ignore")
