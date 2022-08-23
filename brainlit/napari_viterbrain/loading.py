@@ -4,6 +4,9 @@ import pickle
 import os
 from pathlib import Path
 
+"""
+Use this file to run the viterbrain plugin 
+"""
 scale = [0.3, 0.3, 1]
 
 
