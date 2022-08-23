@@ -43,15 +43,15 @@ viewer.add_image(im, name="image", scale=scale)
 labels_layer = viewer.add_labels(new_labels, name="labels", scale=scale)
 animation_widget = AnimationWidget(viewer)
 viewer.window.add_dock_widget(animation_widget, area="right")
-trace = widgets.PushButton(text='trace')
-switch = widgets.PushButton(text='switch states')
-save = widgets.PushButton(text='save')
-clear = widgets.PushButton(text='clear selected states')
-clear_all = widgets.PushButton(text='clear all')
-next = widgets.PushButton(text='next color')
+trace = widgets.PushButton(text="trace")
+switch = widgets.PushButton(text="switch states")
+save = widgets.PushButton(text="save")
+clear = widgets.PushButton(text="clear selected states")
+clear_all = widgets.PushButton(text="clear all")
+next = widgets.PushButton(text="next color")
 container = widgets.Container(widgets=[trace, switch, save, clear, clear_all, next])
-viewer.window.add_dock_widget(container, area='right')
-#viewer.scale_bar.visible = True
+viewer.window.add_dock_widget(container, area="right")
+# viewer.scale_bar.visible = True
 
 colors = ["green", "blue", "red"]
 
