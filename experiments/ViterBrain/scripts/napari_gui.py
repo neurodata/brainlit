@@ -31,6 +31,7 @@ print(f"Image shape: {im.shape}")
 fragment_path = os.path.join(data_dir, "3-1-soma_labels.zarr")
 z = zarr.open(fragment_path, "r")
 new_labels = z[:, :, :]
+print(f"Labels shape: {new_labels.shape}")
 
 state2centroid = {}
 for soma_frag in viterbi.soma_fragment2coords.keys():
