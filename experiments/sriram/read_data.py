@@ -3,7 +3,7 @@ from skimage import io
 
 path = '/cis/project/sriram/Sriram/SS IUE 175 SNOVA RFP single channel AdipoClear Brain 3 ipsilateral small z two colour Image1.czi'
 czi = aicspylibczi.CziFile(path)
-shape = czi.get_dims_shape()
+shape = czi.get_dims_shape()[0]
 print(shape)
 
 Z = int(shape['Z']/2)
