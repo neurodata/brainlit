@@ -19,18 +19,19 @@ from typing import Union, List
 def compute_parameterization(positions: np.array) -> np.array:
     """Computes list of parameter values to be used for a list of positions using piecewise linear arclength.
 
-        Parameters
-        ----------
-        positions : np.array
-            nxd array containing coordinates of the n points in d dimentional space.
-        Returns
-        -------
-        TotalDist : np.array
-            n array containing parameter values, first element is 0.
+    Parameters
+    ----------
+    positions : np.array
+        nxd array containing coordinates of the n points in d dimentional space.
+    Returns
+    -------
+    TotalDist : np.array
+        n array containing parameter values, first element is 0.
     """
     NodeDist = np.linalg.norm(np.diff(positions, axis=0), axis=1)
     TotalDist = np.concatenate(([0], np.cumsum(NodeDist)))
     return TotalDist
+
 
 """
 Geometric Graph class
@@ -45,7 +46,7 @@ class GeometricGraph(nx.Graph):
     It extends `nx.Graph` and rejects duplicate node input.
     """
 
-    def __init__(self, df: pd.DataFrame = None, root = 1) -> None:
+    def __init__(self, df: pd.DataFrame = None, root=1) -> None:
         super(GeometricGraph, self).__init__()
         self.segments = None
         self.cycle = None
@@ -182,7 +183,9 @@ class GeometricGraph(nx.Graph):
             main_branch = spline_tree.nodes[node]["path"]
 
             if spline_type == BSpline:  # each node must have "loc" attribute
-                spline_tree.nodes[node]["spline"] = self.__fit_bspline_path(main_branch, k=k)
+                spline_tree.nodes[node]["spline"] = self.__fit_bspline_path(
+                    main_branch, k=k
+                )
             elif (
                 spline_type == CubicHermiteSpline
             ):  # each node must have "u," "loc," and "deriv" attributes
@@ -223,11 +226,10 @@ class GeometricGraph(nx.Graph):
         #     k = np.amin([path_length - 1, 5])
         # else:
         #     k = 3
-        k = np.amin([k, path_length - 1]) # change
+        k = np.amin([k, path_length - 1])  # change
         tck, u = splprep([x[:, 0], x[:, 1], x[:, 2]], s=0, u=TotalDist, k=k)
 
         return tck, u
-
 
     def __fit_chspline_path(self, path: List):
         """Fit cubic hermite spline to path of nodes that has independent variable (u), position (loc) and derivative (deriv) attributes.
