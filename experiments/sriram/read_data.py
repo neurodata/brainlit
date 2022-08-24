@@ -6,7 +6,7 @@ czi = aicspylibczi.CziFile(path)
 shape = czi.get_dims_shape()[0]
 print(shape)
 
-Z = int(shape['Z']/2)
+Z = int(shape['Z'][0]/2)
 im0 = czi.read_mosaic(C=0, Z=Z, scale_factor=1)
 im1 = czi.read_mosaic(C=1, Z=Z, scale_factor=1)
 
