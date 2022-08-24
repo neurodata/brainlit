@@ -12,4 +12,4 @@ im1 = czi.read_mosaic(C=1, Z=Z, scale_factor=1)
 
 outpath = "/cis/home/tathey/projects/mouselight/sriram/"
 io.imsave(outpath + "im0.tif", im0)
-io.imsave(outpath + "im0.tif", im1)
+io.imsave(outpath + "im1.tif", im1)
