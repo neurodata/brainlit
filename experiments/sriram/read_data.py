@@ -12,7 +12,7 @@ czi = aicspylibczi.CziFile(path)
 print(f"Creating array of shape {sz} from czi file of shape {czi.get_dims_shape()}")
 
 zarra = zarr.zeros(sz, chunks=(2,100,100,40), dtype='uint16')
-num_slices = czi.get_dims_shape()[0]['Z'][0]
+num_slices = czi.get_dims_shape()[0]['Z'][1]
 
 print(num_slices)
 
