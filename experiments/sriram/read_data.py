@@ -3,11 +3,12 @@ from skimage import io
 import numpy as np
 import zarr
 
+sz = [2, 6814, 8448, 316]
+
 path = '/cis/project/sriram/Sriram/SS IUE 175 SNOVA RFP single channel AdipoClear Brain 3 ipsilateral small z two colour Image1.czi'
 czi = aicspylibczi.CziFile(path)
-sz = np.squeeze(czi.size)
-print(sz)
-raise ValueError()
+
+print(f"Creating array of shape {sz} from czi file of shape {czi.size}")
 
 zarra = zarr.zeros(sz, chunks=(2,100,100,40), dtype='uint16')
 for z in range(czi.get_dims_shape()[0]['Z'][0]):
