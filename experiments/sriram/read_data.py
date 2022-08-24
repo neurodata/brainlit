@@ -14,7 +14,6 @@ print(f"Creating array of shape {sz} from czi file of shape {czi.get_dims_shape(
 zarra = zarr.zeros(sz, chunks=(2,100,100,40), dtype='uint16')
 num_slices = czi.get_dims_shape()[0]['Z'][1]
 
-print(num_slices)
 
 for z in tqdm(np.arange(num_slices), desc="Saving slices..."):
     zarra[0,:,:,z] = np.squeeze(czi.read_mosaic(C=0, Z=z, scale_factor=1))
