@@ -27,7 +27,7 @@ if task == "writezarr":
     outpath = "/cis/home/tathey/projects/mouselight/sriram/"
     zarr.save(outpath + "somez.zarr", zarra)
 if task == "writeng":
-    outpath = "/cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/fg"
+    outpath = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/fg"
 
     info = CloudVolume.create_new_info(
         num_channels    = 1,
@@ -42,6 +42,8 @@ if task == "writeng":
         chunk_size      = [ 32, 32, 32 ], # units are voxels
         volume_size     = [ 100, 100, 100 ], # e.g. a cubic millimeter dataset
     )
+
+    print(f"Posting info: {info}")
     vol = CloudVolume(outpath, info=info, compress = False)
     vol.commit_info()
 
