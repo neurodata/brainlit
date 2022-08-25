@@ -55,7 +55,9 @@ if task == "writeng":
         num_slices = czi.get_dims_shape()[0]['Z'][1]
         for z in tqdm(np.arange(num_slices), desc="Saving slices..."):
             im_slice = np.squeeze(czi.read_mosaic(C=0, Z=z, scale_factor=1))
+            im_slice = np.expand_dims(im_slice, axis=2)
             print(im_slice.shape)
+            print(vol.shape)
             vol[:,:,z] = im_slice
 
 
