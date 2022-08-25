@@ -27,26 +27,33 @@ if task == "writezarr":
     outpath = "/cis/home/tathey/projects/mouselight/sriram/"
     zarr.save(outpath + "somez.zarr", zarra)
 if task == "writeng":
-    outpath = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/fg"
+    outpath_prefix = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/"
 
-    info = CloudVolume.create_new_info(
-        num_channels    = 1,
-        layer_type      = 'image',
-        data_type       = 'uint16', # Channel images might be 'uint8'
-        # raw, png, jpeg, compressed_segmentation, fpzip, kempressed, zfpc, compresso
-        encoding        = 'raw', 
-        resolution      = [1, 1, 1], # Voxel scaling, units are in nanometers
-        voxel_offset    = [0, 0, 0], # x,y,z offset in voxels from the origin
-        # Pick a convenient size for your underlying chunk representation
-        # Powers of two are recommended, doesn't need to cover image exactly
-        chunk_size      = [ 32, 32, 32 ], # units are voxels
-        volume_size     = [ 100, 100, 100 ], # e.g. a cubic millimeter dataset
-    )
+    path = '/cis/project/sriram/Sriram/SS IUE 175 SNOVA RFP single channel AdipoClear Brain 3 ipsilateral small z two colour Image1.czi'
+    czi = aicspylibczi.CziFile(path)
 
-    print(f"Posting info: {info}")
-    vol = CloudVolume(outpath, info=info, compress = False)
-    vol.commit_info()
+    for c, suffix in zip([0,1], ["fg", "bg"]):
+        outpath = outpath_prefix + suffix
+        info = CloudVolume.create_new_info(
+            num_channels    = 1,
+            layer_type      = 'image',
+            data_type       = 'uint16', # Channel images might be 'uint8'
+            # raw, png, jpeg, compressed_segmentation, fpzip, kempressed, zfpc, compresso
+            encoding        = 'raw', 
+            resolution      = [1, 1, 1], # Voxel scaling, units are in nanometers
+            voxel_offset    = [0, 0, 0], # x,y,z offset in voxels from the origin
+            # Pick a convenient size for your underlying chunk representation
+            # Powers of two are recommended, doesn't need to cover image exactly
+            chunk_size      = [ 32, 32, 32 ], # units are voxels
+            volume_size     = [ 6814, 8448, 316], # e.g. a cubic millimeter dataset
+        )
 
-    vol[32:64,32:64,32:64] = 256
+        print(f"Posting info: {info}")
+        vol = CloudVolume(outpath, info=info, compress = False)
+        vol.commit_info()
+
+        num_slices = czi.get_dims_shape()[0]['Z'][1]
+        for z in tqdm(np.arange(num_slices), desc="Saving slices..."):
+            vol[:,:,z] = np.squeeze(czi.read_mosaic(C=0, Z=z, scale_factor=1))
 
 
