@@ -32,7 +32,9 @@ if task == "writeng":
     path = '/cis/project/sriram/Sriram/SS IUE 175 SNOVA RFP single channel AdipoClear Brain 3 ipsilateral small z two colour Image1.czi'
     czi = aicspylibczi.CziFile(path)
 
-    dims = czi.get_dims_shape()[0]
+    dims = czi.shape
+    print(dims)
+    raise ValueError()
 
     for c, suffix in zip([0,1], ["fg", "bg"]):
         outpath = outpath_prefix + suffix
