@@ -36,6 +36,8 @@ elif task == "writeng":
 
 
     for c, suffix in zip([0,1], ["fg", "bg"]):
+        if c == 0:
+            continue
         outpath = outpath_prefix + suffix
         info = CloudVolume.create_new_info(
             num_channels    = 1,
@@ -57,7 +59,7 @@ elif task == "writeng":
 
         num_slices = sz[2]
         for z in tqdm(np.arange(num_slices), desc="Saving slices..."):
-            im_slice = np.squeeze(czi.read_mosaic(C=0, Z=z, scale_factor=1))
+            im_slice = np.squeeze(czi.read_mosaic(C=c, Z=z, scale_factor=1))
             im_slice = np.expand_dims(im_slice, axis=2)
             vol[:,:,z] = im_slice
 elif task == "readng":
