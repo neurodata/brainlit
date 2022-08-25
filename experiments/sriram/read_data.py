@@ -49,7 +49,7 @@ if task == "writeng":
         )
 
         print(f"Posting info: {info}")
-        vol = CloudVolume(outpath, info=info, compress = False, non_aligned_writes=True)
+        vol = CloudVolume(outpath, info=info, compress = False)
         vol.commit_info()
 
         num_slices = czi.get_dims_shape()[0]['Z'][1]
