@@ -5,7 +5,7 @@ import zarr
 from tqdm import tqdm
 from cloudvolume import CloudVolume
 
-task = "readng"
+task = "writeng"
 
 if task == "writezarr":
     sz = [2, 6814, 8448, 316]
