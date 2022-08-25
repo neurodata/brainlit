@@ -38,6 +38,7 @@ for soma_frag in viterbi.soma_fragment2coords.keys():
     state2centroid[soma_frag] = np.mean(viterbi.soma_fragment2coords[soma_frag], axis=0)
 
 viewer = napari.Viewer(ndisplay=3)
+viewer_copy = viewer
 viewer.add_image(im, name="image", scale=scale)
 # viewer.add_shapes(SNT, shape_type="path", edge_color="blue", edge_width=1)
 labels_layer = viewer.add_labels(new_labels, name="labels", scale=scale)
@@ -245,7 +246,7 @@ def trace(viewer):
         state2 = state_order[-1]
         print(f"Tracing from {state1} to {state2}")
         lines = drawpath(state1, state2)
-        viewer.add_shapes(
+        viewer_copy.add_shapes(
             lines,
             shape_type="path",
             edge_color=colors[-1],
@@ -253,7 +254,6 @@ def trace(viewer):
             name=f"trace {state1} to {state2}",
             scale=scale,
         )
-
         layers = states[state1]  # + states[state2]
         if soma_end:
             layers += states[state2]
