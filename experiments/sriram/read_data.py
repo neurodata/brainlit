@@ -44,7 +44,7 @@ if task == "writeng":
             voxel_offset    = [0, 0, 0], # x,y,z offset in voxels from the origin
             # Pick a convenient size for your underlying chunk representation
             # Powers of two are recommended, doesn't need to cover image exactly
-            chunk_size      = [ 32, 32, 32 ], # units are voxels
+            chunk_size      = [ 128, 128, 1 ], # units are voxels
             volume_size     = [ 6814, 8448, 316], # e.g. a cubic millimeter dataset
         )
 
