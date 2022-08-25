@@ -33,15 +33,13 @@ if task == "writeng":
     czi = aicspylibczi.CziFile(path)
 
     dims = czi.get_dims_shape()[0]
-    print(czi.pixel_type)
-    print(czi)
 
     for c, suffix in zip([0,1], ["fg", "bg"]):
         outpath = outpath_prefix + suffix
         info = CloudVolume.create_new_info(
             num_channels    = 1,
             layer_type      = 'image',
-            data_type       = czi.pixel_type, # Channel images might be 'uint8'
+            data_type       = 'uint16', # Channel images might be 'uint8'
             # raw, png, jpeg, compressed_segmentation, fpzip, kempressed, zfpc, compresso
             encoding        = 'raw', 
             resolution      = [1, 1, 1], # Voxel scaling, units are in nanometers
