@@ -45,7 +45,7 @@ elif task == "writeng":
             data_type       = 'uint16', # Channel images might be 'uint8'
             # raw, png, jpeg, compressed_segmentation, fpzip, kempressed, zfpc, compresso
             encoding        = 'raw', 
-            resolution      = [1, 1, 1], # Voxel scaling, units are in nanometers
+            resolution      = [500, 500, 3000], # Voxel scaling, units are in nanometers
             voxel_offset    = [0, 0, 0], # x,y,z offset in voxels from the origin
             # Pick a convenient size for your underlying chunk representation
             # Powers of two are recommended, doesn't need to cover image exactly
@@ -75,7 +75,7 @@ elif task == "downsampleng":
             mip=0,  # Start downsampling from this mip level (writes to next level up)
             fill_missing=True,  # Ignore missing chunks and fill them with black
             axis="z",
-            num_mips=5,  # number of downsamples to produce. Downloaded shape is chunk_size * 2^num_mip
+            num_mips=3,  # number of downsamples to produce. Downloaded shape is chunk_size * 2^num_mip
             chunk_size=None,  # manually set chunk size of next scales, overrides preserve_chunk_size
             preserve_chunk_size=True,  # use existing chunk size, don't halve to get more downsamples
             sparse=False,  # for sparse segmentation, allow inflation of pixels against background
