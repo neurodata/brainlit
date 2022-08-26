@@ -12,6 +12,8 @@ How to Use the ViterBrain Napari Plugin
 
 * Build a ViterBrain object according to an image and some voxel-wise predictions. loading.py can be used for this with sample data found in experiments/ViterBrain/data/sample.zip.
 
+* Make sure you are using Python3.9 to run loading.py
+
 * Open the ViterBrain object in napari.
 
 * Launch the ViterBrain plugin widget.

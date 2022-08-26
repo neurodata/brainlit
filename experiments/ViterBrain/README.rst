@@ -7,9 +7,11 @@ Athey, T. L., Tward, D. J., Mueller, U., & Miller, M. I. (2021). Hidden Markov M
 How to use ViterBrain
 ---------------------
 
-* First, make sure that you have installed the ``brainlit`` package [`Documentation <https://brainlit.netlify.app/readme#installation>`_].
+* First, make sure that you have installed the ``brainlit`` package [`Documentation <https://brainlit.netlify.app/readme#installation>`_]. 
 
 * Second, uncompress the data ``brainlit/experiments/ViterBrain/data/example.zip``. ``brainlit/experiemnts/ViterBrain/data/sample.zip`` can also be used.
+
+* Make sure you are using Python3.9
 
 * Then, you can run some of the tutorial notebooks in the ``notebooks`` folder:
     * ``ViterBrain.ipynb`` - shows a programmatic example of the pipeline, based on zarr inputs.
