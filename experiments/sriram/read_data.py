@@ -7,7 +7,7 @@ from cloudvolume import CloudVolume
 import igneous.task_creation as tc
 from taskqueue import LocalTaskQueue
 
-task = "downsampleng"
+task = "writeng"
 
 if task == "writezarr":
     sz = [2, 6814, 8448, 316]
@@ -62,7 +62,7 @@ elif task == "writeng":
             im_slice = np.squeeze(czi.read_mosaic(C=c, Z=z, scale_factor=1))
             im_slice = np.expand_dims(im_slice, axis=2)
             vol[:,:,z] = im_slice
-elif task == "downsampleng":
+
     layer_path_prefix = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/"
     for suffix in ["fg", "bg"]:
         layer_path = layer_path_prefix + suffix
