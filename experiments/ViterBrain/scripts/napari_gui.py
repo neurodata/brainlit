@@ -18,7 +18,7 @@ scale = [0.3, 0.3, 1]
 num = 0
 
 root_dir = Path(os.path.abspath(""))
-data_dir = os.path.join(root_dir, "data", "example")
+data_dir = os.path.join(root_dir, "data", "sample")
 path = os.path.join(data_dir, "3-1-soma_viterbrain.pickle")
 
 with open(path, "rb") as handle:
