@@ -4,8 +4,10 @@ import numpy as np
 import zarr
 from tqdm import tqdm
 from cloudvolume import CloudVolume
+import igneous.task_creation as tc
+from taskqueue import LocalTaskQueue
 
-task = "writeng"
+task = "downsampleng"
 
 if task == "writezarr":
     sz = [2, 6814, 8448, 316]
@@ -36,8 +38,6 @@ elif task == "writeng":
 
 
     for c, suffix in zip([0,1], ["fg", "bg"]):
-        if c == 0:
-            continue
         outpath = outpath_prefix + suffix
         info = CloudVolume.create_new_info(
             num_channels    = 1,
@@ -53,7 +53,7 @@ elif task == "writeng":
             volume_size     = sz, # e.g. a cubic millimeter dataset
         )
 
-        print(f"Posting info: {info}")
+        print(f"Posting info: {info} to {outpath}")
         vol = CloudVolume(outpath, info=info, compress = False)
         vol.commit_info()
 
@@ -62,6 +62,33 @@ elif task == "writeng":
             im_slice = np.squeeze(czi.read_mosaic(C=c, Z=z, scale_factor=1))
             im_slice = np.expand_dims(im_slice, axis=2)
             vol[:,:,z] = im_slice
+elif task == "downsampleng":
+    layer_path_prefix = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/"
+    for suffix in zip(["fg", "bg"]):
+        layer_path = layer_path_prefix + suffix
+        print(f"Downsampling {layer_path}")
+
+        tq = LocalTaskQueue(parallel=8)
+
+        tasks = tc.create_downsampling_tasks(
+            layer_path,  # e.g. 'gs://bucket/dataset/layer'
+            mip=0,  # Start downsampling from this mip level (writes to next level up)
+            fill_missing=True,  # Ignore missing chunks and fill them with black
+            axis="z",
+            num_mips=5,  # number of downsamples to produce. Downloaded shape is chunk_size * 2^num_mip
+            chunk_size=None,  # manually set chunk size of next scales, overrides preserve_chunk_size
+            preserve_chunk_size=True,  # use existing chunk size, don't halve to get more downsamples
+            sparse=False,  # for sparse segmentation, allow inflation of pixels against background
+            bounds=None,  # mip 0 bounding box to downsample
+            encoding=None,  # e.g. 'raw', 'compressed_segmentation', etc
+            delete_black_uploads=False,  # issue a delete instead of uploading files containing all background
+            background_color=0,  # Designates the background color
+            compress="gzip",  # None, 'gzip', and 'br' (brotli) are options
+            factor=(2, 2, 2),  # common options are (2,2,1) and (2,2,2)
+        )
+
+        tq.insert(tasks)
+        tq.execute()
 elif task == "readng":
     ng_path = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/fg"
     vol = CloudVolume(ng_path, compress = False)
