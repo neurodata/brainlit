@@ -38,7 +38,7 @@ for soma_frag in viterbi.soma_fragment2coords.keys():
     state2centroid[soma_frag] = np.mean(viterbi.soma_fragment2coords[soma_frag], axis=0)
 
 viewer = napari.Viewer(ndisplay=3)
-viewer_copy = viewer
+viewer_copy = viewer # added viewer copy to bypass boolean behavior from viewer after QPushButton emits signal
 viewer.add_image(im, name="image", scale=scale)
 # viewer.add_shapes(SNT, shape_type="path", edge_color="blue", edge_width=1)
 labels_layer = viewer.add_labels(new_labels, name="labels", scale=scale)
