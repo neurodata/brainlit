@@ -64,7 +64,7 @@ elif task == "writeng":
             vol[:,:,z] = im_slice
 elif task == "downsampleng":
     layer_path_prefix = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/"
-    for suffix in zip(["fg", "bg"]):
+    for suffix in ["fg", "bg"]:
         layer_path = layer_path_prefix + suffix
         print(f"Downsampling {layer_path}")
 
