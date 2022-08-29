@@ -19,6 +19,8 @@ import scipy.io as io
 
 
 class DiffeomorphismAction:
+    """Interface for differentiable mappings e.g. transformations that register a brain image to an atlas.
+    """
     def evaluate(self, position: np.array) -> np.array:
         pass
 
@@ -31,7 +33,7 @@ class CloudReg_Transform(DiffeomorphismAction):
     Implements DiffeomorphismAction which is an interface to transform points and tangent vectors.
     """
 
-    def __init__(self, vpath, Apath):
+    def __init__(self, vpath: str, Apath: str):
         """Compute transformation from CloudReg mat files
 
         Args:
@@ -51,6 +53,14 @@ class CloudReg_Transform(DiffeomorphismAction):
         self._integrate()
 
     def apply_affine(self, position: np.array) -> np.array:
+        """Apply affine transformation in the transformation of positions in target space to atlas space.
+
+        Args:
+            position (np.array): nx3 array with positions in target space.
+
+        Returns:
+            np.array: positions after affine transformation was applied.
+        """
         # transformation direction: atlas
         A = self.B
         transformed_position = (
@@ -60,9 +70,13 @@ class CloudReg_Transform(DiffeomorphismAction):
 
         return transformed_position
 
-    def _integrate(self, velocity_voxel_size=[100.0, 100.0, 100.0]):
-        # translated from https://github.com/neurodata/CloudReg/blob/master/cloudreg/registration/transform_points.m
-        # transformation direction: atlas
+    def _integrate(self, velocity_voxel_size: list=[100.0, 100.0, 100.0]):
+        """Integrate velocity field in order to compute diffeomorphsm mapping. Translated from https://github.com/neurodata/CloudReg/blob/master/cloudreg/registration/transform_points.m
+        Integration is done in the direction to allow mapping from target to atlas space.
+
+        Args:
+            velocity_voxel_size (list, optional): Voxel resolution of trarnsformation. Defaults to [100.0, 100.0, 100.0].
+        """
 
         vtx = self.vtx
         vty = self.vty
@@ -144,6 +158,14 @@ class CloudReg_Transform(DiffeomorphismAction):
         self.diffeomorphism = (Fx, Fy, Fz)
 
     def evaluate(self, position: np.array) -> np.array:
+        """Apply non-affine component of mapping to positions.
+
+        Args:
+            position (np.array): Positions at which to compute mappings.
+
+        Returns:
+            np.array: Mappings of the input.
+        """
         Fx = self.diffeomorphism[0]
         Fy = self.diffeomorphism[1]
         Fz = self.diffeomorphism[2]
@@ -160,6 +182,23 @@ class CloudReg_Transform(DiffeomorphismAction):
         return transformed_position
 
     def D(self, position: np.array, deriv: np.array, order: int = 1) -> np.array:
+        """Compute transformed derivatives of mapping at given positions. Only for the non-affine component.
+
+        Args:
+            position (np.array): nx3 positions at which to compute derivatives.
+            deriv (np.array): nx3 derivatives at the respective positions.
+            order (int, optional): Order of derivative (must be 1). Defaults to 1.
+
+        Raises:
+            ValueError: Only derivative order 1 is allowed here.
+
+        Returns:
+            np.array: Transformed derivatives
+        """
+
+        if order != 1:
+            raise ValueError(f"Argument order must be 1, not {1}")
+
         Fx = self.diffeomorphism[0]
         Fy = self.diffeomorphism[1]
         Fz = self.diffeomorphism[2]
@@ -183,8 +222,21 @@ class CloudReg_Transform(DiffeomorphismAction):
 
         return transformed_deriv
 
+def compute_derivs(us: np.array, tck: tuple, positions: np.array, deriv_method: str="difference") -> np.array:
+    """Estimate derivatives of a spline parameterized by scipy's spline API.
 
-def compute_derivs(us, tck, positions, deriv_method="difference"):
+    Args:
+        us (np.array): Parameter values (in form returned by scipy.interpolate.splprep).
+        tck (tuple): Knots, bspline coefficients, and degree of spline (in form returned by scipy.interpolate.splprep).
+        positions (np.array): nx3 array of positions (for use by difference method).
+        deriv_method (str, optional): Method to use, spline for scipy.interpolate.splev or difference for  . Defaults to "difference".
+
+    Raises:
+        ValueError: If derivative method is unrecognized.
+
+    Returns:
+        np.array: Derivative estimates at specified positions.
+    """
     if deriv_method == "spline":
         derivs = np.array(splev(us, tck, der=1)).T
     elif deriv_method == "difference":
@@ -225,9 +277,27 @@ def compute_derivs(us, tck, positions, deriv_method="difference"):
 def transform_GeometricGraph(
     G_transformed: GeometricGraph,
     Phi: DiffeomorphismAction,
-    deriv_method="difference",
-    derivs=None,
-):
+    deriv_method: str="difference",
+    derivs: np.arrry=None,
+) -> GeometricGraph:
+    """Apply a diffeomorphism to a GeometricGraph object.
+
+    Args:
+        G_transformed (GeometricGraph): Object that will be transformed.
+        Phi (DiffeomorphismAction): Diffeomorphism that will define the transformation.
+        deriv_method (str, optional): Derivative method to use in compute_derivs if derivs argument is None. Defaults to "difference".
+        derivs (np.array, optional): nx3 array of derivative values associated with nodes on the GemoetricGraph. Only applicable if GeometricGraph has a single branch. Defaults to None.
+
+    Raises:
+
+    Raises:
+        NotImplementedError: This method transforms GemoetricGraphs composed of BSplines to GemoetricGraphs composed of CubicHermite splines.
+        ValueError: If derivs argument is given but GemoetricGraph has multiple branches.
+        ValueError: If splines were not computed for the GemoetricGraph yet.
+
+    Returns:
+        GeometricGraph: Transformed GeometricGraph
+    """
     if G_transformed.spline_type is not BSpline:
         raise NotImplementedError("Can only transform bsplines")
 
