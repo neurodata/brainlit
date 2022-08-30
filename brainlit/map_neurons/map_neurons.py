@@ -327,8 +327,6 @@ def transform_GeometricGraph(
         derivs (np.array, optional): nx3 array of derivative values associated with nodes on the GemoetricGraph. Only applicable if GeometricGraph has a single branch. Defaults to None.
 
     Raises:
-
-    Raises:
         NotImplementedError: This method transforms GemoetricGraphs composed of BSplines to GemoetricGraphs composed of CubicHermite splines.
         ValueError: If derivs argument is given but GemoetricGraph has multiple branches.
         ValueError: If splines were not computed for the GemoetricGraph yet.
