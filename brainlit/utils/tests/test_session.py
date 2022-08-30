@@ -258,7 +258,10 @@ def test_get_segments(session):
     paths_sub = G_sub_paths[1]
     assert G != G_sub
     assert isinstance(G, nx.Graph) and isinstance(G_sub, nx.Graph)
-    assert isinstance(paths, np.ndarray) and isinstance(paths_sub, np.ndarray)
+    for path in paths:
+        assert isinstance(path, np.ndarray)
+    for path in paths_sub:
+        assert isinstance(path, np.ndarray)
 
 
 def test_create_tubes(session):

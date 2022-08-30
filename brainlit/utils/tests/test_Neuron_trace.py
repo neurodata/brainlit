@@ -117,11 +117,11 @@ def test_get_df_voxel():
 
     # test 'origin' arg must be type numpy.ndarray
     with pytest.raises(TypeError):
-        test_swc.get_df_voxel(spacing=np.asarray([0, 1, 2]), origin="asdf")
+        test_swc.get_df_voxel(spacing=np.asarray([1, 2, 3]), origin="asdf")
 
     # test if 'origin' is type numpy.ndarray, it must be shape (3,1)
     with pytest.raises(ValueError):
-        test_swc.get_df_voxel(spacing=np.asarray([0, 1, 2]), origin=np.asarray([0, 1]))
+        test_swc.get_df_voxel(spacing=np.asarray([1, 2, 3]), origin=np.asarray([0, 1]))
 
     # test if output is correct shape
     correct_shape = (1650, 7)
@@ -149,13 +149,13 @@ def test_get_df_voxel():
     # test if output is dataframe
     assert isinstance(
         test_swc.get_df_voxel(
-            spacing=np.asarray([0, 1, 2]), origin=np.asarray([0, 1, 2])
+            spacing=np.asarray([1, 2, 3]), origin=np.asarray([0, 1, 2])
         ),
         pd.DataFrame,
     )
     assert isinstance(
         test_s3.get_df_voxel(
-            spacing=np.asarray([0, 1, 2]), origin=np.asarray([0, 1, 2])
+            spacing=np.asarray([1, 2, 3]), origin=np.asarray([0, 1, 2])
         ),
         pd.DataFrame,
     )
@@ -173,15 +173,15 @@ def test_get_graph():
 
     # test 'origin' arg must either be NoneType or numpy.ndarray
     with pytest.raises(TypeError):
-        test_swc.get_graph(spacing=np.asarray([0, 1, 2]), origin="asdf")
+        test_swc.get_graph(spacing=np.asarray([1, 2, 3]), origin="asdf")
 
     # test if 'origin' is type numpy.ndarray, it must be shape (3,1)
     with pytest.raises(ValueError):
-        test_swc.get_graph(spacing=np.asarray([0, 1, 2]), origin=np.asarray([0, 1]))
+        test_swc.get_graph(spacing=np.asarray([1, 2, 3]), origin=np.asarray([0, 1]))
 
     # test if origin isn't specified but spacing is, origin set to np.array([0, 0, 0])
-    G1 = test_swc.get_graph(spacing=np.asarray([0, 1, 2]))
-    G2 = test_swc.get_graph(spacing=np.asarray([0, 1, 2]), origin=np.array([0, 0, 0]))
+    G1 = test_swc.get_graph(spacing=np.asarray([1, 2, 3]))
+    G2 = test_swc.get_graph(spacing=np.asarray([1, 2, 3]), origin=np.array([0, 0, 0]))
     assert nx.is_isomorphic(G1, G2) == True
 
     # test if graph coordinates are same as that of df_voxel
@@ -245,8 +245,10 @@ def test_get_paths():
         test_swc.get_paths(spacing=np.asarray([0, 1, 2]), origin=np.asarray([0, 1]))
 
     # test if output is type numpy.ndarray
-    assert isinstance(test_swc.get_paths(), np.ndarray)
-    assert isinstance(test_s3.get_paths(), np.ndarray)
+    for test_swc_path in test_swc.get_paths():
+        assert isinstance(test_swc_path, np.ndarray)
+    for test_s3_path in test_s3.get_paths():
+        assert isinstance(test_s3_path, np.ndarray)
 
 
 def test_generate_df_subset():
@@ -342,10 +344,10 @@ def test_get_bfs_subgraph():
     G_sub_s3, tree_s3, paths_s3 = test_swc.get_bfs_subgraph(100, 50)
     assert isinstance(G_sub, nx.DiGraph)
     assert isinstance(tree, nx.DiGraph)
-    assert isinstance(paths_s3, np.ndarray)
     assert isinstance(G_sub_s3, nx.DiGraph)
     assert isinstance(tree_s3, nx.DiGraph)
-    assert isinstance(paths_s3, np.ndarray)
+    for path_s3 in paths_s3:
+        assert isinstance(path_s3, np.ndarray)
 
 
 def test_get_sub_neuron():
@@ -477,8 +479,10 @@ def test_get_sub_neuron_paths():
     # test if output for paths is type numpy.ndarray
     sub_neuron_swc = test_swc.get_sub_neuron_paths(bounding_box=[[1, 2, 3], [1, 2, 3]])
     sub_neuron_s3 = test_s3.get_sub_neuron_paths(bounding_box=[[1, 2, 3], [1, 2, 3]])
-    assert isinstance(sub_neuron_swc, np.ndarray)
-    assert isinstance(sub_neuron_s3, np.ndarray)
+    for sub_neuron_swc_path in sub_neuron_swc:
+        assert isinstance(sub_neuron_swc_path, np.ndarray)
+    for sub_neuron_s3_path in sub_neuron_s3:
+        assert isinstance(sub_neuron_s3_path, np.ndarray)
 
 
 def test_ssd():

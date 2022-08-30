@@ -863,6 +863,8 @@ class NeuronTrace:
         voxel_coord : :class:`numpy.array`
             Coordinate in voxel units. Assumed to be np.array([x,y,z])
         """
+        if np.any(spacing == 0):
+            raise ValueError(f"Zero detected in spacing: {spacing}")
 
         voxel_coord = np.round(np.divide(spatial_coord - origin, spacing))
         voxel_coord = voxel_coord.astype(np.int64)
