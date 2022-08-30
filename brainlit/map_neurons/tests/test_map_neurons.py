@@ -10,11 +10,11 @@ import pandas as pd
 
 
 @pytest.fixture(scope="session")
-def init_crt(tmp_path_factory) -> tuple[str, str, list]:
+def init_crt(tmp_path_factory) -> CloudReg_Transform:
     """Write the mat files for a simulated CloudReg registration computation.
 
     Returns:
-        tuple[str, str, list]: paths of mat files, and voxel size
+        CloudReg_Transform: example CloudReg Transform that has an affine transform and whose nonlinear component is actually just a translation.
     """
     data_dir = tmp_path_factory.mktemp("data")
 
