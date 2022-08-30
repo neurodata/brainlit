@@ -416,7 +416,7 @@ class state_generation:
         res = self.resolution
 
         dims = np.multiply(np.amax(coords, axis=0) - np.amin(coords, axis=0), res)
-        max_length = np.sqrt(np.sum([dim ** 2 for dim in dims]))
+        max_length = np.sqrt(np.sum([dim**2 for dim in dims]))
 
         r = 15
         if max_length < r:

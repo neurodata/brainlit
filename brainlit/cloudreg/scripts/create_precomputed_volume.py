@@ -44,7 +44,7 @@ def create_cloud_volume(
     )
     vol = CloudVolume(precomputed_path, info=info, parallel=parallel)
     [
-        vol.add_scale((2 ** i, 2 ** i, 1), chunk_size=chunk_size)
+        vol.add_scale((2**i, 2**i, 1), chunk_size=chunk_size)
         for i in range(num_downsampling_levels)
     ]
 

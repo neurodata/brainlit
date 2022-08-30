@@ -77,8 +77,8 @@ def test_draw_sphere():
     """
     assert sphere.shape == shape
     assert np.unique(sphere).all() in [0, 1]
-    assert d_bg > radius ** 2
-    assert d_s <= radius ** 2
+    assert d_bg > radius**2
+    assert d_s <= radius**2
 
 
 def test_draw_tube_spheres():
@@ -129,8 +129,8 @@ def test_draw_tube_spheres():
     """
     assert labels.shape == shape
     assert np.unique(labels).all() in [0, 1]
-    assert d_bg > radius ** 2
-    assert d_tube <= radius ** 2
+    assert d_bg > radius**2
+    assert d_tube <= radius**2
 
 
 def test_draw_tube_edt():
@@ -181,8 +181,8 @@ def test_draw_tube_edt():
     """
     assert labels.shape == shape
     assert np.unique(labels).all() in [0, 1]
-    assert d_bg > radius ** 2
-    assert d_tube <= radius ** 2
+    assert d_bg > radius**2
+    assert d_tube <= radius**2
 
 
 def test_tubes_seg():
@@ -227,8 +227,8 @@ def test_tubes_seg():
     """
     assert labels.shape == shape
     assert np.unique(labels).all() in [0, 1]
-    assert d_bg > radius ** 2
-    assert d_tube <= radius ** 2
+    assert d_bg > radius**2
+    assert d_tube <= radius**2
 
 
 def test_tubes_from_paths_bad_inputs():
