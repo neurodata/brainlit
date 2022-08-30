@@ -168,7 +168,7 @@ def create_binarized_vol(
     )
     bin_vol = CloudVolume(vol_path_bin, info=info, parallel=parallel)
     [
-        bin_vol.add_scale((2**i, 2**i, 1), chunk_size=[1024, 1024, 1])
+        bin_vol.add_scale((2 ** i, 2 ** i, 1), chunk_size=[1024, 1024, 1])
         for i in range(6)
     ]
     bin_vol.commit_info()

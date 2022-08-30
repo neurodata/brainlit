@@ -19,8 +19,8 @@ import scipy.io as io
 
 
 class DiffeomorphismAction:
-    """Interface for differentiable mappings e.g. transformations that register a brain image to an atlas.
-    """
+    """Interface for differentiable mappings e.g. transformations that register a brain image to an atlas."""
+
     def evaluate(self, position: np.array) -> np.array:
         pass
 
@@ -38,6 +38,7 @@ class CloudReg_Transform(DiffeomorphismAction):
 
         Args:
             vpath (str): path to mat file
+            Apath (str): path to mat file with affine transformation
         """
         # not: transformation files go from template space to target space
         f = h5py.File(vpath, "r")
@@ -70,7 +71,7 @@ class CloudReg_Transform(DiffeomorphismAction):
 
         return transformed_position
 
-    def _integrate(self, velocity_voxel_size: list=[100.0, 100.0, 100.0]):
+    def _integrate(self, velocity_voxel_size: list = [100.0, 100.0, 100.0]):
         """Integrate velocity field in order to compute diffeomorphsm mapping. Translated from https://github.com/neurodata/CloudReg/blob/master/cloudreg/registration/transform_points.m
         Integration is done in the direction to allow mapping from target to atlas space.
 
@@ -94,15 +95,18 @@ class CloudReg_Transform(DiffeomorphismAction):
         yV = yV - np.mean(yV)
         zV = zV - np.mean(zV)
 
+        # *V variables represent a static grid
         [XV, YV, ZV] = np.meshgrid(xV, yV, zV, indexing="ij")
         timesteps = np.arange(0, nT, 1)
         indicator = -1
 
+        # trans variables aggregates the cumulative displacement from the originial grid coordinates
         transx = XV
         transy = YV
         transz = ZV
 
         for t in tqdm(timesteps, desc="integrating velocity field"):
+            # Deform the static grid at a certain time point
             Xs = XV + indicator * vtx[t, :, :, :] * dt
             Ys = YV + indicator * vty[t, :, :, :] * dt
             Zs = ZV + indicator * vtz[t, :, :, :] * dt
@@ -114,6 +118,7 @@ class CloudReg_Transform(DiffeomorphismAction):
                 fill_value=None,
             )
             XYZs = np.reshape(np.stack((Xs, Ys, Zs), axis=-1), newshape=(-1, 3))
+            # Add the newest timestep of displacement (Xs) to the cumulative displacement
             transx = np.reshape(F(XYZs), Xs.shape) + Xs
             F = RegularGridInterpolator(
                 (xV, yV, zV),
@@ -197,7 +202,7 @@ class CloudReg_Transform(DiffeomorphismAction):
         """
 
         if order != 1:
-            raise ValueError(f"Argument order must be 1, not {1}")
+            raise ValueError(f"Argument order must be 1, not {order}")
 
         Fx = self.diffeomorphism[0]
         Fy = self.diffeomorphism[1]
@@ -222,8 +227,16 @@ class CloudReg_Transform(DiffeomorphismAction):
 
         return transformed_deriv
 
-def compute_derivs(us: np.array, tck: tuple, positions: np.array, deriv_method: str="difference") -> np.array:
-    """Estimate derivatives of a spline parameterized by scipy's spline API.
+
+def compute_derivs(
+    us: np.array,
+    tck: tuple = None,
+    positions: np.array = None,
+    deriv_method: str = "difference",
+) -> np.array:
+    """Estimate derivatives of a sequence of points. Derivatives can be estimated in two ways:
+    - For curves parameterized by scipy's spline API, spline estimation uses scipy's derivative computation
+    - For a sequence of points, the finite-difference method from Svndquist & Veronis 1970 for nonuniform intervals is used.
 
     Args:
         us (np.array): Parameter values (in form returned by scipy.interpolate.splprep).
@@ -232,14 +245,23 @@ def compute_derivs(us: np.array, tck: tuple, positions: np.array, deriv_method: 
         deriv_method (str, optional): Method to use, spline for scipy.interpolate.splev or difference for  . Defaults to "difference".
 
     Raises:
+        ValueError: If the wrong combination of arguments/deriv_method is used.
         ValueError: If derivative method is unrecognized.
 
     Returns:
         np.array: Derivative estimates at specified positions.
     """
     if deriv_method == "spline":
+        if tck is None or positions is not None:
+            raise ValueError(
+                f"When using spline method, positions should be None and tck should not"
+            )
         derivs = np.array(splev(us, tck, der=1)).T
     elif deriv_method == "difference":
+        if tck is not None or positions is None:
+            raise ValueError(
+                f"When using difference method, tck should be None and positions should not"
+            )
         # Sundqvist & Veronis 1970
         f_im1 = positions[:-2, :]
         f_i = positions[1:-1, :]
@@ -277,15 +299,13 @@ def compute_derivs(us: np.array, tck: tuple, positions: np.array, deriv_method: 
 def transform_GeometricGraph(
     G_transformed: GeometricGraph,
     Phi: DiffeomorphismAction,
-    deriv_method: str="difference",
-    derivs: np.arrry=None,
+    derivs: np.array = None,
 ) -> GeometricGraph:
     """Apply a diffeomorphism to a GeometricGraph object.
 
     Args:
         G_transformed (GeometricGraph): Object that will be transformed.
         Phi (DiffeomorphismAction): Diffeomorphism that will define the transformation.
-        deriv_method (str, optional): Derivative method to use in compute_derivs if derivs argument is None. Defaults to "difference".
         derivs (np.array, optional): nx3 array of derivative values associated with nodes on the GemoetricGraph. Only applicable if GeometricGraph has a single branch. Defaults to None.
 
     Raises:
@@ -308,8 +328,6 @@ def transform_GeometricGraph(
         raise ValueError(
             "Must compute spline tree before running this function - fit_spline_tree_invariant()"
         )
-    # if "deriv" not in G_transformed.nodes[G_transformed.root].keys():
-    #     raise ValueError("Must compute derivatives before running this function - compute_derivs(deriv_method)")
 
     spline_tree = G_transformed.spline_tree
 
@@ -321,7 +339,9 @@ def transform_GeometricGraph(
         tck, us = spline_tree.nodes[node]["spline"]
         positions = np.array(splev(us, tck, der=0)).T
         if derivs is None or node_n > 0:
-            derivs = compute_derivs(us, tck, positions, deriv_method=deriv_method)
+            derivs = compute_derivs(
+                us=us, positions=positions, deriv_method="difference"
+            )
 
         transformed_positions = Phi.evaluate(positions)
         transformed_us = compute_parameterization(transformed_positions)

@@ -50,7 +50,7 @@ def create_skeleton_layer(s3_bucket, skel_res, img_dims, num_res=7):
     }
     # get cloudvolume info
     vol = CloudVolume(s3_bucket, info=info, parallel=True)
-    [vol.add_scale((2**i, 2**i, 2**i)) for i in range(num_res)]  # num_res - 1
+    [vol.add_scale((2 ** i, 2 ** i, 2 ** i)) for i in range(num_res)]  # num_res - 1
     vol.commit_info()
 
     # upload skeleton info to /skeletons/ dir

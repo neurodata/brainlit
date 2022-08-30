@@ -69,7 +69,7 @@ def test_fast_marching_seg():
     # create an image comprised of repeated 1D Gaussian distribution with mean value at 50th pixel and standard deviation of 2 pixels
     Gx = np.array([])
     for x in range(0, 101):
-        Gx = np.insert(Gx, x, np.exp(-((x - 50) ** 2) / (2 * (2**2))))
+        Gx = np.insert(Gx, x, np.exp(-((x - 50) ** 2) / (2 * (2 ** 2))))
 
     img = np.repeat([Gx], repeats=30, axis=0)
     # place a seed in the region of mean value
@@ -99,7 +99,7 @@ def test_level_set_seg():
     # create an image comprised of repeated 1D Gaussian distribution with mean value at 50th pixel and standard deviation of 2 pixels
     Gx = np.array([])
     for x in range(0, 101):
-        Gx = np.insert(Gx, x, np.exp(-((x - 50) ** 2) / (2 * (2**2))))
+        Gx = np.insert(Gx, x, np.exp(-((x - 50) ** 2) / (2 * (2 ** 2))))
 
     img = np.repeat([Gx], repeats=30, axis=0)
     # place a seed in the region of mean value
@@ -192,7 +192,7 @@ def test_neighborhood_connected_threshold():
     # define an image with 2D Gaussian distribution
     Gx = np.array([])
     for x in range(0, 7):
-        Gx = np.insert(Gx, x, np.exp(-((x - 3) ** 2) / (2 * (3**2))))
+        Gx = np.insert(Gx, x, np.exp(-((x - 3) ** 2) / (2 * (3 ** 2))))
 
     Gxy = np.zeros((7, 7))
 

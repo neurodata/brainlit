@@ -77,7 +77,7 @@ def pad(data, pad_width=10, mode="constant", constant_values=None):
     _verify_data_is_ndarray(data)
 
     if constant_values is None:
-        constant_values = np.quantile(data, 10**-data.ndim)
+        constant_values = np.quantile(data, 10 ** -data.ndim)
 
     pad_kwargs = {"array": data, "pad_width": pad_width, "mode": mode}
     if mode == "constant":

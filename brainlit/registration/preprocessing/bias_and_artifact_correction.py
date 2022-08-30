@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import ma
 import SimpleITK as sitk
-from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage import gaussian_filter
 from skimage import morphology
 from skimage.filters import threshold_otsu
 from skimage.transform import resize, rescale
