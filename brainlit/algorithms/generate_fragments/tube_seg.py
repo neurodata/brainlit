@@ -163,7 +163,6 @@ def tubes_seg(
     return labels
 
 
-# TOMMY REVIEW
 def tubes_from_paths(
     size: Tuple[int, int, int],
     paths: List[List[int]],

@@ -643,8 +643,7 @@ class NeuronTrace:
             G = self._df_to_graph(self.df)
 
         G_sub = self._get_sub_neuron(G, bounding_box)
-
-        paths = self._graph_to_paths(G_sub)
+        paths = self._graph_to_paths(G_sub, round=True)
 
         return paths
 
@@ -1041,7 +1040,12 @@ class NeuronTrace:
         paths = []
         for branch in branches:
             # get vertices in branch as n by 3 numpy.array; n = length of branches
-            path = np.zeros((len(branch), 3))
+            if round:
+                dtype = "int"
+            else:
+                dtype = "float"
+
+            path = np.zeros((len(branch), 3), dtype=dtype)
             for idx, node in enumerate(branch):
                 coord = [G_cp.nodes[node][c] for c in ["x", "y", "z"]]
                 if round:
