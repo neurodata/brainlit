@@ -22,9 +22,27 @@ class DiffeomorphismAction:
     """Interface for differentiable mappings e.g. transformations that register a brain image to an atlas."""
 
     def evaluate(self, position: np.array) -> np.array:
+        """Evaluate the mapping at specified positions.
+
+        Args:
+            position (np.array): Coordinates in original space.
+
+        Returns:
+            np.array: Transformed coordinates.
+        """
         pass
 
     def D(self, position: np.array, deriv: np.array, order: int = 1) -> np.array:
+        """Evaluate the mapping on a set of derivatives at specified positions.
+
+        Args:
+            position (np.array): Coordinates in the original space.
+            deriv (np.array): Derivatives at the respective positions
+            order (int, optional): Derivative order. Defaults to 1.
+
+        Returns:
+            np.array: Transformed derivatives.
+        """
         pass
 
 
