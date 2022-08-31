@@ -8,7 +8,7 @@ import igneous.task_creation as tc
 from taskqueue import LocalTaskQueue
 import h5py
 
-task = "saveilastik"
+task = "stategen"
 
 if task == "writezarr":
     sz = [2, 6814, 8448, 316]
@@ -99,11 +99,13 @@ elif task == "readng":
 elif task == "saveilastik":
     z = zarr.open("/cis/home/tathey/projects/mouselight/sriram/somez.zarr")
     corners = [[4000, 2100, 150], [3000, 2500, 150], [5500, 1000, 100], [2000, 6000, 160], [4000, 7000, 200]]
-    for i, corner in enumerate(corners):
+    for i, corner in enumerate(tqdm(corners, desc="saving samples...")):
         im = z[:,corner[0]:corner[0]+220, corner[1]:corner[1]+220,corner[2]:corner[2]+20]
 
         fname = f"/cis/home/tathey/projects/mouselight/sriram/ilastik_training/somez_training_{corner[0]}_{corner[1]}_{corner[2]}_.h5"
         with h5py.File(fname, "w") as f:
             dset = f.create_dataset("image_2channel", data=im)
+elif task == "stategen":
+    pass
 
 
