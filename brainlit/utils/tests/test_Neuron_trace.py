@@ -24,6 +24,8 @@ rounding_bad = "asdf"
 path_bad_string = "asdf"
 path_bad_nonstring = 3
 
+
+test_swc = NeuronTrace(swc_path, read_offset=True)
 test_swc = NeuronTrace(swc_path)
 test_s3 = NeuronTrace(url_seg, seg_id, mip)
 
@@ -247,6 +249,9 @@ def test_get_paths():
     # test if 'origin' is type numpy.ndarray, it must be shape (3,1)
     with pytest.raises(ValueError):
         test_swc.get_paths(spacing=np.asarray([0, 1, 2]), origin=np.asarray([0, 1]))
+
+    # Run with valid input
+    test_swc.get_paths(spacing=np.asarray([1,2,3]))
 
     # test if output is type numpy.ndarray
     for test_swc_path in test_swc.get_paths():
