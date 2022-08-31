@@ -251,7 +251,7 @@ def test_get_paths():
         test_swc.get_paths(spacing=np.asarray([0, 1, 2]), origin=np.asarray([0, 1]))
 
     # Run with valid input
-    test_swc.get_paths(spacing=np.asarray([1,2,3]))
+    test_swc.get_paths(spacing=np.asarray([1, 2, 3]))
 
     # test if output is type numpy.ndarray
     for test_swc_path in test_swc.get_paths():
