@@ -1,5 +1,8 @@
 import pytest
-from brainlit.algorithms.trace_analysis.fit_spline import GeometricGraph
+from brainlit.algorithms.trace_analysis.fit_spline import (
+    GeometricGraph,
+    compute_parameterization,
+)
 from brainlit.utils.Neuron_trace import NeuronTrace
 import networkx as nx
 from scipy.interpolate import splprep
@@ -138,6 +141,13 @@ def test_init_from_bad_df():
 ##################
 ### validation ###
 ##################
+
+
+def test_compute_parameterization():
+    positions = np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 0, 0]])
+    true_dists = np.array([0, 1, 2, 2 + np.sqrt(2)])
+
+    np.testing.assert_equal(true_dists, compute_parameterization(positions))
 
 
 def test_init_from_df():

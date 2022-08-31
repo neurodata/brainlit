@@ -171,6 +171,10 @@ def test_get_graph():
     with pytest.raises(ValueError):
         test_swc.get_graph(spacing=np.asarray([0, 1]))
 
+    # test if 'spacing' is type numpy.ndarray, it must not have zeros
+    with pytest.raises(ValueError):
+        test_swc.get_graph(spacing=np.asarray([0, 1, 2]))
+
     # test 'origin' arg must either be NoneType or numpy.ndarray
     with pytest.raises(TypeError):
         test_swc.get_graph(spacing=np.asarray([1, 2, 3]), origin="asdf")
