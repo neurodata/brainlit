@@ -143,9 +143,9 @@ class state_generation:
                         z2 = np.amin([z + chunk_size[3], image.shape[3]])
                         f = h5py.File(fname, "r")
                         pred = f.get("exported_data")
-                        pred = pred[:, :, :, 1]
+                        pred = np.squeeze(pred[1, :, :, :])
 
-                        probabilities[:, x:x2, y:y2, z:z2] = pred
+                        probabilities[x:x2, y:y2, z:z2] = pred
                     os.remove(fname)
 
         zarr.save(prob_fname, probabilities)
