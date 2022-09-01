@@ -114,4 +114,6 @@ elif task == "stategen":
             resolution=[0.5, 0.5, 3],
             parallel=4)
 
+    sg.predict(data_bin="/cis/home/tathey/projects/mouselight/sriram/temp/")
+
 
