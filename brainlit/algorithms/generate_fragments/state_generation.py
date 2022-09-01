@@ -40,9 +40,16 @@ class state_generation:
 
         self.image_path = image_path
         image = zarr.open(image_path, mode="r")
+        if len(image.shape) != 4:
+            raise ValueError(f"Image must be 4D (cxyz), rather than shape: {image.shape}")
+
         self.image_shape = image.shape
         self.ilastik_program_path = ilastik_program_path
         self.ilastik_project_path = ilastik_project_path
+
+        if len(chunk_size) != 4 or chunk_size[0] != self.image_shape[0]:
+            raise ValueError(f"Chunk size must include all channels and be 4D (cxyz), not {chunk_size}")
+
         self.chunk_size = chunk_size
         self.soma_coords = soma_coords
         self.resolution = resolution
@@ -74,6 +81,7 @@ class state_generation:
         image = zarr.open(self.image_path, mode="r")
         image_chunk = np.squeeze(
             image[
+                :,
                 corner1[0] : corner2[0],
                 corner1[1] : corner2[1],
                 corner1[2] : corner2[2],
@@ -101,7 +109,7 @@ class state_generation:
         """
         image = zarr.open(self.image_path, mode="r")
         probabilities = zarr.zeros(
-            np.squeeze(image.shape), chunks=image.chunks, dtype="float"
+            np.squeeze(image.shape[1:]), chunks=image.chunks[1:], dtype="float"
         )
         chunk_size = self.chunk_size
         items = self.image_path.split(".")
@@ -112,19 +120,19 @@ class state_generation:
         )
 
         for x in tqdm(
-            np.arange(0, image.shape[0], chunk_size[0]),
+            np.arange(0, image.shape[1], chunk_size[1]),
             desc="Computing Ilastik Predictions",
         ):
-            x2 = np.amin([x + chunk_size[0], image.shape[0]])
-            for y in tqdm(np.arange(0, image.shape[1], chunk_size[1]), leave=False):
-                y2 = np.amin([y + chunk_size[1], image.shape[1]])
+            x2 = np.amin([x + chunk_size[1], image.shape[1]])
+            for y in tqdm(np.arange(0, image.shape[2], chunk_size[2]), leave=False):
+                y2 = np.amin([y + chunk_size[2], image.shape[2]])
                 Parallel(n_jobs=self.parallel)(
                     delayed(self._predict_thread)(
                         [x, y, z],
-                        [x2, y2, np.amin([z + chunk_size[2], image.shape[2]])],
+                        [x2, y2, np.amin([z + chunk_size[3], image.shape[3]])],
                         data_bin,
                     )
-                    for z in np.arange(0, image.shape[2], chunk_size[2])
+                    for z in np.arange(0, image.shape[3], chunk_size[3])
                 )
 
                 for f in os.listdir(data_bin):
@@ -132,7 +140,7 @@ class state_generation:
                     if "Probabilities" in f:
                         items = f.split("_")
                         z = int(items[1])
-                        z2 = np.amin([z + chunk_size[2], image.shape[2]])
+                        z2 = np.amin([z + chunk_size[3], image.shape[3]])
                         f = h5py.File(fname, "r")
                         pred = f.get("exported_data")
                         pred = pred[:, :, :, 1]
