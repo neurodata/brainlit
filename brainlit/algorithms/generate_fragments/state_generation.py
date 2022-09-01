@@ -118,7 +118,7 @@ class state_generation:
         chunk_size = self.chunk_size
 
         print(
-            f"Constructing probability  image {prob_fname} of shape {probabilities.shape}"
+            f"Processing image of shape {image.shape} with chunks {image.chunks} into probability image {prob_fname} of shape {probabilities.shape}"
         )
 
         for x in tqdm(
@@ -148,7 +148,9 @@ class state_generation:
                         pred = np.squeeze(pred[1, :, :, :])
 
                         probabilities[x:x2, y:y2, z:z2] = pred
-                    os.remove(fname)
+                        
+                    if "image" in f:
+                        os.remove(fname)
 
         self.prob_path = prob_fname
 
