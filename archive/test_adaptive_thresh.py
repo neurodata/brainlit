@@ -1,5 +1,5 @@
 import pytest
-from brainlit.algorithms.generate_fragments.adaptive_thresh import (
+from brainlit.archive.generate_fragments.adaptive_thresh import (
     get_seed,
     get_img_T1,
     thres_from_gmm,

@@ -1,8 +1,11 @@
 import pytest
-from brainlit.algorithms.trace_analysis.fit_spline import GeometricGraph
+from brainlit.algorithms.trace_analysis.fit_spline import (
+    GeometricGraph,
+    compute_parameterization,
+)
 from brainlit.utils.Neuron_trace import NeuronTrace
 import networkx as nx
-from scipy.interpolate import splprep
+from scipy.interpolate import splprep, CubicHermiteSpline
 import numpy as np
 from pathlib import Path
 import pandas as pd
@@ -140,6 +143,13 @@ def test_init_from_bad_df():
 ##################
 
 
+def test_compute_parameterization():
+    positions = np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 0, 0]])
+    true_dists = np.array([0, 1, 2, 2 + np.sqrt(2)])
+
+    np.testing.assert_equal(true_dists, compute_parameterization(positions))
+
+
 def test_init_from_df():
     s3_trace = NeuronTrace(path=url_seg, seg_id=2, mip=0, rounding=False)
     df_s3 = s3_trace.get_df()
@@ -250,3 +260,24 @@ def test_spline():
     for n in range(0, len(tck_scipy), 1):
         np.testing.assert_array_equal(tck_scipy[n], tck_fit[n])
     np.testing.assert_array_equal(u_scipy, u_fit)
+
+
+def test_fit_chspline():
+    g = GeometricGraph(root=0)
+    # True curve is: (x^3,x^3+x^2,x^3+x^2+x)
+    g.add_node(0, u=0, loc=np.array([0, 0, 0]), deriv=[0, 0, 1])
+    g.add_node(1, u=1, loc=np.array([1, 2, 3]), deriv=[3, 5, 6])
+    g.add_edge(0, 1)
+
+    spline_tree = g.fit_spline_tree_invariant(spline_type=CubicHermiteSpline)
+
+    assert len(spline_tree.nodes) == 1
+
+    chspline = spline_tree.nodes[0]["spline"]
+
+    coeffs = np.zeros((4, 1, 3))  # coefficient order, segment number, dimension
+    coeffs[:, 0, 0] = [1, 0, 0, 0]
+    coeffs[:, 0, 1] = [1, 1, 0, 0]
+    coeffs[:, 0, 2] = [1, 1, 1, 0]
+
+    np.testing.assert_array_equal(coeffs, chspline.c)

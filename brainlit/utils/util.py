@@ -71,7 +71,7 @@ def check_size(input, allow_float=True, dim=3):
 def check_precomputed(input):
     check_type(input, str)
     prefix = input.split(":")[0]
-    if prefix not in ["file", "s3", "gc"]:
+    if prefix not in ["file", "s3", "gc", "precomputed"]:
         raise NotImplementedError("only file, s3, and gc prefixes supported")
 
 

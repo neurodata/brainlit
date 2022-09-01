@@ -1,10 +1,8 @@
 import numpy as np
 from skimage import draw
 import itertools
-from scipy.ndimage.morphology import distance_transform_edt
 from typing import Iterable, Optional, List, Tuple, Union
-from scipy.ndimage.morphology import distance_transform_edt
-from skimage import draw
+from scipy.ndimage import distance_transform_edt
 from brainlit.utils.util import check_type, check_size, check_iterable_type
 from tqdm import tqdm
 import cloudvolume
@@ -165,7 +163,6 @@ def tubes_seg(
     return labels
 
 
-# TOMMY REVIEW
 def tubes_from_paths(
     size: Tuple[int, int, int],
     paths: List[List[int]],
@@ -207,10 +204,7 @@ def tubes_from_paths(
                 coords[1] = np.concatenate((coords[1], line[1]))
                 coords[2] = np.concatenate((coords[2], line[2]))
 
-    try:
-        coords = (coords[0].astype(int), coords[1].astype(int), coords[2].astype(int))
-    except AttributeError:  # if a list was passed
-        coords = (coords[0], coords[1], coords[2])
+    coords = (coords[0].astype(int), coords[1].astype(int), coords[2].astype(int))
 
     if radius is not None:
         line_array = np.ones(size, dtype=int)
