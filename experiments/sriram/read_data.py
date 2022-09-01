@@ -7,6 +7,7 @@ from cloudvolume import CloudVolume
 import igneous.task_creation as tc
 from taskqueue import LocalTaskQueue
 import h5py
+from brainlit.algorithms.generate_fragments.state_generation import state_generation
 
 task = "stategen"
 
@@ -106,6 +107,11 @@ elif task == "saveilastik":
         with h5py.File(fname, "w") as f:
             dset = f.create_dataset("image_2channel", data=im)
 elif task == "stategen":
-    pass
+    sg = state_generation(image_path="/cis/home/tathey/projects/mouselight/sriram/somez.zarr",
+            ilastik_program_path=,
+            ilastik_project_path="/cis/home/tathey/projects/mouselight/sriram/ilastik_training/ilastik_somez/somez_neuron.ilp",
+            chunk_size=[2, 300, 300, 160],
+            resolution=[0.5, 0.5, 3],
+            parallel=4)
 
 
