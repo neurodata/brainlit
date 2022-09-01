@@ -163,11 +163,11 @@ def test_compute_derivs_diff():
     np.testing.assert_array_equal(true_derivs, derivs)
 
 
-def test_transform_GeometricGraph(init_crt, init_gg):
+def test_transform_geometricgraph(init_crt, init_gg):
     G = init_gg
     ct = init_crt
 
-    G = transform_GeometricGraph(G, ct)
+    G = transform_geometricgraph(G, ct)
     true_positions = np.array([[-1, -1, -1], [0, -1, -1], [0, 0, -1]])
     true_derivs = np.array([[1, 0, 0], [1 / np.sqrt(2), 1 / np.sqrt(2), 0], [0, 1, 0]])
 

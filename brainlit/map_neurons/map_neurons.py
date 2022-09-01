@@ -254,7 +254,9 @@ def compute_derivs(
 ) -> np.array:
     """Estimate derivatives of a sequence of points. Derivatives can be estimated in two ways:
     - For curves parameterized by scipy's spline API, spline estimation uses scipy's derivative computation
-    - For a sequence of points, the finite-difference method from Svndquist & Veronis 1970 for nonuniform intervals is used.
+    - For a sequence of points, we use the finite-difference method from:
+
+    Sundqvist, H., & Veronis, G. (1970). A simple finite‐difference grid with non‐constant intervals. Tellus, 22(1), 26-31.
 
     Args:
         us (np.array): Parameter values (in form returned by scipy.interpolate.splprep).
@@ -314,7 +316,7 @@ def compute_derivs(
     return derivs
 
 
-def transform_GeometricGraph(
+def transform_geometricgraph(
     G_transformed: GeometricGraph,
     Phi: DiffeomorphismAction,
     derivs: np.array = None,
