@@ -145,7 +145,7 @@ class state_generation:
                         pred = f.get("exported_data")
                         pred = pred[:, :, :, 1]
 
-                        probabilities[x:x2, y:y2, z:z2] = pred
+                        probabilities[:, x:x2, y:y2, z:z2] = pred
                     os.remove(fname)
 
         zarr.save(prob_fname, probabilities)
@@ -158,12 +158,12 @@ class state_generation:
 
         specifications = []
 
-        for x in np.arange(0, image.shape[0], chunk_size[0]):
-            x2 = np.amin([x + chunk_size[0], image.shape[0]])
-            for y in np.arange(0, image.shape[1], chunk_size[1]):
-                y2 = np.amin([y + chunk_size[1], image.shape[1]])
-                for z in np.arange(0, image.shape[2], chunk_size[2]):
-                    z2 = np.amin([z + chunk_size[2], image.shape[2]])
+        for x in np.arange(0, image.shape[1], chunk_size[1]):
+            x2 = np.amin([x + chunk_size[1], image.shape[1]])
+            for y in np.arange(0, image.shape[2], chunk_size[2]):
+                y2 = np.amin([y + chunk_size[2], image.shape[2]])
+                for z in np.arange(0, image.shape[3], chunk_size[3]):
+                    z2 = np.amin([z + chunk_size[3], image.shape[3]])
                     soma_coords_new = []
                     for soma_coord in soma_coords:
                         if (
