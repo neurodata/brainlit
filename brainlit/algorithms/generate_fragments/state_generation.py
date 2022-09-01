@@ -108,12 +108,14 @@ class state_generation:
             data_bin (str): path to directory to store intermediate files
         """
         image = zarr.open(self.image_path, mode="r")
-        probabilities = zarr.zeros(
-            np.squeeze(image.shape[1:]), chunks=image.chunks[1:], dtype="float"
-        )
-        chunk_size = self.chunk_size
         items = self.image_path.split(".")
         prob_fname = items[0] + "_probs.zarr"
+
+        probabilities = zarr.open(
+            prob_fname, mode='w',
+            shape = np.squeeze(image.shape[1:]), chunks=image.chunks[1:], dtype="float"
+        )
+        chunk_size = self.chunk_size
 
         print(
             f"Constructing probability  image {prob_fname} of shape {probabilities.shape}"
@@ -148,7 +150,6 @@ class state_generation:
                         probabilities[x:x2, y:y2, z:z2] = pred
                     os.remove(fname)
 
-        zarr.save(prob_fname, probabilities)
         self.prob_path = prob_fname
 
     def _get_frag_specifications(self) -> list:
