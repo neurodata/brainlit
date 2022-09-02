@@ -60,8 +60,11 @@ class state_generation:
         ):
             if other_im is not None:
                 other_image = zarr.open(other_im, mode="r")
-                if other_image.shape != self.image_shape:
-                    raise ValueError(f"{name} image has different shape than image")
+                if len(self.image_shape) == 3 and other_image.shape != self.image_shape:
+                    raise ValueError(f"{name} image has different shape {other_image.shape} than image {self.image_shape}")
+                elif len(self.image_shape) == 4 and other_image.shape != self.image_shape[1:]:
+                    raise ValueError(f"{name} image has different shape {other_image.shape} than image {self.image_shape}")
+
 
         self.prob_path = prob_path
         self.fragment_path = fragment_path
