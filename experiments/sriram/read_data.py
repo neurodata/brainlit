@@ -9,7 +9,7 @@ from taskqueue import LocalTaskQueue
 import h5py
 from brainlit.algorithms.generate_fragments.state_generation import state_generation
 
-task = "stategen"
+task = "fragng"
 
 if task == "writezarr":
     sz = [2, 6814, 8448, 316]
