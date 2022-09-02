@@ -110,10 +110,13 @@ elif task == "stategen":
     sg = state_generation(image_path="/cis/home/tathey/projects/mouselight/sriram/somez.zarr",
             ilastik_program_path="/cis/home/tathey/ilastik-1.3.3post3-Linux/run_ilastik.sh",
             ilastik_project_path="/cis/home/tathey/projects/mouselight/sriram/ilastik_training/ilastik_somez/somez_neuron-2.ilp",
+            prob_path="/cis/home/tathey/projects/mouselight/sriram/somez_probs.zarr",
             chunk_size=[2, 300, 300, 160],
             resolution=[0.5, 0.5, 3],
             parallel=4)
 
-    sg.predict(data_bin="/cis/home/tathey/projects/mouselight/sriram/temp/")
+    # sg.predict(data_bin="/cis/home/tathey/projects/mouselight/sriram/temp/")
+    sg.compute_frags()
+
 
 
