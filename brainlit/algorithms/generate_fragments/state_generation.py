@@ -261,11 +261,12 @@ class state_generation:
     def compute_frags(self) -> None:
         """Compute all fragments for image"""
         probs = zarr.open(self.prob_path, mode="r")
-        fragments = zarr.zeros(
-            np.squeeze(probs.shape), chunks=probs.chunks, dtype="uint16"
-        )
         items = self.image_path.split(".")
         frag_fname = items[0] + "_labels.zarr"
+        fragments = zarr.open(
+            frag_fname, mode='w',
+            shape = np.squeeze(probs.shape), chunks=probs.chunks, dtype="uint16"
+        )
 
         print(f"Constructing fragment image {frag_fname} of shape {fragments.shape}")
 
@@ -291,7 +292,6 @@ class state_generation:
                 corner1[2] : corner2[2],
             ] = labels
         print(f"*****************Number of components: {max_label}*******************")
-        zarr.save(frag_fname, fragments)
 
         self.fragment_path = frag_fname
 
