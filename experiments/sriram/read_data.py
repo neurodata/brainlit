@@ -118,5 +118,32 @@ elif task == "stategen":
     # sg.predict(data_bin="/cis/home/tathey/projects/mouselight/sriram/temp/")
     sg.compute_frags()
 
+elif task == "fragng":
+    outpath = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/fragments"
+    frags_path = "/cis/home/tathey/projects/mouselight/sriram/somez_labels.zarr"
+    frags = zarr.open(frags_path, "r")
+
+    info = CloudVolume.create_new_info(
+        num_channels    = 1,
+        layer_type      = 'segmentation',
+        data_type       = 'uint16', # Channel images might be 'uint8'
+        # raw, png, jpeg, compressed_segmentation, fpzip, kempressed, zfpc, compresso
+        encoding        = 'raw', 
+        resolution      = [500, 500, 3000], # Voxel scaling, units are in nanometers
+        voxel_offset    = [0, 0, 0], # x,y,z offset in voxels from the origin
+        # Pick a convenient size for your underlying chunk representation
+        # Powers of two are recommended, doesn't need to cover image exactly
+        chunk_size      = [ 128, 128, 1 ], # units are voxels
+        volume_size     = frags.shape, # e.g. a cubic millimeter dataset
+    )
+
+    print(f"Posting info: {info} to {outpath}")
+    vol = CloudVolume(outpath, info=info, compress = False)
+    vol.commit_info()
+
+    for z in tqdm(np.arange(frags.shape[-1]), desc="Saving slices..."):
+        vol[:,:,z] = frags[:,:,z]
+
+
 
 
