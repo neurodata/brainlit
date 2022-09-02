@@ -141,8 +141,10 @@ elif task == "fragng":
     vol = CloudVolume(outpath, info=info, compress = False)
     vol.commit_info()
 
-    for z in tqdm(np.arange(frags.shape[-1]), desc="Saving slices..."):
-        vol[:,:,z] = frags[:,:,z]
+    for z in tqdm(np.arange(frags.shape[-1]), desc="Writing fragments..."):
+        slice = frags[:,:,z]
+        slice = np.expand_dims(slice, axis=2)
+        vol[:,:,z] = slice
 
 
 
