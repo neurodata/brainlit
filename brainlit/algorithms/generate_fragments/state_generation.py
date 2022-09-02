@@ -148,7 +148,7 @@ class state_generation:
                         pred = np.squeeze(pred[1, :, :, :])
 
                         probabilities[x:x2, y:y2, z:z2] = pred
-                        
+
                     if "image" in f:
                         os.remove(fname)
 
@@ -257,9 +257,9 @@ class state_generation:
 
     def compute_frags(self) -> None:
         """Compute all fragments for image"""
-        image = zarr.open(self.image_path, mode="r")
+        probs = zarr.open(self.prob_path, mode="r")
         fragments = zarr.zeros(
-            np.squeeze(image.shape), chunks=image.chunks, dtype="uint16"
+            np.squeeze(probs.shape), chunks=probs.chunks, dtype="uint16"
         )
         items = self.image_path.split(".")
         frag_fname = items[0] + "_labels.zarr"
