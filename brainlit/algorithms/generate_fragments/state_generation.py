@@ -28,6 +28,7 @@ class state_generation:
         image_path: str,
         ilastik_program_path: str,
         ilastik_project_path: str,
+        fg_channel: int,
         chunk_size: List[float] = [375, 375, 125],
         soma_coords: List[list] = [],
         resolution: List[float] = [0.3, 0.3, 1],
@@ -43,6 +44,7 @@ class state_generation:
         if len(image.shape) != 4:
             raise ValueError(f"Image must be 4D (cxyz), rather than shape: {image.shape}")
 
+        self.fg_channel = fg_channel
         self.image_shape = image.shape
         self.ilastik_program_path = ilastik_program_path
         self.ilastik_project_path = ilastik_project_path
@@ -330,9 +332,9 @@ class state_generation:
         kde = self.kde
         image = zarr.open(self.image_path, mode="r")
 
-        image = image[
-            corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
-        ]
+        image = np.squeeze(image[
+            self.fg_channel, corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
+        ])
 
         vals = np.unique(image)
         scores_neg = -1 * kde.logpdf(vals)
@@ -358,8 +360,9 @@ class state_generation:
 
         print(f"Constructing tiered image {tiered_fname} of shape {tiered.shape}")
 
-        image_chunk = image[:300, :300, :300]
-        fragments_chunk = fragments[:300, :300, :300]
+        shp = np.array(image.shape / 2).astype(2)
+        image_chunk = np.squeeze(image[self.fg_channel, shp[1]:shp[1]+300, shp[2]:shp[2]+300, shp[3]:shp[3]+300])
+        fragments_chunk = fragments[shp[1]:shp[1]+300, shp[2]:shp[2]+300, shp[3]:shp[2]+300]
         data_fg = image_chunk[fragments_chunk > 0]
         if len(data_fg.flatten()) > 10000:
             data_sample = random.sample(list(data_fg), k=10000)
