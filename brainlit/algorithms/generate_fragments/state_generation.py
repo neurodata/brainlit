@@ -349,11 +349,13 @@ class state_generation:
         """Compute entire tiered image then reassemble and save as zarr"""
         image = zarr.open(self.image_path, mode="r")
         fragments = zarr.open(self.fragment_path, mode="r")
-        tiered = zarr.zeros(
-            np.squeeze(image.shape), chunks=image.chunks, dtype="uint16"
-        )
         items = self.image_path.split(".")
         tiered_fname = items[0] + "_tiered.zarr"
+        tiered = zarr.open(
+            tiered_fname, mode='w',
+            shape = np.squeeze(fragments.shape), chunks=fragments.chunks, dtype="uint16"
+        )
+
         print(f"Constructing tiered image {tiered_fname} of shape {tiered.shape}")
 
         image_chunk = image[:300, :300, :300]
@@ -386,7 +388,6 @@ class state_generation:
                 corner1[2] : corner2[2],
             ] = image_tiered
 
-        zarr.save(tiered_fname, tiered)
         self.tiered_path = tiered_fname
 
     def _compute_bounds(
