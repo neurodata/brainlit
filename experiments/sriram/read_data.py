@@ -9,7 +9,7 @@ from taskqueue import LocalTaskQueue
 import h5py
 from brainlit.algorithms.generate_fragments.state_generation import state_generation
 
-task = "fragng"
+task = "stategen"
 
 if task == "writezarr":
     sz = [2, 6814, 8448, 316]
@@ -116,7 +116,10 @@ elif task == "stategen":
             parallel=4)
 
     # sg.predict(data_bin="/cis/home/tathey/projects/mouselight/sriram/temp/")
-    sg.compute_frags()
+    #sg.compute_frags()
+    sg.compute_image_tiered()
+    sg.compute_soma_lbls()
+    sg.compute_states()
 
 elif task == "fragng":
     outpath = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/fragments"
