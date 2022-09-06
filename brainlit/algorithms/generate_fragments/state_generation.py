@@ -360,7 +360,7 @@ class state_generation:
 
         print(f"Constructing tiered image {tiered_fname} of shape {tiered.shape}")
 
-        shp = np.array(np.array(image.shape) / 2).astype(2)
+        shp = np.array(np.array(image.shape) / 2).astype(int)
         image_chunk = np.squeeze(image[self.fg_channel, shp[1]:shp[1]+300, shp[2]:shp[2]+300, shp[3]:shp[3]+300])
         fragments_chunk = fragments[shp[1]:shp[1]+300, shp[2]:shp[2]+300, shp[3]:shp[2]+300]
         data_fg = image_chunk[fragments_chunk > 0]
