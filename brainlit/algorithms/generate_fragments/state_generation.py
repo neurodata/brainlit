@@ -38,6 +38,27 @@ class state_generation:
         tiered_path: str = None,
         states_path: str = None,
     ) -> None:
+        """This class encapsulates the processing that turns an image into a set of fragments with endpoints etc. needed to perform viterbrain tracing.
+
+        Args:
+            image_path (str): Path to image zarr.
+            ilastik_program_path (str): Path to ilastik program.
+            ilastik_project_path (str): Path to ilastik project for segmentation of image.
+            fg_channel (int): Channel of image taken to be foreground.
+            chunk_size (List[float], optional): Chunk size too be used in parallel processing. Defaults to [375, 375, 125].
+            soma_coords (List[list], optional): List of coordinates of soma centers. Defaults to [].
+            resolution (List[float], optional): Resolution of image in microns. Defaults to [0.3, 0.3, 1].
+            parallel (int, optional): Number of threads to use for parallel processing. Defaults to 1.
+            prob_path (str, optional): Path to alrerady computed probability image (ilastik output). Defaults to None.
+            fragment_path (str, optional): Path to alrerady computed fragment image. Defaults to None.
+            tiered_path (str, optional): Path to alrerady computed tiered image. Defaults to None.
+            states_path (str, optional): Path to alrerady computed states file. Defaults to None.
+
+        Raises:
+            ValueError: Image must be four dimensional (cxyz)
+            ValueError: Chunks must include all channels and be 4D.
+            ValueError: Already computed images must match image in spatial dimensions.
+        """
 
         self.image_path = image_path
         image = zarr.open(image_path, mode="r")
@@ -62,9 +83,7 @@ class state_generation:
         ):
             if other_im is not None:
                 other_image = zarr.open(other_im, mode="r")
-                if len(self.image_shape) == 3 and other_image.shape != self.image_shape:
-                    raise ValueError(f"{name} image has different shape {other_image.shape} than image {self.image_shape}")
-                elif len(self.image_shape) == 4 and other_image.shape != self.image_shape[1:]:
+                if other_image.shape != self.image_shape[1:]:
                     raise ValueError(f"{name} image has different shape {other_image.shape} than image {self.image_shape}")
 
 

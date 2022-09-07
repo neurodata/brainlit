@@ -119,7 +119,7 @@ elif task == "stategen":
 
     # sg.predict(data_bin="/cis/home/tathey/projects/mouselight/sriram/temp/")
     #sg.compute_frags()
-    sg.compute_image_tiered()
+    #sg.compute_image_tiered()
     sg.compute_soma_lbls()
     sg.compute_states()
 
