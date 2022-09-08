@@ -51,7 +51,7 @@ class CloudReg_Transform(DiffeomorphismAction):
     Implements DiffeomorphismAction which is an interface to transform points and tangent vectors.
     """
 
-    def __init__(self, vpath: str, Apath: str):
+    def __init__(self, vpath: str, Apath: str, direction: str = "atlas"):
         """Compute transformation from CloudReg mat files
 
         Args:
@@ -69,7 +69,9 @@ class CloudReg_Transform(DiffeomorphismAction):
         self.A = A
         self.B = np.linalg.inv(A)
 
-        self._integrate()
+        self.direction = direction
+
+        self._integrate(direction = direction)
 
     def apply_affine(self, position: np.array) -> np.array:
         """Apply affine transformation in the transformation of positions in target space to atlas space.
@@ -89,7 +91,7 @@ class CloudReg_Transform(DiffeomorphismAction):
 
         return transformed_position
 
-    def _integrate(self, velocity_voxel_size: list = [100.0, 100.0, 100.0]):
+    def _integrate(self, velocity_voxel_size: list = [100.0, 100.0, 100.0], direction: str = "atlas"):
         """Integrate velocity field in order to compute diffeomorphsm mapping. Translated from https://github.com/neurodata/CloudReg/blob/master/cloudreg/registration/transform_points.m
         Integration is done in the direction to allow mapping from target to atlas space.
 
@@ -104,7 +106,8 @@ class CloudReg_Transform(DiffeomorphismAction):
         nT = vtx.shape[0]
         dt = 1 / nT
 
-        nxV = vtx.shape[1:]
+        nxV = [vtx.shape[2], vtx.shape[3], vtx.shape[1]]
+
         dxV = velocity_voxel_size
         xV = np.arange(0, nxV[0]) * dxV[0]
         yV = np.arange(0, nxV[1]) * dxV[1]
@@ -112,34 +115,53 @@ class CloudReg_Transform(DiffeomorphismAction):
         xV = xV - np.mean(xV)
         yV = yV - np.mean(yV)
         zV = zV - np.mean(zV)
-
         # *V variables represent a static grid
         [XV, YV, ZV] = np.meshgrid(xV, yV, zV, indexing="ij")
-        timesteps = np.arange(0, nT, 1)
-        indicator = -1
+        # reshape to match matlab
+        XV = np.swapaxes(XV, 0, 1)
+        YV = np.swapaxes(YV, 0, 1)
+        ZV = np.swapaxes(ZV, 0, 1)
+
+
+        if direction == "atlas":
+            timesteps = np.arange(0, nT, 1)
+            indicator = -1
+        elif direction == "target":
+            timesteps = np.arange(nT-1, -1, -1)
+            indicator = 1
+        else:
+            raise ValueError(f"direction argument must be atlas or target, not {direction}")
 
         # trans variables aggregates the cumulative displacement from the originial grid coordinates
         transx = XV
         transy = YV
         transz = ZV
 
-        for t in tqdm(timesteps, desc="integrating velocity field"):
+        vtx = np.swapaxes(vtx, 0, 3)
+        vtx = np.swapaxes(vtx, 1, 2)
+        vty = np.swapaxes(vty, 0, 3)
+        vty = np.swapaxes(vty, 1, 2)
+        vtz = np.swapaxes(vtz, 0, 3)
+        vtz = np.swapaxes(vtz, 1, 2)
+
+        for t in tqdm(timesteps, desc="integrating velocity field", disable=False):
             # Deform the static grid at a certain time point
-            Xs = XV + indicator * vtx[t, :, :, :] * dt
-            Ys = YV + indicator * vty[t, :, :, :] * dt
-            Zs = ZV + indicator * vtz[t, :, :, :] * dt
+            Xs = XV + indicator * vtx[:, :, :, t] * dt
+            Ys = YV + indicator * vty[:, :, :, t] * dt
+            Zs = ZV + indicator * vtz[:, :, :, t] * dt
             F = RegularGridInterpolator(
-                (xV, yV, zV),
+                (yV, xV, zV),
                 transx - XV,
                 method="linear",
                 bounds_error=False,
                 fill_value=None,
             )
-            XYZs = np.reshape(np.stack((Xs, Ys, Zs), axis=-1), newshape=(-1, 3))
+
+            XYZs = np.reshape(np.stack((Ys, Xs, Zs), axis=-1), newshape=(-1, 3))
             # Add the newest timestep of displacement (Xs) to the cumulative displacement
             transx = np.reshape(F(XYZs), Xs.shape) + Xs
             F = RegularGridInterpolator(
-                (xV, yV, zV),
+                (yV, xV, zV),
                 transy - YV,
                 method="linear",
                 bounds_error=False,
@@ -147,7 +169,7 @@ class CloudReg_Transform(DiffeomorphismAction):
             )
             transy = np.reshape(F(XYZs), Ys.shape) + Ys
             F = RegularGridInterpolator(
-                (xV, yV, zV),
+                (yV, xV, zV),
                 transz - ZV,
                 method="linear",
                 bounds_error=False,
@@ -155,29 +177,32 @@ class CloudReg_Transform(DiffeomorphismAction):
             )
             transz = np.reshape(F(XYZs), Zs.shape) + Zs
 
+
+
         Fx = RegularGridInterpolator(
-            (xV, yV, zV),
+            (yV, xV, zV),
             transx - XV,
             method="linear",
             bounds_error=False,
             fill_value=None,
         )
+
         Fy = RegularGridInterpolator(
-            (xV, yV, zV),
+            (yV, xV, zV),
             transy - YV,
             method="linear",
             bounds_error=False,
             fill_value=None,
         )
         Fz = RegularGridInterpolator(
-            (xV, yV, zV),
+            (yV, xV, zV),
             transz - ZV,
             method="linear",
             bounds_error=False,
             fill_value=None,
         )
 
-        self.og_coords = [XV, YV, ZV]
+        self.og_coords = [ZV, XV, YV]
         self.diffeomorphism = (Fx, Fy, Fz)
 
     def evaluate(self, position: np.array) -> np.array:
@@ -204,6 +229,35 @@ class CloudReg_Transform(DiffeomorphismAction):
 
         return transformed_position
 
+    def Jacobian(self, pos: np.array)-> np.array:
+        """Compute Jacobian of transformation at a given point.
+
+        Args:
+            pos (np.array): Coordinate in space.
+
+        Returns:
+            np.array: Jacobian at that coordinate
+        """
+        step = 1
+        Fx = self.diffeomorphism[0]
+        Fy = self.diffeomorphism[1]
+        Fz = self.diffeomorphism[2]
+
+        J = np.zeros((3, 3))
+        J[0, 0] = (Fx([pos[0] + step, pos[1], pos[2]]) + step - Fx(pos)) / step
+        J[0, 1] = (Fx([pos[0], pos[1] + step, pos[2]]) - Fx(pos)) / step
+        J[0, 2] = (Fx([pos[0], pos[1], pos[2] + step]) - Fx(pos)) / step
+
+        J[1, 0] = (Fy([pos[0] + step, pos[1], pos[2]]) - Fy(pos)) / step
+        J[1, 1] = (Fy([pos[0], pos[1] + step, pos[2]]) + step - Fy(pos)) / step
+        J[1, 2] = (Fy([pos[0], pos[1], pos[2] + step]) - Fy(pos)) / step
+
+        J[2, 0] = (Fz([pos[0] + step, pos[1], pos[2]]) - Fz(pos)) / step
+        J[2, 1] = (Fz([pos[0], pos[1] + step, pos[2]]) - Fz(pos)) / step
+        J[2, 2] = (Fz([pos[0], pos[1], pos[2] + step]) + step - Fz(pos)) / step
+
+        return J
+
     def D(self, position: np.array, deriv: np.array, order: int = 1) -> np.array:
         """Compute transformed derivatives of mapping at given positions. Only for the non-affine component.
 
@@ -229,18 +283,7 @@ class CloudReg_Transform(DiffeomorphismAction):
         transformed_deriv = deriv.copy()
         step = 1
         for i, (pos, d) in enumerate(zip(position, deriv)):
-            J = np.zeros((3, 3))
-            J[0, 0] = (Fx([pos[0] + step, pos[1], pos[2]]) + step - Fx(pos)) / step
-            J[0, 1] = (Fx([pos[0], pos[1] + step, pos[2]]) - Fx(pos)) / step
-            J[0, 2] = (Fx([pos[0], pos[1], pos[2] + step]) - Fx(pos)) / step
-
-            J[1, 0] = (Fy([pos[0] + step, pos[1], pos[2]]) - Fy(pos)) / step
-            J[1, 1] = (Fy([pos[0], pos[1] + step, pos[2]]) + step - Fy(pos)) / step
-            J[1, 2] = (Fy([pos[0], pos[1], pos[2] + step]) - Fy(pos)) / step
-
-            J[2, 0] = (Fz([pos[0] + step, pos[1], pos[2]]) - Fz(pos)) / step
-            J[2, 1] = (Fz([pos[0], pos[1] + step, pos[2]]) - Fz(pos)) / step
-            J[2, 2] = (Fz([pos[0], pos[1], pos[2] + step]) + step - Fz(pos)) / step
+            J = self.Jacobian(pos)
             transformed_deriv[i, :] = np.matmul(J, d).T
 
         return transformed_deriv
