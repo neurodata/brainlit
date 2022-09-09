@@ -571,7 +571,7 @@ class state_generation:
 
 
             if component == 3:
-                print(f"{np.argwhere(mask).shape} coords with bounds: {(rmin, rmax, cmin, cmax, zmin, zmax)}")
+                print(f"{np.argwhere(mask)[:5,:]} coords with bounds: {(rmin, rmax, cmin, cmax, zmin, zmax)}")
             # now in bounding box coordinates
             mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
 
