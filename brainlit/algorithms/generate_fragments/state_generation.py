@@ -566,6 +566,9 @@ class state_generation:
                 )
                 continue
 
+            if component == 3:
+                print(np.argwhere(mask))
+
             rmin, rmax, cmin, cmax, zmin, zmax = self._compute_bounds(mask, pad=1)
             # now in bounding box coordinates
             mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
