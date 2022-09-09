@@ -413,7 +413,7 @@ class state_generation:
         self.tiered_path = tiered_fname
 
     def _compute_bounds(
-        self, label: np.ndarray, pad: float, verbose = False
+        self, label: np.ndarray, pad: float,
     ) -> Tuple[int, int, int, int, int, int]:
         """compute coordinates of bounding box around a masked object, with given padding
 
@@ -431,12 +431,8 @@ class state_generation:
         c = np.any(label, axis=(0, 2))
         z = np.any(label, axis=(0, 1))
         rmin, rmax = np.where(r)[0][[0, -1]]
-        if verbose:
-            print(f"before {(rmin, rmax)}")
         rmin = np.amax((0, math.floor(rmin - pad / res[0])))
         rmax = np.amin((image_shape[0], math.ceil(rmax + pad/ res[0])+1))
-        if verbose:
-            print(f"after {(rmin, rmax)}")
         cmin, cmax = np.where(c)[0][[0, -1]]
         cmin = np.amax((0, math.floor(cmin - (pad) / res[1])))
         cmax = np.amin((image_shape[1], math.ceil(cmax + pad / res[1])+1))
@@ -570,22 +566,14 @@ class state_generation:
                 )
                 continue
 
-            if component == 3:
-                verbose = True
-            else:
-                verbose = False
 
-            rmin, rmax, cmin, cmax, zmin, zmax = self._compute_bounds(mask, pad=1, verbose=verbose)
+            rmin, rmax, cmin, cmax, zmin, zmax = self._compute_bounds(mask, pad=1)
 
 
-            if component == 3:
-                print(f"{np.argwhere(mask)[:5,:]} coords with bounds: {(rmin, rmax, cmin, cmax, zmin, zmax)}")
             # now in bounding box coordinates
             mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
 
 
-            if component == 3:
-                print(f"after crop: {np.argwhere(mask).shape}")
 
             skel = morphology.skeletonize_3d(mask)
 
@@ -593,8 +581,6 @@ class state_generation:
             coords_skel = np.argwhere(skel)
 
 
-            if component == 3:
-                print(f"after skeletonize: {coords_mask.shape} vs {coords_skel.shape}")
             if len(coords_skel) < 4:
                 coords = coords_mask
             else:
@@ -603,10 +589,7 @@ class state_generation:
             if alg == "pc":
                 endpoints_initial = self._pc_endpoints_from_coords_neighbors(coords)
             elif alg == "nb":
-                try:
-                    endpoints_initial = self._endpoints_from_coords_neighbors(coords)
-                except ValueError:
-                    raise ValueError(f"Component: {component} in corner {corner1}-{corner2} coords: {coords}")
+                endpoints_initial = self._endpoints_from_coords_neighbors(coords)
             endpoints = endpoints_initial.copy()
             used_eps = np.zeros((len(endpoints), 3)) - 1
             for i, endpoint in enumerate(endpoints_initial):
