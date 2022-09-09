@@ -582,7 +582,10 @@ class state_generation:
             if alg == "pc":
                 endpoints_initial = self._pc_endpoints_from_coords_neighbors(coords)
             elif alg == "nb":
-                endpoints_initial = self._endpoints_from_coords_neighbors(coords)
+                try:
+                    endpoints_initial = self._endpoints_from_coords_neighbors(coords)
+                except ValueError:
+                    raise ValueError(f"Component: {component} in corner {corner1}-{corner2} coords: {coords}")
             endpoints = endpoints_initial.copy()
             used_eps = np.zeros((len(endpoints), 3)) - 1
             for i, endpoint in enumerate(endpoints_initial):
