@@ -434,15 +434,15 @@ class state_generation:
         if verbose:
             print(f"before {(rmin, rmax)}")
         rmin = np.amax((0, math.floor(rmin - pad / res[0])))
-        rmax = np.amin((image_shape[0], math.ceil(rmax + (pad + 1) / res[0])))
+        rmax = np.amin((image_shape[0], math.ceil(rmax + pad/ res[0])+1))
         if verbose:
             print(f"after {(rmin, rmax)}")
         cmin, cmax = np.where(c)[0][[0, -1]]
         cmin = np.amax((0, math.floor(cmin - (pad) / res[1])))
-        cmax = np.amin((image_shape[1], math.ceil(cmax + (pad + 1) / res[1])))
+        cmax = np.amin((image_shape[1], math.ceil(cmax + pad / res[1])+1))
         zmin, zmax = np.where(z)[0][[0, -1]]
         zmin = np.amax((0, math.floor(zmin - (pad) / res[2])))
-        zmax = np.amin((image_shape[2], math.ceil(zmax + (pad + 1) / res[2])))
+        zmax = np.amin((image_shape[2], math.ceil(zmax + pad/ res[2])+1))
         return int(rmin), int(rmax), int(cmin), int(cmax), int(zmin), int(zmax)
 
     def _endpoints_from_coords_neighbors(self, coords: np.ndarray) -> List[list]:
