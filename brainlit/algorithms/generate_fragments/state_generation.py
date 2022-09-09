@@ -424,7 +424,7 @@ class state_generation:
         Returns:
             ints: integer coordinates of bounding box
         """
-        image_shape = self.image_shape
+        image_shape = label.shape
         res = self.resolution
 
         r = np.any(label, axis=(1, 2))
