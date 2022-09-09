@@ -575,10 +575,18 @@ class state_generation:
             # now in bounding box coordinates
             mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
 
+
+            if component == 3:
+                print(f"after crop: {np.argwhere(mask).shape}")
+
             skel = morphology.skeletonize_3d(mask)
 
             coords_mask = np.argwhere(mask)
             coords_skel = np.argwhere(skel)
+
+
+            if component == 3:
+                print(f"after skeletonize: {coords_mask.shape} vs {coords_skel.shape}")
             if len(coords_skel) < 4:
                 coords = coords_mask
             else:
