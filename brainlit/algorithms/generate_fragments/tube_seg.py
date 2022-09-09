@@ -1,9 +1,8 @@
 import numpy as np
 from skimage import draw
 import itertools
-from scipy.ndimage.morphology import distance_transform_edt
+from scipy.ndimage import distance_transform_edt
 from typing import Iterable, Optional, List, Tuple, Union
-from scipy.ndimage.morphology import distance_transform_edt
 from skimage import draw
 from brainlit.utils.util import check_type, check_size, check_iterable_type
 from tqdm import tqdm
