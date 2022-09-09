@@ -113,6 +113,7 @@ elif task == "stategen":
             fg_channel=0,
             prob_path="/cis/home/tathey/projects/mouselight/sriram/somez_probs.zarr",
             fragment_path="/cis/home/tathey/projects/mouselight/sriram/somez_labels.zarr",
+            tiered_path="/cis/home/tathey/projects/mouselight/sriram/somez_tiered.zarr",
             chunk_size=[2, 300, 300, 160],
             resolution=[0.5, 0.5, 3],
             parallel=4)
