@@ -125,6 +125,42 @@ def test_evaluate(init_crt):
     np.testing.assert_almost_equal(true_transformed_positions, transformed_positions)
 
 
+def test_Jacobian(init_crt):
+    """Jacobian of init_crt shoould be identity since it is just a shift
+    """
+    crt = init_crt
+    positions = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 1]])
+    true_Jacobian = np.eye(3)
+
+    for position in positions:
+        Jacobian = crt.Jacobian(position)
+        np.testing.assert_array_equal(true_Jacobian, Jacobian)
+
+def test_Jacobian_noonidentity(init_crt):
+    """Jacobian of dilation should be 2*Id
+    """
+    def Fx(pos):
+        return pos[0]
+    def Fy(pos):
+        return pos[1]
+    def Fz(pos):
+        return pos[2]
+
+    crt = init_crt
+    og_diffeo = crt.diffeomorphism
+    crt.diffeomorphism = (Fx, Fy, Fz)
+    positions = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 1]])
+    true_Jacobian = 2*np.eye(3)
+
+    for position in positions:
+        Jacobian = crt.Jacobian(position)
+        np.testing.assert_array_equal(true_Jacobian, Jacobian)
+
+    crt.diffeomorphism = og_diffeo
+
+
+
+
 def test_D(init_crt):
     crt = init_crt
     positions = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 1]])
