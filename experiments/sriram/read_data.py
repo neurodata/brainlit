@@ -114,6 +114,7 @@ elif task == "stategen":
             prob_path="/cis/home/tathey/projects/mouselight/sriram/somez_probs.zarr",
             fragment_path="/cis/home/tathey/projects/mouselight/sriram/somez_labels.zarr",
             tiered_path="/cis/home/tathey/projects/mouselight/sriram/somez_tiered.zarr",
+            states_path="/cis/home/tathey/projects/mouselight/sriram/somez_nx.pickle",
             chunk_size=[2, 300, 300, 160],
             resolution=[0.5, 0.5, 3],
             parallel=4)
@@ -121,8 +122,9 @@ elif task == "stategen":
     # sg.predict(data_bin="/cis/home/tathey/projects/mouselight/sriram/temp/")
     #sg.compute_frags()
     #sg.compute_image_tiered()
-    sg.compute_soma_lbls()
-    sg.compute_states()
+    # sg.compute_soma_lbls()
+    # sg.compute_states()
+    sg.compute_edge_weights()
 
 elif task == "fragng":
     outpath = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/fragments"
