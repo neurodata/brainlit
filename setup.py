@@ -30,6 +30,9 @@ REQUIRED_PACKAGES = [
     "zarr>=2.10.2",
     "h5py>=3.3.0",
     "pcurvepy @ git+https://git@github.com/CaseyWeiner/pcurvepy@master#egg=pcurvepy",
+    "similaritymeasures>=0.4.4",
+    "statannotations>=0.4.4",
+    "statannot>=0.2.3"
 ]
 
 # Find savanna version.
