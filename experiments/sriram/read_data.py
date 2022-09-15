@@ -1,5 +1,6 @@
 import aicspylibczi
 from skimage import io
+from skimage.transform import resize
 import numpy as np
 import zarr
 from tqdm import tqdm
@@ -9,27 +10,36 @@ from taskqueue import LocalTaskQueue
 import h5py
 from brainlit.algorithms.generate_fragments.state_generation import state_generation
 
-task = "stategen"
+task = "writezarr"
 
 if task == "writezarr":
-    sz = [2, 6814, 8448, 316]
+    sz = np.array([2, 6814, 8448, 316], dtype='int')
 
     path = '/cis/project/sriram/Sriram/SS IUE 175 SNOVA RFP single channel AdipoClear Brain 3 ipsilateral small z two colour Image1.czi'
     czi = aicspylibczi.CziFile(path)
 
     print(f"Creating array of shape {sz} from czi file of shape {czi.get_dims_shape()}")
 
-    zarra = zarr.zeros(sz, chunks=(2,100,100,40), dtype='uint16')
-    num_slices = czi.get_dims_shape()[0]['Z'][1]
+    root = zarr.open_group("/cis/home/tathey/projects/mouselight/sriram/somez_hier.zarr", mode='a')
+    
+    for i in range(3):
+        sz_cur = sz/(i+1)
+        z_tier = root.create_dataset(str(i), shape=sz_cur, chunks = (2,600,600,1), dtype='uint16')
+
+        num_slices = czi.get_dims_shape()[0]['Z'][1]
 
 
-    for z in tqdm(np.arange(num_slices), desc="Saving slices..."):
-        zarra[0,:,:,z] = np.squeeze(czi.read_mosaic(C=0, Z=z, scale_factor=1))
-        zarra[1,:,:,z] = np.squeeze(czi.read_mosaic(C=1, Z=z, scale_factor=1))
+        for z in tqdm(np.arange(num_slices), desc="Saving slices on highest res..."):
+            ch0 = np.squeeze(czi.read_mosaic(C=0, Z=z, scale_factor=1))
+            ch1 = np.squeeze(czi.read_mosaic(C=1, Z=z, scale_factor=1))
 
+            if i > 0:
+                ch0 = resize(ch0, sz_cur, anti_aliasing=True)
+                ch1 = resize(ch1, sz_cur, anti_aliasing=True)
 
-    outpath = "/cis/home/tathey/projects/mouselight/sriram/"
-    zarr.save(outpath + "somez.zarr", zarra)
+            z_tier[0,:,:,z] = ch0
+            z_tier[1,:,:,z] = ch1
+
 elif task == "writeng":
     outpath_prefix = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/"
 
