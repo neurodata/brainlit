@@ -454,7 +454,7 @@ def remove_somas(
         # soma component is all the voxels of that component within 12 microns of the soma point
         dist = np.ones_like(image_iterative)
         dist[soma_pt[0], soma_pt[1], soma_pt[2]] = 0
-        dt = ndi.morphology.distance_transform_edt(dist, sampling=[0.3, 0.3, 1])
+        dt = ndi.distance_transform_edt(dist, sampling=[0.3, 0.3, 1])
         sphere = dt < 15
         new_soma_mask = np.logical_and(soma_mask, sphere)
 

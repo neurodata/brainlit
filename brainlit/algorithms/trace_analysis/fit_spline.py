@@ -1,7 +1,7 @@
 from typing import Tuple
 import numpy as np
+from scipy.interpolate import splprep, splev, BSpline, CubicHermiteSpline
 import pandas as pd
-from scipy.interpolate import splprep
 import math
 import warnings
 import networkx as nx
@@ -13,6 +13,24 @@ from brainlit.utils.util import (
     check_iterable_type,
     check_iterable_nonnegative,
 )
+from typing import Union, List
+
+
+def compute_parameterization(positions: np.array) -> np.array:
+    """Computes list of parameter values to be used for a list of positions using piecewise linear arclength.
+
+    Parameters
+    ----------
+    positions : np.array
+        nxd array containing coordinates of the n points in d dimentional space.
+    Returns
+    -------
+    TotalDist : np.array
+        n array containing parameter values, first element is 0.
+    """
+    NodeDist = np.linalg.norm(np.diff(positions, axis=0), axis=1)
+    TotalDist = np.concatenate(([0], np.cumsum(NodeDist)))
+    return TotalDist
 
 
 """
@@ -28,11 +46,13 @@ class GeometricGraph(nx.Graph):
     It extends `nx.Graph` and rejects duplicate node input.
     """
 
-    def __init__(self, df: pd.DataFrame = None) -> None:
+    def __init__(self, df: pd.DataFrame = None, root=1) -> None:
         super(GeometricGraph, self).__init__()
         self.segments = None
         self.cycle = None
-        self.root = 1
+        self.root = root
+        self.spline_type = None
+        self.spline_tree = None
         if df is not None:
             self.__init_from_df(df)
 
@@ -76,8 +96,13 @@ class GeometricGraph(nx.Graph):
             if parent > min(df_neuron["parent"]):
                 self.add_edge(parent, child)
 
-    def fit_spline_tree_invariant(self) -> nx.DiGraph:
+    def fit_spline_tree_invariant(
+        self, spline_type: Union[BSpline, CubicHermiteSpline] = BSpline, k=3
+    ):
         r"""Construct a spline tree based on the path lengths.
+
+        Arguments:
+            spline_type: BSpline or CubicHermiteSpline, spline type that will be fit to the data. BSplines are typically used to fit position data only, and CubicHermiteSplines can only be used if derivative, and independent variable information is also known.
 
         Raises:
             ValueError: check if every node is unigue in location
@@ -120,6 +145,7 @@ class GeometricGraph(nx.Graph):
         if not nx.algorithms.tree.recognition.is_tree(self):
             raise ValueError("the graph contains disconnected segments")
 
+        # Identify paths
         spline_tree = nx.DiGraph()
         curr_spline_num = 0
         stack = []
@@ -150,20 +176,33 @@ class GeometricGraph(nx.Graph):
             for tree in collateral_branches:
                 stack.append((tree, curr_spline_num))
 
+        # Fit splines
+        self.spline_type = spline_type
+
         for node in spline_tree.nodes:
             main_branch = spline_tree.nodes[node]["path"]
 
-            spline_tree.nodes[node]["spline"] = self.__fit_spline_path(main_branch)
+            if spline_type == BSpline:  # each node must have "loc" attribute
+                spline_tree.nodes[node]["spline"] = self.__fit_bspline_path(
+                    main_branch, k=k
+                )
+            elif (
+                spline_type == CubicHermiteSpline
+            ):  # each node must have "u," "loc," and "deriv" attributes
+                spline_tree.nodes[node]["spline"] = self.__fit_chspline_path(
+                    main_branch
+                )
 
+        self.spline_tree = spline_tree
         return spline_tree
 
-    def __fit_spline_path(self, path: list) -> Tuple[tuple, list]:
+    def __fit_bspline_path(self, path, k):
         r"""Fit a B-Spline to a path.
 
         Compute the knots, coefficients, and the degree of the
         B-Spline fitting the path
 
-        Argumets:
+        Arguments:
             path: list, a list of nodes.
 
         Raises:
@@ -181,19 +220,40 @@ class GeometricGraph(nx.Graph):
         for row, node in enumerate(path):
             x[row, :] = self.nodes[node]["loc"]
         path_length = x.shape[0]
-        NodeDist = np.linalg.norm(np.diff(x, axis=0), axis=1)
-        TotalDist = np.concatenate(([0], np.cumsum(NodeDist)))
-        if path_length != 5:
-            k = np.amin([path_length - 1, 5])
-        else:
-            k = 3
+        TotalDist = compute_parameterization(x)
+        # old
+        # if path_length != 5:
+        #     k = np.amin([path_length - 1, 5])
+        # else:
+        #     k = 3
+        k = np.amin([k, path_length - 1])  # change
         tck, u = splprep([x[:, 0], x[:, 1], x[:, 2]], s=0, u=TotalDist, k=k)
 
         return tck, u
 
-    def __find_main_branch(
-        self, tree: nx.DiGraph, starting_length: float = 0
-    ) -> Tuple[list, list]:
+    def __fit_chspline_path(self, path: List):
+        """Fit cubic hermite spline to path of nodes that has independent variable (u), position (loc) and derivative (deriv) attributes.
+
+        Args:
+            path (List): sequence of nodes to which the spline will be fit.
+
+        Returns:
+            CubicHermiteSpline: spline that fits the nodes in path.
+        """
+        x = np.zeros((len(path)))
+        y = np.zeros((len(path), 3))
+        dy = np.zeros((len(path), 3))
+
+        for row, node in enumerate(path):
+            x[row] = self.nodes[node]["u"]
+            y[row, :] = self.nodes[node]["loc"]
+            dy[row, :] = self.nodes[node]["deriv"]
+
+        chspline = CubicHermiteSpline(x, y, dy)
+
+        return chspline
+
+    def __find_main_branch(self, tree: nx.DiGraph, starting_length: float = 0):
         r"""Find the main branch in a directed graph.
 
         It is used in `fit_spline_tree_invariant` to identify the main branch
