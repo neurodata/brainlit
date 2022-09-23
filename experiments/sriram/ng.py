@@ -21,8 +21,11 @@ neuroglancer.cli.handle_server_arguments(args)
 
 viewer = neuroglancer.Viewer()
 with viewer.txn() as s:
-    s.layers['ara'] = neuroglancer.SegmentationLayer(
-        source='precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017',
+    s.layers['image'] = neuroglancer.ImageLayer(
+        source='precomputed://http://127.0.0.1:9010/im',
+    )
+    s.layers['fragments'] = neuroglancer.SegmentationLayer(
+        source='precomputed://http://127.0.0.1:9010/frags',
     )
 
 def s_select(s):
@@ -78,6 +81,11 @@ def s_select(s):
             ),
         )
     print('  Selected fragment: %s' % (s.selected_values, ))
+
+def t_trace(s):
+    with viewer.txn() as vs: #trace
+        layer_names = [l.name for l in vs.layers]
+
 
 viewer.actions.add('s_select', s_select)
 with viewer.config_state.txn() as s:
