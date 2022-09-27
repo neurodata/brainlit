@@ -15,11 +15,18 @@ from cloudvolume import CloudVolume
 from skimage import io
 from skimage.transform import rescale
 import scipy.ndimage as ndi
+from bg_atlasapi.bg_atlas import BrainGlobeAtlas
 
 print(f"[{orange}]Running example: {Path(__file__).name}")
 
 
 scene = Scene(atlas_name="allen_mouse_50um",title="Output Axons")
+atlas = BrainGlobeAtlas("allen_mouse_50um")
+atlas_mask = atlas.annotation
+atlas_mask = rescale(atlas_mask, 5/2)
+atlas_mask = atlas_mask > 0
+print(f"Atlas mask shape: {atlas_mask.shape}")
+
 dr = scene.add_brain_region("DR", alpha=0.15)
 
 
@@ -30,7 +37,7 @@ vols_gad_paths = []
 vols_transformed_vglut = [CloudVolume(brain2paths[id]["transformed_mask"]) for id in type2id["tph2 vglut3"]]
 
 for vols, color in zip([vols_transformed_gad, vols_transformed_vglut], ["Reds", "Greens"]):
-    if color != "Greens":
+    if color != "Reds":
         continue
     for i, vol in enumerate(tqdm(vols)):
         path = f"/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/npy-files/{color}-{i}.tif"
@@ -47,6 +54,7 @@ for vols, color in zip([vols_transformed_gad, vols_transformed_vglut], ["Reds", 
     im_total = rescale(im_total, 0.5)
     # im_total = im_total > 0.25
     #im_total = ndi.binary_opening(im_total, iterations=1)
+    im_total[atlas_mask == 0] = 0
     im_total = np.swapaxes(im_total, 0, 2)
 
     print(im_total.shape)
