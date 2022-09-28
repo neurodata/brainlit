@@ -17,6 +17,9 @@ from skimage.transform import rescale
 import scipy.ndimage as ndi
 from bg_atlasapi.bg_atlas import BrainGlobeAtlas
 
+from skimage.measure import label, regionprops
+from skimage.morphology import remove_small_objects
+
 print(f"[{orange}]Running example: {Path(__file__).name}")
 
 
@@ -39,7 +42,7 @@ vols_transformed_vglut = [CloudVolume(brain2paths[id]["transformed_mask"]) for i
 for vols, color in zip([vols_transformed_gad, vols_transformed_vglut], ["Reds", "Greens"]):
     if color != "Reds":
         continue
-    for i, vol in enumerate(tqdm(vols)):
+    for i, vol in enumerate(tqdm(vols, desc="Processing volumes...")):
         path = f"/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/npy-files/{color}-{i}.tif"
         if i == 0:
             im_total = np.zeros(vol.shape)
@@ -51,10 +54,15 @@ for vols, color in zip([vols_transformed_gad, vols_transformed_vglut], ["Reds", 
 
     im_total *= 2/3
     im_total = np.squeeze(im_total)
+
+    # Process
+    # Remove small components
+    small_comp_mask = remove_small_objects(im_total>0, 400)
+    im_total[small_comp_mask == False] = 0
+
     im_total = rescale(im_total, 0.5)
-    # im_total = im_total > 0.25
-    #im_total = ndi.binary_opening(im_total, iterations=1)
     im_total[atlas_mask == 0] = 0
+
     im_total = np.swapaxes(im_total, 0, 2)
 
     print(im_total.shape)
