@@ -40,7 +40,7 @@ vols_gad_paths = []
 vols_transformed_vglut = [CloudVolume(brain2paths[id]["transformed_mask"]) for id in type2id["tph2 vglut3"]]
 
 for vols, color in zip([vols_transformed_gad, vols_transformed_vglut], ["Reds", "Greens"]):
-    if color != "Reds":
+    if color != "Greens":
         continue
     for i, vol in enumerate(tqdm(vols, desc="Processing volumes...")):
         path = f"/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/npy-files/{color}-{i}.tif"
@@ -57,7 +57,7 @@ for vols, color in zip([vols_transformed_gad, vols_transformed_vglut], ["Reds", 
 
     # Process
     # Remove small components
-    small_comp_mask = remove_small_objects(im_total>0, 400)
+    small_comp_mask = remove_small_objects(im_total>0,200)
     im_total[small_comp_mask == False] = 0
 
     im_total = rescale(im_total, 0.5)
