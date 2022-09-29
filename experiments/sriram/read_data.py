@@ -18,27 +18,31 @@ if task == "writezarr":
     path = '/cis/project/sriram/Sriram/SS IUE 175 SNOVA RFP single channel AdipoClear Brain 3 ipsilateral small z two colour Image1.czi'
     czi = aicspylibczi.CziFile(path)
 
-    print(f"Creating array of shape {sz} from czi file of shape {czi.get_dims_shape()}")
 
     root = zarr.open_group("/cis/home/tathey/projects/mouselight/sriram/somez_hier.zarr", mode='a')
     
-    for i in range(3):
-        sz_cur = sz/(i+1)
+    for i in range(1,3):
+
+        sz_cur = [int(s/(2**(i))) for s in sz]
+        sz_cur[0] = sz[0]
+        sz_cur[-1] = sz[-1]
+
+        print(f"Level {i}: Creating array of shape {sz_cur} from czi file of shape {czi.get_dims_shape()}")
+
         z_tier = root.create_dataset(str(i), shape=sz_cur, chunks = (2,600,600,1), dtype='uint16')
 
         num_slices = czi.get_dims_shape()[0]['Z'][1]
 
 
-        for z in tqdm(np.arange(num_slices), desc="Saving slices on highest res..."):
+        for z in tqdm(np.arange(num_slices), desc=f"Saving slices on res {i}..."):
             ch0 = np.squeeze(czi.read_mosaic(C=0, Z=z, scale_factor=1))
             ch1 = np.squeeze(czi.read_mosaic(C=1, Z=z, scale_factor=1))
 
             if i > 0:
-                ch0 = resize(ch0, sz_cur, anti_aliasing=True)
-                ch1 = resize(ch1, sz_cur, anti_aliasing=True)
-
-            z_tier[0,:,:,z] = ch0
-            z_tier[1,:,:,z] = ch1
+                ch0 = resize(ch0, sz_cur[1:3], anti_aliasing=True, preserve_range=True)
+                ch1 = resize(ch1, sz_cur[1:3], anti_aliasing=True, preserve_range=True)
+            z_tier[0,:,:,z] = ch0.astype('uint16')
+            z_tier[1,:,:,z] = ch1.astype('uint16')
 
 elif task == "writeng":
     outpath_prefix = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/"
