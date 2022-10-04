@@ -12,8 +12,8 @@ import os
 import igneous.task_creation as tc
 from taskqueue import LocalTaskQueue
 
-dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_03_28/8649/"
-threshold = 0.3
+dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_09_20/887/"
+threshold = 0.72
 
 chunk_size = [256, 256, 300]
 
@@ -73,7 +73,7 @@ def process_chunk(c1, c2, data_dir, threshold, dir_base):
         [
             "/home/tathey1/ilastik-1.3.3post3-Linux/run_ilastik.sh",
             "--headless",
-            "--project=/data/tathey1/matt_wright/ilastik/model1/brain3/matt_benchmark_formal_brain3.ilp",
+            "--project=/data/tathey1/matt_wright/ilastik/model1/brain3/axoon_segmentation.ilp",
             fname,
         ],
         stdout=subprocess.PIPE,
