@@ -73,7 +73,7 @@ def process_chunk(c1, c2, data_dir, threshold, dir_base):
         [
             "/home/tathey1/ilastik-1.3.3post3-Linux/run_ilastik.sh",
             "--headless",
-            "--project=/data/tathey1/matt_wright/ilastik/model1/brain3/axon_segmentation.ilp",
+            "--project=/data/tathey1/matt_wright/ilastik/model1/axon_segmentation.ilp",
             fname,
         ],
         stdout=subprocess.PIPE,
