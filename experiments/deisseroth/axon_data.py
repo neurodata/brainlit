@@ -105,6 +105,16 @@ brain2paths = {
             "layer": "val",
         },
     },
+    "887": {
+        "ab": "precomputed://https://dlab-colm.neurodata.io/2022_09_20/887/Ch_647_iso",
+        "bg": "precomputed://https://dlab-colm.neurodata.io/2022_09_20/887/Ch_561_iso",
+        "endo": "precomputed://https://dlab-colm.neurodata.io/2022_09_20/887/Ch_488_iso",
+        "mask": "precomputed://https://dlab-colm.neurodata.io/2022_09_20/887/axon_mask",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=IT2xHZOVkSriTA",
+            "layer": "val",
+        },
+    },
 }
 
 
