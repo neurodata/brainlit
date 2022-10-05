@@ -38,7 +38,7 @@ class CubicHermiteChain(PPoly):
         if extrapolate is None:
             extrapolate = True
 
-        x, dx, y, axis, dydx = prepare_input(x, y, axis=0)
+        x, dx, y, axis, _ = prepare_input(x, y, axis=0)
 
         if not np.array_equal(left_dydx.shape, right_dydx.shape):
             raise ValueError(f"Left derivatives shape {left_dydx.shape} must be equal to right derivatives shape {right_dydx.shape}")

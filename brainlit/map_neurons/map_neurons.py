@@ -2,6 +2,7 @@ from logging import root
 from brainlit.algorithms.trace_analysis.fit_spline import (
     GeometricGraph,
     compute_parameterization,
+    CubicHermiteChain
 )
 import typing
 import numpy as np
@@ -320,6 +321,7 @@ def compute_derivs(
                 f"When using spline method, positions should be None and tck should not"
             )
         derivs = np.array(splev(us, tck, der=1)).T
+        return derivs
     elif deriv_method == "difference":
         if tck is not None or positions is None:
             raise ValueError(
@@ -353,15 +355,26 @@ def compute_derivs(
             )
         norms = np.linalg.norm(diffs, axis=1)
         derivs = np.divide(diffs, np.array([norms]).T)
+        return derivs
+    elif deriv_method == "two-sided":
+        f_im1 = positions[:-1, :]
+        f_i = positions[1:, :]
+        left_derivs = f_i - f_im1
+        norms = np.linalg.norm(left_derivs, axis=1)
+        left_derivs = np.divide(left_derivs, np.array([norms]).T)
+        right_derivs = f_i - f_im1
+        norms = np.linalg.norm(right_derivs, axis=1)
+        right_derivs = np.divide(right_derivs, np.array([norms]).T)
+        return left_derivs, right_derivs
     else:
         raise ValueError(f"Invalid deriv_method argument: {deriv_method}")
 
-    return derivs
 
 
 def transform_geometricgraph(
     G_transformed: GeometricGraph,
     Phi: DiffeomorphismAction,
+    deriv_method: str,
     derivs: np.array = None,
 ) -> GeometricGraph:
     """Apply a diffeomorphism to a GeometricGraph object.
@@ -395,31 +408,74 @@ def transform_geometricgraph(
     # process in reverse dfs order to ensure parents are processed after
     reverse_dfs = list(reversed(list(nx.topological_sort(spline_tree))))
 
-    for node_n, node in enumerate(reverse_dfs):
-        path = spline_tree.nodes[node]["path"]
-        tck, us = spline_tree.nodes[node]["spline"]
-        positions = np.array(splev(us, tck, der=0)).T
-        if derivs is None or node_n > 0:
-            derivs = compute_derivs(
-                us=us, positions=positions, deriv_method="difference"
+    if deriv_method in ["spline", "difference"]:
+        for node_n, node in enumerate(reverse_dfs):
+            path = spline_tree.nodes[node]["path"]
+            tck, us = spline_tree.nodes[node]["spline"]
+            positions = np.array(splev(us, tck, der=0)).T
+            if derivs is None or node_n > 0:
+                derivs = compute_derivs(
+                    us=us, positions=positions, deriv_method=deriv_method
+                )
+
+            transformed_positions = Phi.evaluate(positions)
+            transformed_us = compute_parameterization(transformed_positions)
+            transformed_derivs = Phi.D(positions, derivs, order=1)
+            norms = np.linalg.norm(transformed_derivs, axis=1)
+            transformed_derivs = np.divide(transformed_derivs, np.array([norms]).T)
+
+            chspline = CubicHermiteSpline(
+                transformed_us, transformed_positions, transformed_derivs
             )
 
-        transformed_positions = Phi.evaluate(positions)
-        transformed_us = compute_parameterization(transformed_positions)
-        transformed_derivs = Phi.D(positions, derivs, order=1)
-        norms = np.linalg.norm(transformed_derivs, axis=1)
-        transformed_derivs = np.divide(transformed_derivs, np.array([norms]).T)
+            spline_tree.nodes[node]["spline"] = chspline, transformed_us
 
-        chspline = CubicHermiteSpline(
-            transformed_us, transformed_positions, transformed_derivs
-        )
+            for trace_node, position, deriv in zip(
+                path, transformed_positions, transformed_derivs
+            ):
+                G_transformed.nodes[trace_node]["loc"] = position
+                G_transformed.nodes[trace_node]["deriv"] = deriv
+    elif deriv_method == "two-sided":
+        for node_n, node in enumerate(reverse_dfs):
+            path = spline_tree.nodes[node]["path"]
+            tck, us = spline_tree.nodes[node]["spline"]
+            positions = np.array(splev(us, tck, der=0)).T
 
-        spline_tree.nodes[node]["spline"] = chspline, transformed_us
+            # here, left derivs are the derivatives on the left side of the segment (i.e. the right derivative of the point on the left)
+            if derivs is None:
+                left_derivs, right_derivs = compute_derivs(
+                    us=us, positions=positions, deriv_method=deriv_method
+                )
+            else: 
+                left_derivs = derivs[0]
+                right_derivs = derivs[1]
 
-        for trace_node, position, deriv in zip(
-            path, transformed_positions, transformed_derivs
-        ):
-            G_transformed.nodes[trace_node]["loc"] = position
-            G_transformed.nodes[trace_node]["deriv"] = deriv
+            transformed_positions = Phi.evaluate(positions)
+            transformed_us = compute_parameterization(transformed_positions)
+
+            transformed_left_derivs = Phi.D(positions[:-1,:], left_derivs, order=1)
+            norms = np.linalg.norm(transformed_left_derivs, axis=1)
+            transformed_left_derivs = np.divide(transformed_left_derivs, np.array([norms]).T)
+
+            transformed_right_derivs = Phi.D(positions[1:,:], right_derivs, order=1)
+            norms = np.linalg.norm(transformed_right_derivs, axis=1)
+            transformed_right_derivs = np.divide(transformed_right_derivs, np.array([norms]).T)
+
+            chspline = CubicHermiteChain(
+                transformed_us, transformed_positions, transformed_left_derivs, transformed_right_derivs
+            )
+
+            spline_tree.nodes[node]["spline"] = chspline, transformed_us
+
+            for i, (trace_node, position) in enumerate(zip(
+                path, transformed_positions
+            )):
+                G_transformed.nodes[trace_node]["loc"] = position
+                # here, left deriv is the left side derivative
+                if i > 0:
+                    G_transformed.nodes[trace_node]["left_deriv"] = transformed_right_derivs[i-1,:]
+                if i < len(path)-1:
+                    G_transformed.nodes[trace_node]["right_deriv"] = transformed_left_derivs[i,:]
+
 
     return G_transformed

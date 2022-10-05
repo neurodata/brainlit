@@ -56,7 +56,7 @@ av_sample_distances = []
 
 spacing = 2
 inter = -1
-ds_factor = 2
+ds_factor = 1
 
 print(
     f"Processing neurons starting with {inter} with a spacing {spacing} and downsampling factor {ds_factor}"
@@ -128,14 +128,12 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
         path = spline_tree_branch.nodes[0]["path"]
         tck, us = spline_tree_branch.nodes[0]["spline"]
         positions = np.array(splev(us, tck, der=0)).T
-        derivs = compute_derivs(us, tck, positions)
 
         G_branch_ds = deepcopy(G_branch)
         G_branch_ds.remove_nodes_from(nodes2remove)
         G_branch_ds.remove_edges_from(list(G_branch.edges))
         for node1, node2 in zip(nodes2keep[:-1], nodes2keep[1:]):
             G_branch_ds.add_edge(node1, node2)
-        derivs = np.delete(derivs, nodes2remove, 0)
         G_branch_ds.fit_spline_tree_invariant(k=1)
         spline_tree_branch_ds = G_branch_ds.spline_tree
 
@@ -144,7 +142,7 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
         G_branch_ds_transformed = deepcopy(G_branch_ds)
         # G_branch_transformed = transform_GeometricGraph(G_branch_transformed, ct, deriv_method="difference")
         G_branch_ds_transformed = transform_GeometricGraph(
-            G_branch_ds_transformed, ct, derivs=derivs
+            G_branch_ds_transformed, ct, deriv_method="two-sided"
         )
 
         spline_tree_transformed = G_branch_transformed.spline_tree
