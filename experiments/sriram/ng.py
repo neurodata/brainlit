@@ -1,6 +1,8 @@
 """
 copied from https://github.com/google/neuroglancer/blob/master/python/examples/example_action.py
 need to run in interactive mode: python -i ng.py
+
+python cors_webserver.py -d "/cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/" -p 9010
 """
 
 from __future__ import print_function
@@ -46,20 +48,18 @@ class ViterBrainViewer(neuroglancer.Viewer):
         self.actions.add("n_newtrace", self.n_newtrace)
         self.actions.add("c_clearlast", self.c_clearlast)
         self.actions.add("p_print", self.p_print)
-        self.actions.add("v_cv", self.v_cv)
         with self.config_state.txn() as s:
             s.input_event_bindings.viewer["shift+keys"] = "s_select"
             s.input_event_bindings.viewer["shift+keyt"] = "t_trace"
             s.input_event_bindings.viewer["shift+keyn"] = "n_newtrace"
             s.input_event_bindings.viewer["shift+keyc"] = "c_clearlast"
             s.input_event_bindings.viewer["shift+keyp"] = "p_print"
-            s.input_event_bindings.viewer["shift+keyv"] = "v_cv"
             s.status_messages["hello"] = "Welcome to the ViterBrain tracer"
 
         # open vb object
         with open(vb_path, "rb") as handle:
             self.vb = pickle.load(handle)
-        self.vb.fragment_path = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_labels.zarr"
+        #self.vb.fragment_path = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_labels.zarr"
 
         # set useful object attributtes
         self.start_pt = None
@@ -260,11 +260,16 @@ class ViterBrainViewer(neuroglancer.Viewer):
         def get_skeleton(self, i):
             return self.skels[i]
 
+vb_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_viterbrain.pickle"
+vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pickle"
+port = "9010"
+im_layer = "fg"
+frag_layer = "fragments"
 
 vbviewer = ViterBrainViewer(
-    im_url="precomputed://http://127.0.0.1:9010/im",
-    frag_url="precomputed://http://127.0.0.1:9010/frags",
-    vb_path="/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_viterbrain.pickle",
+    im_url=f"precomputed://http://127.0.0.1:{port}/{im_layer}",
+    frag_url=f"precomputed://http://127.0.0.1:{port}/{frag_layer}",
+    vb_path=vb_path_cis,
 )
 print(vbviewer)
 webbrowser.open_new(vbviewer.get_viewer_url())
