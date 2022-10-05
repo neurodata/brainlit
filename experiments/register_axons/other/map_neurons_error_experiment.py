@@ -140,8 +140,8 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
         # transform the branch
         G_branch_transformed = deepcopy(G_branch)
         G_branch_ds_transformed = deepcopy(G_branch_ds)
-        # G_branch_transformed = transform_GeometricGraph(G_branch_transformed, ct, deriv_method="difference")
-        G_branch_ds_transformed = transform_GeometricGraph(
+        # G_branch_transformed = transform_geometricgraph(G_branch_transformed, ct, deriv_method="difference")
+        G_branch_ds_transformed = transform_geometricgraph(
             G_branch_ds_transformed, ct, deriv_method="two-sided"
         )
 
