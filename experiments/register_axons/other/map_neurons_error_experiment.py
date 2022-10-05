@@ -13,7 +13,7 @@ import matplotlib
 from scipy.interpolate import splev
 from brainlit.map_neurons.map_neurons import (
     DiffeomorphismAction,
-    transform_GeometricGraph,
+    transform_geometricgraph,
     compute_derivs,
 )
 import pandas as pd
