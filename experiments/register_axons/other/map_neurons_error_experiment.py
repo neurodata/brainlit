@@ -160,7 +160,7 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
         av_sample_distance = np.mean(np.linalg.norm(np.diff(pts, axis=0), axis=1))
 
         # Access original knots and compute sample distance
-        spline = spline_tree_branch.nodes[0]["spline"]
+        spline = spline_tree_branch_ds.nodes[0]["spline"]
         u = spline[1]
         tck = spline[0]
         pts = splev(u, tck)
