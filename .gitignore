@@ -80,3 +80,12 @@ experiments/soma_detection/figures/
 experiments/soma_detection/data/
 experiments/soma_detection/secrets/
 **.ipynb_checkpoints/
+
+
+# experiments/reggister_axons
+experiments/sriram/.ipynb_checkpoints/
+experiments/register_axons/data/mapping-files/
+
+# experiments/sriram
+experiments/sriram/.ipynb_checkpoints/
+experiments/sriram/sample/
