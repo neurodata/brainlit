@@ -22,6 +22,8 @@ import numpy as np
 import neuroglancer
 import neuroglancer.cli
 from cloudvolume import CloudVolume, Skeleton
+from cloudvolume.exceptions import SkeletonDecodeError
+from scipy.spatial import KDTree
 
 # python cors_webserver.py -d "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng" -p 9010
 
@@ -56,6 +58,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
         self.actions.add("c_clearlast", self.c_clearlast)
         self.actions.add("p_print", self.p_print)
         self.actions.add("l_line", self.l_line)
+        self.actions.add("h_hook", self.h_hook)
         with self.config_state.txn() as s:
             s.input_event_bindings.viewer["shift+keys"] = "s_select"
             s.input_event_bindings.viewer["shift+keyt"] = "t_trace"
@@ -63,6 +66,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
             s.input_event_bindings.viewer["shift+keyc"] = "c_clearlast"
             s.input_event_bindings.viewer["shift+keyp"] = "p_print"
             s.input_event_bindings.viewer["shift+keyl"] = "l_line"
+            s.input_event_bindings.viewer["shift+keyh"] = "h_hook"
             s.status_messages["hello"] = "Welcome to the ViterBrain tracer"
 
         # open vb object
@@ -77,9 +81,35 @@ class ViterBrainViewer(neuroglancer.Viewer):
             names=["x", "y", "z"], units="nm", scales=cv_dict["traces"].resolution
         )
         self.im_shape = [i for i in cv_dict["traces"].shape if i != 1]
-        self.cur_skel = 0
         self.cur_skel_coords = []
         self.cv_dict = cv_dict
+
+        self.num_skels, _, _ = self.build_kdtree()
+        self.cur_skel = self.num_skels
+        self.cur_skel_head = 0
+
+    def build_kdtree(self):
+        vol = self.cv_dict["traces"]
+        skel_num = 0
+        pts_total = []
+        ids_total = []
+        while True:
+            try:
+                pts = vol.skeleton.get(skel_num).vertices
+                pts = np.divide(pts, vol.resolution)
+                pts_total.append(pts)
+                ids_total += [(skel_num, i) for i in range(pts.shape[0])]
+            except SkeletonDecodeError:
+                break
+
+            skel_num += 1
+        if skel_num == 0:
+            pts_total = None
+            kdtree = None
+        else:
+            pts_total = np.concatenate(pts_total, axis=0)
+            kdtree = KDTree(pts_total)
+        return skel_num, kdtree, ids_total
 
     def add_point(self, name, color, coord):
         """Add point to neuroglancer via Annotation Layer.
@@ -140,7 +170,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
         """
         with self.txn() as vs:  # add point
             layer_names = [l.name for l in vs.layers]
-            print("Selected fragment: %s" % (s.selected_values,))
+            print("Selected fragment: %s" % (s.selected_values["fragments"],))
             if "start" in layer_names:
                 if "end" in layer_names:
                     del vs.layers["end"]
@@ -153,6 +183,16 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 self.start_pt = [int(p) for p in s.mouse_voxel_coordinates]
         self.add_point(name, color, s.mouse_voxel_coordinates)
 
+    def h_hook(self, s):
+        _, kdtree, ids_total = self.build_kdtree()
+        _, closest_idx = kdtree.query(s.mouse_voxel_coordinates)
+        self.start_pt = [int(p) for p in s.mouse_voxel_coordinates]
+        self.cur_skel = ids_total[closest_idx][0]
+        self.cur_skel_head = ids_total[closest_idx][1]
+        print(f"Hooking into skeleton #{self.cur_skel} at id {self.cur_skel_head}: {self.start_pt}")
+        self.add_point("start", "#0f0", s.mouse_voxel_coordinates)
+
+
     def t_trace(self, s):
         with self.txn() as vs:  # trace
             layer_names = [l.name for l in vs.layers]
@@ -164,6 +204,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
             with self.txn() as vs:  # trace
                 del vs.layers["start"]
                 self.start_pt = self.end_pt
+                self.end_pt = None
                 vs.layers["end"].name = "start"
         else:
             print("No start/end layers yet")
@@ -188,6 +229,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
             path = [self.start_pt, self.end_pt]
             self.render_line(path, layer_names)
             self.start_pt = self.end_pt
+            self.end_pt = None
         else:
             print("No start/end layers yet")
 
@@ -263,7 +305,6 @@ class ViterBrainViewer(neuroglancer.Viewer):
     def n_newtrace(self, s):
         print(f"Saving trace #{self.cur_skel+1}")
         self.p_print(s)
-        print(f"Creating new trace #{self.cur_skel+1}")
         with self.txn() as vs:  # trace
             layer_names = [l.name for l in vs.layers]
             if "start" in layer_names:
@@ -271,20 +312,41 @@ class ViterBrainViewer(neuroglancer.Viewer):
             if "end" in layer_names:
                 del vs.layers["end"]
 
-        self.cur_skel += 1
+        self.start_pt = None
+        self.end_pt = None
+        self.num_skels += 1
+        self.cur_skel = self.num_skels
         self.cur_skel_coords = []
+        self.cur_skel_head = 0
+        print(f"Creating new trace #{self.cur_skel}")
 
     def p_print(self, s):
-        print(f"Printing trace info for vb_trace_{self.cur_skel}:")
-        coords_list = [inner for outer in self.cur_skel_coords for inner in outer]
+        if len(self.cur_skel_coords) == 0:
+            print("No coordinates to save")
+        else:
+            print(f"Printing trace info for vb_trace_{self.cur_skel}:")
+            coords_list = [inner for outer in self.cur_skel_coords for inner in outer]
+            vol = self.cv_dict["traces"]
+            vertices = np.array(coords_list)
+            vertices = np.multiply(vertices, vol.resolution)
 
-        vol = self.cv_dict["traces"]
-        vertices = np.array(coords_list)
-        vertices = np.multiply(vertices, vol.resolution)
-        skel = Skeleton(segid = self.cur_skel, vertices=vertices, edges=[[0,1]], space='voxel')
-        skel.extra_attributes = [ attr for attr in skel.extra_attributes if attr['data_type'] == 'float32' ]
-        vol.skeleton.upload(skel)
-        print(coords_list)
+            try:
+                skel = vol.skeleton.get(self.cur_skel)
+                cur_num_verts = skel.vertices.shape[0]
+                edges = [[self.cur_skel_head, cur_num_verts]] + [[i - 1, i] for i in range(cur_num_verts+1, vertices.shape[0]+cur_num_verts)]
+                edges = np.array(edges)
+                edges = np.concatenate((skel.edges, edges), axis=0)
+                vertices = np.concatenate((skel.vertices, vertices), axis=0)
+            except SkeletonDecodeError:
+                if self.cur_skel_head != 0:
+                    raise ValueError(f"Writing new skeleton (#{self.cur_skel}), but cur_skel_head is >0 ({self.cur_skel_head})")
+                edges = [[i - 1, i] for i in range(1, len(coords_list))]
+
+
+            skel = Skeleton(segid = self.cur_skel, vertices=vertices, edges=edges, space='voxel')
+            skel.extra_attributes = [ attr for attr in skel.extra_attributes if attr['data_type'] == 'float32' ]
+            vol.skeleton.upload(skel)
+            print(f"verts: {vertices}, edges: {edges}")
 
     class SkeletonSource(neuroglancer.skeleton.SkeletonSource):
         """Source used to serve skeleton objects generated by ViterBrain tracing.
