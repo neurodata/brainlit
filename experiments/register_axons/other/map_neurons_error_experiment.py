@@ -56,7 +56,7 @@ av_sample_distances = []
 
 spacing = 2
 inter = -1
-ds_factor = 10
+ds_factor = 100
 
 print(
     f"Processing neurons starting with {inter} with a spacing {spacing} and downsampling factor {ds_factor}"
