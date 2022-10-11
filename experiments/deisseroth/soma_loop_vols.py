@@ -58,7 +58,7 @@ def process_chunk(c1, c2, dir_base, threshold, data_dir, results_dir):
 
     subprocess.run(
         [
-            "/home/tathey1/ilastik-1.3.3post3-Linux/run_ilastik.sh",
+            "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh",
             "--headless",
             "--project=/data/tathey1/matt_wright/ilastik/soma_model/matt_soma_rabies_pix_3ch.ilp",
             fname,
