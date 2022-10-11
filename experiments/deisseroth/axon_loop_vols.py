@@ -27,7 +27,6 @@ warnings.filterwarnings("ignore")
 mip = 0
 vol = CloudVolume(dir_base + "Ch_647", parallel=True, mip=mip, fill_missing=True)
 shape = list(vol.shape)
-#shape[1] = 5888 ###*************************************************************
 
 corners = []
 for i in tqdm(range(0, shape[0], chunk_size[0])):
@@ -71,7 +70,7 @@ def process_chunk(c1, c2, data_dir, threshold, dir_base):
 
     subprocess.run(
         [
-            "/home/tathey1/ilastik-1.3.3post3-Linux/run_ilastik.sh",
+            "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh",
             "--headless",
             "--project=/data/tathey1/matt_wright/ilastik/model1/axon_segmentation.ilp",
             fname,
