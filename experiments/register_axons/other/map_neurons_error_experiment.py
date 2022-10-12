@@ -202,7 +202,7 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
             errors.append(error)
             methods.append(method)
 
-        if errors[-2] - errors[-1] > 7:
+        if errors[-2] - errors[-1] > 2:
             print(f"neuron {id} branch {branch_id} error {errors[-2] - errors[-1]}")
 
     fname = f"/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/derivdiff2_errsthru{id}_spac{spacing}_ds{ds_factor}.pickle"
