@@ -12,7 +12,7 @@ import random
 somas = "/data/tathey1/matt_wright/brainr_results/"
 
 #viz link that includes atlas_to_target
-viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=7g3CvrESEx1TsA"
+viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=_zJMKANxoXhQAQ"
 viz_link = NGLink(viz_link.split("json_url=")[-1])
 ngl_json = viz_link._json
 
@@ -21,7 +21,7 @@ for layer in ngl_json['layers']:
     if layer['name'] == 'Ch_561_iso':
         atlas_layer = layer['source']
 if atlas_layer is None:
-    raise ValueError(f"No atlas_to_target layer at viz link: {viz_link}")
+    raise ValueError(f"No antibody layer at viz link: {viz_link}")
 
 brain = atlas_layer.split("/")[-2]
 
