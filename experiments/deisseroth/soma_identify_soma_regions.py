@@ -12,7 +12,7 @@ import random
 somas = "/data/tathey1/matt_wright/brainr_results/"
 
 #viz link that includes atlas_to_target
-viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=gjtmOqJCZvelnQ"
+viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=e9mu7UCvrTSXRQ"
 viz_link = NGLink(viz_link.split("json_url=")[-1])
 ngl_json = viz_link._json
 
