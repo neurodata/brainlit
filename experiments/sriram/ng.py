@@ -25,8 +25,6 @@ from cloudvolume import CloudVolume, Skeleton
 from cloudvolume.exceptions import SkeletonDecodeError
 from scipy.spatial import KDTree
 
-# python cors_webserver.py -d "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng" -p 9010
-
 
 class ViterBrainViewer(neuroglancer.Viewer):
     def __init__(self, im_url, frag_url, trace_url, trace_path, vb_path):
