@@ -1,3 +1,13 @@
+'''
+Inputs
+'''
+dir_base = "s3://smartspim-precomputed-volumes/2022_03_28/8649/" #s3 path to directory that contains image data
+outdir = "/data/tathey1/matt_wright/brain_temp/" #directory to store temporary subvolumes for segmentation
+
+
+'''
+Collect results
+'''
 from sre_constants import CATEGORY_UNI_NOT_LINEBREAK
 from tqdm import tqdm
 import numpy as np
@@ -6,15 +16,10 @@ import pickle
 from joblib import Parallel, delayed
 import os
 
-
-# dir_base= "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/"
-# dir_base = "s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/"
-dir_base = "s3://smartspim-precomputed-volumes/2022_03_28/8649/"
 if dir_base[-1] == "/":
     brain_id = dir_base.split("/")[-2]
 else:
     brain_id = dir_base.split("/")[-1]
-outdir = "/data/tathey1/matt_wright/brain_temp/"
 
 
 dir = os.path.join(dir_base, "axon_mask")

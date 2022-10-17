@@ -1,3 +1,9 @@
+'''
+Keys should be string of brain ID and value should be dictionary with two entry types:
+    1. layer name to precomputed://s3 URL
+    2. _info dictionary with info of how to access subvolumes marked for training/validation
+'''
+
 brain2paths = {
     "2": {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2021_06_02_Sert_Cre/Ch_647"
@@ -123,6 +129,9 @@ brain2paths = {
 }
 
 
+'''
+Deprecated method of storing subvolumes for training/validation
+'''
 brain2centers = {
     "2": [
         [

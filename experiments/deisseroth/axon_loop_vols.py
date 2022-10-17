@@ -1,3 +1,13 @@
+'''
+Inputs
+'''
+dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_09_20/887/" #s3 path to directory that contains image data
+threshold = 0.72 #threshold to use for ilastik
+data_dir = "/data/tathey1/matt_wright/brain_temp/" #directory to store temporary subvolumes for segmentation
+
+'''
+Segment Axon
+'''
 from cloudvolume import CloudVolume
 from skimage import io
 import numpy as np
@@ -12,12 +22,7 @@ import os
 import igneous.task_creation as tc
 from taskqueue import LocalTaskQueue
 
-dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_09_20/887/"
-threshold = 0.72
-
 chunk_size = [256, 256, 300]
-
-data_dir = "/data/tathey1/matt_wright/brain_temp/"
 
 print(f"***********DID YOU REMEMBER TO UPDATE THE THRESHOLD**********")
 print(f"Number cpus: {multiprocessing.cpu_count()}")
@@ -99,7 +104,9 @@ for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
         os.remove(os.path.join(data_dir, f))
 
 
-# # Downsample mask
+'''
+Downsample Mask
+'''
 print("Downsampling...")
 layer_path = dir_base + "axon_mask"
 
@@ -125,7 +132,9 @@ tasks = tc.create_downsampling_tasks(
 tq.insert(tasks)
 tq.execute()
 
-## Make transformed layer
+'''
+Make transformed layer
+'''
 layer_path = dir_base + "axon_mask_transformed"
 
 atlas_vol = CloudVolume("precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017")
