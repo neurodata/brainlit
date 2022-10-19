@@ -84,7 +84,7 @@ brain2paths = {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_09_20/887/Ch_647_iso",
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_09_20/887/Ch_561_iso",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_09_20/887/Ch_488_iso",
-        "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=gjtmOqJCZvelnQ",
+        "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=9fbb_i2khFWqEA",
         "genotype": "tph2 vglut3"
     },
     "878": {
