@@ -20,7 +20,7 @@ ncpu = 16
 dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_09_20/887/"
 data_dir = "/data/tathey1/matt_wright/brainr_temp/"
 results_dir = "/data/tathey1/matt_wright/brainr_results/"
-threshold = 0.28
+threshold = 0.26
 
 print(f"Number cpus: {multiprocessing.cpu_count()}")
 
