@@ -5,7 +5,7 @@ import subprocess
 from joblib import Parallel, delayed
 import multiprocessing
 
-model = "r1_r2"
+model = "r1"
 
 base_path = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/"
 brains = ["8607", "8606", "8477", "8531", "8608", "8529", "8557", "8555", "8446", "8454", "887"]
