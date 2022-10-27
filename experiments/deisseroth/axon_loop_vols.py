@@ -1,8 +1,8 @@
 '''
 Inputs
 '''
-dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_09_20/887/" #s3 path to directory that contains image data
-threshold = 0.72 #threshold to use for ilastik
+dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_10_24/8788/" #s3 path to directory that contains image data
+threshold = 0.42 #threshold to use for ilastik
 data_dir = "/data/tathey1/matt_wright/brain_temp/" #directory to store temporary subvolumes for segmentation
 
 '''
