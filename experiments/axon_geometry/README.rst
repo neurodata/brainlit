@@ -5,6 +5,11 @@ Athey, T. L., Teneggi, J., Vogelstein, J. T., Tward, D. J., Mueller, U., & Mille
 
 DOI: https://doi.org/10.3389/fninf.2021.704627
 
+Relevant directory
+------------------
+
+``brainlit/experiemnts/axon_geometry``
+
 How to reproduce this experiment
 --------------------------------
 
