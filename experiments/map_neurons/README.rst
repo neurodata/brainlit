@@ -1,7 +1,7 @@
 Poster
 ------
 
-Athey, T. L., Vogelstein, J. T., & Miller, M. I. (2021). Nyquist Sampling Rate for Projection Neuron Reconstruction. Poster at Society for Neuroscience Meeting, 2022.
+Athey, T. L., Vogelstein, J. T., & Miller, M. I. (2022). Nyquist Sampling Rate for Projection Neuron Reconstruction. Poster at Society for Neuroscience Meeting.
 
 Relevant directory
 ------------------
