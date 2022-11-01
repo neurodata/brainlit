@@ -1,0 +1,27 @@
+Poster
+------
+
+Athey, T. L., Vogelstein, J. T., & Miller, M. I. (2021). Nyquist Sampling Rate for Projection Neuron Reconstruction. Poster at Society for Neuroscience Meeting, 2022.
+
+Relevant directory
+------------------
+
+``brainlit/experiemnts/map_neurons``
+
+Nyquist Sampling Rate for Projection Neuron Reconstruction
+----------------------------------------------------------
+
+* First, make sure that you have installed the ``brainlit`` package [`Documentation <https://brainlit.netlify.app/readme#installation>`_].
+
+* Results are in the notebook: ``brainlit/experiments/register_axons/sampling.ipynb``
+
+Neuron Mapping
+--------------
+
+* First, make sure that you have installed the ``brainlit`` package [`Documentation <https://brainlit.netlify.app/readme#installation>`_].
+
+* Second, uncompress the data ``brainlit/experiments/register_axons/data/mapping-files.zip``.
+
+* Then, you can run the notebook that generates figures: ``brainlit/experiments/register_axons/map_neurons.ipynb``
+
+* The files in the ``other`` are more for scratch work, and are unlikely to be useful to new users.
