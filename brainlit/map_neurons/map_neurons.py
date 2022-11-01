@@ -387,7 +387,7 @@ def compute_derivs(
 def transform_geometricgraph(
     G_transformed: GeometricGraph,
     Phi: DiffeomorphismAction,
-    deriv_method: str,
+    deriv_method: str = "two-sided",
     derivs: np.array = None,
 ) -> GeometricGraph:
     """Apply a diffeomorphism to a GeometricGraph object.
@@ -395,6 +395,7 @@ def transform_geometricgraph(
     Args:
         G_transformed (GeometricGraph): Object that will be transformed.
         Phi (DiffeomorphismAction): Diffeomorphism that will define the transformation.
+        deriv_method (str, optional): Choice of derivative estimation to use. Defaults to None.
         derivs (np.array, optional): nx3 array of derivative values associated with nodes on the GemoetricGraph. Only applicable if GeometricGraph has a single branch. Defaults to None.
 
     Raises:

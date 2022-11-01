@@ -1,4 +1,5 @@
 from brainlit.map_neurons.map_neurons import *
+from brainlit.algorithms.trace_analysis.fit_spline import CubicHermiteChain
 from pathlib import Path
 import os
 import numpy as np
@@ -199,22 +200,71 @@ def test_compute_derivs_diff():
     np.testing.assert_array_equal(true_derivs, derivs)
 
 
-def test_transform_geometricgraph(init_crt, init_gg):
+def test_compute_derivs_2sided():
+    us = np.array([0, 1, 2])
+    positions = np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0]])
+    true_left_derivs = np.array([[1, 0, 0], [0, 1, 0]])
+    true_right_derivs = np.array([[1, 0, 0], [0, 1, 0]])
+
+    left_derivs, right_derivs = compute_derivs(
+        us, positions=positions, deriv_method="two-sided"
+    )
+    np.testing.assert_array_equal(true_left_derivs, left_derivs)
+    np.testing.assert_array_equal(true_right_derivs, right_derivs)
+
+    us = np.array([0, 1, 3])
+    positions = np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0]])
+    true_left_derivs = np.array([[1, 0, 0], [0, 1, 0]])
+    true_right_derivs = np.array([[1, 0, 0], [0, 1, 0]])
+
+    derivs = compute_derivs(us, positions=positions, deriv_method="two-sided")
+    np.testing.assert_array_equal(true_left_derivs, left_derivs)
+    np.testing.assert_array_equal(true_right_derivs, right_derivs)
+
+
+def test_transform_geometricgraph_diff(init_crt, init_gg):
     G = init_gg
     ct = init_crt
 
-    G = transform_geometricgraph(G, ct)
+    G_trans = transform_geometricgraph(G, ct, deriv_method="difference")
     true_positions = np.array([[-1, -1, -1], [0, -1, -1], [0, 0, -1]])
     true_derivs = np.array([[1, 0, 0], [1 / np.sqrt(2), 1 / np.sqrt(2), 0], [0, 1, 0]])
 
     positions = []
     derivs = []
 
-    assert isinstance(G.spline_tree.nodes[0]["spline"][0], CubicHermiteSpline)
+    assert isinstance(G_trans.spline_tree.nodes[0]["spline"][0], CubicHermiteSpline)
 
-    for node in G.spline_tree.nodes[0]["path"]:
-        positions.append(G.nodes[node]["loc"])
-        derivs.append(G.nodes[node]["deriv"])
+    for node in G_trans.spline_tree.nodes[0]["path"]:
+        positions.append(G_trans.nodes[node]["loc"])
+        derivs.append(G_trans.nodes[node]["deriv"])
 
     np.testing.assert_almost_equal(true_positions, np.array(positions))
     np.testing.assert_almost_equal(true_derivs, np.array(derivs))
+
+
+def test_transform_geometricgraph_2sided(init_crt, init_gg):
+    G = init_gg
+    ct = init_crt
+
+    G_trans = transform_geometricgraph(G, ct, deriv_method="two-sided")
+    true_positions = np.array([[-1, -1, -1], [0, -1, -1], [0, 0, -1]])
+    true_left_derivs = np.array([[1, 0, 0], [0, 1, 0]])
+    true_right_derivs = np.array([[1, 0, 0], [0, 1, 0]])
+
+    positions = []
+    left_derivs = []
+    right_derivs = []
+
+    assert isinstance(G_trans.spline_tree.nodes[0]["spline"][0], CubicHermiteChain)
+
+    for node in G_trans.spline_tree.nodes[0]["path"]:
+        positions.append(G_trans.nodes[node]["loc"])
+        if "left_deriv" in G_trans.nodes[node].keys():
+            left_derivs.append(G_trans.nodes[node]["left_deriv"])
+        if "right_deriv" in G_trans.nodes[node].keys():
+            right_derivs.append(G_trans.nodes[node]["right_deriv"])
+
+    np.testing.assert_almost_equal(true_positions, np.array(positions))
+    np.testing.assert_almost_equal(true_left_derivs, np.array(left_derivs))
+    np.testing.assert_almost_equal(true_right_derivs, np.array(right_derivs))
