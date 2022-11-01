@@ -82,5 +82,5 @@ experiments/soma_detection/secrets/
 **.ipynb_checkpoints/
 
 # experiments/register_axons
-experiments/register_axons/.ipynb_checkpoints/
-experiments/register_axons/data/mapping-files/
+experiments/map_neurons/.ipynb_checkpoints/
+experiments/map_neurons/data/mapping-files/
