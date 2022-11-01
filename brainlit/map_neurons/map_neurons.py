@@ -2,7 +2,7 @@ from logging import root
 from brainlit.algorithms.trace_analysis.fit_spline import (
     GeometricGraph,
     compute_parameterization,
-    CubicHermiteChain
+    CubicHermiteChain,
 )
 import typing
 import numpy as np
@@ -72,7 +72,7 @@ class CloudReg_Transform(DiffeomorphismAction):
 
         self.direction = direction
 
-        self._integrate(direction = direction)
+        self._integrate(direction=direction)
 
     def apply_affine(self, position: np.array) -> np.array:
         """Apply affine transformation in the transformation of positions in target space to atlas space.
@@ -92,7 +92,11 @@ class CloudReg_Transform(DiffeomorphismAction):
 
         return transformed_position
 
-    def _integrate(self, velocity_voxel_size: list = [100.0, 100.0, 100.0], direction: str = "atlas"):
+    def _integrate(
+        self,
+        velocity_voxel_size: list = [100.0, 100.0, 100.0],
+        direction: str = "atlas",
+    ):
         """Integrate velocity field in order to compute diffeomorphsm mapping. Translated from https://github.com/neurodata/CloudReg/blob/master/cloudreg/registration/transform_points.m
         Integration is done in the direction to allow mapping from target to atlas space.
 
@@ -123,15 +127,16 @@ class CloudReg_Transform(DiffeomorphismAction):
         YV = np.swapaxes(YV, 0, 1)
         ZV = np.swapaxes(ZV, 0, 1)
 
-
         if direction == "atlas":
             timesteps = np.arange(0, nT, 1)
             indicator = -1
         elif direction == "target":
-            timesteps = np.arange(nT-1, -1, -1)
+            timesteps = np.arange(nT - 1, -1, -1)
             indicator = 1
         else:
-            raise ValueError(f"direction argument must be atlas or target, not {direction}")
+            raise ValueError(
+                f"direction argument must be atlas or target, not {direction}"
+            )
 
         # trans variables aggregates the cumulative displacement from the originial grid coordinates
         transx = XV
@@ -177,8 +182,6 @@ class CloudReg_Transform(DiffeomorphismAction):
                 fill_value=None,
             )
             transz = np.reshape(F(XYZs), Zs.shape) + Zs
-
-
 
         Fx = RegularGridInterpolator(
             (yV, xV, zV),
@@ -230,7 +233,7 @@ class CloudReg_Transform(DiffeomorphismAction):
 
         return transformed_position
 
-    def Jacobian(self, pos: np.array)-> np.array:
+    def Jacobian(self, pos: np.array) -> np.array:
         """Compute Jacobian of transformation at a given point.
 
         Args:
@@ -370,7 +373,6 @@ def compute_derivs(
         raise ValueError(f"Invalid deriv_method argument: {deriv_method}")
 
 
-
 def transform_geometricgraph(
     G_transformed: GeometricGraph,
     Phi: DiffeomorphismAction,
@@ -446,36 +448,46 @@ def transform_geometricgraph(
                 left_derivs, right_derivs = compute_derivs(
                     us=us, positions=positions, deriv_method=deriv_method
                 )
-            else: 
+            else:
                 left_derivs = derivs[0]
                 right_derivs = derivs[1]
 
             transformed_positions = Phi.evaluate(positions)
             transformed_us = compute_parameterization(transformed_positions)
 
-            transformed_left_derivs = Phi.D(positions[:-1,:], left_derivs, order=1)
+            transformed_left_derivs = Phi.D(positions[:-1, :], left_derivs, order=1)
             norms = np.linalg.norm(transformed_left_derivs, axis=1)
-            transformed_left_derivs = np.divide(transformed_left_derivs, np.array([norms]).T)
+            transformed_left_derivs = np.divide(
+                transformed_left_derivs, np.array([norms]).T
+            )
 
-            transformed_right_derivs = Phi.D(positions[1:,:], right_derivs, order=1)
+            transformed_right_derivs = Phi.D(positions[1:, :], right_derivs, order=1)
             norms = np.linalg.norm(transformed_right_derivs, axis=1)
-            transformed_right_derivs = np.divide(transformed_right_derivs, np.array([norms]).T)
+            transformed_right_derivs = np.divide(
+                transformed_right_derivs, np.array([norms]).T
+            )
 
             chspline = CubicHermiteChain(
-                transformed_us, transformed_positions, transformed_left_derivs, transformed_right_derivs
+                transformed_us,
+                transformed_positions,
+                transformed_left_derivs,
+                transformed_right_derivs,
             )
 
             spline_tree.nodes[node]["spline"] = chspline, transformed_us
 
-            for i, (trace_node, position) in enumerate(zip(
-                path, transformed_positions
-            )):
+            for i, (trace_node, position) in enumerate(
+                zip(path, transformed_positions)
+            ):
                 G_transformed.nodes[trace_node]["loc"] = position
                 # here, left deriv is the left side derivative
                 if i > 0:
-                    G_transformed.nodes[trace_node]["left_deriv"] = transformed_right_derivs[i-1,:]
-                if i < len(path)-1:
-                    G_transformed.nodes[trace_node]["right_deriv"] = transformed_left_derivs[i,:]
-
+                    G_transformed.nodes[trace_node][
+                        "left_deriv"
+                    ] = transformed_right_derivs[i - 1, :]
+                if i < len(path) - 1:
+                    G_transformed.nodes[trace_node][
+                        "right_deriv"
+                    ] = transformed_left_derivs[i, :]
 
     return G_transformed

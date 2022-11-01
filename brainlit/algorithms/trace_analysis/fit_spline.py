@@ -33,6 +33,7 @@ def compute_parameterization(positions: np.array) -> np.array:
     TotalDist = np.concatenate(([0], np.cumsum(NodeDist)))
     return TotalDist
 
+
 class CubicHermiteChain(PPoly):
     def __init__(self, x, y, left_dydx, right_dydx, extrapolate=None):
         if extrapolate is None:
@@ -41,7 +42,9 @@ class CubicHermiteChain(PPoly):
         x, dx, y, axis, _ = prepare_input(x, y, axis=0)
 
         if not np.array_equal(left_dydx.shape, right_dydx.shape):
-            raise ValueError(f"Left derivatives shape {left_dydx.shape} must be equal to right derivatives shape {right_dydx.shape}")
+            raise ValueError(
+                f"Left derivatives shape {left_dydx.shape} must be equal to right derivatives shape {right_dydx.shape}"
+            )
 
         dxr = dx.reshape([dx.shape[0]] + [1] * (y.ndim - 1))
         slope = np.diff(y, axis=0) / dxr
