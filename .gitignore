@@ -80,3 +80,7 @@ experiments/soma_detection/figures/
 experiments/soma_detection/data/
 experiments/soma_detection/secrets/
 **.ipynb_checkpoints/
+
+# experiments/register_axons
+experiments/map_neurons/.ipynb_checkpoints/
+experiments/map_neurons/data/mapping-files/
