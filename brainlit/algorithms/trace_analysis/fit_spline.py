@@ -35,7 +35,34 @@ def compute_parameterization(positions: np.array) -> np.array:
 
 
 class CubicHermiteChain(PPoly):
-    def __init__(self, x, y, left_dydx, right_dydx, extrapolate=None):
+    """A third order spline class (continuous piecewise cubic representation), that is fit to a set of positions and one-sided derivatives. This is not a standard spline class (e.g. b-splines), because the derivatives are not necessarily continuous at the knots.
+
+    A subclass of PPoly, a piecewise polynomial class from scipy.
+    """
+
+    def __init__(
+        self,
+        x: np.array,
+        y: np.array,
+        left_dydx: np.array,
+        right_dydx: np.array,
+        extrapolate=None,
+    ):
+        """Initialize object via:
+
+        Parameters
+        ----------
+        x : np.array
+            Independent variable, shape n.
+        y : np.array
+            Dependent variable, shape n x d.
+        left_dydx : np.array
+            Derivatives on left sides of cubic segments (i.e. right hand derivatives of knots), shape n-1 x d.
+        right_dy_dx : np.array
+            Derivatives on right sides of cubic segments (i.e. left hand derivatives of knots), shape n-1 x d.
+        extrapolate : np.array
+            If bool, determines whether to extrapolate to out-of-bounds points based on first and last intervals, or to return NaNs. If ‘periodic’, periodic extrapolation is used. Default is True.
+        """
         if extrapolate is None:
             extrapolate = True
 

@@ -56,8 +56,9 @@ class CloudReg_Transform(DiffeomorphismAction):
         """Compute transformation from CloudReg mat files
 
         Args:
-            vpath (str): path to mat file
-            Apath (str): path to mat file with affine transformation
+            vpath (str): path to mat file.
+            Apath (str): path to mat file with affine transformation.
+            direction (str, optional): direction of transformation, only target to atlas space is implemented so far. Defaults to "atlas".
         """
         # not: transformation files go from template space to target space
         f = h5py.File(vpath, "r")
@@ -102,6 +103,11 @@ class CloudReg_Transform(DiffeomorphismAction):
 
         Args:
             velocity_voxel_size (list, optional): Voxel resolution of trarnsformation. Defaults to [100.0, 100.0, 100.0].
+            direction (str, optional): direction of transformation, only target to atlas space is implemented so far. Defaults to "atlas".
+
+        Raises:
+            NotImplementedError: direction must be to atlas space.
+            ValueError: invalid value for direction
         """
 
         vtx = self.vtx
@@ -133,6 +139,9 @@ class CloudReg_Transform(DiffeomorphismAction):
         elif direction == "target":
             timesteps = np.arange(nT - 1, -1, -1)
             indicator = 1
+            raise NotImplementedError(
+                f"Cannot integrate from atlas to target space yet."
+            )
         else:
             raise ValueError(
                 f"direction argument must be atlas or target, not {direction}"
@@ -299,24 +308,26 @@ def compute_derivs(
     positions: np.array = None,
     deriv_method: str = "difference",
 ) -> np.array:
-    """Estimate derivatives of a sequence of points. Derivatives can be estimated in two ways:
+    """Estimate derivatives of a sequence of points. Derivatives can be estimated in three ways:
     - For curves parameterized by scipy's spline API, spline estimation uses scipy's derivative computation
     - For a sequence of points, we use the finite-difference method from:
 
     Sundqvist, H., & Veronis, G. (1970). A simple finite‐difference grid with non‐constant intervals. Tellus, 22(1), 26-31.
 
+    - one-sided derivatives are derived from the piecewise linear interpolation.
+
     Args:
         us (np.array): Parameter values (in form returned by scipy.interpolate.splprep).
         tck (tuple): Knots, bspline coefficients, and degree of spline (in form returned by scipy.interpolate.splprep).
         positions (np.array): nx3 array of positions (for use by difference method).
-        deriv_method (str, optional): Method to use, spline for scipy.interpolate.splev or difference for  . Defaults to "difference".
+        deriv_method (str, optional): Method to use (from list above), spline for scipy.interpolate.splev, difference for the finite difference method, two-sided for one-sided derivatives from linear interpolation. Defaults to "difference".
 
     Raises:
         ValueError: If the wrong combination of arguments/deriv_method is used.
         ValueError: If derivative method is unrecognized.
 
     Returns:
-        np.array: Derivative estimates at specified positions.
+        np.array: Derivative estimates at specified positions, or tuple of np.array for two-sided option.
     """
     if deriv_method == "spline":
         if tck is None or positions is not None:
