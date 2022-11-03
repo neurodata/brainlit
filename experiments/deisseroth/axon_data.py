@@ -117,8 +117,12 @@ brain2paths = {
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_10_24/8788/Ch_488",
         "mask": "precomputed://s3://smartspim-precomputed-volumes/2022_10_24/8788/axon_mask",
         "val_info": {
-            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=UhmEbSK5fIJxow",
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=a7nPluS2FyMT0g",
             "layer": "val",
+        },
+        "train_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=a7nPluS2FyMT0g",
+            "layer": "train",
         },
     },
     # apparently not an axon sample!
