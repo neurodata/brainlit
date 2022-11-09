@@ -5,12 +5,13 @@ import subprocess
 from joblib import Parallel, delayed
 import multiprocessing
 import numpy as np
+from util import find_sample_names
 
-model = "r1"
+model = "-3-4-8649-8788"
 
 base_path = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/"
 brains = ["8650", "8649", "8613", "8589", "8590", "8788"]
-project_path= f"/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/axon_segmentation.ilp"
+project_path= f"/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/axon_segmentation{model}.ilp"
 print(f"Number cpus: {multiprocessing.cpu_count()}")
 
 def apply_ilastik(fname):
@@ -38,17 +39,15 @@ def apply_ilastik(fname):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-def process_somas():
+
+
+
+def process_images():
     items_total = []
     for brain in tqdm(brains, desc="Gathering brains..."):
-        brain_name = brain
+        path = f"{base_path}brain{brain}/"
+        items_total += find_sample_names(path, dset = "val", add_dir=True)
 
-        path = f"{base_path}brain{brain_name}/"
-        items = os.listdir(path)
-        for item in items:
-            item_path = path + item
-            if os.path.isfile(item_path) and ".h5" in item_path and "Probabilities" not in item_path and "Labels" not in item_path:
-                items_total.append(item_path)
     print(items_total)
 
     #run all files
@@ -65,4 +64,20 @@ def process_somas():
         for item in tqdm(items_total, desc="running ilastik...", leave=False)
     )
 
-process_somas()
+def move_results():
+    for brain in tqdm(brains, desc="Moving results..."):
+        # make results folder
+        brain_dir = f"{base_path}brain{brain}/"
+        results_dir = f"{brain_dir}/results{model}/"
+
+        if not os.path.exists(results_dir):
+            os.mkdir(results_dir)
+
+        items = find_sample_names(brain_dir, dset = "val", add_dir=False)
+        for item in items:
+            result_path = brain_dir + item[:-3] + "_Probabilities.h5"
+            shutil.move(result_path, results_dir+item[:-3] + "_Probabilities.h5")
+
+
+process_images()
+move_results()

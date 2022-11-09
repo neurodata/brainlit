@@ -116,6 +116,7 @@ brain2paths = {
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_10_24/8788/Ch_561",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_10_24/8788/Ch_488",
         "mask": "precomputed://s3://smartspim-precomputed-volumes/2022_10_24/8788/axon_mask",
+        "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_10_24/8788/axon_mask_transformed",
         "val_info": {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=a7nPluS2FyMT0g",
             "layer": "val",
@@ -123,6 +124,16 @@ brain2paths = {
         "train_info": {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=a7nPluS2FyMT0g",
             "layer": "train",
+        },
+    },
+    "11537": {
+        "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/Ch_647",
+        "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/Ch_561",
+        "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/Ch_488",
+        "mask": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/axon_mask",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=9MCP5DRs2D32Bg",
+            "layer": "val",
         },
     },
     # apparently not an axon sample!

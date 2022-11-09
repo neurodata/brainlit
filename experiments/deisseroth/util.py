@@ -1,6 +1,7 @@
 import urllib
 import json
 import numpy as np
+import os
 
 
 def json_to_points(url, round=False):
@@ -30,3 +31,17 @@ def json_to_points(url, round=False):
     for key in point_layers.keys():
         print(f"{len(point_layers[key])} points in {key} layer")
     return point_layers
+
+
+def find_sample_names(dir, dset = "val", add_dir = False):
+    items = os.listdir(dir)
+
+    items = [item for item in items if ".h5" in item]
+    items = [item for item in items if "Probabilities" not in item]
+    items = [item for item in items if "Labels" not in item]
+    items = [item for item in items if dset in item]
+
+    if add_dir:
+        items = [dir + item for item in items]
+
+    return items
