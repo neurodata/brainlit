@@ -136,6 +136,22 @@ brain2paths = {
             "layer": "val",
         },
     },
+    "8786": {
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2022_11_02/8786/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=YRB3G4Hn19TjIA",
+            "layer": "val",
+        },
+    },
+    "8790": {
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2022_11_01/8790/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=hhlEcKDIfqrY-w",
+            "layer": "val",
+        },
+    },
+
+
     # apparently not an axon sample!
     # "887": {
     #     "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_09_20/887/Ch_647_iso",

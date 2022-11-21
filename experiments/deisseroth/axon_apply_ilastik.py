@@ -7,7 +7,7 @@ import multiprocessing
 import numpy as np
 from util import find_sample_names
 
-model = "-3-4-8649-8788"
+model = "-compare-3_4"
 
 base_path = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/"
 brains = ["8650", "8649", "8613", "8589", "8590", "8788"]
