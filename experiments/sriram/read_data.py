@@ -9,22 +9,45 @@ import igneous.task_creation as tc
 from taskqueue import LocalTaskQueue
 import h5py
 from brainlit.algorithms.generate_fragments.state_generation import state_generation
+import dask.array as da 
+from ome_zarr.writer import write_image
+from ome_zarr.io import parse_url
 
-task = "writezarr"
+task = "convertzarr"
 
 if task == "writezarr":
-    sz = np.array([2, 6814, 8448, 316], dtype='int')
+    path = "/cis/project/sriram/for Tomi/exp227-mouse3-stitched.czi"
+    outdir = "/cis/project/sriram/ng_data/exp227/"
 
-    path = "/cis/project/sriram/Sriram/SS IUE 175 SNOVA RFP single channel AdipoClear Brain 3 ipsilateral small z two colour Image1.czi"
     czi = aicspylibczi.CziFile(path)
 
+    slice1 = np.squeeze(czi.read_mosaic(C=0, Z=0, scale_factor=1))
+    C = czi.get_dims_shape()[0]["C"][1]
+    H = slice1.shape[0]
+    W = slice1.shape[1]
+    Z = czi.get_dims_shape()[0]["Z"][1]
 
-    zarra = zarr.zeros(sz, chunks=(2, 100, 100, 40), dtype="uint16")
-    num_slices = czi.get_dims_shape()[0]["Z"][1]
+    print(f"Writing {C} zarrs of shape {H}x{W}x{Z} from czi with dims {czi.get_dims_shape()}")
+    sz = np.array([H, W, Z], dtype='int')
 
-    for z in tqdm(np.arange(num_slices), desc="Saving slices..."):
-        zarra[0, :, :, z] = np.squeeze(czi.read_mosaic(C=0, Z=z, scale_factor=1))
-        zarra[1, :, :, z] = np.squeeze(czi.read_mosaic(C=1, Z=z, scale_factor=1))
+    zarr_fg = zarr.open(outdir + "fg.zarr", mode='w', shape=sz, chunks=(200, 200, 10), dtype="uint16")
+
+    for z in tqdm(np.arange(Z), desc="Saving slices foreground..."):
+        zarr_fg[:, :, z] = np.squeeze(czi.read_mosaic(C=0, Z=z, scale_factor=1))
+
+    if C > 1: #there is a second (assumed background) channel
+        zarr_bg = zarr.open(outdir + "bg.zarr", mode='w', shape=sz, chunks=(200, 200, 10), dtype="uint16")
+        for z in tqdm(np.arange(Z), desc="Saving slices background..."):
+            zarr_bg[:, :, z] = np.squeeze(czi.read_mosaic(C=1, Z=z, scale_factor=1))
+elif task == "convertzarr":
+    zarr_path = "/cis/project/sriram/ng_data/exp227/fg.zarr"
+    print(f"Converting {zarr_path} to ome-zarr")
+    
+    dra = da.from_zarr(zarr_path)
+
+    store = parse_url("/cis/project/sriram/ng_data/exp227/fg_ome.zarr", mode="w").store
+    root = zarr.group(store=store)
+    write_image(image = dra, group=root, axes = "xyz")
 
 elif task == "writeng":
     outpath_prefix = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/"
@@ -134,10 +157,10 @@ elif task == "stategen":
     # sg.compute_states()
     sg.compute_edge_weights()
 
-elif task == "fragng":
-    outpath = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/fragments"
-    frags_path = "/cis/home/tathey/projects/mouselight/sriram/somez_labels.zarr"
-    frags = zarr.open(frags_path, "r")
+elif task == "segng":
+    im_path = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/im"
+    vol_im = CloudVolume(im_path, compress=False)
+    outpath = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/traces"
 
     info = CloudVolume.create_new_info(
         num_channels=1,
@@ -145,19 +168,41 @@ elif task == "fragng":
         data_type="uint16",  # Channel images might be 'uint8'
         # raw, png, jpeg, compressed_segmentation, fpzip, kempressed, zfpc, compresso
         encoding="raw",
-        resolution=[500, 500, 3000],  # Voxel scaling, units are in nanometers
+        resolution=vol_im.resolution,  # Voxel scaling, units are in nanometers
         voxel_offset=[0, 0, 0],  # x,y,z offset in voxels from the origin
         # Pick a convenient size for your underlying chunk representation
         # Powers of two are recommended, doesn't need to cover image exactly
-        chunk_size=[128, 128, 1],  # units are voxels
-        volume_size=frags.shape,  # e.g. a cubic millimeter dataset
+        chunk_size=vol_im.chunk_size,  # units are voxels
+        volume_size=vol_im.shape[:3],  # e.g. a cubic millimeter dataset
+        skeletons='skeletons'
     )
-
-    print(f"Posting info: {info} to {outpath}")
     vol = CloudVolume(outpath, info=info, compress=False)
     vol.commit_info()
+    vol.skeleton.meta.commit_info()
 
-    for z in tqdm(np.arange(frags.shape[-1]), desc="Writing fragments..."):
-        slice = frags[:, :, z]
-        slice = np.expand_dims(slice, axis=2)
-        vol[:, :, z] = slice
+    # outpath = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/fragments"
+    # frags_path = "/cis/home/tathey/projects/mouselight/sriram/somez_labels.zarr"
+    # frags = zarr.open(frags_path, "r")
+
+    # info = CloudVolume.create_new_info(
+    #     num_channels=1,
+    #     layer_type="segmentation",
+    #     data_type="uint16",  # Channel images might be 'uint8'
+    #     # raw, png, jpeg, compressed_segmentation, fpzip, kempressed, zfpc, compresso
+    #     encoding="raw",
+    #     resolution=[500, 500, 3000],  # Voxel scaling, units are in nanometers
+    #     voxel_offset=[0, 0, 0],  # x,y,z offset in voxels from the origin
+    #     # Pick a convenient size for your underlying chunk representation
+    #     # Powers of two are recommended, doesn't need to cover image exactly
+    #     chunk_size=[128, 128, 1],  # units are voxels
+    #     volume_size=frags.shape,  # e.g. a cubic millimeter dataset
+    # )
+
+    # print(f"Posting info: {info} to {outpath}")
+    # vol = CloudVolume(outpath, info=info, compress=False)
+    # vol.commit_info()
+
+    # for z in tqdm(np.arange(frags.shape[-1]), desc="Writing fragments..."):
+    #     slice = frags[:, :, z]
+    #     slice = np.expand_dims(slice, axis=2)
+    #     vol[:, :, z] = slice

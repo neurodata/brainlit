@@ -11,6 +11,11 @@ use env_39 on local
 cis:
 python cors_webserver.py -d "/cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/" -p 9010
 
+python cors_webserver.py -d "/cis/project/sriram/ng_data/" -p 9010
+zarr://http://127.0.0.1:9010/exp227/fg_ome.zarr
+
+a soma - 5346, 14801, 330
+
 use env_310 on dwalin
 
 python -i experiments/sriram/ng.py
@@ -403,20 +408,24 @@ class ViterBrainViewer(neuroglancer.Viewer):
 
 vb_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_viterbrain.pickle"
 vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pickle"
+trace_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/traces"
+trace_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/traces"
 port = "9010"
 im_layer = "im"
 frag_layer = "frags"
 trace_layer="traces"
 trace_path = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/traces"
+trace_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/traces"
 im_path = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/im"
+im_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/im"
 
 vbviewer = ViterBrainViewer(
     im_url=f"precomputed://http://127.0.0.1:{port}/{im_layer}",
     frag_url=f"precomputed://http://127.0.0.1:{port}/{frag_layer}",
     trace_url=f"precomputed://http://127.0.0.1:{port}/{trace_layer}",
-    trace_path=trace_path,
-    im_path=im_path,
-    vb_path=vb_path_local,
+    trace_path=trace_path_cis,
+    im_path=im_path_cis,
+    vb_path=vb_path_cis,
     napari_viewer=viewer,
 )
 print(vbviewer)
