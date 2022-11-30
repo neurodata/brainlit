@@ -47,7 +47,7 @@ def show_napari(subvol):
     layer.data = subvol
 
 class ViterBrainViewer(neuroglancer.Viewer):
-    def __init__(self, im_url, frag_url, trace_url, trace_path, im_path, vb_path, napari_viewer):
+    def __init__(self, im_url, trace_url, trace_path, im_path, napari_viewer, frag_url=None, vb_path = None):
         super().__init__()
 
         ap = argparse.ArgumentParser()
@@ -59,15 +59,16 @@ class ViterBrainViewer(neuroglancer.Viewer):
 
         # add layers
         with self.txn() as s:
-            s.layers["image"] = neuroglancer.ImageLayer(
-                source=im_url,
-            )
-            s.layers["fragments"] = neuroglancer.SegmentationLayer(
-                source=frag_url,
-            )
             s.layers["traces"] = neuroglancer.SegmentationLayer(
                 source=trace_url,
             )
+            s.layers["image"] = neuroglancer.ImageLayer(
+                source=im_url,
+            )
+            if frag_url:
+                s.layers["fragments"] = neuroglancer.SegmentationLayer(
+                    source=frag_url,
+                )
 
         # add keyboard actions
         self.actions.add("s_select", self.s_select)
@@ -90,9 +91,12 @@ class ViterBrainViewer(neuroglancer.Viewer):
             s.status_messages["hello"] = "Welcome to the ViterBrain tracer"
 
         # open vb object
-        with open(vb_path, "rb") as handle:
-            self.vb = pickle.load(handle)
-        self.vb.fragment_path = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_labels.zarr"
+        if vb_path:
+            with open(vb_path, "rb") as handle:
+                self.vb = pickle.load(handle)
+            self.vb.fragment_path = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_labels.zarr"
+        else:
+            self.vb = None
 
         # set useful object attributtes
         self.start_pt = None
@@ -192,7 +196,8 @@ class ViterBrainViewer(neuroglancer.Viewer):
         """
         with self.txn() as vs:  # add point
             layer_names = [l.name for l in vs.layers]
-            print("Selected fragment: %s" % (s.selected_values["fragments"],))
+            #print("Selected fragment: %s" % (s.selected_values["fragments"],))
+
             if "start" in layer_names:
                 if "end" in layer_names:
                     del vs.layers["end"]
@@ -216,6 +221,9 @@ class ViterBrainViewer(neuroglancer.Viewer):
 
 
     def t_trace(self, s):
+        if not self.vb:
+            raise ValueError(f"Cannot perform ViterBrain tracing without Viterbrain object")
+
         with self.txn() as vs:  # trace
             layer_names = [l.name for l in vs.layers]
 
@@ -248,7 +256,10 @@ class ViterBrainViewer(neuroglancer.Viewer):
                     del vs.layers["start"]
                 self.add_point("start", "#0f0", s.mouse_voxel_coordinates)
 
-            path = [self.start_pt, self.end_pt]
+            if len(self.start_pt) > 3 and len(self.end_pt) > 3:
+                path = [self.start_pt[:3], self.end_pt[:3]]
+            else:
+                path = [self.start_pt, self.end_pt]
             self.render_line(path, layer_names)
             self.start_pt = self.end_pt
             self.end_pt = None
@@ -411,25 +422,26 @@ vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pick
 trace_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/traces"
 trace_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/traces"
 port = "9010"
-im_layer = "im"
+im_url = f"zarr://http://127.0.0.1:{port}/3-1-soma.zarr"
+trace_url = f"precomputed://http://127.0.0.1:{port}/frags"
 frag_layer = "frags"
 trace_layer="traces"
-trace_path = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/traces"
+trace_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/traces"
 trace_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/traces"
-im_path = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/im"
+im_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/im"
+im_path_local_zarr = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/3-1-soma.zarr"
 im_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/im"
 
 vbviewer = ViterBrainViewer(
-    im_url=f"precomputed://http://127.0.0.1:{port}/{im_layer}",
-    frag_url=f"precomputed://http://127.0.0.1:{port}/{frag_layer}",
-    trace_url=f"precomputed://http://127.0.0.1:{port}/{trace_layer}",
-    trace_path=trace_path_cis,
-    im_path=im_path_cis,
-    vb_path=vb_path_cis,
+    im_url=im_url,
+    trace_url=trace_url,
+    trace_path=trace_path_local,
+    im_path=im_path_local,
     napari_viewer=viewer,
+    #frag_url=f"precomputed://http://127.0.0.1:{port}/{frag_layer}",
+    #vb_path=vb_path_local,
 )
 print(vbviewer)
 webbrowser.open_new(vbviewer.get_viewer_url())
-
 
 napari.run()
