@@ -76,7 +76,7 @@ class state_generation:
         self.ilastik_program_path = ilastik_program_path
         self.ilastik_project_path = ilastik_project_path
 
-        if len(chunk_size) != 4 or chunk_size[0] != self.image_shape[0]:
+        if len(chunk_size) == 4 and chunk_size[0] != self.image_shape[0]:
             raise ValueError(f"Chunk size must include all channels and be 4D (cxyz), not {chunk_size}")
 
         self.chunk_size = chunk_size
@@ -408,7 +408,7 @@ class state_generation:
             image_chunk = np.squeeze(image[self.fg_channel, shp[1]:shp[1]+300, shp[2]:shp[2]+300, shp[3]:shp[3]+300])
         else:
             image_chunk = np.squeeze(image[shp[1]:shp[1]+300, shp[2]:shp[2]+300, shp[3]:shp[3]+300])
-            
+
         fragments_chunk = fragments[shp[1]:shp[1]+300, shp[2]:shp[2]+300, shp[3]:shp[2]+300]
         data_fg = image_chunk[fragments_chunk > 0]
         if len(data_fg.flatten()) > 10000:
