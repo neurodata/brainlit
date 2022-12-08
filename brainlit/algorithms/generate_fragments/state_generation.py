@@ -149,13 +149,12 @@ class state_generation:
         Args:
             data_bin (str): path to directory to store intermediate files
         """
-        xdim = self.ndims - 3
         image = zarr.open(self.image_path, mode="r")
         prob_fname = self.new_layers_dir + "probs.zarr"
 
         probabilities = zarr.open(
             prob_fname, mode='w',
-            shape = np.squeeze(image.shape[1:]), chunks=image.chunks[1:], dtype="float"
+            shape = np.squeeze(image.shape[-3:]), chunks=image.chunks[1:], dtype="float"
         )
         chunk_size = self.chunk_size
 
