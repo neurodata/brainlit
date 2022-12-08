@@ -186,7 +186,11 @@ class state_generation:
                         z2 = np.amin([z + chunk_size[-1], image.shape[-1]])
                         f = h5py.File(fname, "r")
                         pred = f.get("exported_data")
-                        pred = np.squeeze(pred[1, :, :, :])
+
+                        if self.ndims == 4:
+                            pred = np.squeeze(pred[1, :, :, :])
+                        else:
+                            pred = np.squeeze(pred[:, :, :, 1])
 
                         probabilities[x:x2, y:y2, z:z2] = pred
 
