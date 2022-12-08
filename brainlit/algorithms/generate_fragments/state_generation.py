@@ -149,6 +149,7 @@ class state_generation:
         Args:
             data_bin (str): path to directory to store intermediate files
         """
+        xdim = self.ndims - 3
         image = zarr.open(self.image_path, mode="r")
         prob_fname = self.new_layers_dir + "probs.zarr"
 
@@ -163,19 +164,19 @@ class state_generation:
         )
 
         for x in tqdm(
-            np.arange(0, image.shape[1], chunk_size[1]),
+            np.arange(0, image.shape[-3], chunk_size[-3]),
             desc="Computing Ilastik Predictions",
         ):
-            x2 = np.amin([x + chunk_size[1], image.shape[1]])
-            for y in tqdm(np.arange(0, image.shape[2], chunk_size[2]), leave=False):
-                y2 = np.amin([y + chunk_size[2], image.shape[2]])
+            x2 = np.amin([x + chunk_size[-3], image.shape[-3]])
+            for y in tqdm(np.arange(0, image.shape[-2], chunk_size[-2]), leave=False):
+                y2 = np.amin([y + chunk_size[-2], image.shape[-2]])
                 Parallel(n_jobs=self.parallel)(
                     delayed(self._predict_thread)(
                         [x, y, z],
-                        [x2, y2, np.amin([z + chunk_size[3], image.shape[3]])],
+                        [x2, y2, np.amin([z + chunk_size[-1], image.shape[-1]])],
                         data_bin,
                     )
-                    for z in np.arange(0, image.shape[3], chunk_size[3])
+                    for z in np.arange(0, image.shape[-1], chunk_size[-1])
                 )
 
                 for f in os.listdir(data_bin):
@@ -183,7 +184,7 @@ class state_generation:
                     if "Probabilities" in f:
                         items = f.split("_")
                         z = int(items[1])
-                        z2 = np.amin([z + chunk_size[3], image.shape[3]])
+                        z2 = np.amin([z + chunk_size[-1], image.shape[-1]])
                         f = h5py.File(fname, "r")
                         pred = f.get("exported_data")
                         pred = np.squeeze(pred[1, :, :, :])
@@ -202,12 +203,12 @@ class state_generation:
 
         specifications = []
 
-        for x in np.arange(0, image.shape[1], chunk_size[1]):
-            x2 = np.amin([x + chunk_size[1], image.shape[1]])
-            for y in np.arange(0, image.shape[2], chunk_size[2]):
-                y2 = np.amin([y + chunk_size[2], image.shape[2]])
-                for z in np.arange(0, image.shape[3], chunk_size[3]):
-                    z2 = np.amin([z + chunk_size[3], image.shape[3]])
+        for x in np.arange(0, image.shape[-3], chunk_size[-3]):
+            x2 = np.amin([x + chunk_size[-3], image.shape[-3]])
+            for y in np.arange(0, image.shape[-2], chunk_size[-2]):
+                y2 = np.amin([y + chunk_size[-2], image.shape[-2]])
+                for z in np.arange(0, image.shape[-1], chunk_size[-1]):
+                    z2 = np.amin([z + chunk_size[-1], image.shape[-1]])
                     soma_coords_new = []
                     for soma_coord in soma_coords:
                         if (
@@ -402,14 +403,14 @@ class state_generation:
 
         print(f"Constructing tiered image {tiered_fname} of shape {tiered.shape}")
 
-        shp = np.array(np.array(image.shape) / 2).astype(int)
+        shp = np.array(np.array(image.shape[-3:]) / 2).astype(int)
 
         if self.ndims == 4:
-            image_chunk = np.squeeze(image[self.fg_channel, shp[1]:shp[1]+300, shp[2]:shp[2]+300, shp[3]:shp[3]+300])
+            image_chunk = np.squeeze(image[self.fg_channel, shp[0]:shp[0]+300, shp[1]:shp[1]+300, shp[2]:shp[2]+300])
         else:
-            image_chunk = np.squeeze(image[shp[1]:shp[1]+300, shp[2]:shp[2]+300, shp[3]:shp[3]+300])
+            image_chunk = np.squeeze(image[shp[0]:shp[0]+300, shp[1]:shp[1]+300, shp[2]:shp[2]+300])
 
-        fragments_chunk = fragments[shp[1]:shp[1]+300, shp[2]:shp[2]+300, shp[3]:shp[2]+300]
+        fragments_chunk = fragments[shp[0]:shp[0]+300, shp[1]:shp[1]+300, shp[2]:shp[2]+300]
         data_fg = image_chunk[fragments_chunk > 0]
         if len(data_fg.flatten()) > 10000:
             data_sample = random.sample(list(data_fg), k=10000)
