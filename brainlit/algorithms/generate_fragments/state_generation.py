@@ -26,6 +26,7 @@ class state_generation:
     def __init__(
         self,
         image_path: str,
+        new_layers_dir: str,
         ilastik_program_path: str,
         ilastik_project_path: str,
         fg_channel: int,
@@ -42,6 +43,7 @@ class state_generation:
 
         Args:
             image_path (str): Path to image zarr.
+            new_layers_dir (str): Path to directory where new layers will be written.
             ilastik_program_path (str): Path to ilastik program.
             ilastik_project_path (str): Path to ilastik project for segmentation of image.
             fg_channel (int): Channel of image taken to be foreground.
@@ -87,6 +89,8 @@ class state_generation:
                     raise ValueError(f"{name} image has different shape {other_image.shape} than image {self.image_shape}")
 
 
+
+        self.new_layers_dir = new_layers_dir
         self.prob_path = prob_path
         self.fragment_path = fragment_path
         self.tiered_path = tiered_path
@@ -132,8 +136,7 @@ class state_generation:
             data_bin (str): path to directory to store intermediate files
         """
         image = zarr.open(self.image_path, mode="r")
-        items = self.image_path.split(".")
-        prob_fname = items[0] + "_probs.zarr"
+        prob_fname = self.new_layers_dir + "probs.zarr"
 
         probabilities = zarr.open(
             prob_fname, mode='w',
@@ -282,8 +285,8 @@ class state_generation:
     def compute_frags(self) -> None:
         """Compute all fragments for image"""
         probs = zarr.open(self.prob_path, mode="r")
-        items = self.image_path.split(".")
-        frag_fname = items[0] + "_labels.zarr"
+        frag_fname = self.new_layers_dir + "labels.zarr"
+        
         fragments = zarr.open(
             frag_fname, mode='w',
             shape = np.squeeze(probs.shape), chunks=probs.chunks, dtype="uint16"
@@ -370,8 +373,8 @@ class state_generation:
         """Compute entire tiered image then reassemble and save as zarr"""
         image = zarr.open(self.image_path, mode="r")
         fragments = zarr.open(self.fragment_path, mode="r")
-        items = self.image_path.split(".")
-        tiered_fname = items[0] + "_tiered.zarr"
+        tiered_fname = self.new_layers_dir + "tiered.zarr"
+
         tiered = zarr.open(
             tiered_fname, mode='w',
             shape = np.squeeze(fragments.shape), chunks=fragments.chunks, dtype="uint16"
@@ -642,8 +645,7 @@ class state_generation:
             ValueError: erroneously computed endpoints of soma state
         """
         print(f"Computing states")
-        items = self.image_path.split(".")
-        states_fname = items[0] + "_nx.pickle"
+        states_fname = self.new_layers_dir + "nx.pickle"
 
         specifications = self._get_frag_specifications()
 
@@ -715,8 +717,7 @@ class state_generation:
 
     def compute_edge_weights(self) -> None:
         """Create viterbrain object and compute edge weights"""
-        items = self.image_path.split(".")
-        viterbrain_fname = items[0] + "_viterbrain.pickle"
+        viterbrain_fname = self.new_layers_dir + "viterbrain.pickle"
 
         with open(self.states_path, "rb") as handle:
             G = pickle.load(handle)
