@@ -138,7 +138,7 @@ elif task == "saveilastik":
 elif task == "stategen":
     sg = state_generation(
         image_path="/cis/project/sriram/ng_data/sriram-adipo-brain1-im3/fg_ome.zarr/0/",
-        new_layers_dir="/cis/project/sriram/ng_data/sriram-adipo-brain1-im3/"
+        new_layers_dir="/cis/project/sriram/ng_data/sriram-adipo-brain1-im3/",
         ilastik_program_path="/cis/home/tathey/ilastik-1.3.3post3-Linux/run_ilastik.sh",
         ilastik_project_path="/cis/project/sriram/ilastik_data/axon_segmentation.ilp",
         fg_channel=0,

@@ -64,8 +64,12 @@ class state_generation:
 
         self.image_path = image_path
         image = zarr.open(image_path, mode="r")
-        if len(image.shape) != 4:
-            raise ValueError(f"Image must be 4D (cxyz), rather than shape: {image.shape}")
+        if len(image.shape) == 4:
+            self.ndims = 4
+        elif len(image.shape) == 3:
+            self.ndims = 3
+        else:
+            raise ValueError(f"Image must be 3D (xyz) or 4D (cxyz), rather than shape: {image.shape}")
 
         self.fg_channel = fg_channel
         self.image_shape = image.shape
@@ -107,14 +111,24 @@ class state_generation:
             data_bin (str): path to directory to store intermediate files
         """
         image = zarr.open(self.image_path, mode="r")
-        image_chunk = np.squeeze(
-            image[
-                :,
-                corner1[0] : corner2[0],
-                corner1[1] : corner2[1],
-                corner1[2] : corner2[2],
-            ]
-        )
+        if self.ndims == 4:
+            image_chunk = np.squeeze(
+                image[
+                    :,
+                    corner1[0] : corner2[0],
+                    corner1[1] : corner2[1],
+                    corner1[2] : corner2[2],
+                ]
+            )
+        else:
+            image_chunk = np.squeeze(
+                image[
+                    corner1[0] : corner2[0],
+                    corner1[1] : corner2[1],
+                    corner1[2] : corner2[2],
+                ]
+            )
+
         fname = data_bin + "image_" + str(corner1[2]) + ".h5"
         with h5py.File(fname, "w") as f:
             f.create_dataset("image_chunk", data=image_chunk)
@@ -354,9 +368,15 @@ class state_generation:
         kde = self.kde
         image = zarr.open(self.image_path, mode="r")
 
-        image = np.squeeze(image[
-            self.fg_channel, corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
-        ])
+        if self.ndims == 4:
+            image = np.squeeze(image[
+                self.fg_channel, corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
+            ])
+        else:
+            image = np.squeeze(image[
+                corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
+            ])
+
 
         vals = np.unique(image)
         scores_neg = -1 * kde.logpdf(vals)
@@ -383,7 +403,12 @@ class state_generation:
         print(f"Constructing tiered image {tiered_fname} of shape {tiered.shape}")
 
         shp = np.array(np.array(image.shape) / 2).astype(int)
-        image_chunk = np.squeeze(image[self.fg_channel, shp[1]:shp[1]+300, shp[2]:shp[2]+300, shp[3]:shp[3]+300])
+
+        if self.ndims == 4:
+            image_chunk = np.squeeze(image[self.fg_channel, shp[1]:shp[1]+300, shp[2]:shp[2]+300, shp[3]:shp[3]+300])
+        else:
+            image_chunk = np.squeeze(image[shp[1]:shp[1]+300, shp[2]:shp[2]+300, shp[3]:shp[3]+300])
+            
         fragments_chunk = fragments[shp[1]:shp[1]+300, shp[2]:shp[2]+300, shp[3]:shp[2]+300]
         data_fg = image_chunk[fragments_chunk > 0]
         if len(data_fg.flatten()) > 10000:
