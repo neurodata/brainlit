@@ -9,45 +9,21 @@ import igneous.task_creation as tc
 from taskqueue import LocalTaskQueue
 import h5py
 from brainlit.algorithms.generate_fragments.state_generation import state_generation
+from brainlit.utils.write import czi_to_zarr, zarr_to_omezarr
 import dask.array as da 
 from ome_zarr.writer import write_image
 from ome_zarr.io import parse_url
 
-task = "convertzarr"
+task = "convert"
 
-if task == "writezarr":
-    path = "/cis/project/sriram/for Tomi/exp227-mouse3-stitched.czi"
-    outdir = "/cis/project/sriram/ng_data/exp227/"
+if task == "convert":
+    czi_path = "/cis/project/sriram/for Tomi/exp227-mouse3-stitched.czi"
+    out_dir = "/cis/project/sriram/ng_data/exp227/"
 
-    czi = aicspylibczi.CziFile(path)
+    zarr_paths = czi_to_zarr(czi_path=czi_path, out_dir=out_dir)
 
-    slice1 = np.squeeze(czi.read_mosaic(C=0, Z=0, scale_factor=1))
-    C = czi.get_dims_shape()[0]["C"][1]
-    H = slice1.shape[0]
-    W = slice1.shape[1]
-    Z = czi.get_dims_shape()[0]["Z"][1]
-
-    print(f"Writing {C} zarrs of shape {H}x{W}x{Z} from czi with dims {czi.get_dims_shape()}")
-    sz = np.array([H, W, Z], dtype='int')
-
-    zarr_fg = zarr.open(outdir + "fg.zarr", mode='w', shape=sz, chunks=(200, 200, 10), dtype="uint16")
-
-    for z in tqdm(np.arange(Z), desc="Saving slices foreground..."):
-        zarr_fg[:, :, z] = np.squeeze(czi.read_mosaic(C=0, Z=z, scale_factor=1))
-
-    if C > 1: #there is a second (assumed background) channel
-        zarr_bg = zarr.open(outdir + "bg.zarr", mode='w', shape=sz, chunks=(200, 200, 10), dtype="uint16")
-        for z in tqdm(np.arange(Z), desc="Saving slices background..."):
-            zarr_bg[:, :, z] = np.squeeze(czi.read_mosaic(C=1, Z=z, scale_factor=1))
-elif task == "convertzarr":
-    zarr_path = "/cis/project/sriram/ng_data/exp227/fg.zarr"
-    print(f"Converting {zarr_path} to ome-zarr")
-    
-    dra = da.from_zarr(zarr_path)
-
-    store = parse_url("/cis/project/sriram/ng_data/exp227/fg_ome.zarr", mode="w").store
-    root = zarr.group(store=store)
-    write_image(image = dra, group=root, axes = "xyz")
+    out_path = "/cis/project/sriram/ng_data/exp227/fg_ome.zarr"
+    zarr_to_omezarr(zarr_path=zarr_paths[0], out_path=out_path)
 
 elif task == "writeng":
     outpath_prefix = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/"
