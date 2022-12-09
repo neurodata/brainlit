@@ -116,11 +116,42 @@ brain2paths = {
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_10_24/8788/Ch_561",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_10_24/8788/Ch_488",
         "mask": "precomputed://s3://smartspim-precomputed-volumes/2022_10_24/8788/axon_mask",
+        "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_10_24/8788/axon_mask_transformed",
         "val_info": {
-            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=UhmEbSK5fIJxow",
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=a7nPluS2FyMT0g",
+            "layer": "val",
+        },
+        "train_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=a7nPluS2FyMT0g",
+            "layer": "train",
+        },
+    },
+    "11537": {
+        "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/Ch_647",
+        "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/Ch_561",
+        "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/Ch_488",
+        "mask": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/axon_mask",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=9MCP5DRs2D32Bg",
             "layer": "val",
         },
     },
+    "8786": {
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2022_11_02/8786/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=YRB3G4Hn19TjIA",
+            "layer": "val",
+        },
+    },
+    "8790": {
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2022_11_01/8790/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=hhlEcKDIfqrY-w",
+            "layer": "val",
+        },
+    },
+
+
     # apparently not an axon sample!
     # "887": {
     #     "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_09_20/887/Ch_647_iso",
