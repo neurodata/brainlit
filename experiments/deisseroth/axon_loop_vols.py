@@ -1,9 +1,11 @@
 '''
 Inputs
 '''
-dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_10_24/8788/" #s3 path to directory that contains image data
-threshold = 0.4 #threshold to use for ilastik
+dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_11_01/8790/" #s3 path to directory that contains image data
+threshold = 0.3 #threshold to use for ilastik
 data_dir = "/data/tathey1/matt_wright/brain_temp/" #directory to store temporary subvolumes for segmentation
+max_y = 10250
+skip_segment = True
 
 '''
 Segment Axon
@@ -39,7 +41,8 @@ for i in tqdm(range(0, shape[0], chunk_size[0])):
         for k in range(0, shape[2], chunk_size[2]):
             c1 = [i, j, k]
             c2 = [np.amin([shape[idx], c1[idx] + chunk_size[idx]]) for idx in range(3)]
-            corners.append([c1, c2])
+            if c1[1] < max_y:
+                corners.append([c1, c2])
 
 corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
 
@@ -92,16 +95,16 @@ def process_chunk(c1, c2, data_dir, threshold, dir_base):
         mask = np.array(pred > threshold).astype("uint64")
         vol_mask[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]] = mask
 
-
-for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
-    # for corner in tqdm(corners_chunk):
-    #      process_chunk(corner[0],corner[1], data_dir, threshold, dir_base)
-    Parallel(n_jobs=14)(
-        delayed(process_chunk)(corner[0], corner[1], data_dir, threshold, dir_base)
-        for corner in tqdm(corners_chunk, leave=False)
-    )
-    for f in os.listdir(data_dir):
-        os.remove(os.path.join(data_dir, f))
+if not skip_segment:
+    for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
+        # for corner in tqdm(corners_chunk):
+        #      process_chunk(corner[0],corner[1], data_dir, threshold, dir_base)
+        Parallel(n_jobs=15)(
+            delayed(process_chunk)(corner[0], corner[1], data_dir, threshold, dir_base)
+            for corner in tqdm(corners_chunk, leave=False)
+        )
+        for f in os.listdir(data_dir):
+            os.remove(os.path.join(data_dir, f))
 
 
 '''
