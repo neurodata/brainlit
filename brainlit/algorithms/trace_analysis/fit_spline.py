@@ -1,6 +1,7 @@
 from typing import Tuple
 import numpy as np
-from scipy.interpolate import splprep, splev, BSpline, CubicHermiteSpline
+from scipy.interpolate import splprep, splev, BSpline, CubicHermiteSpline, PPoly
+from scipy.interpolate._cubic import prepare_input
 import pandas as pd
 import math
 import warnings
@@ -31,6 +32,59 @@ def compute_parameterization(positions: np.array) -> np.array:
     NodeDist = np.linalg.norm(np.diff(positions, axis=0), axis=1)
     TotalDist = np.concatenate(([0], np.cumsum(NodeDist)))
     return TotalDist
+
+
+class CubicHermiteChain(PPoly):
+    """A third order spline class (continuous piecewise cubic representation), that is fit to a set of positions and one-sided derivatives. This is not a standard spline class (e.g. b-splines), because the derivatives are not necessarily continuous at the knots.
+
+    A subclass of PPoly, a piecewise polynomial class from scipy.
+    """
+
+    def __init__(
+        self,
+        x: np.array,
+        y: np.array,
+        left_dydx: np.array,
+        right_dydx: np.array,
+        extrapolate=None,
+    ):
+        """Initialize object via:
+
+        Parameters
+        ----------
+        x : np.array
+            Independent variable, shape n.
+        y : np.array
+            Dependent variable, shape n x d.
+        left_dydx : np.array
+            Derivatives on left sides of cubic segments (i.e. right hand derivatives of knots), shape n-1 x d.
+        right_dy_dx : np.array
+            Derivatives on right sides of cubic segments (i.e. left hand derivatives of knots), shape n-1 x d.
+        extrapolate : np.array
+            If bool, determines whether to extrapolate to out-of-bounds points based on first and last intervals, or to return NaNs. If ‘periodic’, periodic extrapolation is used. Default is True.
+        """
+        if extrapolate is None:
+            extrapolate = True
+
+        x, dx, y, axis, _ = prepare_input(x, y, axis=0)
+
+        if not np.array_equal(left_dydx.shape, right_dydx.shape):
+            raise ValueError(
+                f"Left derivatives shape {left_dydx.shape} must be equal to right derivatives shape {right_dydx.shape}"
+            )
+
+        dxr = dx.reshape([dx.shape[0]] + [1] * (y.ndim - 1))
+        slope = np.diff(y, axis=0) / dxr
+        t = (left_dydx + right_dydx - 2 * slope) / dxr
+
+        c = np.empty((4, len(x) - 1) + y.shape[1:], dtype=t.dtype)
+        c[0] = t / dxr
+        c[1] = (slope - left_dydx) / dxr - t
+        c[2] = left_dydx
+        c[3] = y[:-1]
+
+        super().__init__(c, x, extrapolate=extrapolate)
+        self.axis = axis
 
 
 """

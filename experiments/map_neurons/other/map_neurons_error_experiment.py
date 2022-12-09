@@ -13,7 +13,7 @@ import matplotlib
 from scipy.interpolate import splev
 from brainlit.map_neurons.map_neurons import (
     DiffeomorphismAction,
-    transform_GeometricGraph,
+    transform_geometricgraph,
     compute_derivs,
 )
 import pandas as pd
@@ -56,7 +56,7 @@ av_sample_distances = []
 
 spacing = 2
 inter = -1
-ds_factor = 2
+ds_factor = 100
 
 print(
     f"Processing neurons starting with {inter} with a spacing {spacing} and downsampling factor {ds_factor}"
@@ -128,23 +128,21 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
         path = spline_tree_branch.nodes[0]["path"]
         tck, us = spline_tree_branch.nodes[0]["spline"]
         positions = np.array(splev(us, tck, der=0)).T
-        derivs = compute_derivs(us, tck, positions)
 
         G_branch_ds = deepcopy(G_branch)
         G_branch_ds.remove_nodes_from(nodes2remove)
         G_branch_ds.remove_edges_from(list(G_branch.edges))
         for node1, node2 in zip(nodes2keep[:-1], nodes2keep[1:]):
             G_branch_ds.add_edge(node1, node2)
-        derivs = np.delete(derivs, nodes2remove, 0)
         G_branch_ds.fit_spline_tree_invariant(k=1)
         spline_tree_branch_ds = G_branch_ds.spline_tree
 
         # transform the branch
         G_branch_transformed = deepcopy(G_branch)
         G_branch_ds_transformed = deepcopy(G_branch_ds)
-        # G_branch_transformed = transform_GeometricGraph(G_branch_transformed, ct, deriv_method="difference")
-        G_branch_ds_transformed = transform_GeometricGraph(
-            G_branch_ds_transformed, ct, derivs=derivs
+        # G_branch_transformed = transform_geometricgraph(G_branch_transformed, ct, deriv_method="difference")
+        G_branch_ds_transformed = transform_geometricgraph(
+            G_branch_ds_transformed, ct, deriv_method="two-sided"
         )
 
         spline_tree_transformed = G_branch_transformed.spline_tree
@@ -162,7 +160,7 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
         av_sample_distance = np.mean(np.linalg.norm(np.diff(pts, axis=0), axis=1))
 
         # Access original knots and compute sample distance
-        spline = spline_tree_branch.nodes[0]["spline"]
+        spline = spline_tree_branch_ds.nodes[0]["spline"]
         u = spline[1]
         tck = spline[0]
         pts = splev(u, tck)
@@ -204,7 +202,7 @@ for id in tqdm(valid_ids, desc="Processing neurons..."):
             errors.append(error)
             methods.append(method)
 
-        if errors[-2] - errors[-1] > 7:
+        if errors[-2] - errors[-1] > 2:
             print(f"neuron {id} branch {branch_id} error {errors[-2] - errors[-1]}")
 
     fname = f"/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/derivdiff2_errsthru{id}_spac{spacing}_ds{ds_factor}.pickle"

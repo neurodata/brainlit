@@ -1,4 +1,4 @@
 *.ipynb  linguist-vendored=true
 *.ipynb filter=nbstripout
 *.ipynb diff=ipynb
-experiments/register_axons/data/mapping-files.zip filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text
