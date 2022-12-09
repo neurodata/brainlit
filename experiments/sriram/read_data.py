@@ -10,7 +10,7 @@ from taskqueue import LocalTaskQueue
 import h5py
 from brainlit.algorithms.generate_fragments.state_generation import state_generation
 from brainlit.utils.write import czi_to_zarr, zarr_to_omezarr
-import dask.array as da 
+import dask.array as da
 from ome_zarr.writer import write_image
 from ome_zarr.io import parse_url
 
@@ -154,7 +154,7 @@ elif task == "segng":
         # Powers of two are recommended, doesn't need to cover image exactly
         chunk_size=chunk_size,  # units are voxels
         volume_size=volume_size,  # e.g. a cubic millimeter dataset
-        skeletons='skeletons'
+        skeletons="skeletons",
     )
     vol = CloudVolume(outpath, info=info, compress=False)
     vol.commit_info()

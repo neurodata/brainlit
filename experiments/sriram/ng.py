@@ -38,16 +38,27 @@ from scipy.spatial import KDTree
 import napari
 from napari._qt.qthreading import thread_worker
 
-data = np.random.random((10, 10,10))*255
+data = np.random.random((10, 10, 10)) * 255
 viewer = napari.Viewer()
 layer = viewer.add_image(data)
+
 
 def show_napari(subvol):
     print("updating napari")
     layer.data = subvol
 
+
 class ViterBrainViewer(neuroglancer.Viewer):
-    def __init__(self, im_url, trace_url, trace_path, im_path, napari_viewer, frag_url=None, vb_path = None):
+    def __init__(
+        self,
+        im_url,
+        trace_url,
+        trace_path,
+        im_path,
+        napari_viewer,
+        frag_url=None,
+        vb_path=None,
+    ):
         super().__init__()
 
         ap = argparse.ArgumentParser()
@@ -55,7 +66,10 @@ class ViterBrainViewer(neuroglancer.Viewer):
         args = ap.parse_args()
         neuroglancer.cli.handle_server_arguments(args)
 
-        cv_dict = {"traces": CloudVolume(trace_path, compress=False), "im": CloudVolume(im_path, compress=False)}
+        cv_dict = {
+            "traces": CloudVolume(trace_path, compress=False),
+            "im": CloudVolume(im_path, compress=False),
+        }
 
         # add layers
         with self.txn() as s:
@@ -196,7 +210,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
         """
         with self.txn() as vs:  # add point
             layer_names = [l.name for l in vs.layers]
-            #print("Selected fragment: %s" % (s.selected_values["fragments"],))
+            # print("Selected fragment: %s" % (s.selected_values["fragments"],))
 
             if "start" in layer_names:
                 if "end" in layer_names:
@@ -216,13 +230,16 @@ class ViterBrainViewer(neuroglancer.Viewer):
         self.start_pt = [int(p) for p in s.mouse_voxel_coordinates]
         self.cur_skel = ids_total[closest_idx][0]
         self.cur_skel_head = ids_total[closest_idx][1]
-        print(f"Hooking into skeleton #{self.cur_skel} at id {self.cur_skel_head}: {self.start_pt}")
+        print(
+            f"Hooking into skeleton #{self.cur_skel} at id {self.cur_skel_head}: {self.start_pt}"
+        )
         self.add_point("start", "#0f0", s.mouse_voxel_coordinates)
-
 
     def t_trace(self, s):
         if not self.vb:
-            raise ValueError(f"Cannot perform ViterBrain tracing without Viterbrain object")
+            raise ValueError(
+                f"Cannot perform ViterBrain tracing without Viterbrain object"
+            )
 
         with self.txn() as vs:  # trace
             layer_names = [l.name for l in vs.layers]
@@ -251,7 +268,9 @@ class ViterBrainViewer(neuroglancer.Viewer):
                     vs.layers["end"].name = "start"
             else:
                 self.end_pt = [int(p) for p in s.mouse_voxel_coordinates]
-                print(f"Drawing line from {self.start_pt} to mouse location {self.end_pt}")
+                print(
+                    f"Drawing line from {self.start_pt} to mouse location {self.end_pt}"
+                )
                 with self.txn() as vs:  # trace
                     del vs.layers["start"]
                 self.add_point("start", "#0f0", s.mouse_voxel_coordinates)
@@ -273,9 +292,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
             if trace_layer_name in layer_names:
                 del vs.layers[trace_layer_name]
 
-            coords_list = [
-                inner for outer in self.cur_skel_coords for inner in outer
-            ]
+            coords_list = [inner for outer in self.cur_skel_coords for inner in outer]
             skel_source = self.SkeletonSource(self.dimensions)
             skel_source.add_skeleton(coords_list=coords_list)
             vs.layers.append(
@@ -291,7 +308,6 @@ class ViterBrainViewer(neuroglancer.Viewer):
                     segments=[0],
                 ),
             )
-
 
     def c_clearlast(self, s):
         if len(self.cur_skel_coords) == 0:
@@ -366,18 +382,26 @@ class ViterBrainViewer(neuroglancer.Viewer):
             try:
                 skel = vol.skeleton.get(self.cur_skel)
                 cur_num_verts = skel.vertices.shape[0]
-                edges = [[self.cur_skel_head, cur_num_verts]] + [[i - 1, i] for i in range(cur_num_verts+1, vertices.shape[0]+cur_num_verts)]
+                edges = [[self.cur_skel_head, cur_num_verts]] + [
+                    [i - 1, i]
+                    for i in range(cur_num_verts + 1, vertices.shape[0] + cur_num_verts)
+                ]
                 edges = np.array(edges)
                 edges = np.concatenate((skel.edges, edges), axis=0)
                 vertices = np.concatenate((skel.vertices, vertices), axis=0)
             except SkeletonDecodeError:
                 if self.cur_skel_head != 0:
-                    raise ValueError(f"Writing new skeleton (#{self.cur_skel}), but cur_skel_head is >0 ({self.cur_skel_head})")
+                    raise ValueError(
+                        f"Writing new skeleton (#{self.cur_skel}), but cur_skel_head is >0 ({self.cur_skel_head})"
+                    )
                 edges = [[i - 1, i] for i in range(1, len(coords_list))]
 
-
-            skel = Skeleton(segid = self.cur_skel, vertices=vertices, edges=edges, space='voxel')
-            skel.extra_attributes = [ attr for attr in skel.extra_attributes if attr['data_type'] == 'float32' ]
+            skel = Skeleton(
+                segid=self.cur_skel, vertices=vertices, edges=edges, space="voxel"
+            )
+            skel.extra_attributes = [
+                attr for attr in skel.extra_attributes if attr["data_type"] == "float32"
+            ]
             vol.skeleton.upload(skel)
             print(f"verts: {vertices}, edges: {edges}")
 
@@ -387,11 +411,18 @@ class ViterBrainViewer(neuroglancer.Viewer):
         pt = [int(p) for p in s.mouse_voxel_coordinates]
         vol_im = self.cv_dict["im"]
         radius = 10
-        subvol = np.array(np.squeeze(vol_im[pt[0]-radius:pt[0]+radius,pt[1]-radius:pt[1]+radius,pt[2]-radius:pt[2]+radius]))
+        subvol = np.array(
+            np.squeeze(
+                vol_im[
+                    pt[0] - radius : pt[0] + radius,
+                    pt[1] - radius : pt[1] + radius,
+                    pt[2] - radius : pt[2] + radius,
+                ]
+            )
+        )
         print(f"range {np.amin(subvol)} to {np.amax(subvol)}")
         show_napari(subvol)
         # return subvol
-
 
     class SkeletonSource(neuroglancer.skeleton.SkeletonSource):
         """Source used to serve skeleton objects generated by ViterBrain tracing.
@@ -416,7 +447,6 @@ class ViterBrainViewer(neuroglancer.Viewer):
             return self.skels[i]
 
 
-
 vb_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_viterbrain.pickle"
 vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pickle"
 trace_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/traces"
@@ -425,7 +455,7 @@ port = "9010"
 im_url = f"zarr://http://127.0.0.1:{port}/3-1-soma.zarr"
 trace_url = f"precomputed://http://127.0.0.1:{port}/frags"
 frag_layer = "frags"
-trace_layer="traces"
+trace_layer = "traces"
 trace_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/traces"
 trace_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/traces"
 im_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/im"
@@ -438,8 +468,8 @@ vbviewer = ViterBrainViewer(
     trace_path=trace_path_local,
     im_path=im_path_local,
     napari_viewer=viewer,
-    #frag_url=f"precomputed://http://127.0.0.1:{port}/{frag_layer}",
-    #vb_path=vb_path_local,
+    # frag_url=f"precomputed://http://127.0.0.1:{port}/{frag_layer}",
+    # vb_path=vb_path_local,
 )
 print(vbviewer)
 webbrowser.open_new(vbviewer.get_viewer_url())

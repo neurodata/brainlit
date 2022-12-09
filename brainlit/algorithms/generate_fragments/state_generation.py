@@ -69,7 +69,9 @@ class state_generation:
         elif len(image.shape) == 3:
             self.ndims = 3
         else:
-            raise ValueError(f"Image must be 3D (xyz) or 4D (cxyz), rather than shape: {image.shape}")
+            raise ValueError(
+                f"Image must be 3D (xyz) or 4D (cxyz), rather than shape: {image.shape}"
+            )
 
         self.fg_channel = fg_channel
         self.image_shape = image.shape
@@ -77,7 +79,9 @@ class state_generation:
         self.ilastik_project_path = ilastik_project_path
 
         if len(chunk_size) == 4 and chunk_size[0] != self.image_shape[0]:
-            raise ValueError(f"Chunk size must include all channels and be 4D (cxyz), not {chunk_size}")
+            raise ValueError(
+                f"Chunk size must include all channels and be 4D (cxyz), not {chunk_size}"
+            )
 
         self.chunk_size = chunk_size
         self.soma_coords = soma_coords
@@ -90,9 +94,9 @@ class state_generation:
             if other_im is not None:
                 other_image = zarr.open(other_im, mode="r")
                 if other_image.shape != self.image_shape[1:]:
-                    raise ValueError(f"{name} image has different shape {other_image.shape} than image {self.image_shape}")
-
-
+                    raise ValueError(
+                        f"{name} image has different shape {other_image.shape} than image {self.image_shape}"
+                    )
 
         self.new_layers_dir = new_layers_dir
         self.prob_path = prob_path
@@ -153,8 +157,11 @@ class state_generation:
         prob_fname = self.new_layers_dir + "probs.zarr"
 
         probabilities = zarr.open(
-            prob_fname, mode='w',
-            shape = np.squeeze(image.shape[-3:]), chunks=image.chunks[1:], dtype="float"
+            prob_fname,
+            mode="w",
+            shape=np.squeeze(image.shape[-3:]),
+            chunks=image.chunks[1:],
+            dtype="float",
         )
         chunk_size = self.chunk_size
 
@@ -304,10 +311,13 @@ class state_generation:
         """Compute all fragments for image"""
         probs = zarr.open(self.prob_path, mode="r")
         frag_fname = self.new_layers_dir + "labels.zarr"
-        
+
         fragments = zarr.open(
-            frag_fname, mode='w',
-            shape = np.squeeze(probs.shape), chunks=probs.chunks, dtype="uint16"
+            frag_fname,
+            mode="w",
+            shape=np.squeeze(probs.shape),
+            chunks=probs.chunks,
+            dtype="uint16",
         )
 
         print(f"Constructing fragment image {frag_fname} of shape {fragments.shape}")
@@ -373,14 +383,22 @@ class state_generation:
         image = zarr.open(self.image_path, mode="r")
 
         if self.ndims == 4:
-            image = np.squeeze(image[
-                self.fg_channel, corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
-            ])
+            image = np.squeeze(
+                image[
+                    self.fg_channel,
+                    corner1[0] : corner2[0],
+                    corner1[1] : corner2[1],
+                    corner1[2] : corner2[2],
+                ]
+            )
         else:
-            image = np.squeeze(image[
-                corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
-            ])
-
+            image = np.squeeze(
+                image[
+                    corner1[0] : corner2[0],
+                    corner1[1] : corner2[1],
+                    corner1[2] : corner2[2],
+                ]
+            )
 
         vals = np.unique(image)
         scores_neg = -1 * kde.logpdf(vals)
@@ -400,8 +418,11 @@ class state_generation:
         tiered_fname = self.new_layers_dir + "tiered.zarr"
 
         tiered = zarr.open(
-            tiered_fname, mode='w',
-            shape = np.squeeze(fragments.shape), chunks=fragments.chunks, dtype="uint16"
+            tiered_fname,
+            mode="w",
+            shape=np.squeeze(fragments.shape),
+            chunks=fragments.chunks,
+            dtype="uint16",
         )
 
         print(f"Constructing tiered image {tiered_fname} of shape {tiered.shape}")
@@ -409,11 +430,24 @@ class state_generation:
         shp = np.array(np.array(image.shape[-3:]) / 2).astype(int)
 
         if self.ndims == 4:
-            image_chunk = np.squeeze(image[self.fg_channel, shp[0]:shp[0]+300, shp[1]:shp[1]+300, shp[2]:shp[2]+300])
+            image_chunk = np.squeeze(
+                image[
+                    self.fg_channel,
+                    shp[0] : shp[0] + 300,
+                    shp[1] : shp[1] + 300,
+                    shp[2] : shp[2] + 300,
+                ]
+            )
         else:
-            image_chunk = np.squeeze(image[shp[0]:shp[0]+300, shp[1]:shp[1]+300, shp[2]:shp[2]+300])
+            image_chunk = np.squeeze(
+                image[
+                    shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
+                ]
+            )
 
-        fragments_chunk = fragments[shp[0]:shp[0]+300, shp[1]:shp[1]+300, shp[2]:shp[2]+300]
+        fragments_chunk = fragments[
+            shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
+        ]
         data_fg = image_chunk[fragments_chunk > 0]
         if len(data_fg.flatten()) > 10000:
             data_sample = random.sample(list(data_fg), k=10000)
@@ -445,7 +479,9 @@ class state_generation:
         self.tiered_path = tiered_fname
 
     def _compute_bounds(
-        self, label: np.ndarray, pad: float,
+        self,
+        label: np.ndarray,
+        pad: float,
     ) -> Tuple[int, int, int, int, int, int]:
         """compute coordinates of bounding box around a masked object, with given padding
 
@@ -464,13 +500,13 @@ class state_generation:
         z = np.any(label, axis=(0, 1))
         rmin, rmax = np.where(r)[0][[0, -1]]
         rmin = np.amax((0, math.floor(rmin - pad / res[0])))
-        rmax = np.amin((image_shape[0], math.ceil(rmax + pad/ res[0])+1))
+        rmax = np.amin((image_shape[0], math.ceil(rmax + pad / res[0]) + 1))
         cmin, cmax = np.where(c)[0][[0, -1]]
         cmin = np.amax((0, math.floor(cmin - (pad) / res[1])))
-        cmax = np.amin((image_shape[1], math.ceil(cmax + pad / res[1])+1))
+        cmax = np.amin((image_shape[1], math.ceil(cmax + pad / res[1]) + 1))
         zmin, zmax = np.where(z)[0][[0, -1]]
         zmin = np.amax((0, math.floor(zmin - (pad) / res[2])))
-        zmax = np.amin((image_shape[2], math.ceil(zmax + pad/ res[2])+1))
+        zmax = np.amin((image_shape[2], math.ceil(zmax + pad / res[2]) + 1))
         return int(rmin), int(rmax), int(cmin), int(cmax), int(zmin), int(zmax)
 
     def _endpoints_from_coords_neighbors(self, coords: np.ndarray) -> List[list]:
@@ -496,7 +532,10 @@ class state_generation:
             close_enough = 9
 
         A = radius_neighbors_graph(
-            coords, radius=radius, metric="minkowski", metric_params={"w": [r**2 for r in res]}
+            coords,
+            radius=radius,
+            metric="minkowski",
+            metric_params={"w": [r**2 for r in res]},
         )
         degrees = np.squeeze(np.array(np.sum(A, axis=1).T, dtype=int))
         indices = np.argsort(degrees)
@@ -598,20 +637,15 @@ class state_generation:
                 )
                 continue
 
-
             rmin, rmax, cmin, cmax, zmin, zmax = self._compute_bounds(mask, pad=1)
-
 
             # now in bounding box coordinates
             mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
-
-
 
             skel = morphology.skeletonize_3d(mask)
 
             coords_mask = np.argwhere(mask)
             coords_skel = np.argwhere(skel)
-
 
             if len(coords_skel) < 4:
                 coords = coords_mask
