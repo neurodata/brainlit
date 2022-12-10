@@ -14,6 +14,9 @@ Data Helper Methods
 
 .. currentmodule:: brainlit.utils.upload_to_neuroglancer
 
+.. autoapifunction:: czi_to_zarr
+.. autoapifunction:: zarr_to_omezarr
+
 S3 Helper Methods
 -----------------
 

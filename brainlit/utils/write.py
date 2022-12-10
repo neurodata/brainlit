@@ -5,14 +5,18 @@ from tqdm import tqdm
 import dask.array as da
 from ome_zarr.writer import write_image
 from ome_zarr.io import parse_url
+from typing import List
 
 
-def czi_to_zarr(czi_path: str, out_dir: str):
+def czi_to_zarr(czi_path: str, out_dir: str) -> List[str]:
     """Convert  4D czi image to a zarr file(s) at a given directory. Single channel image will produce a single zarr, two channels will produce two.
 
     Args:
         czi_path (str): Path to czi image.
         out_dir (str): Path to directory where zarr(s) will be written.
+
+    Returns:
+        list: paths to zarrs that were written
     """
     zarr_paths = []
     czi = aicspylibczi.CziFile(czi_path)
