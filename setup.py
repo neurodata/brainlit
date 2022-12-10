@@ -28,6 +28,7 @@ REQUIRED_PACKAGES = [
     "feather-format==0.4.1",
     "nibabel>=2.4.1",
     "nilearn>=0.5.2",
+    "ome-zarr>=0.6.0"
     "zarr>=2.10.2",
     "h5py>=3.3.0",
     "pcurvepy @ git+https://git@github.com/CaseyWeiner/pcurvepy@master#egg=pcurvepy",
