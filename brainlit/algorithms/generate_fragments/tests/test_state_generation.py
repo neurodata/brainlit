@@ -53,6 +53,7 @@ def test_state_generation(tmp_path):
 
     sg = state_generation(
         image_path=im_file,
+        new_layers_dir=str(tmp_path),
         ilastik_program_path=None,
         ilastik_project_path=None,
         chunk_size=[50, 50, 1],

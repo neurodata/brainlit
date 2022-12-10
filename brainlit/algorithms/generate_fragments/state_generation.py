@@ -29,7 +29,7 @@ class state_generation:
         new_layers_dir: str,
         ilastik_program_path: str,
         ilastik_project_path: str,
-        fg_channel: int,
+        fg_channel: int = 0,
         chunk_size: List[float] = [375, 375, 125],
         soma_coords: List[list] = [],
         resolution: List[float] = [0.3, 0.3, 1],
@@ -93,7 +93,9 @@ class state_generation:
         ):
             if other_im is not None:
                 other_image = zarr.open(other_im, mode="r")
-                if other_image.shape != self.image_shape[1:]:
+                if (self.ndims == 4 and other_image.shape != self.image_shape[1:]) or (
+                    self.ndims == 3 and other_image.shape != self.image_shape
+                ):
                     raise ValueError(
                         f"{name} image has different shape {other_image.shape} than image {self.image_shape}"
                     )
@@ -125,13 +127,11 @@ class state_generation:
                 ]
             )
         else:
-            image_chunk = np.squeeze(
-                image[
-                    corner1[0] : corner2[0],
-                    corner1[1] : corner2[1],
-                    corner1[2] : corner2[2],
-                ]
-            )
+            image_chunk = image[
+                corner1[0] : corner2[0],
+                corner1[1] : corner2[1],
+                corner1[2] : corner2[2],
+            ]
 
         fname = data_bin + "image_" + str(corner1[2]) + ".h5"
         with h5py.File(fname, "w") as f:
@@ -159,7 +159,7 @@ class state_generation:
         probabilities = zarr.open(
             prob_fname,
             mode="w",
-            shape=np.squeeze(image.shape[-3:]),
+            shape=image.shape[-3:],
             chunks=image.chunks[1:],
             dtype="float",
         )
@@ -392,13 +392,11 @@ class state_generation:
                 ]
             )
         else:
-            image = np.squeeze(
-                image[
-                    corner1[0] : corner2[0],
-                    corner1[1] : corner2[1],
-                    corner1[2] : corner2[2],
-                ]
-            )
+            image = image[
+                corner1[0] : corner2[0],
+                corner1[1] : corner2[1],
+                corner1[2] : corner2[2],
+            ]
 
         vals = np.unique(image)
         scores_neg = -1 * kde.logpdf(vals)
@@ -439,11 +437,9 @@ class state_generation:
                 ]
             )
         else:
-            image_chunk = np.squeeze(
-                image[
-                    shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
-                ]
-            )
+            image_chunk = image[
+                shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
+            ]
 
         fragments_chunk = fragments[
             shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
