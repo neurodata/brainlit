@@ -14,11 +14,12 @@ AUTHOR_EMAIL = "tathey1@jhu.edu"
 URL = "https://github.com/neurodata/brainlit"
 MINIMUM_PYTHON_VERSION = 3, 7  # Minimum of Python 3.7
 REQUIRED_PACKAGES = [
+    "aicspylibczi>=3.0.5",
     "numpy>=1.8.1",
     "scikit-image>=0.16.2",
     "simpleitk>=1.2.4",
     "networkx>=2.1",
-    "scikit-learn==1.0.0",
+    "scikit-learn==1.1.2",
     "scipy>=1.1.0",
     "seaborn>=0.9.0",
     "tifffile>=2020.7.17",
@@ -27,6 +28,7 @@ REQUIRED_PACKAGES = [
     "feather-format==0.4.1",
     "nibabel>=2.4.1",
     "nilearn>=0.5.2",
+    "ome-zarr>=0.6.0"
     "zarr>=2.10.2",
     "h5py>=3.3.0",
     "pcurvepy @ git+https://git@github.com/CaseyWeiner/pcurvepy@master#egg=pcurvepy",
