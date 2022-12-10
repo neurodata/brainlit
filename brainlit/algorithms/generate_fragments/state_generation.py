@@ -118,14 +118,13 @@ class state_generation:
         """
         image = zarr.open(self.image_path, mode="r")
         if self.ndims == 4:
-            image_chunk = np.squeeze(
-                image[
-                    :,
-                    corner1[0] : corner2[0],
-                    corner1[1] : corner2[1],
-                    corner1[2] : corner2[2],
-                ]
-            )
+            image_chunk = image[
+                :,
+                corner1[0] : corner2[0],
+                corner1[1] : corner2[1],
+                corner1[2] : corner2[2],
+            ]
+
         else:
             image_chunk = image[
                 corner1[0] : corner2[0],
@@ -315,7 +314,7 @@ class state_generation:
         fragments = zarr.open(
             frag_fname,
             mode="w",
-            shape=np.squeeze(probs.shape),
+            shape=probs.shape,
             chunks=probs.chunks,
             dtype="uint16",
         )
@@ -383,14 +382,13 @@ class state_generation:
         image = zarr.open(self.image_path, mode="r")
 
         if self.ndims == 4:
-            image = np.squeeze(
-                image[
-                    self.fg_channel,
-                    corner1[0] : corner2[0],
-                    corner1[1] : corner2[1],
-                    corner1[2] : corner2[2],
-                ]
-            )
+            image = image[
+                self.fg_channel,
+                corner1[0] : corner2[0],
+                corner1[1] : corner2[1],
+                corner1[2] : corner2[2],
+            ]
+
         else:
             image = image[
                 corner1[0] : corner2[0],
@@ -418,7 +416,7 @@ class state_generation:
         tiered = zarr.open(
             tiered_fname,
             mode="w",
-            shape=np.squeeze(fragments.shape),
+            shape=fragments.shape,
             chunks=fragments.chunks,
             dtype="uint16",
         )
@@ -428,14 +426,13 @@ class state_generation:
         shp = np.array(np.array(image.shape[-3:]) / 2).astype(int)
 
         if self.ndims == 4:
-            image_chunk = np.squeeze(
-                image[
-                    self.fg_channel,
-                    shp[0] : shp[0] + 300,
-                    shp[1] : shp[1] + 300,
-                    shp[2] : shp[2] + 300,
-                ]
-            )
+            image_chunk = image[
+                self.fg_channel,
+                shp[0] : shp[0] + 300,
+                shp[1] : shp[1] + 300,
+                shp[2] : shp[2] + 300,
+            ]
+
         else:
             image_chunk = image[
                 shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
@@ -444,6 +441,8 @@ class state_generation:
         fragments_chunk = fragments[
             shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
         ]
+        print(f"{image.shape}-{fragments.shape}")
+        print(f"{image_chunk.shape}-{fragments_chunk.shape}")
         data_fg = image_chunk[fragments_chunk > 0]
         if len(data_fg.flatten()) > 10000:
             data_sample = random.sample(list(data_fg), k=10000)

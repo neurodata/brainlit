@@ -11,11 +11,9 @@ Data Helper Methods
 
 .. autoapiclass:: NeuronTrace
     :members:
-
-.. currentmodule:: brainlit.utils.upload_to_neuroglancer
-
 .. autoapifunction:: czi_to_zarr
 .. autoapifunction:: zarr_to_omezarr
+.. currentmodule:: brainlit.utils.upload_to_neuroglancer
 
 S3 Helper Methods
 -----------------
