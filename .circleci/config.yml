@@ -14,6 +14,7 @@ workflows:
     jobs:
       - build-and-test_38
       - build-and-test_39
+      - build-and-test_310
 
 commands:
   early_return_for_forked_pull_requests:
@@ -79,6 +80,37 @@ jobs:
   build-and-test_39:
     docker:
       - image: cimg/python:3.9
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+      - run:
+          name: aws key
+          command: |
+           bash ./.aws.sh
+      - run:
+          name: install python dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install pytest pytest-cov codecov black[jupyter]
+            pip install -e .
+      - run:
+          name: formatting and code coverage
+          command: |
+            . venv/bin/activate
+            black --check --diff ./brainlit ./experiments
+            pytest brainlit/algorithms/ brainlit/feature_extraction/ brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/viz/
+      - early_return_for_forked_pull_requests
+      - run:
+          name: run pytests
+          command: |
+            . venv/bin/activate
+            pytest --cov=brainlit ./brainlit
+            codecov
+  build-and-test_310:
+    docker:
+      - image: cimg/python:3.10
     steps:
       - checkout
       - python/install-packages:
