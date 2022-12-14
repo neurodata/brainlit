@@ -12,8 +12,8 @@ workflows:
     # Inside the workflow, you define the jobs you want to run. 
     # For more details on extending your workflow, see the configuration docs: https://circleci.com/docs/2.0/configuration-reference/#workflows 
     jobs:
-      - build-and-test_docker
-      - build-and-test_linux
+      - build-and-test_38
+      - build-and-test_311
 
 commands:
   early_return_for_forked_pull_requests:
