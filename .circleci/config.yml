@@ -30,11 +30,11 @@ commands:
             fi
 
 jobs:
-  build-and-test_docker:  # This is the name of the job, feel free to change it to better match what you're trying to do!
+  build-and-test_38:  # This is the name of the job, feel free to change it to better match what you're trying to do!
     # These next lines defines a docker executors: https://circleci.com/docs/2.0/executor-types/
     # You can specify an image from dockerhub or use one of the convenience images from CircleCI's Developer Hub
     # A list of available CircleCI docker convenience images are available here: https://circleci.com/developer/images/image/cimg/python
-    # The executor is the environment in which the steps below will be executed - below will use a python 3.9 container
+    # The executor is the environment in which the steps below will be executed - below will use a python 3.8 container
     # Change the version below to your required version of python
     docker:
       - image: cimg/python:3.8
@@ -76,9 +76,9 @@ jobs:
             . venv/bin/activate
             pytest --cov=brainlit ./brainlit
             codecov
-  build-and-test_linux:
-    machine:
-      image: ubuntu-2004:202010-01
+  build-and-test_311:
+    docker:
+      - image: cimg/python:3.11
     steps:
       - checkout
       - python/install-packages:
@@ -107,3 +107,4 @@ jobs:
             . venv/bin/activate
             pytest --cov=brainlit ./brainlit
             codecov
+
