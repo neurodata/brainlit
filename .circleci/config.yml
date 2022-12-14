@@ -16,6 +16,7 @@ workflows:
       - build-and-test_39
       - build-and-test_310
 
+# Below I define commands that are used in many of the jobs
 commands:
   early_return_for_forked_pull_requests:
     description: >-
@@ -49,7 +50,25 @@ commands:
             . venv/bin/activate
             pip install pytest pytest-cov codecov black[jupyter]
             pip install -e .
-     
+  fork_test:
+    steps:
+      - run:
+          name: formatting and code coverage
+          # This assumes pytest is installed via the install-package step above
+          command: |
+            . venv/bin/activate
+            black --check --diff ./brainlit ./experiments
+            pytest brainlit/algorithms/ brainlit/feature_extraction/ brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/viz/
+  all_test:
+    steps:
+      - run:
+          name: run pytests
+          # This assumes pytest is installed via the install-package step above
+          command: |
+            . venv/bin/activate
+            pytest --cov=brainlit ./brainlit
+            codecov
+            
 jobs:
   build-and-test_38:  # This is the name of the job, feel free to change it to better match what you're trying to do!
     # These next lines defines a docker executors: https://circleci.com/docs/2.0/executor-types/
@@ -102,48 +121,15 @@ jobs:
       - image: cimg/python:3.9
     steps:
       - python_build
-      - run:
-          name: formatting and code coverage
-          command: |
-            . venv/bin/activate
-            black --check --diff ./brainlit ./experiments
-            pytest brainlit/algorithms/ brainlit/feature_extraction/ brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/viz/
+      - fork_test
       - early_return_for_forked_pull_requests
-      - run:
-          name: run pytests
-          command: |
-            . venv/bin/activate
-            pytest --cov=brainlit ./brainlit
-            codecov
+      - all_test
   build-and-test_310:
     docker:
       - image: cimg/python:3.10
     steps:
-      - checkout
-      - python/install-packages:
-          pkg-manager: pip
-      - run:
-          name: aws key
-          command: |
-           bash ./.aws.sh
-      - run:
-          name: install python dependencies
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install pytest pytest-cov codecov black[jupyter]
-            pip install -e .
-      - run:
-          name: formatting and code coverage
-          command: |
-            . venv/bin/activate
-            black --check --diff ./brainlit ./experiments
-            pytest brainlit/algorithms/ brainlit/feature_extraction/ brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/viz/
+      - python_build
+      - fork_test
       - early_return_for_forked_pull_requests
-      - run:
-          name: run pytests
-          command: |
-            . venv/bin/activate
-            pytest --cov=brainlit ./brainlit
-            codecov
+      - all_test
 
