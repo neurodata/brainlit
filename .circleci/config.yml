@@ -13,7 +13,7 @@ workflows:
     # For more details on extending your workflow, see the configuration docs: https://circleci.com/docs/2.0/configuration-reference/#workflows 
     jobs:
       - build-and-test_38
-      - build-and-test_311
+      - build-and-test_39
 
 commands:
   early_return_for_forked_pull_requests:
@@ -76,7 +76,7 @@ jobs:
             . venv/bin/activate
             pytest --cov=brainlit ./brainlit
             codecov
-  build-and-test_311:
+  build-and-test_39:
     docker:
       - image: cimg/python:3.9
     steps:
