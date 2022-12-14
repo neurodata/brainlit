@@ -84,38 +84,11 @@ jobs:
     # Then run your tests!
     # CircleCI will report the results back to your VCS provider.
     steps:
-      - checkout
-      - python/install-packages:
-          pkg-manager: pip
-          # app-dir: ~/project/package-directory/  # If you're requirements.txt isn't in the root directory.
-          # pip-dependency-file: test-requirements.txt  # if you have a different name for your requirements file, maybe one that combines your runtime and test requirements.
-      - run:
-          name: aws key
-          command: |
-           bash ./.aws.sh
-      - run:
-          name: install python dependencies
-          # This assumes pytest is installed via the install-package step above
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install pytest pytest-cov codecov black[jupyter]
-            pip install -e .
-      - run:
-          name: formatting and code coverage
-          # This assumes pytest is installed via the install-package step above
-          command: |
-            . venv/bin/activate
-            black --check --diff ./brainlit ./experiments
-            pytest brainlit/algorithms/ brainlit/feature_extraction/ brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/viz/
+      - python_build
+      - fork_test
       - early_return_for_forked_pull_requests
-      - run:
-          name: run pytests
-          # This assumes pytest is installed via the install-package step above
-          command: |
-            . venv/bin/activate
-            pytest --cov=brainlit ./brainlit
-            codecov
+      - all_test
+      
   build-and-test_39:
     docker:
       - image: cimg/python:3.9
@@ -124,6 +97,7 @@ jobs:
       - fork_test
       - early_return_for_forked_pull_requests
       - all_test
+      
   build-and-test_310:
     docker:
       - image: cimg/python:3.10
