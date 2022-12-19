@@ -22,6 +22,29 @@ python -i experiments/sriram/ng.py
 
 """
 
+vb_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_viterbrain.pickle"
+vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pickle"
+trace_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/traces"
+trace_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/traces"
+frag_layer = "frags"
+trace_layer = "traces"
+trace_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/traces"
+trace_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/traces"
+im_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/im"
+im_path_local_zarr = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/3-1-soma.zarr"
+im_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/im"
+
+#####################
+# Enter inputs here #
+#####################
+
+trace_path = trace_path_local
+im_path = im_path_local
+port = "9010"
+im_url = f"zarr://http://127.0.0.1:{port}/3-1-soma.zarr"
+trace_url = f"precomputed://http://127.0.0.1:{port}/frags"
+
+
 from __future__ import print_function
 
 
@@ -447,26 +470,11 @@ class ViterBrainViewer(neuroglancer.Viewer):
             return self.skels[i]
 
 
-vb_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_viterbrain.pickle"
-vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pickle"
-trace_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/traces"
-trace_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/traces"
-port = "9010"
-im_url = f"zarr://http://127.0.0.1:{port}/3-1-soma.zarr"
-trace_url = f"precomputed://http://127.0.0.1:{port}/frags"
-frag_layer = "frags"
-trace_layer = "traces"
-trace_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/traces"
-trace_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/traces"
-im_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/im"
-im_path_local_zarr = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/3-1-soma.zarr"
-im_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/im"
-
 vbviewer = ViterBrainViewer(
     im_url=im_url,
     trace_url=trace_url,
-    trace_path=trace_path_local,
-    im_path=im_path_local,
+    trace_path=trace_path,
+    im_path=im_path,
     napari_viewer=viewer,
     # frag_url=f"precomputed://http://127.0.0.1:{port}/{frag_layer}",
     # vb_path=vb_path_local,
