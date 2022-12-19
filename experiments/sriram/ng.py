@@ -2,24 +2,19 @@
 copied from https://github.com/google/neuroglancer/blob/master/python/examples/example_action.py
 need to run in interactive mode: python -i ng.py
 
-serve data:
 local:
-python cors_webserver.py -d "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/" -p 9010
-
 use env_39 on local
+- python cors_webserver.py -d "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/" -p 9010
+
 
 cis:
-python cors_webserver.py -d "/cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/" -p 9010
-
-python cors_webserver.py -d "/cis/project/sriram/ng_data/" -p 9010
-zarr://http://127.0.0.1:9010/exp227/fg_ome.zarr
-
-a soma - 5346, 14801, 330
-
 use env_310 on dwalin
+- python cors_webserver.py -d "/cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/" -p 9010
+- python cors_webserver.py -d "/cis/project/sriram/ng_data/" -p 9010
 
-python -i experiments/sriram/ng.py
-
+url:
+zarr://http://127.0.0.1:9010/exp227/fg_ome.zarr
+a soma - 5346, 14801, 330
 """
 
 vb_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_viterbrain.pickle"
