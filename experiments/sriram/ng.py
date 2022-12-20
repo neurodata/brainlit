@@ -1,27 +1,3 @@
-"""
-copied from https://github.com/google/neuroglancer/blob/master/python/examples/example_action.py
-need to run in interactive mode: python -i ng.py
-
-serve data:
-local:
-python cors_webserver.py -d "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/" -p 9010
-
-use env_39 on local
-
-cis:
-python cors_webserver.py -d "/cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/" -p 9010
-
-python cors_webserver.py -d "/cis/project/sriram/ng_data/" -p 9010
-zarr://http://127.0.0.1:9010/exp227/fg_ome.zarr
-
-a soma - 5346, 14801, 330
-
-use env_310 on dwalin
-
-python -i experiments/sriram/ng.py
-
-"""
-
 from __future__ import print_function
 
 
@@ -37,6 +13,52 @@ from cloudvolume.exceptions import SkeletonDecodeError
 from scipy.spatial import KDTree
 import napari
 from napari._qt.qthreading import thread_worker
+import zarr
+
+"""
+copied from https://github.com/google/neuroglancer/blob/master/python/examples/example_action.py
+need to run in interactive mode: python -i ng.py
+
+local:
+use env_39 on local
+- python cors_webserver.py -d "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/" -p 9010
+
+
+cis:
+use env_38 on dwalin
+- python cors_webserver.py -d "/cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/" -p 9010
+- python cors_webserver.py -d "/cis/project/sriram/ng_data/" -p 9010
+
+url:
+zarr://http://127.0.0.1:9010/exp227/fg_ome.zarr
+a soma - 5346, 14801, 330
+"""
+
+
+im_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/im"
+im_path_local_zarr = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/3-1-soma.zarr"
+im_path_cis = "/cis/project/sriram/ng_data/sriram-adipo-brain1-im3/fg_ome.zarr/0/"
+
+trace_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/traces"
+trace_path_cis = (
+    "precomputed://file:///cis/project/sriram/ng_data/sriram-adipo-brain1-im3/traces"
+)
+
+frag_layer = "precomputed://http://127.0.0.1:9010/frags"
+
+vb_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_viterbrain.pickle"
+vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pickle"
+
+######################
+# Enter inputs below #
+######################
+
+trace_path = trace_path_cis  # cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
+im_path = im_path_cis  # ckloudvolume compatible path or path to local zarr
+port = "9010"
+im_url = f"zarr://http://127.0.0.1:{port}/sriram-adipo-brain1-im3/fg_ome.zarr"  # ng compatible url
+trace_url = f"precomputed://http://127.0.0.1:{port}/sriram-adipo-brain1-im3/traces"  # ng compatible url
+
 
 data = np.random.random((10, 10, 10)) * 255
 viewer = napari.Viewer()
@@ -66,10 +88,15 @@ class ViterBrainViewer(neuroglancer.Viewer):
         args = ap.parse_args()
         neuroglancer.cli.handle_server_arguments(args)
 
-        cv_dict = {
-            "traces": CloudVolume(trace_path, compress=False),
-            "im": CloudVolume(im_path, compress=False),
-        }
+        cv_dict = {"traces": CloudVolume(trace_path, compress=False)}
+        if "zarr" in im_path:
+            cv_dict["im"] = zarr.open(im_path)
+        elif "precomputed" in im_path:
+            cv_dict["im"] = CloudVolume(im_path, compress=False)
+        else:
+            raise ValueError(
+                f"im_path must be CloudVolume compatible or a zarr file, not: {im_path}"
+            )
 
         # add layers
         with self.txn() as s:
@@ -407,8 +434,8 @@ class ViterBrainViewer(neuroglancer.Viewer):
 
     # @thread_worker(connect={'returned': show_napari})
     def v_view(self, s):
-        print(f"Updating napari")
         pt = [int(p) for p in s.mouse_voxel_coordinates]
+        print(f"Updating napari with subvolume at coordinate {pt}")
         vol_im = self.cv_dict["im"]
         radius = 10
         subvol = np.array(
@@ -420,7 +447,6 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 ]
             )
         )
-        print(f"range {np.amin(subvol)} to {np.amax(subvol)}")
         show_napari(subvol)
         # return subvol
 
@@ -447,28 +473,13 @@ class ViterBrainViewer(neuroglancer.Viewer):
             return self.skels[i]
 
 
-vb_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_viterbrain.pickle"
-vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pickle"
-trace_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/traces"
-trace_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/traces"
-port = "9010"
-im_url = f"zarr://http://127.0.0.1:{port}/3-1-soma.zarr"
-trace_url = f"precomputed://http://127.0.0.1:{port}/frags"
-frag_layer = "frags"
-trace_layer = "traces"
-trace_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/traces"
-trace_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/traces"
-im_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/im"
-im_path_local_zarr = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/3-1-soma.zarr"
-im_path_cis = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/im"
-
 vbviewer = ViterBrainViewer(
     im_url=im_url,
     trace_url=trace_url,
-    trace_path=trace_path_local,
-    im_path=im_path_local,
+    trace_path=trace_path,
+    im_path=im_path,
     napari_viewer=viewer,
-    # frag_url=f"precomputed://http://127.0.0.1:{port}/{frag_layer}",
+    # frag_url=frag_layer,
     # vb_path=vb_path_local,
 )
 print(vbviewer)
