@@ -516,7 +516,7 @@ class state_generation:
         res = self.resolution
 
         dims = np.multiply(np.amax(coords, axis=0) - np.amin(coords, axis=0), res)
-        max_length = np.sqrt(np.sum([dim ** 2 for dim in dims]))
+        max_length = np.sqrt(np.sum([dim**2 for dim in dims]))
 
         r = 15
         if max_length < r:
@@ -530,7 +530,7 @@ class state_generation:
             coords,
             radius=radius,
             metric="minkowski",
-            metric_params={"w": [r ** 2 for r in res]},
+            metric_params={"w": [r**2 for r in res]},
         )
         degrees = np.squeeze(np.array(np.sum(A, axis=1).T, dtype=int))
         indices = np.argsort(degrees)
