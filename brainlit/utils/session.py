@@ -193,7 +193,7 @@ class NeuroglancerSession:
             raise ValueError("Cannot get segments without segmentation data.")
         check_type(seg_id, int)
         if radius is not None:
-            check_type(radius, (int, np.integer, float, np.float))
+            check_type(radius, (int, np.integer, float, np.double))
             if radius <= 0:
                 raise ValueError("Radius must be positive.")
 
