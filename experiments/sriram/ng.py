@@ -14,6 +14,7 @@ from scipy.spatial import KDTree
 import napari
 from napari._qt.qthreading import thread_worker
 import zarr
+
 """
 copied from https://github.com/google/neuroglancer/blob/master/python/examples/example_action.py
 need to run in interactive mode: python -i ng.py
@@ -39,7 +40,9 @@ im_path_local_zarr = "precomputed://file:///Users/thomasathey/Documents/mimlab/m
 im_path_cis = "/cis/project/sriram/ng_data/sriram-adipo-brain1-im3/fg_ome.zarr/0/"
 
 trace_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/traces"
-trace_path_cis = "precomputed://file:///cis/project/sriram/ng_data/sriram-adipo-brain1-im3/traces"
+trace_path_cis = (
+    "precomputed://file:///cis/project/sriram/ng_data/sriram-adipo-brain1-im3/traces"
+)
 
 frag_layer = "precomputed://http://127.0.0.1:9010/frags"
 
@@ -50,12 +53,11 @@ vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pick
 # Enter inputs below #
 ######################
 
-trace_path = trace_path_cis #cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
-im_path = im_path_cis #ckloudvolume compatible path or path to local zarr
+trace_path = trace_path_cis  # cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
+im_path = im_path_cis  # ckloudvolume compatible path or path to local zarr
 port = "9010"
-im_url = f"zarr://http://127.0.0.1:{port}/sriram-adipo-brain1-im3/fg_ome.zarr" #ng compatible url
-trace_url = f"precomputed://http://127.0.0.1:{port}/sriram-adipo-brain1-im3/traces" #ng compatible url
-
+im_url = f"zarr://http://127.0.0.1:{port}/sriram-adipo-brain1-im3/fg_ome.zarr"  # ng compatible url
+trace_url = f"precomputed://http://127.0.0.1:{port}/sriram-adipo-brain1-im3/traces"  # ng compatible url
 
 
 data = np.random.random((10, 10, 10)) * 255
@@ -86,15 +88,15 @@ class ViterBrainViewer(neuroglancer.Viewer):
         args = ap.parse_args()
         neuroglancer.cli.handle_server_arguments(args)
 
-        cv_dict = {
-            "traces": CloudVolume(trace_path, compress=False)
-        }
+        cv_dict = {"traces": CloudVolume(trace_path, compress=False)}
         if "zarr" in im_path:
             cv_dict["im"] = zarr.open(im_path)
         elif "precomputed" in im_path:
             cv_dict["im"] = CloudVolume(im_path, compress=False)
         else:
-            raise ValueError(f"im_path must be CloudVolume compatible or a zarr file, not: {im_path}")
+            raise ValueError(
+                f"im_path must be CloudVolume compatible or a zarr file, not: {im_path}"
+            )
 
         # add layers
         with self.txn() as s:
