@@ -1,16 +1,11 @@
 '''
 Inputs
 '''
-<<<<<<< HEAD
-dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_11_01/8790/" #s3 path to directory that contains image data
-threshold = 0.3 #threshold to use for ilastik
-=======
 dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_03_28/8649/" #s3 path to directory that contains image data
 threshold = 0.4 #threshold to use for ilastik
->>>>>>> 466051abaa018bb52c9926b61e6790a1b9281b87
 data_dir = "/data/tathey1/matt_wright/brain_temp/" #directory to store temporary subvolumes for segmentation
-max_y = 10250
-skip_segment = True
+max_y = -1 #maxy coord, or -1 if you want to process all of them
+skip_segment = False
 
 '''
 Segment Axon
@@ -46,7 +41,7 @@ for i in tqdm(range(0, shape[0], chunk_size[0])):
         for k in range(0, shape[2], chunk_size[2]):
             c1 = [i, j, k]
             c2 = [np.amin([shape[idx], c1[idx] + chunk_size[idx]]) for idx in range(3)]
-            if c1[1] < max_y:
+            if max_y == -1 or c1[1] < max_y:
                 corners.append([c1, c2])
 
 corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
