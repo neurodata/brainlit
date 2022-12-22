@@ -1,8 +1,13 @@
 '''
 Inputs
 '''
+<<<<<<< HEAD
 dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_11_01/8790/" #s3 path to directory that contains image data
 threshold = 0.3 #threshold to use for ilastik
+=======
+dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_03_28/8649/" #s3 path to directory that contains image data
+threshold = 0.4 #threshold to use for ilastik
+>>>>>>> 466051abaa018bb52c9926b61e6790a1b9281b87
 data_dir = "/data/tathey1/matt_wright/brain_temp/" #directory to store temporary subvolumes for segmentation
 max_y = 10250
 skip_segment = True
