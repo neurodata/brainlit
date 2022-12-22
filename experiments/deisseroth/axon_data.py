@@ -1,7 +1,8 @@
 '''
-Keys should be string of brain ID and value should be dictionary with two entry types:
-    1. layer name to precomputed://s3 URL
-    2. _info dictionary with info of how to access subvolumes marked for training/validation
+This file stores information on how to access neuroglancer data.
+
+Data should be stored in the brain2paths variable, where the key is the brain sample ID as a string, and the value is a dictionary with the following information:
+- "base" : path to directory 
 '''
 
 brain2paths = {
