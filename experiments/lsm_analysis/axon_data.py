@@ -54,10 +54,7 @@ brain2paths = {
         "genotype": "sert cre"
     },
     "8613": {
-        "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/Ch_647",
-        "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/Ch_561",
-        "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/Ch_488",
-        "mask": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/axon_mask",
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/",
         "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/axon_mask_transformed",
         "genotype": "tph2 vglut3"
     },
