@@ -1,3 +1,15 @@
+'''
+Inputs
+'''
+model = "-compare-r1-r2-878-887"
+project_path= f"/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/matt_soma{model}.ilp" #path to ilastik model to be used
+
+base_path = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/" #path to directory that holds images to be processed
+brains = ["8607", "8606", "8477", "8531", "8608", "8529", "8557", "8555", "8446", "8454", "887"] #sample IDs to be processed
+
+'''
+Script
+'''
 import os 
 import shutil
 from tqdm import tqdm
@@ -6,11 +18,6 @@ from joblib import Parallel, delayed
 import multiprocessing
 from util import find_sample_names
 
-model = "-compare-r1-r2-878-887"
-
-base_path = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/"
-brains = ["8607", "8606", "8477", "8531", "8608", "8529", "8557", "8555", "8446", "8454", "887"]
-project_path= f"/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/matt_soma{model}.ilp"
 print(f"Number cpus: {multiprocessing.cpu_count()}")
 
 def apply_ilastik(fname):
@@ -35,7 +42,7 @@ def process_somas():
         else:
             brain_name = brain
 
-        path = f"{base_path}brain{brain_name}/3channel/test/"
+        path = f"{base_path}brain{brain_name}/val/"
 
         items_total += find_sample_names(path, dset = "", add_dir=True)
         
@@ -57,7 +64,7 @@ def move_results():
         else:
             brain_name = brain
 
-        brain_dir = f"{base_path}brain{brain_name}/3channel/test/"
+        brain_dir = f"{base_path}brain{brain_name}/val/"
         results_dir = brain_dir + "results" + model + "/"
 
         if not os.path.exists(results_dir):

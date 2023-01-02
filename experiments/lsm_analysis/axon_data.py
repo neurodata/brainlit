@@ -15,6 +15,7 @@ Data should be stored in the brain2paths dictionary, with entries like:
             "url": "<neuroglancer URL>",
             "layer": "<name of layer with points for subvolumes>",
         },
+        "transformed_mask": "<axon mask layer that was transformed to atlas space with CloudVolume prependings"
     },
 
     e.g.

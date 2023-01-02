@@ -1,3 +1,13 @@
+'''
+Inputs
+'''
+brain_ids = ["8650", "8649", "8788", "8589", "8590", "8613"]
+brain_ids = ["8650", "8788", "8613", "8589"]
+path_key = "transformed_mask"
+
+'''
+Script
+'''
 import random
 import numpy as np
 
@@ -21,21 +31,10 @@ from skimage.measure import label, regionprops
 from skimage.morphology import remove_small_objects
 
 
-
-
-type2id = {"tph2 gad2": ["8650", "8649"],
-"tph2 vglut3": ["8788", "8589", "8590", "8613"]}
-
-type2id_good = {"tph2 gad2": ["8650"],
-"tph2 vglut3": ["8788", "8613", "8589"]}
-
-type2id = type2id_good
-
 ## Plotting them overlaid doesnt work bc one of the vglut3 brains covers everything
 
 
 print(f"[{orange}]Running example: {Path(__file__).name}")
-
 
 scene = Scene(atlas_name="allen_mouse_50um",title="Output Axons")
 atlas = BrainGlobeAtlas("allen_mouse_50um")
@@ -46,21 +45,27 @@ print(f"Atlas mask shape: {atlas_mask.shape}")
 
 dr = scene.add_brain_region("DR", alpha=0.15)
 
+type2id = {}
+for brain_id in brain_ids:
+    genotype = brain2paths[brain_id]["genotype"]
+    if genotype not in type2id.keys():
+        type2id[genotype] = [brain_id]
+    else:
+        new_val = type2id[genotype] + [brain_id]
+        type2id[genotype] = new_val
 
-
-
-vols_transformed_gad = [CloudVolume(brain2paths[id]["transformed_mask"]) for id in type2id["tph2 gad2"]]
-vols_transformed_vglut = [CloudVolume(brain2paths[id]["transformed_mask"]) for id in type2id["tph2 vglut3"]]
+vols_transformed_gad = [CloudVolume(brain2paths[id][path_key]) for id in type2id["tph2 gad2"]]
+vols_transformed_vglut = [CloudVolume(brain2paths[id][path_key]) for id in type2id["tph2 vglut3"]]
 
 for vols, color in zip([vols_transformed_gad, vols_transformed_vglut], ["Reds", "Greens"]):
     for i, vol in enumerate(tqdm(vols, desc="Processing volumes...")):
-        path = f"/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/npy-files/{color}-{i}.tif"
         if i == 0:
             im_total = np.zeros(vol.shape)
-        # im = np.zeros(vol.shape)
-        # im[:,:,:,:] = vol[:,:,:,:]
+        im = np.zeros(vol.shape)
+        im[:,:,:,:] = vol[:,:,:,:]
+        # path = f"/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/npy-files/{color}-{i}.tif"
         # io.imsave(path, im)
-        im = io.imread(path)
+        # im = io.imread(path)
         im_total += im
 
     im_total = np.squeeze(im_total)
