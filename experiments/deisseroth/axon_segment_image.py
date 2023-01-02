@@ -4,6 +4,12 @@ Inputs
 dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_03_28/8649/" #s3 path to directory that contains image data
 threshold = 0.4 #threshold to use for ilastik
 data_dir = "/data/tathey1/matt_wright/brain_temp/" #directory to store temporary subvolumes for segmentation
+
+# Ilastik will run in "headless mode", and the following paths are needed to do so:
+ilastik_path = "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh" #path to ilastik executable
+ilastik_project = "/data/tathey1/matt_wright/ilastik/model1/axon_segmentation.ilp" #path to ilastik project
+
+n_jobs = 15 #number of cores to use for segmentation
 max_y = -1 #maxy coord, or -1 if you want to process all of them
 skip_segment = False
 
@@ -78,9 +84,9 @@ def process_chunk(c1, c2, data_dir, threshold, dir_base):
 
     subprocess.run(
         [
-            "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh",
+            f"{ilastik_path}",
             "--headless",
-            "--project=/data/tathey1/matt_wright/ilastik/model1/axon_segmentation.ilp",
+            f"--project={ilastik_project}",
             fname,
         ],
         stdout=subprocess.PIPE,
@@ -97,9 +103,7 @@ def process_chunk(c1, c2, data_dir, threshold, dir_base):
 
 if not skip_segment:
     for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
-        # for corner in tqdm(corners_chunk):
-        #      process_chunk(corner[0],corner[1], data_dir, threshold, dir_base)
-        Parallel(n_jobs=15)(
+        Parallel(n_jobs=n_jobs)(
             delayed(process_chunk)(corner[0], corner[1], data_dir, threshold, dir_base)
             for corner in tqdm(corners_chunk, leave=False)
         )
@@ -134,26 +138,3 @@ tasks = tc.create_downsampling_tasks(
 
 tq.insert(tasks)
 tq.execute()
-
-'''
-Make transformed layer
-'''
-layer_path = dir_base + "axon_mask_transformed"
-
-atlas_vol = CloudVolume("precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017")
-
-info = CloudVolume.create_new_info(
-    num_channels=1,
-    layer_type="image",
-    data_type="uint8",  # Channel images might be 'uint8'
-    encoding="raw",  # raw, jpeg, compressed_segmentation, fpzip, kempressed
-    resolution=atlas_vol.resolution,  # Voxel scaling, units are in nanometers
-    voxel_offset=atlas_vol.voxel_offset,  # x,y,z offset in voxels from the origin
-    # mesh            = 'mesh',
-    # Pick a convenient size for your underlying chunk representation
-    # Powers of two are recommended, doesn't need to cover image exactly
-    chunk_size=[32, 32, 32],  # units are voxels
-    volume_size=atlas_vol.volume_size,  # e.g. a cubic millimeter dataset
-)
-vol_mask = CloudVolume(layer_path, info=info)
-vol_mask.commit_info()

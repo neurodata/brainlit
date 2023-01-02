@@ -1,23 +1,60 @@
+'''
+This file stores information on how to access neuroglancer data.
+
+Data should be stored in the brain2paths dictionary, with entries like:
+
+    "<sample ID>": {
+        "base": "<Path to directory with layers with CloudVolume prependings>",
+        "val_info": {
+            "url": "<neuroglancer URL>",
+            "somas_layer": "<name of layer with coordinates on somas>",
+            "nonsomas_layer": "<name of layer with coordinates on somas>",
+        },
+        "genotype": "<genotype>"
+        #Optional:
+        "train_info": {
+            "url": "<neuroglancer URL>",
+            "somas_layer": "<name of layer with coordinates on somas>",
+            "nonsomas_layer": "<name of layer with coordinates on somas>",
+        },
+        "somas_atlas_url": "<neuroglancer URL with a single annotation layer which contains points of soma detections>",
+    },
+
+    e.g.
+
+    "8606": {
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2022_03_15/8606/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=18lUZ-z6xx15Rg",
+            "somas_layer": "somas_labeled",
+            "nonsomas_layer": "nonsomas_labeled",
+        },
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=CtofrUJNRnA0Ew",
+        "genotype": "tph2 gad2"
+    },
+'''
+
+
 brain2paths = {
     "8557": {
         "ab": "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_647",
         "bg": "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_561",
         "endo": "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_488",
-        "atlas_viz": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=4M6ppFjZAUijkg",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=4M6ppFjZAUijkg",
         "genotype": "tph2 vglut3"
     },
     "8555": {
         "ab": "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_647",
         "bg": "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_561",
         "endo": "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8555/Ch_488",
-        "atlas_viz": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=qmoYCOl5qUBzkQ",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=qmoYCOl5qUBzkQ",
         "genotype": "tph2 vglut3"
     },
     "8607": {
         "ab": "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_647",
         "bg": "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_561",
         "endo": "precomputed://https://dlab-colm.neurodata.io/2021_12_2/8607/Ch_488",
-        "atlas_viz": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=bRZIsX_3yiuhkw",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=bRZIsX_3yiuhkw",
         "genotype": "tph2 gad2"
     },
     "8468": {
@@ -26,11 +63,13 @@ brain2paths = {
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_01_19/8468/Ch_488_iso",
     },
     "8606": {
-        "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_03_15/8606/Ch_647",
-        "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_03_15/8606/Ch_561",
-        "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_15/8606/Ch_488",
-        "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=18lUZ-z6xx15Rg",
-        "atlas_viz": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=CtofrUJNRnA0Ew",
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2022_03_15/8606/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=18lUZ-z6xx15Rg",
+            "somas_layer": "somas_labeled",
+            "nonsomas_layer": "nonsomas_labeled",
+        },
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=CtofrUJNRnA0Ew",
         "genotype": "tph2 gad2"
     },
     "8529": {
@@ -38,7 +77,7 @@ brain2paths = {
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_03_02/8529/Ch_561_iso",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_02/8529/Ch_488_iso",
         "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=kLWMLcZ066yYpQ",
-        "atlas_viz": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=eeigeCQSqG8znw",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=eeigeCQSqG8znw",
         "genotype": "gad2 vgat"
     },
     "8477": {
@@ -46,7 +85,7 @@ brain2paths = {
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_03_14/8477/Ch_561_iso",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_14/8477/Ch_488_iso",
         "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=UgEYYM3ycYGC7A",
-        "atlas_viz": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=qACBTohd8X4DcA",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=qACBTohd8X4DcA",
         "genotype": "gad2 vgat"
     },
     "8531": {
@@ -54,7 +93,7 @@ brain2paths = {
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_03_10/8531/Ch_561_iso",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_10/8531/Ch_488_iso",
         "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=42tANDn1cjREEA",
-        "atlas_viz": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=5Kow5I-W6eVGUw",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=5Kow5I-W6eVGUw",
         "genotype": "gad2 vgat"
     },
     "8608": {
@@ -62,7 +101,7 @@ brain2paths = {
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_04_13/8608/Ch_561_iso",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_04_13/8608/Ch_488_iso",
         "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=NRFI2aWmv3d0Ww",
-        "atlas_viz": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=NKbJwOj-JeDafg",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=NKbJwOj-JeDafg",
         "genotype": "tph2 gad2"
     },
     "8446": {
@@ -77,7 +116,7 @@ brain2paths = {
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_03_09/8454/Ch_561_iso",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_03_09/8454/Ch_488_iso",
         "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=7ugLt3twr6RBIA",
-        "atlas_viz": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=LgrOarq-AeFUPQ",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=LgrOarq-AeFUPQ",
         "genotype": "gad2 vgat"
     },
     "887": {

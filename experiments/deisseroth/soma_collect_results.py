@@ -1,3 +1,14 @@
+'''
+Inputs
+'''
+
+viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=e9mu7UCvrTSXRQ" #neuroglancer link that includes atlas_to_target
+somas = "/data/tathey1/matt_wright/brainr_results/" #path to directory that contains text files that were output from soma_detect_image.py
+
+
+'''
+Collect results
+'''
 import numpy as np
 from cloudvolume import CloudVolume
 from tqdm import tqdm
@@ -8,11 +19,6 @@ from cloudreg.scripts.transform_points import NGLink
 from cloudreg.scripts.visualization import create_viz_link_from_json
 import random
 
-
-somas = "/data/tathey1/matt_wright/brainr_results/"
-
-#viz link that includes atlas_to_target
-viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=e9mu7UCvrTSXRQ"
 viz_link = NGLink(viz_link.split("json_url=")[-1])
 ngl_json = viz_link._json
 

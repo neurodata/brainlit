@@ -1,8 +1,30 @@
 '''
 This file stores information on how to access neuroglancer data.
 
-Data should be stored in the brain2paths variable, where the key is the brain sample ID as a string, and the value is a dictionary with the following information:
-- "base" : path to directory 
+Data should be stored in the brain2paths dictionary, with entries like:
+
+    "<sample ID>": {
+        "base": "<Path to directory with layers with CloudVolume prependings>",
+        "val_info": {
+            "url": "<neuroglancer URL>",
+            "layer": "<name of layer with points for subvolumes>",
+        },
+        #Optional:
+        "train_info": {
+            "url": "<neuroglancer URL>",
+            "layer": "<name of layer with points for subvolumes>",
+        },
+    },
+
+    e.g.
+
+    "8790": {
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2022_11_01/8790/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=hhlEcKDIfqrY-w",
+            "layer": "val",
+        },
+    },
 '''
 
 brain2paths = {
@@ -45,10 +67,7 @@ brain2paths = {
         },
     },
     "8650": {
-        "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/Ch_647",
-        "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/Ch_561",
-        "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/Ch_488",
-        "mask": "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/axon_mask",
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/",
         "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/axon_mask_transformed",
         "val_info": {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=tnXt-hF7Uyuq-w",
