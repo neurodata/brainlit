@@ -188,7 +188,9 @@ def getLargestCC(segmentation: np.ndarray) -> np.ndarray:
     return largestCC
 
 
-def removeSmallCCs(segmentation: np.ndarray, size: Union[int, float]) -> np.ndarray:
+def removeSmallCCs(
+    segmentation: np.ndarray, size: Union[int, float], verbose=False
+) -> np.ndarray:
     """Removes small connected components from an image.
 
     Parameters:
@@ -204,7 +206,9 @@ def removeSmallCCs(segmentation: np.ndarray, size: Union[int, float]) -> np.ndar
     labels = label(segmentation, return_num=False)
     counts = np.bincount(labels.flat)[1:]
 
-    for v, count in enumerate(tqdm(counts, desc="looking for components to remove")):
+    for v, count in enumerate(
+        tqdm(counts, desc="looking for components to remove", disable=not verbose)
+    ):
         if count < size:
             labels[labels == v + 1] = 0
 
@@ -212,7 +216,7 @@ def removeSmallCCs(segmentation: np.ndarray, size: Union[int, float]) -> np.ndar
     return largeCCs
 
 
-def label_points(labels, points, res):
+def label_points(labels: np.array, points: list, res: list) -> Tuple[list, list]:
     """Adjust points so they fall on a foreground component of labels.
 
     Args:
@@ -238,7 +242,12 @@ def label_points(labels, points, res):
     return points, point_labels
 
 
-def _get_chunked_args(soma_coords, labels, im_processed, chunk_size=[200, 200, 200]):
+def _get_chunked_args(
+    soma_coords: list,
+    labels: np.array,
+    im_processed: np.array,
+    chunk_size: Optional[list] = [200, 200, 200],
+) -> dict:
     """Splits large image data into smaller chunks so fragments can be generated in parallel.
 
     Args:
@@ -275,7 +284,11 @@ def _get_chunked_args(soma_coords, labels, im_processed, chunk_size=[200, 200, 2
                 }
 
 
-def _merge_chunked_labels(labels, new_shape, chunk_size=[200, 200, 200]):
+def _merge_chunked_labels(
+    labels: list,
+    new_shape: Tuple[int, int, int],
+    chunk_size: Optional[list] = [200, 200, 200],
+) -> np.array:
     """Merges the fragments of the chunked image. Assumes that chunking was done according to method in _get_chunked_args
 
     Args:
@@ -306,8 +319,14 @@ def _merge_chunked_labels(labels, new_shape, chunk_size=[200, 200, 200]):
 
 
 def compute_frags(
-    soma_coords, labels, im_processed, threshold, res, chunk_size=None, ncpu=2
-):
+    soma_coords: list,
+    labels: np.array,
+    im_processed: np.array,
+    threshold: float,
+    res: list,
+    chunk_size: list = None,
+    ncpu: int = 2,
+) -> np.array:
     """Preprocesses a neuron image segmentation by splitting up non-soma components into 5 micron segments.
 
     Args:
@@ -340,7 +359,14 @@ def compute_frags(
     return new_labels
 
 
-def split_frags(soma_coords, labels, im_processed, threshold, res, verbose=True):
+def split_frags(
+    soma_coords: list,
+    labels: np.array,
+    im_processed: np.array,
+    threshold: float,
+    res: list,
+    verbose=False,
+) -> np.array:
     """Preprocesses a single image chunk by splitting up non-soma components into 5 micron segments
 
     Args:
@@ -388,7 +414,13 @@ def split_frags(soma_coords, labels, im_processed, threshold, res, verbose=True)
     return new_labels
 
 
-def remove_somas(soma_coords, labels, im_processed, res, verbose=True):
+def remove_somas(
+    soma_coords: list,
+    labels: np.array,
+    im_processed: np.array,
+    res: list,
+    verbose=False,
+) -> Tuple[np.array, list, dict, list]:
     """Helper function of split_frags. Removes area around somas.
 
     Args:
@@ -422,7 +454,7 @@ def remove_somas(soma_coords, labels, im_processed, res, verbose=True):
         # soma component is all the voxels of that component within 12 microns of the soma point
         dist = np.ones_like(image_iterative)
         dist[soma_pt[0], soma_pt[1], soma_pt[2]] = 0
-        dt = ndi.morphology.distance_transform_edt(dist, sampling=[0.3, 0.3, 1])
+        dt = ndi.distance_transform_edt(dist, sampling=[0.3, 0.3, 1])
         sphere = dt < 15
         new_soma_mask = np.logical_and(soma_mask, sphere)
 
@@ -433,15 +465,15 @@ def remove_somas(soma_coords, labels, im_processed, res, verbose=True):
 
 
 def split_frags_place_points(
-    image_iterative,
-    labels,
-    radius_states,
-    res,
-    threshold,
-    states,
-    comp_to_states,
-    verbose=True,
-):
+    image_iterative: np.array,
+    labels: np.array,
+    radius_states: float,
+    res: list,
+    threshold: float,
+    states: list,
+    comp_to_states: dict,
+    verbose=False,
+) -> Tuple[list, dict]:
     """Helper function of split_frags. Places points on high probability voxels while keeping the points a certain distance apart from each other.
 
     Args:
@@ -503,8 +535,8 @@ def split_frags_place_points(
 
 
 def split_frags_split_comps(
-    labels, new_soma_masks, states, comp_to_states, verbose=True
-):
+    labels: np.array, new_soma_masks, states: list, comp_to_states: dict, verbose=False
+) -> np.array:
     """Helper function of split_frags. Splits the components according to the points that were placed by split_frags_place_points.
 
     Args:
@@ -544,7 +576,9 @@ def split_frags_split_comps(
     return new_labels
 
 
-def split_frags_split_fractured_components(new_labels, verbose=True):
+def split_frags_split_fractured_components(
+    new_labels: np.array, verbose=False
+) -> np.array:
     """Helper function of split_frags. Some fragments from split_frags_split_comps may not be connected so this function separates those.
 
     Args:
@@ -569,7 +603,7 @@ def split_frags_split_fractured_components(new_labels, verbose=True):
     return new_labels
 
 
-def rename_states_consecutively(new_labels):
+def rename_states_consecutively(new_labels: np.array) -> np.array:
     """Helper function of split_frags. Relabel components in image segmentation so the unique values are consecutive.
 
     Args:

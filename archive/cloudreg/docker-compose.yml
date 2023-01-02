@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+    cloudreg:
+        image: neurodata/cloudreg
+        secrets:
+            - ssh_key
+            - cloudvolume_credentials
+
+secrets:
+    ssh_key:
+        file: "~/.ssh/cloudreg.pem"
+    cloudvolume_credentials:
+        file: "~/.cloudvolume/secrets/aws-secret.json"

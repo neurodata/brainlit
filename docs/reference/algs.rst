@@ -35,6 +35,8 @@ Trace Analysis
 .. autoapifunction:: speed
 .. autoapifunction:: curvature
 .. autoapifunction:: torsion
+.. autoapiclass:: CubicHermiteChain
+	:members:
 .. autoapiclass:: GeometricGraph
 	:members:
 

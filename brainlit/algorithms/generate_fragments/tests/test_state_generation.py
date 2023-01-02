@@ -39,7 +39,7 @@ test_coords = np.hstack(
 )
 
 
-def test_state_generation(tmp_path):
+def test_state_generation_3d(tmp_path):
     im_file = str(tmp_path / "image.zarr")
     z_im = zarr.open(
         im_file, mode="w", shape=(100, 100, 1), chunks=(50, 50, 1), dtype="float"
@@ -53,6 +53,7 @@ def test_state_generation(tmp_path):
 
     sg = state_generation(
         image_path=im_file,
+        new_layers_dir=str(tmp_path),
         ilastik_program_path=None,
         ilastik_project_path=None,
         chunk_size=[50, 50, 1],
@@ -66,14 +67,62 @@ def test_state_generation(tmp_path):
     sg.compute_soma_lbls()
     assert_array_equal(sg.soma_lbls, [5])
 
-    sg.compute_states()
+    sg.compute_states("nb")
+    sg.compute_states("pc")
+
     with open(sg.states_path, "rb") as handle:
         G = pickle.load(handle)
     for node in G.nodes:
         print(G.nodes[node])
     assert len(G.nodes) == 9  # 2 states per fragment plus one soma state
 
-    sg._pc_endpoints_from_coords_neighbors(test_coords)
+    sg.compute_edge_weights()
+    sg.compute_bfs()
+
+
+def test_state_generation_4d(tmp_path):
+    im_file = str(tmp_path / "image.zarr")
+    z_im = zarr.open(
+        im_file, mode="w", shape=(2, 100, 100, 1), chunks=(50, 50, 1), dtype="float"
+    )
+    z_im[0, :, :, :] = image
+    z_im[1, :, :, :] = np.zeros(z_im.shape[1:], dtype="float")
+    probs_file = str(tmp_path / "probs.zarr")
+    z_prob = zarr.open(
+        probs_file, mode="w", shape=(100, 100, 1), chunks=(50, 50, 1), dtype="float"
+    )
+    z_prob[:, :, :] = image
+    lab_file = str(tmp_path / "fragments.zarr")
+    z_lab = zarr.open(
+        lab_file, mode="w", shape=(100, 100, 1), chunks=(50, 50, 1), dtype="int"
+    )
+    z_lab[:, :, :] = labels
+
+    sg = state_generation(
+        image_path=im_file,
+        new_layers_dir=str(tmp_path),
+        ilastik_program_path=None,
+        ilastik_project_path=None,
+        chunk_size=[50, 50, 1],
+        soma_coords=soma_coords,
+        fg_channel=0,
+        resolution=res,
+        prob_path=probs_file,
+        fragment_path=lab_file,
+    )
+
+    sg.compute_image_tiered()
+    sg.compute_soma_lbls()
+    assert_array_equal(sg.soma_lbls, [5])
+
+    sg.compute_states("nb")
+    sg.compute_states("pc")
+
+    with open(sg.states_path, "rb") as handle:
+        G = pickle.load(handle)
+    for node in G.nodes:
+        print(G.nodes[node])
+    assert len(G.nodes) == 9  # 2 states per fragment plus one soma state
 
     sg.compute_edge_weights()
     sg.compute_bfs()

@@ -12,8 +12,11 @@ workflows:
     # Inside the workflow, you define the jobs you want to run. 
     # For more details on extending your workflow, see the configuration docs: https://circleci.com/docs/2.0/configuration-reference/#workflows 
     jobs:
-      - build-and-test
+      - build-and-test_38
+      - build-and-test_39
+      - build-and-test_310
 
+# Below I define commands that are used in many of the jobs
 commands:
   early_return_for_forked_pull_requests:
     description: >-
@@ -27,21 +30,8 @@ commands:
               echo "Nothing to do for forked PRs, so marking this step successful"
               circleci step halt
             fi
-
-jobs:
-  build-and-test:  # This is the name of the job, feel free to change it to better match what you're trying to do!
-    # These next lines defines a docker executors: https://circleci.com/docs/2.0/executor-types/
-    # You can specify an image from dockerhub or use one of the convenience images from CircleCI's Developer Hub
-    # A list of available CircleCI docker convenience images are available here: https://circleci.com/developer/images/image/cimg/python
-    # The executor is the environment in which the steps below will be executed - below will use a python 3.9 container
-    # Change the version below to your required version of python
-    docker:
-      - image: cimg/python:3.8
-    # Checkout the code as the first step. This is a dedicated CircleCI step.
-    # The python orb's install-packages step will install the dependencies from a Pipfile via Pipenv by default.
-    # Here we're making sure we use just use the system-wide pip. By default it uses the project root's requirements.txt.
-    # Then run your tests!
-    # CircleCI will report the results back to your VCS provider.
+            
+  python_build:
     steps:
       - checkout
       - python/install-packages:
@@ -60,14 +50,17 @@ jobs:
             . venv/bin/activate
             pip install pytest pytest-cov codecov black[jupyter]
             pip install -e .
+  fork_test:
+    steps:
       - run:
           name: formatting and code coverage
           # This assumes pytest is installed via the install-package step above
           command: |
             . venv/bin/activate
             black --check --diff ./brainlit ./experiments
-            pytest brainlit/algorithms/ brainlit/archive/ brainlit/cloudreg/ brainlit/feature_extraction/ brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/registration/ brainlit/viz/
-      - early_return_for_forked_pull_requests
+            pytest brainlit/algorithms/ brainlit/feature_extraction/ brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/viz/
+  all_test:
+    steps:
       - run:
           name: run pytests
           # This assumes pytest is installed via the install-package step above
@@ -75,5 +68,42 @@ jobs:
             . venv/bin/activate
             pytest --cov=brainlit ./brainlit
             codecov
-    
+            
+jobs:
+  build-and-test_38:  # This is the name of the job, feel free to change it to better match what you're trying to do!
+    # These next lines defines a docker executors: https://circleci.com/docs/2.0/executor-types/
+    # You can specify an image from dockerhub or use one of the convenience images from CircleCI's Developer Hub
+    # A list of available CircleCI docker convenience images are available here: https://circleci.com/developer/images/image/cimg/python
+    # The executor is the environment in which the steps below will be executed - below will use a python 3.8 container
+    # Change the version below to your required version of python
+    docker:
+      - image: cimg/python:3.8
+    # Checkout the code as the first step. This is a dedicated CircleCI step.
+    # The python orb's install-packages step will install the dependencies from a Pipfile via Pipenv by default.
+    # Here we're making sure we use just use the system-wide pip. By default it uses the project root's requirements.txt.
+    # Then run your tests!
+    # CircleCI will report the results back to your VCS provider.
+    steps:
+      - python_build
+      - fork_test
+      - early_return_for_forked_pull_requests
+      - all_test
+      
+  build-and-test_39:
+    docker:
+      - image: cimg/python:3.9
+    steps:
+      - python_build
+      - fork_test
+      - early_return_for_forked_pull_requests
+      - all_test
+      
+  build-and-test_310:
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - python_build
+      - fork_test
+      - early_return_for_forked_pull_requests
+      - all_test
 

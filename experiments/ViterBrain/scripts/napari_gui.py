@@ -1,69 +1,58 @@
-from mouselight_code.src import (
-    dynamic_programming_connected_double_learn,
-    image_process,
-)
-
-# import pandas as pd
 from pathlib import Path
+from matplotlib.pyplot import colorbar
 from networkx.algorithms.operators.unary import reverse
-from skimage import io, measure
-from sklearn.metrics import pairwise_distances_argmin_min
-import matplotlib.pyplot as plt
 import numpy as np
 import napari
 import pickle
 import networkx as nx
-import scipy.ndimage as ndi
+from scipy.fft import next_fast_len
+from sklearn.manifold import trustworthiness
 from tqdm import tqdm
-import random
 import os
-
-# from scipy import stats
-from mouselight_code.src.swc2voxel import Bresenham3D
-import subprocess
-import h5py
 from napari_animation import AnimationWidget
-import similaritymeasures
-from cloudvolume import Skeleton
-import re
 from brainlit.utils.Neuron_trace import NeuronTrace
 import zarr
+from magicgui import widgets
 
 scale = [0.3, 0.3, 1]
 num = 0
 
 root_dir = Path(os.path.abspath(""))
-data_dir = os.path.join(root_dir, "data", "example")
-path = os.path.join(data_dir, "viterbi_0_multisoma.pickle")
+data_dir = os.path.join(root_dir, "data", "sample")
+path = os.path.join(data_dir, "3-1-soma_viterbrain.pickle")
 
 with open(path, "rb") as handle:
     viterbi = pickle.load(handle)
+
+im_path = os.path.join(data_dir, "3-1-soma.zarr")
+z = zarr.open(im_path, "r")
+im = z[:, :, :]
+print(f"Image shape: {im.shape}")
+fragment_path = os.path.join(data_dir, "3-1-soma_labels.zarr")
+z = zarr.open(fragment_path, "r")
+new_labels = z[:, :, :]
+print(f"Labels shape: {new_labels.shape}")
 
 state2centroid = {}
 for soma_frag in viterbi.soma_fragment2coords.keys():
     state2centroid[soma_frag] = np.mean(viterbi.soma_fragment2coords[soma_frag], axis=0)
 
-z = zarr.open(viterbi.fragment_path[:-12] + ".zarr", "r")
-im = z[:, :, :]
-print(f"Image shape: {im.shape}")
-z = zarr.open(viterbi.fragment_path, "r")
-new_labels = z[:, :, :]
-
-nt = NeuronTrace(
-    path="/Users/thomasathey/Documents/mimlab/mouselight/pres/mim_slides/SNT_Data.swc"
-)
-df = nt.get_df()
-SNT = df[["x", "y", "z"]].to_numpy()
-SNT[:, [0, 1, 2]] = SNT[:, [2, 1, 0]]
-
 viewer = napari.Viewer(ndisplay=3)
+viewer_copy = viewer  # added viewer copy to bypass boolean behavior from viewer after QPushButton emits signal
 viewer.add_image(im, name="image", scale=scale)
 # viewer.add_shapes(SNT, shape_type="path", edge_color="blue", edge_width=1)
 labels_layer = viewer.add_labels(new_labels, name="labels", scale=scale)
 animation_widget = AnimationWidget(viewer)
 viewer.window.add_dock_widget(animation_widget, area="right")
-viewer.camera.angles = [0, -90, 180]
-viewer.scale_bar.visible = True
+trace = widgets.PushButton(text="trace")
+switch = widgets.PushButton(text="switch states")
+save = widgets.PushButton(text="save")
+clear = widgets.PushButton(text="clear selected states")
+clear_all = widgets.PushButton(text="clear all")
+next = widgets.PushButton(text="next color")
+container = widgets.Container(widgets=[trace, switch, save, clear, clear_all, next])
+viewer.window.add_dock_widget(container, area="right")
+# viewer.scale_bar.visible = True
 
 colors = ["green", "blue", "red"]
 
@@ -190,6 +179,7 @@ def select_state(viewer, event):
 
 
 @viewer.bind_key("o")
+@switch.clicked.connect
 def switch_state(viewer):
     states, _, state_order, _ = get_layers()
     last_state = state_order[-1]
@@ -248,6 +238,7 @@ def drawpath(state1, state2):
 
 
 @viewer.bind_key("t")
+@trace.clicked.connect
 def trace(viewer):
     states, traces, state_order, soma_end = get_layers()
     if len(state_order) >= 2:
@@ -255,7 +246,7 @@ def trace(viewer):
         state2 = state_order[-1]
         print(f"Tracing from {state1} to {state2}")
         lines = drawpath(state1, state2)
-        viewer.add_shapes(
+        viewer_copy.add_shapes(
             lines,
             shape_type="path",
             edge_color=colors[-1],
@@ -263,7 +254,6 @@ def trace(viewer):
             name=f"trace {state1} to {state2}",
             scale=scale,
         )
-
         layers = states[state1]  # + states[state2]
         if soma_end:
             layers += states[state2]
@@ -274,11 +264,12 @@ def trace(viewer):
 
 
 @viewer.bind_key("s")
+@save.clicked.connect
 def save_traces(viewer):
-    _, traces, _ = get_layers()
+    _, traces, _, truth = get_layers()
 
     if len(traces.keys()) > 0:
-        file_name = "/Users/thomasathey/Desktop/traces.swc"
+        file_name = "/Users/sejalsrivastava/Desktop/traces.swc"
         with open(file_name, "w") as f:
             f.write("#idx \t x \t y \t z \t parent\n")
             idx = 0
@@ -295,6 +286,7 @@ def save_traces(viewer):
 
 
 @viewer.bind_key("c")
+@clear.clicked.connect
 def clear(viewer):
     layers_to_remove = []
     states, traces, _, _ = get_layers()
@@ -304,6 +296,7 @@ def clear(viewer):
 
 
 @viewer.bind_key("q")
+@clear_all.clicked.connect
 def clear_all(viewer):
     layers_to_remove = []
     states, traces, _, _ = get_layers()
@@ -314,8 +307,10 @@ def clear_all(viewer):
 
 
 @viewer.bind_key("n")
+@next.clicked.connect
 def clear_all(viewer):
-    colors.pop()
+    color = colors.pop()
+    colors.insert(0, color)
 
 
 napari.run()
