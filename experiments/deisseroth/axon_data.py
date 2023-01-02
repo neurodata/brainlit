@@ -9,6 +9,7 @@ Data should be stored in the brain2paths dictionary, with entries like:
             "url": "<neuroglancer URL>",
             "layer": "<name of layer with points for subvolumes>",
         },
+        "genotype": "<genotype>"
         #Optional:
         "train_info": {
             "url": "<neuroglancer URL>",
@@ -24,6 +25,7 @@ Data should be stored in the brain2paths dictionary, with entries like:
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=hhlEcKDIfqrY-w",
             "layer": "val",
         },
+        "genotype": "tph2 vglut3"
     },
 '''
 
@@ -42,12 +44,14 @@ brain2paths = {
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/Ch_488",
         "mask": "precomputed://s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/axon_mask",
         "atlas": "precomputed://s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/atlas_to_target",
+        "genotype": "sert cre"
     },
     "4": {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/Ch_647",
         "bg": "precomputed://s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/Ch_561",
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2021_07_15_Sert_Cre_R/Ch_488",
         "mask": "s3://smartspim-precomputed-volumes/2021_07_01_Sert_Cre_B/axon_mask",
+        "genotype": "sert cre"
     },
     "8613": {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/Ch_647",
@@ -55,6 +59,7 @@ brain2paths = {
         "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/Ch_488",
         "mask": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/axon_mask",
         "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/axon_mask_transformed",
+        "genotype": "tph2 vglut3"
     },
     "8604": {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_02_02/8604/Ch_647",
@@ -65,6 +70,7 @@ brain2paths = {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=K1JfdZmA4pqr1Q",
             "layer": "axon_val",
         },
+        "genotype": "tbd"
     },
     "8650": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/",
@@ -73,6 +79,7 @@ brain2paths = {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=tnXt-hF7Uyuq-w",
             "layer": "val",
         },
+        "genotype": "tph2 gad2"
     },
     "8589": {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_11_03/8589/Ch_647",
@@ -84,6 +91,7 @@ brain2paths = {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=sCrJq3bVmN5N4Q",
             "layer": "val",
         },
+        "genotype": "tph2 vglut3"
     },
     "8590": {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_03_04/8590/Ch_647_iso",
@@ -95,6 +103,7 @@ brain2paths = {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=gq91htCi35XdPw",
             "layer": "val",
         },
+        "genotype": "tph2 vglut3"
     },
     "8649": {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_03_28/8649/Ch_647_iso",
@@ -110,6 +119,7 @@ brain2paths = {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=b0unpdsrz-bO6A",
             "layer": "train",
         },
+        "genotype": "tph2 gad2"
     },
     "8590_v2": {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_07_29/8590/Ch_647_iso",
@@ -145,6 +155,7 @@ brain2paths = {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=a7nPluS2FyMT0g",
             "layer": "train",
         },
+        "genotype": "tph2 vglut3"
     },
     "11537": {
         "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/Ch_647",
@@ -155,6 +166,7 @@ brain2paths = {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=9MCP5DRs2D32Bg",
             "layer": "val",
         },
+        "genotype": "tph2 gad2"
     },
     "8786": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2022_11_02/8786/",
@@ -162,6 +174,7 @@ brain2paths = {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=YRB3G4Hn19TjIA",
             "layer": "val",
         },
+        "genotype": "tph2 vglut3"
     },
     "8790": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2022_11_01/8790/",
@@ -169,6 +182,7 @@ brain2paths = {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=hhlEcKDIfqrY-w",
             "layer": "val",
         },
+        "genotype": "tph2 vglut3"
     },
 
 

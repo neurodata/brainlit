@@ -97,10 +97,12 @@ brain2paths = {
         "genotype": "gad2 vgat"
     },
     "8608": {
-        "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_04_13/8608/Ch_647_iso",
-        "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_04_13/8608/Ch_561_iso",
-        "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_04_13/8608/Ch_488_iso",
-        "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=NRFI2aWmv3d0Ww",
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2022_04_13/8608/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=NRFI2aWmv3d0Ww",
+            "somas_layer": "somas_labeled",
+            "nonsomas_layer": "nonsomas_labeled",
+        },
         "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=NKbJwOj-JeDafg",
         "genotype": "tph2 gad2"
     },
