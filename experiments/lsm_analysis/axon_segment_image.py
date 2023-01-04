@@ -1,21 +1,21 @@
-'''
+"""
 Inputs
-'''
-dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_03_28/8649/" #s3 path to directory that contains image data
-threshold = 0.4 #threshold to use for ilastik
-data_dir = "/data/tathey1/matt_wright/brain_temp/" #directory to store temporary subvolumes for segmentation
+"""
+dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_03_28/8649/"  # s3 path to directory that contains image data
+threshold = 0.4  # threshold to use for ilastik
+data_dir = "/data/tathey1/matt_wright/brain_temp/"  # directory to store temporary subvolumes for segmentation
 
 # Ilastik will run in "headless mode", and the following paths are needed to do so:
-ilastik_path = "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh" #path to ilastik executable
-ilastik_project = "/data/tathey1/matt_wright/ilastik/model1/axon_segmentation.ilp" #path to ilastik project
+ilastik_path = "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh"  # path to ilastik executable
+ilastik_project = "/data/tathey1/matt_wright/ilastik/model1/axon_segmentation.ilp"  # path to ilastik project
 
-n_jobs = 15 #number of cores to use for segmentation
-max_y = -1 #maxy coord, or -1 if you want to process all of them
+n_jobs = 15  # number of cores to use for segmentation
+max_y = -1  # maxy coord, or -1 if you want to process all of them
 skip_segment = False
 
-'''
+"""
 Segment Axon
-'''
+"""
 from cloudvolume import CloudVolume
 from skimage import io
 import numpy as np
@@ -101,6 +101,7 @@ def process_chunk(c1, c2, data_dir, threshold, dir_base):
         mask = np.array(pred > threshold).astype("uint64")
         vol_mask[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]] = mask
 
+
 if not skip_segment:
     for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
         Parallel(n_jobs=n_jobs)(
@@ -111,9 +112,9 @@ if not skip_segment:
             os.remove(os.path.join(data_dir, f))
 
 
-'''
+"""
 Downsample Mask
-'''
+"""
 print("Downsampling...")
 layer_path = dir_base + "axon_mask"
 

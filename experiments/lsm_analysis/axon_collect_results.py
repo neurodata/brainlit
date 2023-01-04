@@ -1,14 +1,14 @@
-'''
+"""
 Inputs
-'''
-#s3 path to directory that contains the layers axon_mask (from segmentation), and atlas_to_target (from registration)
-dir_base = "s3://smartspim-precomputed-volumes/2022_11_02/8786/" 
-outdir = "/data/tathey1/matt_wright/brain_temp/" #directory to store temporary subvolumes for segmentation
+"""
+# s3 path to directory that contains the layers axon_mask (from segmentation), and atlas_to_target (from registration)
+dir_base = "s3://smartspim-precomputed-volumes/2022_11_02/8786/"
+outdir = "/data/tathey1/matt_wright/brain_temp/"  # directory to store temporary subvolumes for segmentation
 
 
-'''
+"""
 Collect results
-'''
+"""
 from sre_constants import CATEGORY_UNI_NOT_LINEBREAK
 from tqdm import tqdm
 import numpy as np

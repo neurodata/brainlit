@@ -4,6 +4,7 @@ import numpy as np
 import os
 import networkx as nx
 
+
 def json_to_points(url, round=False):
     pattern = "json_url="
     idx = url.find(pattern) + len(pattern)
@@ -30,7 +31,7 @@ def json_to_points(url, round=False):
     return point_layers
 
 
-def find_sample_names(dir, dset = "val", add_dir = False):
+def find_sample_names(dir, dset="val", add_dir=False):
     items = os.listdir(dir)
 
     items = [item for item in items if ".h5" in item]
@@ -58,7 +59,9 @@ def find_atlas_level_label(label, atlas_level_nodes, atlas_level, G):
             preds = list(G.predecessors(label))
             if len(preds) != 1:
                 raise ValueError(f"{len(preds)} predecessors of node {label}")
-            atlas_level_label = find_atlas_level_label(preds[0], atlas_level_nodes, atlas_level, G)
+            atlas_level_label = find_atlas_level_label(
+                preds[0], atlas_level_nodes, atlas_level, G
+            )
             counter += 1
         if counter != 1:
             raise ValueError(f"{counter} atlas level predecessors of {label}")
@@ -66,8 +69,8 @@ def find_atlas_level_label(label, atlas_level_nodes, atlas_level, G):
 
 
 def fold(image):
-    half_width = np.round(image.shape[1]/2).astype(int)
-    left = image[:,:half_width]
-    right = image[:,half_width:]
+    half_width = np.round(image.shape[1] / 2).astype(int)
+    left = image[:, :half_width]
+    right = image[:, half_width:]
     left = left + np.flip(right, axis=1)
     return left

@@ -1,18 +1,19 @@
-'''
+"""
 Inputs
-'''
+"""
 brain_ids = ["8650", "8649", "8788", "8589", "8590", "8613"]
 brain_ids = ["8650", "8788", "8613", "8589"]
 path_key = "transformed_mask"
 
-'''
+"""
 Script
-'''
+"""
 import random
 import numpy as np
 
 from brainrender import Scene, settings
 from brainrender.actors import Volume
+
 settings.SHOW_AXES = False
 
 from rich import print
@@ -36,10 +37,10 @@ from skimage.morphology import remove_small_objects
 
 print(f"[{orange}]Running example: {Path(__file__).name}")
 
-scene = Scene(atlas_name="allen_mouse_50um",title="Output Axons")
+scene = Scene(atlas_name="allen_mouse_50um", title="Output Axons")
 atlas = BrainGlobeAtlas("allen_mouse_50um")
 atlas_mask = atlas.annotation
-atlas_mask = rescale(atlas_mask, 5/2)
+atlas_mask = rescale(atlas_mask, 5 / 2)
 atlas_mask = atlas_mask > 0
 print(f"Atlas mask shape: {atlas_mask.shape}")
 
@@ -54,15 +55,21 @@ for brain_id in brain_ids:
         new_val = type2id[genotype] + [brain_id]
         type2id[genotype] = new_val
 
-vols_transformed_gad = [CloudVolume(brain2paths[id][path_key]) for id in type2id["tph2 gad2"]]
-vols_transformed_vglut = [CloudVolume(brain2paths[id][path_key]) for id in type2id["tph2 vglut3"]]
+vols_transformed_gad = [
+    CloudVolume(brain2paths[id][path_key]) for id in type2id["tph2 gad2"]
+]
+vols_transformed_vglut = [
+    CloudVolume(brain2paths[id][path_key]) for id in type2id["tph2 vglut3"]
+]
 
-for vols, color in zip([vols_transformed_gad, vols_transformed_vglut], ["Reds", "Greens"]):
+for vols, color in zip(
+    [vols_transformed_gad, vols_transformed_vglut], ["Reds", "Greens"]
+):
     for i, vol in enumerate(tqdm(vols, desc="Processing volumes...")):
         if i == 0:
             im_total = np.zeros(vol.shape)
         im = np.zeros(vol.shape)
-        im[:,:,:,:] = vol[:,:,:,:]
+        im[:, :, :, :] = vol[:, :, :, :]
         # path = f"/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/npy-files/{color}-{i}.tif"
         # io.imsave(path, im)
         # im = io.imread(path)
@@ -73,7 +80,7 @@ for vols, color in zip([vols_transformed_gad, vols_transformed_vglut], ["Reds", 
 
     # Process
     # Remove small components
-    small_comp_mask = remove_small_objects(im_total>0,100)
+    small_comp_mask = remove_small_objects(im_total > 0, 100)
     im_total[small_comp_mask == False] = 0
 
     im_total = rescale(im_total, 0.5)

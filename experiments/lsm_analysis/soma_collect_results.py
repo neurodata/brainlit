@@ -1,14 +1,14 @@
-'''
+"""
 Inputs
-'''
+"""
 
-viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=e9mu7UCvrTSXRQ" #neuroglancer link that includes atlas_to_target
-somas = "/data/tathey1/matt_wright/brainr_results/" #path to directory that contains text files that were output from soma_detect_image.py
+viz_link = "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=e9mu7UCvrTSXRQ"  # neuroglancer link that includes atlas_to_target
+somas = "/data/tathey1/matt_wright/brainr_results/"  # path to directory that contains text files that were output from soma_detect_image.py
 
 
-'''
+"""
 Collect results
-'''
+"""
 import numpy as np
 from cloudvolume import CloudVolume
 from tqdm import tqdm
@@ -23,9 +23,9 @@ viz_link = NGLink(viz_link.split("json_url=")[-1])
 ngl_json = viz_link._json
 
 atlas_layer = None
-for layer in ngl_json['layers']:
-    if layer['name'] == 'Ch_561_iso':
-        atlas_layer = layer['source']
+for layer in ngl_json["layers"]:
+    if layer["name"] == "Ch_561_iso":
+        atlas_layer = layer["source"]
 if atlas_layer is None:
     raise ValueError(f"No antibody layer at viz link: {viz_link}")
 
@@ -85,20 +85,18 @@ if len(coords_target_space) > 2000:
 else:
     name = "detected_somas"
 
-ngl_json['layers'].append(
-    {
-        "type": "annotation",
-        "points": coords_target_space,
-        "name": name
-    }   
+ngl_json["layers"].append(
+    {"type": "annotation", "points": coords_target_space, "name": name}
 )
-viz_link = create_viz_link_from_json(ngl_json, neuroglancer_link="https://viz.neurodata.io/?json_url=")
+viz_link = create_viz_link_from_json(
+    ngl_json, neuroglancer_link="https://viz.neurodata.io/?json_url="
+)
 print(f"Viz link with detections: {viz_link}")
 
 atlas_layer = None
-for layer in ngl_json['layers']:
-    if layer['name'] == 'atlas_to_target':
-        atlas_layer = layer['source']
+for layer in ngl_json["layers"]:
+    if layer["name"] == "atlas_to_target":
+        atlas_layer = layer["source"]
 if atlas_layer is None:
     raise ValueError(f"No atlas_to_target layer at viz link: {viz_link}")
 
@@ -112,9 +110,7 @@ atlas_vol = CloudVolume(
 )
 print(f"size: {atlas_vol.shape} ")
 
-outpath = (
-    somas + "quantification_dict_" + brain + ".pickle"
-)
+outpath = somas + "quantification_dict_" + brain + ".pickle"
 
 print(f"Collecting atlas data to {outpath}...")
 dict = {}
