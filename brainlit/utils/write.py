@@ -8,6 +8,7 @@ from ome_zarr.io import parse_url
 from typing import List
 from pathlib import Path
 
+
 def _read_czi_slice(czi, C, Z):
     """Reads a slice of a czi object, handling whether the czi is a mosaic or not.
 
@@ -20,11 +21,12 @@ def _read_czi_slice(czi, C, Z):
         np.array: array of the image data
     """
     if czi.is_mosaic():
-        slice = np.squeeze(czi.read_mosaic(C=C, Z=Z, scale_factor=1)) 
+        slice = np.squeeze(czi.read_mosaic(C=C, Z=Z, scale_factor=1))
     else:
         slice, _ = czi.read_image(C=0, Z=0)
         slice = np.squeeze(slice)
     return slice
+
 
 def czi_to_zarr(czi_path: str, out_dir: str) -> List[str]:
     """Convert  4D czi image to a zarr file(s) at a given directory. Single channel image will produce a single zarr, two channels will produce two.
