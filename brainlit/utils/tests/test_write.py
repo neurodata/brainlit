@@ -4,14 +4,19 @@ import numpy as np
 from brainlit.utils.write import zarr_to_omezarr, czi_to_zarr
 import os
 import zipfile
+from pathlib import Path
 
 
 @pytest.fixture(scope="session")
 def init_4dczi(tmp_path_factory):
     data_dir = tmp_path_factory.mktemp("data")
     czi_path = data_dir / "test.czi"
+    zip_path = (
+        Path(__file__).parents[3] / "experiments" / "sriram" / "data" / "test.czi.zip"
+    )
+
     with zipfile.ZipFile(
-        "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/test.czi.zip",
+        zip_path,
         "r",
     ) as zip_ref:
         zip_ref.extractall(data_dir)
