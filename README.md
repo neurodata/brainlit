@@ -2,6 +2,7 @@
 [![DOI](https://zenodo.org/badge/237507496.svg)](https://zenodo.org/badge/latestdoi/237507496)
 [![Python](https://img.shields.io/badge/python-3.7-blue.svg)]()
 [![CircleCI](https://circleci.com/gh/neurodata/brainlit/tree/develop.svg?style=svg)](https://circleci.com/gh/neurodata/brainlit/tree/develop)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/daad6ab0-1d47-4685-b6ab-ecc487a01ba7/deploy-status)](https://brainlit.netlify.app/)
 [![PyPI version](https://badge.fury.io/py/brainlit.svg)](https://badge.fury.io/py/brainlit)
 [![Downloads](https://img.shields.io/pypi/dw/brainlit)](https://img.shields.io/pypi/dw/brainlit)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -11,9 +12,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)  
 
 ## Summary
-This repository is used for various tasks in processing, and analyzing light microscopy images of brains for the purpose of studing neuron morphology. Documentation can be found by clicking on the Netlify badge below:
-
-[![Netlify Status](https://api.netlify.com/api/v1/badges/daad6ab0-1d47-4685-b6ab-ecc487a01ba7/deploy-status)](https://brainlit.netlify.app/)
+This repository is used for various tasks in processing, and analyzing light microscopy images of brains for the purpose of studing neuron morphology. Documentation can be found [here](http://brainlit.neurodata.io/).
 
 Brainlit is a product of the [neurodata lab](https://neurodata.io/). It is actively maintained by Thomas Athey (@tathey1), and is regularly used and contributed to by students in the [Neuro Data Design](https://neurodatadesign.io/) course. We strive to follow the same [code of conduct](https://opensource.microsoft.com/codeofconduct/) that applies to the Microsoft open source community.
 
