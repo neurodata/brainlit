@@ -23,21 +23,27 @@ def _read_czi_slice(czi, C, Z):
     if czi.is_mosaic():
         slice = np.squeeze(czi.read_mosaic(C=C, Z=Z, scale_factor=1))
     else:
-        slice, _ = czi.read_image(C=0, Z=0)
+        slice, _ = czi.read_image(C=C, Z=Z)
         slice = np.squeeze(slice)
     return slice
 
 
-def czi_to_zarr(czi_path: str, out_dir: str) -> List[str]:
+def czi_to_zarr(czi_path: str, out_dir: str, fg_channel: int = 0) -> List[str]:
     """Convert  4D czi image to a zarr file(s) at a given directory. Single channel image will produce a single zarr, two channels will produce two.
 
     Args:
         czi_path (str): Path to czi image.
         out_dir (str): Path to directory where zarr(s) will be written.
+        fg_channel (int): Foreground channel
 
     Returns:
         list: paths to zarrs that were written
     """
+    if fg_channel == 0:
+        bg_channel = 1
+    else:
+        bg_channel = 0
+
     zarr_paths = []
     czi = aicspylibczi.CziFile(czi_path)
 
@@ -60,7 +66,7 @@ def czi_to_zarr(czi_path: str, out_dir: str) -> List[str]:
     )
 
     for z in tqdm(np.arange(Z), desc="Saving slices foreground..."):
-        zarr_fg[:, :, z] = _read_czi_slice(czi, C=0, Z=z)
+        zarr_fg[:, :, z] = _read_czi_slice(czi, C=fg_channel, Z=z)
 
     if C > 1:  # there is a second (assumed background) channel
         bg_path = out_dir + "bg.zarr"
@@ -69,7 +75,7 @@ def czi_to_zarr(czi_path: str, out_dir: str) -> List[str]:
             bg_path, mode="w", shape=sz, chunks=(200, 200, 10), dtype="uint16"
         )
         for z in tqdm(np.arange(Z), desc="Saving slices background..."):
-            zarr_bg[:, :, z] = _read_czi_slice(czi, C=1, Z=z)
+            zarr_bg[:, :, z] = _read_czi_slice(czi, C=bg_channel, Z=z)
     return zarr_paths
 
 
