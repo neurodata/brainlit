@@ -2,7 +2,7 @@
 Inputs
 """
 # s3 path to directory that contains the layers axon_mask (from segmentation), and atlas_to_target (from registration)
-dir_base = "s3://smartspim-precomputed-volumes/2022_11_02/8786/"
+dir_base = "s3://smartspim-precomputed-volumes/2022_03_28/8649/"
 outdir = "/data/tathey1/matt_wright/brain_temp/"  # directory to store temporary subvolumes for segmentation
 
 
