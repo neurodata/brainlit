@@ -1,11 +1,10 @@
 """
 Inputs
 """
-model = "-compare-3_4"
-project_path = f"/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/axon_segmentation{model}.ilp"  # path to ilastik model to be used
+models = ["-compare-3","-compare-3-4","-compare-3-4-8649","-compare-3-4-8649-8788","-compare-3_2","-compare-3_3","-compare-3_4"]
 
 base_path = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/"  # path to directory that holds images to be processed
-brains = ["8649"]  # sample IDs to be processed
+brains = ["8786", "8790", "11537"]  # sample IDs to be processed
 
 """
 Script
@@ -23,7 +22,7 @@ from util import find_sample_names
 print(f"Number cpus: {multiprocessing.cpu_count()}")
 
 
-def apply_ilastik(fname):
+def apply_ilastik(fname, project_path):
     if type(fname) == list:
         fname_str = ""
         for f in fname:
@@ -50,7 +49,8 @@ def apply_ilastik(fname):
     )
 
 
-def process_images():
+def process_images(model):
+    project_path = f"/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/axon_segmentation{model}.ilp"
     items_total = []
     for brain in tqdm(brains, desc="Gathering brains..."):
         path = f"{base_path}brain{brain}/"
@@ -59,12 +59,12 @@ def process_images():
     print(items_total)
 
     Parallel(n_jobs=8)(
-        delayed(apply_ilastik)(item)
+        delayed(apply_ilastik)(item, project_path)
         for item in tqdm(items_total, desc="running ilastik...", leave=False)
     )
 
 
-def move_results():
+def move_results(model):
     for brain in tqdm(brains, desc="Moving results..."):
         # make results folder
         brain_dir = f"{base_path}brain{brain}/"
@@ -78,6 +78,6 @@ def move_results():
             result_path = brain_dir + item[:-3] + "_Probabilities.h5"
             shutil.move(result_path, results_dir + item[:-3] + "_Probabilities.h5")
 
-
-process_images()
-move_results()
+for model in models:
+    process_images(model)
+    move_results(model)
