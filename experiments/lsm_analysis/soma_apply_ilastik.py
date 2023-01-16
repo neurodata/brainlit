@@ -1,20 +1,20 @@
 """
 Inputs
 """
-model = "-compare-r1-r2-878-887"
+model = "_rabies_pix_3ch"
 project_path = f"/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/matt_soma{model}.ilp"  # path to ilastik model to be used
 
 base_path = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/"  # path to directory that holds images to be processed
 brains = [
-    "8607",
-    "8606",
-    "8477",
-    "8531",
-    "8608",
-    "8529",
-    "8557",
-    "8555",
-    "8446",
+    # "8607",
+    # "8606",
+    # "8477",
+    # "8531",
+    # "8608",
+    # "8529",
+    # "8557",
+    # "8555",
+    # "8446",
     "8454",
     "887",
 ]  # sample IDs to be processed
@@ -92,4 +92,4 @@ def move_results():
 
 
 process_somas()
-move_results()
+# move_results()

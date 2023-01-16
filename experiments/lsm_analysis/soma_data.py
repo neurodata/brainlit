@@ -108,6 +108,16 @@ brain2paths = {
     },
     "8446": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2022_03_25/8446/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=8okqpTPUtDXJLw",
+            "somas_layer": "soma_val",
+            "nonsomas_layer": "nonsoma_val",
+        },
+        "train_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=8okqpTPUtDXJLw",
+            "somas_layer": "soma_train",
+            "nonsomas_layer": "nonsoma_train",
+        },
         "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=C4DKojFJSgEo-A",
         "genotype": "gad2 vgat",
     },
