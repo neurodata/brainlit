@@ -26,8 +26,7 @@ use env_39 on local
 
 cis:
 use env_38 on dwalin
-- python cors_webserver.py -d "/cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/" -p 9010
-- python cors_webserver.py -d "/cis/project/sriram/ng_data/" -p 9010
+- python cors_webserver.py -d "/cis/project/sriram/ng_data/sriram-adipo-brain1-im3/" -p 9010
 
 url:
 zarr://http://127.0.0.1:9010/exp227/fg_ome.zarr
@@ -43,20 +42,22 @@ trace_path_cis = (
     "precomputed://file:///cis/project/sriram/ng_data/sriram-adipo-brain1-im3/traces"
 )
 
-frag_layer = "precomputed://http://127.0.0.1:9010/frags"
+frag_url = "zarr://http://127.0.0.1:9010/labels_ome_hack.zarr"
 
 vb_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_viterbrain.pickle"
-vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pickle"
+vb_path_cis = "/cis/project/sriram/ng_data/sriram-adipo-brain1-im3/viterbrain.pickle"
 
 ######################
 # Enter inputs below #
 ######################
 
-trace_path = trace_path_local  # cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
-im_path = im_path_local  # ckloudvolume compatible path or path to local zarr
-port = "9020"
+trace_path = trace_path_cis  # cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
+im_path = im_path_cis  # ckloudvolume compatible path or path to local zarr
+port = "9010"
 im_url = f"zarr://http://127.0.0.1:{port}/fg_ome.zarr"  # ng compatible url
 trace_url = f"precomputed://http://127.0.0.1:{port}/traces"  # ng compatible url
+frag_url = frag_url
+vb_path = vb_path_cis
 
 
 data = np.random.random((10, 10, 10)) * 255
@@ -100,6 +101,9 @@ class ViterBrainViewer(neuroglancer.Viewer):
             )
 
         # add layers
+        dimensions = neuroglancer.CoordinateSpace(
+            names=["x", "y", "z"], units="nm", scales=cv_dict["traces"].resolution
+        )
         with self.txn() as s:
             s.layers["traces"] = neuroglancer.SegmentationLayer(
                 source=trace_url,
@@ -136,16 +140,16 @@ class ViterBrainViewer(neuroglancer.Viewer):
         if vb_path:
             with open(vb_path, "rb") as handle:
                 self.vb = pickle.load(handle)
-            self.vb.fragment_path = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_labels.zarr"
+            print(f"Manually changing fragment path************************")
+            self.vb.fragment_path = '/cis/project/sriram/ng_data/sriram-adipo-brain1-im3/labels_ome_hack.zarr/0/'
         else:
             self.vb = None
+
 
         # set useful object attributtes
         self.start_pt = None
         self.end_pt = None
-        self.dimensions = neuroglancer.CoordinateSpace(
-            names=["x", "y", "z"], units="nm", scales=cv_dict["traces"].resolution
-        )
+        self.dimensions = dimensions
         self.im_shape = [i for i in cv_dict["traces"].shape if i != 1]
         self.cur_skel_coords = []
         self.cv_dict = cv_dict
@@ -178,12 +182,15 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 break
 
             skel_num += 1
-        if skel_num == 0:
+
+        if len(pts_total) == 0:
             pts_total = None
             kdtree = None
         else:
             pts_total = np.concatenate(pts_total, axis=0)
             kdtree = KDTree(pts_total)
+
+        print()
         return skel_num, kdtree, ids_total
 
     def add_point(self, name, color, coord):
@@ -335,7 +342,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 layer=neuroglancer.SegmentationLayer(
                     source=[
                         neuroglancer.LocalVolume(
-                            data=np.zeros(self.im_shape, dtype=np.uint32),
+                            data=np.zeros([10,10,10], dtype=np.uint32),
                             dimensions=self.dimensions,
                         ),
                         skel_source,
@@ -377,7 +384,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
                         layer=neuroglancer.SegmentationLayer(
                             source=[
                                 neuroglancer.LocalVolume(
-                                    data=np.zeros(self.im_shape, dtype=np.uint32),
+                                    data=np.zeros([10,10,10], dtype=np.uint32),
                                     dimensions=self.dimensions,
                                 ),
                                 skel_source,
@@ -523,8 +530,8 @@ vbviewer = ViterBrainViewer(
     trace_path=trace_path,
     im_path=im_path,
     napari_viewer=viewer,
-    # frag_url=frag_layer,
-    # vb_path=vb_path_local,
+    frag_url=frag_url,
+    vb_path=vb_path,
 )
 print(vbviewer)
 webbrowser.open_new(vbviewer.get_viewer_url())
