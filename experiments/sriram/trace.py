@@ -190,7 +190,6 @@ class ViterBrainViewer(neuroglancer.Viewer):
             pts_total = np.concatenate(pts_total, axis=0)
             kdtree = KDTree(pts_total)
 
-        print()
         return skel_num, kdtree, ids_total
 
     def add_point(self, name, color, coord):
