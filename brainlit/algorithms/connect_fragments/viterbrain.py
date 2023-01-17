@@ -393,6 +393,7 @@ class ViterBrain:
         Returns:
             list: list of voxel coordinates of path
         """
+        print(self.fragment_path)
         fragments = zarr.open(self.fragment_path, mode="r")
 
         # Compute labels of coordinates

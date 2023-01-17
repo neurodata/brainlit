@@ -21,7 +21,7 @@ need to run in interactive mode: python -i ng.py
 
 local:
 use env_39 on local
-- python cors_webserver.py -d "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/" -p 9010
+- python cors_webserver.py -d "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/" -p 9010
 
 
 cis:
@@ -44,20 +44,20 @@ trace_path_cis = (
 
 frag_url = "zarr://http://127.0.0.1:9010/labels_ome_hack.zarr"
 
-vb_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_viterbrain.pickle"
+vb_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/viterbrain.pickle"
 vb_path_cis = "/cis/project/sriram/ng_data/sriram-adipo-brain1-im3/viterbrain.pickle"
 
 ######################
 # Enter inputs below #
 ######################
 
-trace_path = trace_path_cis  # cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
-im_path = im_path_cis  # ckloudvolume compatible path or path to local zarr
+trace_path = trace_path_local  # cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
+im_path = im_path_local  # ckloudvolume compatible path or path to local zarr
 port = "9010"
 im_url = f"zarr://http://127.0.0.1:{port}/fg_ome.zarr"  # ng compatible url
 trace_url = f"precomputed://http://127.0.0.1:{port}/traces"  # ng compatible url
-frag_url = frag_url
-vb_path = vb_path_cis
+frag_url = frag_url # ng compatible url for the fragments segmentation layer, optional (can be None)
+vb_path = vb_path_local # path to viterbrain object (made from brainlit.algorithms.generate_fragments.state_generation.state_generation), optional (can be None)
 
 
 data = np.random.random((10, 10, 10)) * 255
@@ -141,7 +141,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
             with open(vb_path, "rb") as handle:
                 self.vb = pickle.load(handle)
             print(f"Manually changing fragment path************************")
-            self.vb.fragment_path = '/cis/project/sriram/ng_data/sriram-adipo-brain1-im3/labels_ome_hack.zarr/0/'
+            self.vb.fragment_path = '/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/labels_ome_hack.zarr/0/'
         else:
             self.vb = None
 
@@ -285,15 +285,24 @@ class ViterBrainViewer(neuroglancer.Viewer):
         with self.txn() as vs:  # trace
             layer_names = [l.name for l in vs.layers]
 
-        if "start" in layer_names and "end" in layer_names:
-            print(f"Tracing path from {self.start_pt} to {self.end_pt}")
+        if "start" in layer_names:
+            if "end" in layer_names:
+                print(f"Tracing path from {self.start_pt} to {self.end_pt}")
+                with self.txn() as vs:  # trace
+                    del vs.layers["start"]
+                    vs.layers["end"].name = "start"
+            else:
+                print(f"Tracing path from {self.start_pt} to mouse location at {self.end_pt}")
+                self.end_pt = [int(p) for p in s.mouse_voxel_coordinates]
+                with self.txn() as vs:  # trace
+                    del vs.layers["start"]
+                self.add_point("start", "#0f0", s.mouse_voxel_coordinates)
+            
             path = self.vb.shortest_path(coord1=self.start_pt, coord2=self.end_pt)
             self.render_line(path, layer_names)
-            with self.txn() as vs:  # trace
-                del vs.layers["start"]
-                self.start_pt = self.end_pt
-                self.end_pt = None
-                vs.layers["end"].name = "start"
+
+            self.start_pt = self.end_pt
+            self.end_pt = None
         else:
             print("No start/end layers yet")
 

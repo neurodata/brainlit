@@ -423,27 +423,30 @@ class state_generation:
 
         print(f"Constructing tiered image {tiered_fname} of shape {tiered.shape}")
 
-        shp = np.array(np.array(image.shape[-3:]) / 2).astype(int)
+        for factor in [2,4,8]:
+            shp = np.array(np.array(image.shape[-3:]) / factor).astype(int)
 
-        if self.ndims == 4:
-            image_chunk = image[
-                self.fg_channel,
-                shp[0] : shp[0] + 300,
-                shp[1] : shp[1] + 300,
-                shp[2] : shp[2] + 300,
-            ]
+            if self.ndims == 4:
+                image_chunk = image[
+                    self.fg_channel,
+                    shp[0] : shp[0] + 300,
+                    shp[1] : shp[1] + 300,
+                    shp[2] : shp[2] + 300,
+                ]
 
-        else:
-            image_chunk = image[
+            else:
+                image_chunk = image[
+                    shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
+                ]
+
+            fragments_chunk = fragments[
                 shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
             ]
+            data_fg = image_chunk[fragments_chunk > 0]
+        
+            if len(data_fg) > 100:
+                break
 
-        fragments_chunk = fragments[
-            shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
-        ]
-        print(f"{image.shape}-{fragments.shape}")
-        print(f"{image_chunk.shape}-{fragments_chunk.shape}")
-        data_fg = image_chunk[fragments_chunk > 0]
         if len(data_fg.flatten()) > 10000:
             data_sample = random.sample(list(data_fg), k=10000)
         else:
