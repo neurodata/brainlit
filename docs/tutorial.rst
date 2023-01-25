@@ -30,6 +30,11 @@ Demonstrate pulling data and pushing traced annotations.
 
    notebooks/pipelines/seg_pipeline_demo
 
+.. toctree::
+   :maxdepth: 1
+
+   nb-test
+
 Segmentation
 ------------
 Notebooks showing how to manually and automatically segment data.
