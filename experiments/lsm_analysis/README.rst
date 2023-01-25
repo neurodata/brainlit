@@ -6,7 +6,7 @@ Relevant directory
 Neuron Mapping
 --------------
 
-* First, make sure that you have installed the ``brainlit`` package [`Documentation <https://brainlit.netlify.app/readme#installation>`_].
+* First, make sure that you have installed the ``brainlit`` package: `Installation`_. [`Documentation <https://brainlit.netlify.app/readme#installation>`_].
 
 * For axon segmentation, follow the notebook ``brainlit/experiments/lsm_analysis/axon_analysis.ipynb``.
 
