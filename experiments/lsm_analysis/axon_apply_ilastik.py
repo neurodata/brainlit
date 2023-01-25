@@ -1,7 +1,15 @@
 """
 Inputs
 """
-models = ["-compare-3","-compare-3-4","-compare-3-4-8649","-compare-3-4-8649-8788","-compare-3_2","-compare-3_3","-compare-3_4"]
+models = [
+    "-compare-3",
+    "-compare-3-4",
+    "-compare-3-4-8649",
+    "-compare-3-4-8649-8788",
+    "-compare-3_2",
+    "-compare-3_3",
+    "-compare-3_4",
+]
 
 base_path = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/"  # path to directory that holds images to be processed
 brains = ["8786", "8790", "11537"]  # sample IDs to be processed
@@ -77,6 +85,7 @@ def move_results(model):
         for item in items:
             result_path = brain_dir + item[:-3] + "_Probabilities.h5"
             shutil.move(result_path, results_dir + item[:-3] + "_Probabilities.h5")
+
 
 for model in models:
     process_images(model)
