@@ -12,9 +12,4 @@ Neuron Mapping
 
 * For soma detection, follow the notebook ``brainlit/experiments/lsm_analysis/soma_analysis.ipynb``.
 
-.. toctree::
-   :maxdepth: 1
-
-   axon_analysis
-
 *  Some figure panels in our paper were created in ``brainlit/experiments/lsm_analysis/continual_learning.ipynb``.
