@@ -6,4 +6,4 @@ Light Sheet Image Analysis
 .. toctree::
    :maxdepth: 1
 
-   ../experiments/lsm_analysis/axon_analysis
+   /experiments/lsm_analysis/axon_analysis
