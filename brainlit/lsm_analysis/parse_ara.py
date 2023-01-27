@@ -3,6 +3,8 @@ from collections import defaultdict
 
 
 class Node:
+    """Represents a node in a tree structure i.e. can have a single parent, and multiple children.
+    """
     def __init__(self, id_, acronym, name, parent_id, st_level, level=0):
         self.id = id_
         self.acronym = acronym
@@ -19,6 +21,11 @@ class Node:
         )
 
     def add_child(self, child):
+        """Add child node.
+
+        Args:
+            child (Node): child node.
+        """
         self.children.append(child)
 
 
@@ -37,6 +44,15 @@ def build_tree(obj, level=0):
 
 
 def get_nodes_at_level(level, tree):
+    """Collect list of nodes below the given one at a given level.
+
+    Args:
+        level (int): desired level.
+        tree (Node): node at root of tree that should be searched.
+
+    Returns:
+        list: list of Nodes at desired level.
+    """
     result = []
     # base case
     if tree.level == level:
@@ -49,6 +65,14 @@ def get_nodes_at_level(level, tree):
 
 
 def get_all_ids_of_children(tree):
+    """Get ids of leaf nodes under given node.
+
+    Args:
+        tree (Node): node under which children are searched for.
+
+    Returns:
+        list: list of ids of leaf nodes under specified node
+    """
     result = []
     if len(tree.children) == 0:
         result.append(tree.id)
@@ -60,9 +84,18 @@ def get_all_ids_of_children(tree):
 
 
 def get_parent_dict(json_file, level=1):
+    """Generate dictionary with keys that are ids below the specified level, and the value is their parent (which are in the specified level).
+
+    Args:
+        json_file (str): Path to json file.
+        level (int, optional): Level for parents. Defaults to 1.
+
+    Returns:
+        dict: Dictionary of node ids to parent ids where parents are at specified level.
+    """
     f = json.load(open(json_file, "r"))
     tree = build_tree(f)
-    nodes = get_nodes_at_level(level, tree, nodes)
+    nodes = get_nodes_at_level(level, tree)
     id2parent = defaultdict(lambda: "unknown")
     for i in nodes:
         x = get_all_ids_of_children(i)
@@ -73,12 +106,21 @@ def get_parent_dict(json_file, level=1):
 
 
 def get_children_dict(json_file, level=1):
+    """Generate dictionary where keys are ids at given level and values are list of ids of children of that node.
+
+    Args:
+        json_file (str): Path to json file.
+        level (int, optional): _description_. Defaults to 1.
+
+    Returns:
+        dict: Dictionary mapping id to list of children ids.
+    """
     f = json.load(open(json_file, "r"))
     tree = build_tree(f)
-    nodes = get_nodes_at_level(level, tree, nodes)
+    nodes = get_nodes_at_level(level, tree)
     id2child = defaultdict(lambda: "unknown")
     for i in nodes:
-        get_all_ids_of_children(i)
+        x = get_all_ids_of_children(i)
         if len(x) <= 1:
             continue
         else:
