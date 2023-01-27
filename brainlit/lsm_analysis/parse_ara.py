@@ -36,36 +36,36 @@ def build_tree(obj, level=0):
     return node
 
 
-def get_nodes_at_level(level, tree, result):
+def get_nodes_at_level(level, tree):
+    result = []
     # base case
     if tree.level == level:
         result.append(tree)
     else:
         for i in tree.children:
-            get_nodes_at_level(level, i, result)
+            result += get_nodes_at_level(level, i)
+
+    return result
 
 
-def get_all_ids_of_children(tree, result):
+def get_all_ids_of_children(tree):
+    result = []
     if len(tree.children) == 0:
-        #         pass
         result.append(tree.id)
     else:
         for i in tree.children:
-            get_all_ids_of_children(i, result)
+            result += get_all_ids_of_children(i)
 
-
-#         result.append(tree.id)
+    return result
 
 
 def get_parent_dict(json_file, level=1):
     f = json.load(open(json_file, "r"))
     tree = build_tree(f)
-    nodes = []
-    get_nodes_at_level(level, tree, nodes)
+    nodes = get_nodes_at_level(level, tree, nodes)
     id2parent = defaultdict(lambda: "unknown")
     for i in nodes:
-        x = []
-        get_all_ids_of_children(i, x)
+        x = get_all_ids_of_children(i)
         for j in x:
             id2parent[j] = i.id
     id2parent2 = {i: j for i, j in id2parent.items() if i != j}
@@ -75,12 +75,10 @@ def get_parent_dict(json_file, level=1):
 def get_children_dict(json_file, level=1):
     f = json.load(open(json_file, "r"))
     tree = build_tree(f)
-    nodes = []
-    get_nodes_at_level(level, tree, nodes)
+    nodes = get_nodes_at_level(level, tree, nodes)
     id2child = defaultdict(lambda: "unknown")
     for i in nodes:
-        x = []
-        get_all_ids_of_children(i, x)
+        get_all_ids_of_children(i)
         if len(x) <= 1:
             continue
         else:
