@@ -19,9 +19,30 @@ def create_json(tmp_path_factory):
 
     data_dir = tmp_path_factory.mktemp("data")
 
-    root_json = {"id": 0, "acronym": "A", "name": "Alpha", "parent_structure_id": -1, "st_level": 1, "children": []}
-    b_json = {"id": 1, "acronym": "B", "name": "Bravo", "parent_structure_id": 0, "st_level": 2, "children": []}
-    c_json = {"id": 2, "acronym": "C", "name": "Charlie", "parent_structure_id": 0, "st_level": 2, "children": []}
+    root_json = {
+        "id": 0,
+        "acronym": "A",
+        "name": "Alpha",
+        "parent_structure_id": -1,
+        "st_level": 1,
+        "children": [],
+    }
+    b_json = {
+        "id": 1,
+        "acronym": "B",
+        "name": "Bravo",
+        "parent_structure_id": 0,
+        "st_level": 2,
+        "children": [],
+    }
+    c_json = {
+        "id": 2,
+        "acronym": "C",
+        "name": "Charlie",
+        "parent_structure_id": 0,
+        "st_level": 2,
+        "children": [],
+    }
     root_json["children"] = [b_json, c_json]
 
     tree_json = json.dumps(root_json)
@@ -37,6 +58,7 @@ def create_json(tmp_path_factory):
 ############################
 ### functionality checks ###
 ############################
+
 
 def test_build_tree(create_json):
     tree = parse_ara.build_tree(create_json[1])
@@ -62,13 +84,15 @@ def test_get_all_ids_of_children(create_tree):
     assert len(nodes) == 2
     assert "Alpha" not in str(nodes[0])
 
+
 def test_get_parent_dict(create_json):
     id2parent2 = parse_ara.get_parent_dict(create_json[0], level=0)
     assert id2parent2[1] == 0
     assert id2parent2[2] == 0
 
+
 def test_get_children_dict(create_json):
-    id2child = parse_ara.get_children_dict(create_json[0], level = 0)
+    id2child = parse_ara.get_children_dict(create_json[0], level=0)
 
     assert len(id2child.keys()) == 1
-    assert id2child[0] == [1,2]
+    assert id2child[0] == [1, 2]

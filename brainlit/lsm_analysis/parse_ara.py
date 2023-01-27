@@ -3,8 +3,8 @@ from collections import defaultdict
 
 
 class Node:
-    """Represents a node in a tree structure i.e. can have a single parent, and multiple children.
-    """
+    """Represents a node in a tree structure i.e. can have a single parent, and multiple children."""
+
     def __init__(self, id_, acronym, name, parent_id, st_level, level=0):
         self.id = id_
         self.acronym = acronym
