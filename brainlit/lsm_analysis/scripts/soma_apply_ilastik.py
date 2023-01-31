@@ -15,8 +15,9 @@ brains = [
     # "8557",
     # "8555",
     # "8446",
-    "8454",
-    "887",
+    # "8454",
+    # "887",
+    "MPRRabies"
 ]  # sample IDs to be processed
 
 """
@@ -28,7 +29,7 @@ from tqdm import tqdm
 import subprocess
 from joblib import Parallel, delayed
 import multiprocessing
-from util import find_sample_names
+from brainlit.lsm_analysis.util import find_sample_names
 
 print(f"Number cpus: {multiprocessing.cpu_count()}")
 

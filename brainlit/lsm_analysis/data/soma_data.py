@@ -4,18 +4,18 @@ This file stores information on how to access neuroglancer data.
 Data should be stored in the brain2paths dictionary, with entries like:
 
     "<sample ID>": {
-        "base": "<Path to directory with layers with CloudVolume prependings>",
+        "base": "<Path to directory with layers with CloudVolume prependings (ending with forward slash)>",
         "val_info": {
             "url": "<neuroglancer URL>",
             "somas_layer": "<name of layer with coordinates on somas>",
-            "nonsomas_layer": "<name of layer with coordinates on somas>",
+            "nonsomas_layer": "<name of layer with coordinates on non-somas>",
         },
         "genotype": "<genotype>"
         #Optional:
         "train_info": {
             "url": "<neuroglancer URL>",
             "somas_layer": "<name of layer with coordinates on somas>",
-            "nonsomas_layer": "<name of layer with coordinates on somas>",
+            "nonsomas_layer": "<name of layer with coordinates on non-somas>",
         },
         "somas_atlas_url": "<neuroglancer URL with a single annotation layer which contains points of soma detections>",
     },
@@ -37,9 +37,12 @@ Data should be stored in the brain2paths dictionary, with entries like:
 
 brain2paths = {
     "8557": {
-        "ab": "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_647",
-        "bg": "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_561",
-        "endo": "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_488",
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2021_10_06/8557/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=3p4kSvgMMFl61Q",
+            "somas_layer": "<unknown>",
+            "nonsomas_layer": "<unknown>",
+        },
         "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=4M6ppFjZAUijkg",
         "genotype": "tph2 vglut3",
     },
@@ -139,6 +142,16 @@ brain2paths = {
         "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=d1TTGG-eVOQ2lA",
         "genotype": "tph2 vglut3",
     },
+    "MPRRabies": {
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2023_01_20/MPRRabies/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=ALqLj72S8GyYLw",
+            "somas_layer": "soma_val",
+            "nonsomas_layer": "nonsoma_val",
+        },
+        "genotype": "tph2 vglut3",
+    },
+
 }
 
 # first entry is somas, second is nonsomas

@@ -17,7 +17,7 @@ import os
 
 chunk_size = [256, 256, 300]
 ncpu = 16
-dir_base = "precomputed://s3://smartspim-precomputed-volumes/2022_09_20/887/"
+dir_base = "precomputed://s3://smartspim-precomputed-volumes/2023_01_20/MPRRabies/"
 data_dir = "/data/tathey1/matt_wright/brainr_temp/"
 results_dir = "/data/tathey1/matt_wright/brainr_results/"
 threshold = 0.26
