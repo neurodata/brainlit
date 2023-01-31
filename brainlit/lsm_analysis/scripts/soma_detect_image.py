@@ -1,3 +1,26 @@
+""" 
+Inputs
+"""
+# DOUBLE CHECK:
+# -dir_base
+# data_dir and results_dir ARE CLEAR
+# threshold IS CORRECT
+dir_base = "precomputed://s3://smartspim-precomputed-volumes/2023_01_20/MPRRabies/" # s3 path to directory that contains image data
+threshold = 0.56 # threshold to use for ilastik
+data_dir = "/data/tathey1/matt_wright/brainr_temp/" # directory to store temporary subvolumes for segmentation
+results_dir = "/data/tathey1/matt_wright/brainr_results/" # directory to store coordinates of soma detections
+
+# Ilastik will run in "headless mode", and the following paths are needed to do so:
+ilastik_path = "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh" # path to ilastik executable
+ilastik_project = "/data/tathey1/matt_wright/ilastik/soma_model/matt_soma_rabies_pix_3ch.ilp" # path to ilastik project
+
+max_y = 9472  # maxy coord, or -1 if you want to process all of them
+ncpu = 16 # number of cores to use for detection
+chunk_size = [256, 256, 300]
+
+""" 
+Detect Somas
+"""
 from cloudvolume import CloudVolume
 from skimage import io, measure
 import numpy as np
@@ -10,20 +33,10 @@ from joblib import Parallel, delayed
 import multiprocessing
 import os
 
-# DOUBLE CHECK:
-# -dir_base
-# data_dir and results_dir ARE CLEAR
-# threshold IS CORRECT
 
-chunk_size = [256, 256, 300]
-ncpu = 16
-dir_base = "precomputed://s3://smartspim-precomputed-volumes/2023_01_20/MPRRabies/"
-data_dir = "/data/tathey1/matt_wright/brainr_temp/"
-results_dir = "/data/tathey1/matt_wright/brainr_results/"
-threshold = 0.26
+
 
 print(f"Number cpus: {multiprocessing.cpu_count()}")
-
 warnings.filterwarnings("ignore")
 
 
@@ -58,9 +71,9 @@ def process_chunk(c1, c2, dir_base, threshold, data_dir, results_dir):
 
     subprocess.run(
         [
-            "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh",
+            f"{ilastik_path}",
             "--headless",
-            "--project=/data/tathey1/matt_wright/ilastik/soma_model/matt_soma_rabies_pix_3ch.ilp",
+            f"--project={ilastik_project}",
             fname,
         ],
         stdout=subprocess.PIPE,
@@ -111,7 +124,8 @@ for i in tqdm(range(0, shape[0], chunk_size[0])):
         for k in range(0, shape[2], chunk_size[2]):
             c1 = [i, j, k]
             c2 = [np.amin([shape[idx], c1[idx] + chunk_size[idx]]) for idx in range(3)]
-            corners.append([c1, c2])
+            if max_y == -1 or c1[1] < max_y:
+                corners.append([c1, c2])
 
 corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
 
