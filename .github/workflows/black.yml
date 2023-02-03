@@ -10,4 +10,3 @@ jobs:
       - uses: psf/black@stable
         with:
           jupyter: true
-          version: "23.1.0"
