@@ -44,7 +44,7 @@ def create_cloud_volume(
     )
     vol = CloudVolume(precomputed_path, info=info, parallel=parallel)
     [
-        vol.add_scale((2 ** i, 2 ** i, 1), chunk_size=chunk_size)
+        vol.add_scale((2**i, 2**i, 1), chunk_size=chunk_size)
         for i in range(num_downsampling_levels)
     ]
 
@@ -85,7 +85,6 @@ def process(z, file_path, layer_path, num_mips):
 def create_precomputed_volume(
     input_path, voxel_size, precomputed_path, extension="tif", num_mips=8
 ):
-
     files_slices = list(
         enumerate(np.sort(glob(f"{input_path}/*.{extension}")).tolist())
     )

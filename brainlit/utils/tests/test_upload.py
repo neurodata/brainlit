@@ -239,7 +239,7 @@ def test_create_image_layer(volume_info):
 
     assert len(vols) == NUM_RES  # one vol for each resolution
     for i, vol in enumerate(vols):
-        assert vol.scales[-1 - i]["size"] == [(2 ** i) * j for j in tiff_dims]
+        assert vol.scales[-1 - i]["size"] == [(2**i) * j for j in tiff_dims]
     assert (dir / "info").is_file()  # contains info file
 
 
@@ -257,7 +257,7 @@ def test_create_segmentation_layer(volume_info):
 
     assert len(vols) == 1  # always 1 for segementation
     for i, vol in enumerate(vols):
-        assert vol.scales[-1 - i]["size"] == [(2 ** i) * j for j in tiff_dims]
+        assert vol.scales[-1 - i]["size"] == [(2**i) * j for j in tiff_dims]
     assert (dir_segments / "info").is_file()  # contains info file
 
 
@@ -275,7 +275,7 @@ def test_create_annotation_layer(volume_info):
 
     assert len(vols) == 1  # always 1 for segementation
     for i, vol in enumerate(vols):
-        assert vol.scales[-1 - i]["size"] == [(2 ** i) * j for j in tiff_dims]
+        assert vol.scales[-1 - i]["size"] == [(2**i) * j for j in tiff_dims]
     assert (dir_annotation / "info").is_file()  # contains info file
 
 

@@ -22,7 +22,6 @@ Test generate_position_field.
 @pytest.mark.parametrize("deform_to", ["template", "target"])
 class Test_generate_position_field:
     def test_identity_affine_identity_velocity_fields(self, deform_to):
-
         num_timesteps = 10
 
         template_shape = (3, 4, 5)
@@ -58,7 +57,6 @@ class Test_generate_position_field:
         assert np.array_equal(position_field, expected_output)
 
     def test_identity_affine_constant_velocity_fields(self, deform_to):
-
         num_timesteps = 10
 
         template_shape = (3, 4, 5)
@@ -93,7 +91,6 @@ class Test_generate_position_field:
         assert np.allclose(position_field, expected_output)
 
     def test_rotational_affine_identity_velocity_fields(self, deform_to):
-
         num_timesteps = 10
 
         template_shape = (3, 4, 5)
@@ -146,7 +143,6 @@ Test _transform_image.
 
 class Test__transform_image:
     def test_identity_position_field_equal_output_resolution(self):
-
         subject = np.arange(3 * 4).reshape(3, 4)
         subject_resolution = 1
         output_resolution = 1
@@ -168,7 +164,6 @@ class Test__transform_image:
         assert np.allclose(deformed_subject, expected_output)
 
     def test_identity_position_field_different_output_resolution(self):
-
         subject = np.array(
             [
                 [0, 0, 0, 0, 0, 0, 0, 0],
@@ -208,7 +203,6 @@ class Test__transform_image:
         assert np.allclose(deformed_subject, expected_output)
 
     def test_constant_position_field_trivial_extrapolation(self):
-
         # Note: applying a leftward shift to the position_field is done by subtracting 1 from the appropriate dimension.
         # The corresponding effect on the deformed_subject is a shift to the right.
 
@@ -259,7 +253,6 @@ class Test__transform_image:
         assert np.allclose(deformed_subject, expected_output)
 
     def test_constant_position_field_linear_extrapolation(self):
-
         # Idiosyncratic extrapolation behavior is demonstrated with a nonzero gradient at the extrapolated edge.
 
         subject = np.array(
@@ -301,7 +294,6 @@ class Test__transform_image:
         assert np.allclose(deformed_subject, expected_output)
 
     def test_rotational_position_field(self):
-
         # Note: applying an affine indicating a clockwise-rotation to a position_field produces a position _ield rotated counter-clockwise.
         # The corresponding effect on the deformed_subject is a counter-clockwise rotation.
 
@@ -358,7 +350,6 @@ Test lddmm_transform_image.
 @pytest.mark.parametrize("deform_to", ["template", "target"])
 class Test_lddmm_transform_image:
     def test_identity_position_fields(self, deform_to):
-
         subject = np.array(
             [
                 [0, 0, 0, 0],
@@ -374,7 +365,7 @@ class Test_lddmm_transform_image:
         template_resolution = 1
         target_shape = (2, 5)
         target_resolution = 1
-        extrapolation_fill_value = np.quantile(subject, 10 ** -subject.ndim)
+        extrapolation_fill_value = np.quantile(subject, 10**-subject.ndim)
 
         affine_phi = _lddmm_utilities._compute_coords(
             template_shape, template_resolution
@@ -415,6 +406,8 @@ class Test_lddmm_transform_image:
 """
 Test lddmm_register.
 """
+
+
 # TODO: Verify that these warnings aren't a problem.
 # @pytest.mark.filterwarnings('ignore:Ill-conditioned matrix')
 class Test_lddmm_register:
@@ -454,7 +447,6 @@ class Test_lddmm_register:
         assert np.allclose(deformed_target, template, rtol=rtol, atol=atol)
 
     def test_2D_identity_registration(self):
-
         ndims = 2
         radius = 3
         zero_space = 2
@@ -482,7 +474,6 @@ class Test_lddmm_register:
         self._test_lddmm_register(**lddmm_register_kwargs)
 
     def test_3D_identity_registration(self):
-
         ndims = 3
         radius = 3
         zero_space = 2
@@ -510,7 +501,6 @@ class Test_lddmm_register:
         self._test_lddmm_register(**lddmm_register_kwargs)
 
     def test_4D_identity_registration(self):
-
         ndims = 4
         radius = 3
         zero_space = 2
@@ -538,10 +528,9 @@ class Test_lddmm_register:
         self._test_lddmm_register(**lddmm_register_kwargs)
 
     def test_identity_disk_to_disk_registration(self):
-
         template = np.array(
             [
-                [(col - 4) ** 2 + (row - 4) ** 2 <= 4 ** 2 for col in range(9)]
+                [(col - 4) ** 2 + (row - 4) ** 2 <= 4**2 for col in range(9)]
                 for row in range(9)
             ],
             int,
@@ -557,12 +546,11 @@ class Test_lddmm_register:
         self._test_lddmm_register(**lddmm_register_kwargs)
 
     def test_rigid_affine_only_ellipsoid_to_ellipsoid_registration(self):
-
         # template (before padding) has shape (21, 29) and semi-radii 4 and 10.
         template = np.array(
             [
                 [
-                    (col - 14) ** 2 / 10 ** 2 + (row - 8) ** 2 / 4 ** 2 <= 1
+                    (col - 14) ** 2 / 10**2 + (row - 8) ** 2 / 4**2 <= 1
                     for col in range(29)
                 ]
                 for row in range(17)
@@ -584,12 +572,11 @@ class Test_lddmm_register:
         self._test_lddmm_register(**lddmm_register_kwargs)
 
     def test_non_rigid_affine_only_ellipsoid_to_ellipsoid_registration(self):
-
         # template (before padding) has shape (21, 29) and semi-radii 6 and 10.
         template = np.array(
             [
                 [
-                    (col - 14) ** 2 / 10 ** 2 + (row - 10) ** 2 / 6 ** 2 <= 1
+                    (col - 14) ** 2 / 10**2 + (row - 10) ** 2 / 6**2 <= 1
                     for col in range(29)
                 ]
                 for row in range(21)
@@ -610,12 +597,11 @@ class Test_lddmm_register:
         self._test_lddmm_register(**lddmm_register_kwargs)
 
     def test_partially_rigid_affine_only_ellipsoid_to_ellipsoid_registration(self):
-
         # template (before padding) has shape (21, 29) and semi-radii 6 and 10.
         template = np.array(
             [
                 [
-                    (col - 14) ** 2 / 10 ** 2 + (row - 10) ** 2 / 6 ** 2 <= 1
+                    (col - 14) ** 2 / 10**2 + (row - 10) ** 2 / 6**2 <= 1
                     for col in range(29)
                 ]
                 for row in range(21)
@@ -636,11 +622,10 @@ class Test_lddmm_register:
         self._test_lddmm_register(**lddmm_register_kwargs)
 
     def test_deformative_only_disk_to_ellipsoid_registration(self):
-
         # template has shape (25, 25) and radius 8.
         template = np.array(
             [
-                [(col - 12) ** 2 + (row - 12) ** 2 <= 8 ** 2 for col in range(25)]
+                [(col - 12) ** 2 + (row - 12) ** 2 <= 8**2 for col in range(25)]
                 for row in range(25)
             ],
             int,
@@ -649,7 +634,7 @@ class Test_lddmm_register:
         target = np.array(
             [
                 [
-                    (col - 14) ** 2 / 10 ** 2 + (row - 10) ** 2 / 6 ** 2 <= 1
+                    (col - 14) ** 2 / 10**2 + (row - 10) ** 2 / 6**2 <= 1
                     for col in range(29)
                 ]
                 for row in range(21)
@@ -669,12 +654,11 @@ class Test_lddmm_register:
         self._test_lddmm_register(**lddmm_register_kwargs)
 
     def test_general_ellipsoid_to_ellipsoid_registration(self):
-
         # target has shape (21, 29) and semi-radii 6 and 10.
         template = np.array(
             [
                 [
-                    (col - 14) ** 2 / 10 ** 2 + (row - 10) ** 2 / 6 ** 2 <= 1
+                    (col - 14) ** 2 / 10**2 + (row - 10) ** 2 / 6**2 <= 1
                     for col in range(29)
                 ]
                 for row in range(21)
@@ -693,13 +677,12 @@ class Test_lddmm_register:
         self._test_lddmm_register(**lddmm_register_kwargs)
 
     def test_identity_multiscale_registration(self):
-
         template = np.zeros((20, 30))
         # target has shape (21, 29) and semi-radii 6 and 10.
         template = np.array(
             [
                 [
-                    (col - 14) ** 2 / 12 ** 2 + (row - 10) ** 2 / 8 ** 2 <= 1
+                    (col - 14) ** 2 / 12**2 + (row - 10) ** 2 / 8**2 <= 1
                     for col in range(29)
                 ]
                 for row in range(21)
@@ -726,7 +709,6 @@ Test _transform_points.
 
 class Test__transform_points:
     def test_identity_position_field(self):
-
         subject = np.arange(3 * 4).reshape(3, 4)
         subject_resolution = 1
         position_field_resolution = subject_resolution
@@ -746,7 +728,6 @@ class Test__transform_points:
         assert np.array_equal(transformed_points, expected_output)
 
     def test_constant_position_field(self):
-
         # Note: applying a leftward shift to the position_field is done by subtracting 1 from the appropriate dimension.
         # The corresponding effect on a deformed image is a shift to the right.
 
@@ -790,7 +771,6 @@ class Test__transform_points:
         assert np.array_equal(transformed_points, expected_output)
 
     def test_rotational_position_field(self):
-
         # Note: applying an affine indicating a clockwise-rotation to a position_field produces a position _ield rotated counter-clockwise.
         # The corresponding effect on a deformed image is a counter-clockwise rotation.
 
@@ -848,7 +828,6 @@ Test lddmm_transform_points.
 @pytest.mark.parametrize("deform_to", ["template", "target"])
 class Test_lddmm_transform_points:
     def test_identity_position_fields(self, deform_to):
-
         template_shape = (3, 4)
         template_resolution = 1
         target_shape = (2, 5)

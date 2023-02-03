@@ -169,7 +169,6 @@ def _validate_inputs(data, title, n_cuts, xcuts, ycuts, zcuts, figsize):
 
 # TODO: update work with interesting_cuts and new Image class
 def _Image_to_Nifti2Image(image, affine=None):
-
     nifti2header = nib.Nifti2Header()
     nifti2header["dim"][1 : 1 + len(image.nxyz)] = image.nxyz
     nifti2header["pixdim"][1 : 1 + len(image.dxyz)] = image.dxyz
@@ -192,30 +191,21 @@ def _get_cuts(data, xcuts, ycuts, zcuts, n_cuts=5, interesting_cuts=False):
         raise NotImplementedError(
             "This functionality has not been fully implemented yet."
         )
-        xcuts = (
-            xcuts
-            or niplot.find_cut_slices(
-                Image_to_Nifti2Image(atlas_Image, affine=np.eye(4)),
-                direction="x",
-                n_cuts=n_cuts,
-            ).astype(int)
-        )
-        ycuts = (
-            ycuts
-            or niplot.find_cut_slices(
-                Image_to_Nifti2Image(atlas_Image, affine=np.eye(4)),
-                direction="y",
-                n_cuts=n_cuts,
-            ).astype(int)
-        )
-        zcuts = (
-            zcuts
-            or niplot.find_cut_slices(
-                Image_to_Nifti2Image(atlas_Image, affine=np.eye(4)),
-                direction="z",
-                n_cuts=n_cuts,
-            ).astype(int)
-        )
+        xcuts = xcuts or niplot.find_cut_slices(
+            Image_to_Nifti2Image(atlas_Image, affine=np.eye(4)),
+            direction="x",
+            n_cuts=n_cuts,
+        ).astype(int)
+        ycuts = ycuts or niplot.find_cut_slices(
+            Image_to_Nifti2Image(atlas_Image, affine=np.eye(4)),
+            direction="y",
+            n_cuts=n_cuts,
+        ).astype(int)
+        zcuts = zcuts or niplot.find_cut_slices(
+            Image_to_Nifti2Image(atlas_Image, affine=np.eye(4)),
+            direction="z",
+            n_cuts=n_cuts,
+        ).astype(int)
     else:
         xcuts = xcuts or np.linspace(0, data.shape[0], n_cuts + 2)[1:-1]
         ycuts = ycuts or np.linspace(0, data.shape[1], n_cuts + 2)[1:-1]
