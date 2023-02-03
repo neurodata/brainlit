@@ -251,10 +251,10 @@ def test_curvature():
 
     # test results in more complex case
     xx = np.linspace(-np.pi, np.pi)
-    X = xx**3
+    X = xx ** 3
     Y = np.sin(xx)
-    Z = xx**2
-    dX = 3 * xx**2
+    Z = xx ** 2
+    dX = 3 * xx ** 2
     dY = np.cos(xx)
     dZ = 2 * xx
     ddX = 6 * xx
@@ -289,10 +289,10 @@ def test_curvature():
 def test_torsion():
     # test results in more complex case
     xx = np.linspace(-np.pi, np.pi)
-    X = xx**3
+    X = xx ** 3
     Y = np.sin(xx)
-    Z = xx**2
-    dX = 3 * xx**2
+    Z = xx ** 2
+    dX = 3 * xx ** 2
     dY = np.cos(xx)
     dZ = 2 * xx
     ddX = 6 * xx
@@ -332,10 +332,10 @@ def test_torsion():
 def test_speed():
     # test results in more complex case
     xx = np.linspace(-np.pi, np.pi)
-    X = xx**3
+    X = xx ** 3
     Y = np.sin(xx)
-    Z = xx**2
-    dX = 3 * xx**2
+    Z = xx ** 2
+    dX = 3 * xx ** 2
     dY = np.cos(xx)
     dZ = 2 * xx
 

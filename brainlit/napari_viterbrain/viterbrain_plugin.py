@@ -36,7 +36,7 @@ def napari_get_reader(path: str) -> list:
 
 
 @magic_factory(
-    call_button="Trace", start_comp={"max": 2**20}, end_comp={"max": 2**20}
+    call_button="Trace", start_comp={"max": 2 ** 20}, end_comp={"max": 2 ** 20}
 )
 def comp_trace(
     v: napari.Viewer,

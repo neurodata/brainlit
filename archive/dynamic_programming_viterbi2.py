@@ -256,7 +256,7 @@ class most_probable_neuron_path:
         res = self.res
 
         dims = np.multiply(np.amax(coords, axis=0) - np.amin(coords, axis=0), res)
-        max_length = np.sqrt(np.sum([dim**2 for dim in dims]))
+        max_length = np.sqrt(np.sum([dim ** 2 for dim in dims]))
 
         r = 15
         if max_length < r:
@@ -364,7 +364,7 @@ class most_probable_neuron_path:
         if 1 - k1_sq < -0.87 or 1 - k2_sq < -0.87:
             return np.inf
 
-        cost = k_cost * self.coef_curv + self.coef_dist * (dist**2)
+        cost = k_cost * self.coef_curv + self.coef_dist * (dist ** 2)
         if verbose:
             print(
                 f"Distance: {dist}, Curv penalty: {k_cost} (dots {1-k1_sq}, {1-k2_sq}, from dif-{dif}), Total cost: {cost}"
@@ -410,7 +410,7 @@ class most_probable_neuron_path:
         if dist > 15:
             cost = np.inf
         else:
-            cost = k_cost * self.coef_curv + self.coef_dist * (dist**2)
+            cost = k_cost * self.coef_curv + self.coef_dist * (dist ** 2)
 
         nonline_point = coords[argmin, :]
         if (
