@@ -59,6 +59,8 @@ Motivation
 The repository originated as the project of a team in Joshua Vogelstein's class **Neurodata** at Johns Hopkins University. This project was focused on data science towards the `mouselight data <https://www.hhmi.org/news/mouselight-project-maps-1000-neurons-and-counting-in-the-mouse-brain>`_. It became apparent that the tools developed for the class would be useful for other groups doing data science on large data volumes.
 The repository can now be considered a "holding bay" for code developed by Neurodata for collaborators and researchers to use.
 
+.. _Installation:
+
 Installation
 ------------
 

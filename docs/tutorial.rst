@@ -21,6 +21,18 @@ Tutorials showcasing how to use the utils folder.
 Pipelines
 =========
 
+.. _lsm_pipeline_tutorials:
+
+Light-Sheet Microscopy Image Analysis Pipeline
+----------------------------------------------
+Perform axon detection and soma detection on brain images, and combine with CloudReg image registration for visualization and analysis.
+
+.. toctree::
+   :maxdepth: 1
+
+   notebooks/pipelines/lsm_analysis/axon_analysis
+   notebooks/pipelines/lsm_analysis/soma_analysis
+
 Semi-automatic Annotation Pipeline
 ----------------------------------
 Demonstrate pulling data and pushing traced annotations.

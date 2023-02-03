@@ -48,7 +48,7 @@ nbsphinx_allow_errors = True
 autoapi_dirs = ["../brainlit"]
 autoapi_add_toctree_entry = False
 autoapi_generate_api_docs = False
-nbsphinx_execute = "always"
+nbsphinx_execute = "never"
 
 # -- sphinxcontrib.rawfiles
 # rawfiles = ["CNAME"]

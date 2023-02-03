@@ -131,7 +131,6 @@ elif task == "stategen":
     sg.compute_edge_weights()
 
 elif task == "segng":
-
     # im_path = "precomputed://file:///cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/im"
     # vol_im = CloudVolume(im_path, compress=False)
     # resolution = vol_im.resolution

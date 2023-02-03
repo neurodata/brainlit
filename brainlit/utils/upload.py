@@ -110,7 +110,6 @@ def get_volume_info(
         origin = np.add(brain_offset, vol_offset)
 
     else:
-
         img_size = np.squeeze(tf.imread(str(p / "default.0.tif"))).T.shape
         transform = open(str(p / "transform.txt"), "r")
         vox_size = [

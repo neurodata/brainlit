@@ -24,6 +24,7 @@ REQUIRED_PACKAGES = [
     "seaborn>=0.9.0",
     "tifffile>=2020.7.17",
     "napari[pyqt5]>=0.2.11",
+    "PyQt5<=5.15.7",
     "cloud-volume>=4.2.0",
     "feather-format==0.4.1",
     "nibabel>=2.4.1",
