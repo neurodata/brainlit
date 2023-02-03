@@ -16,7 +16,6 @@ def create_tree():
 
 @pytest.fixture(scope="session")  # one server to rule'em all
 def create_json(tmp_path_factory):
-
     data_dir = tmp_path_factory.mktemp("data")
 
     root_json = {

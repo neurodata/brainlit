@@ -201,7 +201,6 @@ class BaseFeatures(BaseEstimator):
                 verts = segment.vertices[start_vert:]
             start_vert = 0
             for v_id, vertex in enumerate(verts):
-
                 start = time.time()
 
                 img, bounds, voxel = ngl.pull_voxel(seg_id, v_id, self.size)

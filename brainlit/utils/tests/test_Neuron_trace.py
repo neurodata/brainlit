@@ -108,7 +108,6 @@ def test_get_skel():
 
 
 def test_get_df_voxel():
-
     # test 'spacing' arg must be type numpy.ndarray
     with pytest.raises(TypeError):
         test_swc.get_df_voxel(spacing="asdf")
@@ -164,7 +163,6 @@ def test_get_df_voxel():
 
 
 def test_get_graph():
-
     # test 'spacing' arg must either be NoneType or numpy.ndarray
     with pytest.raises(TypeError):
         test_swc.get_graph(spacing="asdf")
@@ -233,7 +231,6 @@ def test_get_graph():
 
 
 def test_get_paths():
-
     # test 'spacing' arg must either be NoneType or numpy.ndarray
     with pytest.raises(TypeError):
         test_swc.get_paths(spacing="asdf")
@@ -360,7 +357,6 @@ def test_get_bfs_subgraph():
 
 
 def test_get_sub_neuron():
-
     # test 'bounding_box' arg is a tuple or list
     with pytest.raises(TypeError):
         test_swc.get_sub_neuron(bounding_box=1)
@@ -437,7 +433,6 @@ def test_get_sub_neuron():
 
 
 def test_get_sub_neuron_paths():
-
     # test 'bounding_box' arg is a tuple or list
     with pytest.raises(TypeError):
         test_swc.get_sub_neuron_paths(bounding_box=1)
