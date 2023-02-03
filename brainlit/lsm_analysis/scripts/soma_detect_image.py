@@ -5,17 +5,17 @@ Inputs
 # -dir_base
 # data_dir and results_dir ARE CLEAR
 # threshold IS CORRECT
-dir_base = "precomputed://s3://smartspim-precomputed-volumes/2023_01_20/MPRRabies/" # s3 path to directory that contains image data
-threshold = 0.56 # threshold to use for ilastik
-data_dir = "/data/tathey1/matt_wright/brainr_temp/" # directory to store temporary subvolumes for segmentation
-results_dir = "/data/tathey1/matt_wright/brainr_results/" # directory to store coordinates of soma detections
+dir_base = "precomputed://s3://smartspim-precomputed-volumes/2023_01_20/MPRRabies/"  # s3 path to directory that contains image data
+threshold = 0.56  # threshold to use for ilastik
+data_dir = "/data/tathey1/matt_wright/brainr_temp/"  # directory to store temporary subvolumes for segmentation
+results_dir = "/data/tathey1/matt_wright/brainr_results/"  # directory to store coordinates of soma detections
 
 # Ilastik will run in "headless mode", and the following paths are needed to do so:
-ilastik_path = "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh" # path to ilastik executable
-ilastik_project = "/data/tathey1/matt_wright/ilastik/soma_model/matt_soma_rabies_pix_3ch.ilp" # path to ilastik project
+ilastik_path = "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh"  # path to ilastik executable
+ilastik_project = "/data/tathey1/matt_wright/ilastik/soma_model/matt_soma_rabies_pix_3ch.ilp"  # path to ilastik project
 
 max_y = 9472  # maxy coord, or -1 if you want to process all of them
-ncpu = 16 # number of cores to use for detection
+ncpu = 16  # number of cores to use for detection
 chunk_size = [256, 256, 300]
 
 """ 
@@ -32,8 +32,6 @@ import h5py
 from joblib import Parallel, delayed
 import multiprocessing
 import os
-
-
 
 
 print(f"Number cpus: {multiprocessing.cpu_count()}")

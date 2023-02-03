@@ -151,7 +151,6 @@ brain2paths = {
         },
         "genotype": "tph2 vglut3",
     },
-
 }
 
 # first entry is somas, second is nonsomas
