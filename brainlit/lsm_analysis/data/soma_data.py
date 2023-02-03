@@ -145,7 +145,7 @@ brain2paths = {
     "MPRRabies": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2023_01_20/MPRRabies/",
         "val_info": {
-            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=ALqLj72S8GyYLw",
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=Bb4YAgCoFIoS1g",
             "somas_layer": "soma_val",
             "nonsomas_layer": "nonsoma_val",
         },
