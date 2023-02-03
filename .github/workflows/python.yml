@@ -24,6 +24,9 @@ jobs:
       - name: Autoformat with black
         run: |
           black .
+      - name: Setup AWS credentials
+        run: ./.aws.sh
+        shell: bash
       - name: Test with pytest
         run: |
           pytest
