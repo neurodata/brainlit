@@ -91,7 +91,6 @@ def download_tiles(tiles, raw_tile_bucket, outdir):
 
 
 def download_raw_data(in_bucket_path, channel, outdir, log_s3_path=None):
-
     input_s3_url = S3Url(in_bucket_path.strip("/"))
     in_bucket_name = input_s3_url.bucket
     in_path = input_s3_url.key

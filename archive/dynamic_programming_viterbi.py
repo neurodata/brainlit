@@ -310,7 +310,6 @@ class viterbi_algorithm:
         return lowest_cost, endpt_lowest, blob_lowest
 
     def line_int(self, loc1, loc2, lbl1, lbl2):
-
         # Use bresenham3D to "draw" a line in 3D
         xlist, ylist, zlist = Bresenham3D(
             int(loc1[0]),
@@ -342,7 +341,6 @@ class viterbi_algorithm:
         """
         for lbl1 in range(1, self.num_components + 1):
             for lbl2 in range(lbl1, self.num_components + 1):
-
                 skip_connection = False
 
                 if lbl2 == lbl1:

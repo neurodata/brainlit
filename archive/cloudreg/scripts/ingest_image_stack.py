@@ -62,7 +62,6 @@ def process(z, img):
 
 
 def ingest_image_stack(s3_path, voxel_size, img_stack, extension, dtype):
-
     if extension == "tif":
         img = tf.imread(os.path.expanduser(img_stack))
     else:

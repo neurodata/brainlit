@@ -89,7 +89,6 @@ def register(
     regularization,
     num_iterations,
 ):
-
     # registration
     # get channel name
     print(input_s3_path)

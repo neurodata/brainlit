@@ -1,0 +1,33 @@
+name: Python package
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install black pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Autoformat with black
+        run: |
+          black .
+      - name: Setup AWS credentials
+        run: |
+          # bash ./.aws.sh # couldn't figure out how to get this to work
+        shell: bash
+      - name: Test with pytest without credentials
+        run: |
+          pytest brainlit/algorithms/ brainlit/feature_extraction/ brainlit/lsm_analysis brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/viz/

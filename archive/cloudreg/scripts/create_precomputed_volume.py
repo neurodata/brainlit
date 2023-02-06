@@ -85,7 +85,6 @@ def process(z, file_path, layer_path, num_mips):
 def create_precomputed_volume(
     input_path, voxel_size, precomputed_path, extension="tif", num_mips=8
 ):
-
     files_slices = list(
         enumerate(np.sort(glob(f"{input_path}/*.{extension}")).tolist())
     )

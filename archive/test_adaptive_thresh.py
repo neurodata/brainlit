@@ -22,7 +22,6 @@ import matplotlib.pyplot as plt
 
 
 def test_get_seed():
-
     # define voxel
     voxel = (10.131, 30.6001, 100)
     numpy_seed, sitk_seed = get_seed(voxel)
