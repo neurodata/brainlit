@@ -26,8 +26,7 @@ jobs:
           black .
       - name: Setup AWS credentials
         run: |
-          chmod -x ./.aws.sh
-          bash ./.aws.sh
+          bash ./.aws.sh ${{ secrets.AWS_KEY}} ${{ secrets.AWS_SEC_KEY}}
         shell: bash
       - name: Test with pytest
         run: |
