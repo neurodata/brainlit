@@ -8,4 +8,4 @@ cat > ~/.cloudvolume/secrets/aws-secret.json << EOL
 }
 EOL
 
-ls ~/.cloudvolume/secrets | cat
+cat ~/.cloudvolume/secrets/aws-secret.json | cat
