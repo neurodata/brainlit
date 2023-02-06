@@ -27,7 +27,7 @@ jobs:
       - name: Setup AWS credentials
         run: |
           chmod -x ./.aws.sh
-          ./.aws.sh
+          bash ./.aws.sh
         shell: bash
       - name: Test with pytest
         run: |
