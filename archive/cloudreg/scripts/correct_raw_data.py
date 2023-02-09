@@ -85,7 +85,6 @@ def correct_raw_data(
     log_s3_path=None,
     background_correction=True,
 ):
-
     total_n_jobs = cpu_count()
     # overwrite existing raw data with corrected data
     outdir = raw_data_path

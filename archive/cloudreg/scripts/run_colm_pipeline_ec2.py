@@ -9,7 +9,6 @@ from functools import partial
 
 
 def run_command_on_server(command, ssh_key_path, ip_address, username="ubuntu"):
-
     key = paramiko.RSAKey.from_private_key_file(ssh_key_path)
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())

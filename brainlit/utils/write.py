@@ -6,6 +6,26 @@ import dask.array as da
 from ome_zarr.writer import write_image
 from ome_zarr.io import parse_url
 from typing import List
+from pathlib import Path
+
+
+def _read_czi_slice(czi, C, Z):
+    """Reads a slice of a czi object, handling whether the czi is a mosaic or not.
+
+    Args:
+        czi (aicspylibczi.CziFile): czi object
+        C (int): channel
+        Z (int): z slice
+
+    Returns:
+        np.array: array of the image data
+    """
+    if czi.is_mosaic():
+        slice = np.squeeze(czi.read_mosaic(C=C, Z=Z, scale_factor=1))
+    else:
+        slice, _ = czi.read_image(C=0, Z=0)
+        slice = np.squeeze(slice)
+    return slice
 
 
 def czi_to_zarr(czi_path: str, out_dir: str) -> List[str]:
@@ -21,7 +41,8 @@ def czi_to_zarr(czi_path: str, out_dir: str) -> List[str]:
     zarr_paths = []
     czi = aicspylibczi.CziFile(czi_path)
 
-    slice1 = np.squeeze(czi.read_mosaic(C=0, Z=0, scale_factor=1))
+    slice1 = _read_czi_slice(czi, C=0, Z=0)
+
     C = czi.get_dims_shape()[0]["C"][1]
     H = slice1.shape[0]
     W = slice1.shape[1]
@@ -39,7 +60,7 @@ def czi_to_zarr(czi_path: str, out_dir: str) -> List[str]:
     )
 
     for z in tqdm(np.arange(Z), desc="Saving slices foreground..."):
-        zarr_fg[:, :, z] = np.squeeze(czi.read_mosaic(C=0, Z=z, scale_factor=1))
+        zarr_fg[:, :, z] = _read_czi_slice(czi, C=0, Z=z)
 
     if C > 1:  # there is a second (assumed background) channel
         bg_path = out_dir + "bg.zarr"
@@ -48,7 +69,7 @@ def czi_to_zarr(czi_path: str, out_dir: str) -> List[str]:
             bg_path, mode="w", shape=sz, chunks=(200, 200, 10), dtype="uint16"
         )
         for z in tqdm(np.arange(Z), desc="Saving slices background..."):
-            zarr_bg[:, :, z] = np.squeeze(czi.read_mosaic(C=1, Z=z, scale_factor=1))
+            zarr_bg[:, :, z] = _read_czi_slice(czi, C=1, Z=z)
     return zarr_paths
 
 

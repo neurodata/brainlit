@@ -252,7 +252,6 @@ def _compute_coords(shape, xyz_resolution=1, origin="center"):
 
 
 def _multiply_by_affine(array, affine, spatial_dimensions=3):
-
     arrays = []
     for dim in range(spatial_dimensions):
         arrays.append(np.sum(affine[dim, :-1] * array + affine[dim, -1], axis=-1))

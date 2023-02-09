@@ -17,7 +17,6 @@ python_path = "/home/ubuntu/colm_pipeline_env/bin/python"
 
 
 def run_command_on_server(command, ssh_key_path, ip_address, username="ubuntu"):
-
     key = paramiko.RSAKey.from_private_key_file(ssh_key_path)
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -60,7 +59,6 @@ def run_registration(
     sigma_regularization,
     num_iterations,
 ):
-
     # this is the initialization for registration
     atlas_res = 50
     atlas_orientation = "PIR"

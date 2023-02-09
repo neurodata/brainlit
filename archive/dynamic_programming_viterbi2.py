@@ -545,7 +545,6 @@ class most_probable_neuron_path:
         for state1 in tqdm(states, desc="Computing state costs (intensity)"):
             state1_info = state_to_comp[state1]
             for state2 in range(num_states):
-
                 state2_info = state_to_comp[state2]
                 if (
                     state_to_comp[state1][1] == state_to_comp[state2][1]
