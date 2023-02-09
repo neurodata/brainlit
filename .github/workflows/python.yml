@@ -30,4 +30,4 @@ jobs:
         shell: bash
       - name: Test with pytest without credentials
         run: |
-          pytest brainlit/algorithms/ brainlit/feature_extraction/ brainlit/lsm_analysis brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/viz/
+          pytest brainlit/algorithms/ brainlit/feature_extraction/ brainlit/BrainLine brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/viz/
