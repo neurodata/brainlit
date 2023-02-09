@@ -145,9 +145,14 @@ brain2paths = {
     "MPRRabies": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2023_01_20/MPRRabies/",
         "val_info": {
-            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=ALqLj72S8GyYLw",
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=2U2yHGe-1YFPHA",
             "somas_layer": "soma_val",
             "nonsomas_layer": "nonsoma_val",
+        },
+        "train_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=2U2yHGe-1YFPHA",
+            "somas_layer": "soma_train",
+            "nonsomas_layer": "nonsoma_train",
         },
         "genotype": "tph2 vglut3",
     },

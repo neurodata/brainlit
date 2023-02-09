@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
-from brainlit.lsm_analysis import util
+from brainlit.BrainLine import util
 
 ############################
 ### functionality checks ###

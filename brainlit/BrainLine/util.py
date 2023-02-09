@@ -4,7 +4,7 @@ import numpy as np
 import os
 import networkx as nx
 from pathlib import Path
-from brainlit.lsm_analysis.parse_ara import build_tree
+from brainlit.BrainLine.parse_ara import build_tree
 
 
 def json_to_points(url, round=False):
