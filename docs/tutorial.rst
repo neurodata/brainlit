@@ -21,7 +21,7 @@ Tutorials showcasing how to use the utils folder.
 Pipelines
 =========
 
-.. _lsm_pipeline_tutorials:
+.. _BrainLine_tutorials:
 
 Light-Sheet Microscopy Image Analysis Pipeline
 ----------------------------------------------
