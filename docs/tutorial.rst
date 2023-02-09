@@ -25,13 +25,13 @@ Pipelines
 
 Light-Sheet Microscopy Image Analysis Pipeline
 ----------------------------------------------
-Perform axon detection and soma detection on brain images, and combine with CloudReg image registration for visualization and analysis.
+Leverage `ilastik <https://www.ilastik.org/>`_ to perform axon detection and soma detection on brain images, and combine with `CloudReg <https://cloudreg.neurodata.io/>`_ image registration for visualization and analysis.
 
 .. toctree::
    :maxdepth: 1
 
-   notebooks/pipelines/lsm_analysis/axon_analysis
-   notebooks/pipelines/lsm_analysis/soma_analysis
+   notebooks/pipelines/BrainLine/axon_analysis
+   notebooks/pipelines/BrainLine/soma_analysis
 
 Semi-automatic Annotation Pipeline
 ----------------------------------
