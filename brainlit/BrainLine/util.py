@@ -5,6 +5,76 @@ import os
 import networkx as nx
 from pathlib import Path
 from brainlit.BrainLine.parse_ara import build_tree
+from tqdm import tqdm
+from brainlit.BrainLine.data.soma_data import brain2paths
+from brainlit.BrainLine.imports import *
+
+def download_subvolumes(data_dir: str, brain_id: str, layer_names: list, dataset_to_save: str):
+    base_dir = data_dir + f"/brain{brain_id}/{dataset_to_save}/"
+    antibody_layer, background_layer, endogenous_layer = layer_names
+
+    if "base" in brain2paths[brain_id].keys():
+        base_dir_s3 = brain2paths[brain_id]["base"]
+        dir = base_dir_s3 + antibody_layer
+        vol_fg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
+        print(f"fg shape: {vol_fg.shape} at {vol_fg.resolution}")
+
+        dir = base_dir_s3 + background_layer
+        vol_bg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
+        print(f"bg shape: {vol_bg.shape} at {vol_bg.resolution}")
+
+        dir = base_dir_s3 + endogenous_layer
+        vol_endo = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
+        print(f"endo shape: {vol_endo.shape} at {vol_endo.resolution}")
+
+    if dataset_to_save == "val":
+        url = brain2paths[brain_id]["val_info"]["url"]
+        l_dict = json_to_points(url)
+        soma_centers = l_dict[brain2paths[brain_id]["val_info"]["somas_layer"]]
+        nonsoma_centers = l_dict[brain2paths[brain_id]["val_info"]["nonsomas_layer"]]
+    elif dataset_to_save == "train":
+        url = brain2paths[brain_id]["train_info"]["url"]
+        l_dict = json_to_points(url)
+        soma_centers = l_dict[brain2paths[brain_id]["train_info"]["somas_layer"]]
+        nonsoma_centers = l_dict[brain2paths[brain_id]["train_info"]["nonsomas_layer"]]
+    print(f"{len(soma_centers)} soma centers")
+    print(f"{len(nonsoma_centers)} nonsoma centers")
+
+    isExist = os.path.exists(base_dir)
+    if not isExist:
+        print(f"Creating directory: {base_dir}")
+        os.makedirs(base_dir)
+    else:
+        print(f"Downloaded data will be stored in {base_dir}")
+
+    for type, centers in zip(["pos", "neg"], [soma_centers, nonsoma_centers]):
+        for i, center in enumerate(tqdm(centers, desc="Saving positive samples")):
+            image_fg = vol_fg[
+                center[0] - 24 : center[0] + 25,
+                center[1] - 24 : center[1] + 25,
+                center[2] - 24 : center[2] + 25,
+            ]
+            image_fg = image_fg[:, :, :, 0]
+            image_bg = vol_bg[
+                center[0] - 24 : center[0] + 25,
+                center[1] - 24 : center[1] + 25,
+                center[2] - 24 : center[2] + 25,
+            ]
+            image_bg = image_bg[:, :, :, 0]
+            image_endo = vol_endo[
+                center[0] - 24 : center[0] + 25,
+                center[1] - 24 : center[1] + 25,
+                center[2] - 24 : center[2] + 25,
+            ]
+            image_endo = image_endo[:, :, :, 0]
+
+            image = np.squeeze(np.stack([image_fg, image_bg, image_endo], axis=0))
+
+            fname = (
+                base_dir + f"{int(center[0])}_{int(center[1])}_{int(center[2])}_{type}.h5"
+            )
+            with h5py.File(fname, "w") as f:
+                dset = f.create_dataset("image_3channel", data=image)
 
 
 def json_to_points(url, round=False):

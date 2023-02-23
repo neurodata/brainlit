@@ -17,6 +17,8 @@ from os import listdir
 import random
 from cloudreg.scripts.transform_points import NGLink
 from cloudreg.scripts.visualization import create_viz_link_from_json
+import pandas as pd
+from brainlit.BrainLine.imports import *
 
 
 class ApplyIlastik:
@@ -74,6 +76,105 @@ class ApplyIlastik:
             for item in items:
                 result_path = brain_dir + item[:-3] + "_Probabilities.h5"
                 shutil.move(result_path, results_dir + item[:-3] + "_Probabilities.h5")
+
+def plot_results(data_dir: str, brain_id: str, doubles: list):
+    base_dir = data_dir + f"/brain{brain_id}/val/"
+    recalls = []
+    precisions = []
+
+    test_files = find_sample_names(base_dir, dset="", add_dir=True)
+    test_files = [file.split(".")[0] + "_Probabilities.h5" for file in test_files]
+    print(test_files)
+
+    size_thresh = 500
+
+    thresholds = list(np.arange(0.0, 1.0, 0.02))
+
+    for threshold in thresholds:
+        tot_pos = 0
+        tot_neg = 0
+        true_pos = 0
+        false_pos = 0
+        for filename in tqdm(test_files, disable=True):
+            if filename.split("/")[-1] in doubles:
+                newpos = 2
+            else:
+                newpos = 1
+
+            f = h5py.File(filename, "r")
+            pred = f.get("exported_data")
+            pred = pred[0, :, :, :]
+            mask = pred > threshold
+            labels = measure.label(mask)
+            props = measure.regionprops(labels)
+
+            if "pos" in filename:
+                num_detected = 0
+                tot_pos += newpos
+                for prop in props:
+                    if prop["area"] > size_thresh:
+                        if num_detected < newpos:
+                            true_pos += 1
+                            num_detected += 1
+                        else:
+                            false_pos += 1
+            elif "neg" in filename:
+                tot_neg += 1
+                for prop in props:
+                    if prop["area"] > size_thresh:
+                        false_pos += 1
+
+        recall = true_pos / tot_pos
+        recalls.append(recall)
+        if true_pos + false_pos == 0:
+            precision = 0
+        else:
+            precision = true_pos / (true_pos + false_pos)
+        precisions.append(precision)
+        if precision == 0 and recall == 0:
+            fscore = 0
+        else:
+            fscore = 2 * precision * recall / (precision + recall)
+        print(
+            f"threshold: {threshold}: precision: {precision}, recall: {recall}, f-score: {fscore} for {tot_pos} positive samples in {len(test_files)} images"
+        )
+
+    fscores = [
+        2 * precision * recall / (precision + recall)
+        if (precision != 0 and recall != 0)
+        else 0
+        for precision, recall in zip(precisions, recalls)
+    ]
+    dict = {
+        "Recall": recalls,
+        "Precision": precisions,
+        "F-score": fscores,
+        "Threshold": thresholds,
+    }
+    df = pd.DataFrame(dict)
+    max_fscore = df["F-score"].max()
+    best_threshold = float(df.loc[df["F-score"] == max_fscore]["Threshold"].iloc[0])
+    best_rec = float(df.loc[df["F-score"] == max_fscore]["Recall"].iloc[0])
+    best_prec = float(df.loc[df["F-score"] == max_fscore]["Precision"].iloc[0])
+
+    print(f"Max f-score: {max_fscore:.2f} thresh:{best_threshold:.2f}")
+    print("If this performance is not adequate, improve model and try again")
+
+    sns.set(font_scale=2)
+
+    plt.figure(figsize=(8, 8))
+    sns.lineplot(data=df, x="Recall", y="Precision", estimator=np.amax, ci=False)
+    plt.scatter(
+        best_rec,
+        best_prec,
+        c="r",
+        label=f"Max f-score: {max_fscore:.2f} thresh:{best_threshold:.2f}",
+    )
+    plt.xlim([0, 1.1])
+    plt.ylim([0, 1.1])
+    plt.title(f"Brain {brain_id} Validation: {tot_pos}+ {tot_neg}-")
+    plt.legend()
+    plt.show()
 
 class ApplyIlastik_LargeImage:
     def __init__(self, ilastik_path: str, ilastik_project: str, results_dir: str, ncpu: int):
