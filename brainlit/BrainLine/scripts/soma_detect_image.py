@@ -37,14 +37,11 @@ max_coords = [3072, 4352, 1792] #max coords or -1 if you want to process everyth
 ncpu = 10 #16  # number of cores to use for detection
 chunk_size = [256, 256, 256]#[256, 256, 300]
 
-print(f"Number cpus available: {multiprocessing.cpu_count()}")
-warnings.filterwarnings("ignore")
-
 """ 
 Detect Somas
 """
 
 layer_names = [antibody_layer, background_layer, endogenous_layer]
-alli = ApplyIlastik_LargeImage(ilastik_path = ilastik_path, ilastik_project=ilastik_project, ncpu=ncpu)
-alli.apply_ilastik_parallel(brain_id=brain, layer_names=layer_names, threshold=threshold, data_dir=data_dir, results_dir=results_dir, chunk_size=chunk_size, max_coords=max_coords)
+alli = ApplyIlastik_LargeImage(ilastik_path = ilastik_path, ilastik_project=ilastik_project, ncpu=ncpu, object_type="axon", results_dir=results_dir)
+alli.apply_ilastik_parallel(brain_id=brain, layer_names=layer_names, threshold=threshold, data_dir=data_dir, chunk_size=chunk_size, max_coords=max_coords)
 alli.collect_results(brain_id=brain)

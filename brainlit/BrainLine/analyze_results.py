@@ -382,3 +382,7 @@ class SomaDistribution:
         )
 
         return annotator
+    
+class AxonDistribution:
+    def __init__(self, brain_ids: list):
+        self.brain_ids = brain_ids

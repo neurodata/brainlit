@@ -40,8 +40,9 @@ class ApplyIlastik:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
+ 
 
-    def process_somas(self):
+    def process_subvols(self):
         items_total = []
         for brain in tqdm(self.brains, desc="Gathering brains..."):
 
@@ -77,13 +78,14 @@ class ApplyIlastik:
                 result_path = brain_dir + item[:-3] + "_Probabilities.h5"
                 shutil.move(result_path, results_dir + item[:-3] + "_Probabilities.h5")
 
-def plot_results(data_dir: str, brain_id: str, doubles: list):
+def plot_results(data_dir: str, brain_id: str, object_type: str, doubles: list = []):
     base_dir = data_dir + f"/brain{brain_id}/val/"
     recalls = []
     precisions = []
+    fscores = []
 
-    test_files = find_sample_names(base_dir, dset="", add_dir=True)
-    test_files = [file.split(".")[0] + "_Probabilities.h5" for file in test_files]
+    data_files = find_sample_names(base_dir, dset="", add_dir=True)
+    test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
     print(test_files)
 
     size_thresh = 500
@@ -96,34 +98,50 @@ def plot_results(data_dir: str, brain_id: str, doubles: list):
         true_pos = 0
         false_pos = 0
         for filename in tqdm(test_files, disable=True):
-            if filename.split("/")[-1] in doubles:
-                newpos = 2
-            else:
-                newpos = 1
-
             f = h5py.File(filename, "r")
             pred = f.get("exported_data")
-            pred = pred[0, :, :, :]
+            pred = pred[1, :, :, :]
             mask = pred > threshold
-            labels = measure.label(mask)
-            props = measure.regionprops(labels)
 
-            if "pos" in filename:
-                num_detected = 0
-                tot_pos += newpos
-                for prop in props:
-                    if prop["area"] > size_thresh:
-                        if num_detected < newpos:
-                            true_pos += 1
-                            num_detected += 1
-                        else:
+            if object_type == "soma":
+                if filename.split("/")[-1] in doubles:
+                    newpos = 2
+                else:
+                    newpos = 1
+
+                labels = measure.label(mask)
+                props = measure.regionprops(labels)
+                if "pos" in filename:
+                    num_detected = 0
+                    tot_pos += newpos
+                    for prop in props:
+                        if prop["area"] > size_thresh:
+                            if num_detected < newpos:
+                                true_pos += 1
+                                num_detected += 1
+                            else:
+                                false_pos += 1
+                elif "neg" in filename:
+                    tot_neg += 1
+                    for prop in props:
+                        if prop["area"] > size_thresh:
                             false_pos += 1
-            elif "neg" in filename:
-                tot_neg += 1
-                for prop in props:
-                    if prop["area"] > size_thresh:
-                        false_pos += 1
+            elif object_type == "axon":
+                filename_lab = filename[:-17] + "-image_3channel_Labels.h5"
+                f = h5py.File(filename_lab, "r")
+                gt = f.get("exported_data")
+                gt = gt[0, :, :, :]
+                pos_labels = gt == 2
+                neg_labels = gt == 1
 
+                tot_pos += np.sum(pos_labels)
+                tot_neg += np.sum(neg_labels)
+                true_pos += np.sum(np.logical_and(mask, pos_labels))
+                false_pos += np.sum(np.logical_and(mask, neg_labels))
+            else:
+                raise ValueError(f"object_type must be axon or soma, not {object_type}")
+    
+        print(f"{true_pos} {tot_pos}")
         recall = true_pos / tot_pos
         recalls.append(recall)
         if true_pos + false_pos == 0:
@@ -135,16 +153,11 @@ def plot_results(data_dir: str, brain_id: str, doubles: list):
             fscore = 0
         else:
             fscore = 2 * precision * recall / (precision + recall)
+        fscores.append(fscore)
         print(
-            f"threshold: {threshold}: precision: {precision}, recall: {recall}, f-score: {fscore} for {tot_pos} positive samples in {len(test_files)} images"
+            f"Threshold: {threshold} --- Total prec.: {precision}, total rec.: {recall} w/{tot_pos}/{tot_neg} total pos/neg samples in {len(test_files)} images. F-score: {fscore} "
         )
 
-    fscores = [
-        2 * precision * recall / (precision + recall)
-        if (precision != 0 and recall != 0)
-        else 0
-        for precision, recall in zip(precisions, recalls)
-    ]
     dict = {
         "Recall": recalls,
         "Precision": precisions,
@@ -177,15 +190,27 @@ def plot_results(data_dir: str, brain_id: str, doubles: list):
     plt.show()
 
 class ApplyIlastik_LargeImage:
-    def __init__(self, ilastik_path: str, ilastik_project: str, results_dir: str, ncpu: int):
+    def __init__(self, ilastik_path: str, ilastik_project: str, ncpu: int, object_type: str, results_dir: str = None):
         self.ilastik_path = ilastik_path
         self.ilastik_project = ilastik_project
-        self.results_dir = results_dir
         self.ncpu = ncpu
+        self.object_type = object_type
+
+        if object_type == "axon":
+            if results_dir != None:
+                raise ValueError(f"cannot give results_dir for object type {object_type}")
+        elif object_type != "soma":
+            raise ValueError(f"object_type must be soma or axon not {object_type}")
+        self.results_dir = results_dir
         
 
     def apply_ilastik_parallel(self, brain_id: str, layer_names: list, threshold: float, data_dir: str, chunk_size: list, max_coords: list = [-1, -1, -1]):
         results_dir = self.results_dir
+        volume_base_dir = brain2paths[brain_id]["base"]
+        sample_path = volume_base_dir + layer_names[0]
+        vol = CloudVolume(sample_path, parallel=True, mip=0, fill_missing=True)
+        shape = vol.shape
+        print(f"Processing: {sample_path} with shape {shape} at threshold {threshold}")
 
         isExist = os.path.exists(data_dir)
         if not isExist:
@@ -193,18 +218,21 @@ class ApplyIlastik_LargeImage:
             os.makedirs(data_dir)
         else:
             print(f"Downloaded data will be stored in {data_dir}")
-        isExist = os.path.exists(results_dir)
-        if not isExist:
-            print(f"Creating directory: {results_dir}")
-            os.makedirs(results_dir)
-        else:
-            print(f"Downloaded data will be stored in {results_dir}")
 
-        volume_base_dir = brain2paths[brain_id]["base"]
-        sample_path = volume_base_dir + layer_names[0]
-        vol = CloudVolume(sample_path, parallel=True, mip=0, fill_missing=True)
-        shape = vol.shape
-        print(f"Processing: {sample_path} with shape {shape} at threshold {threshold}")
+        if self.object_type == "soma":
+            isExist = os.path.exists(results_dir)
+            if not isExist:
+                print(f"Creating directory: {results_dir}")
+                os.makedirs(results_dir)
+            else:
+                print(f"Downloaded data will be stored in {results_dir}")
+        elif self.object_type == "axon":
+            mask_dir = volume_base_dir + "axon_mask"
+            try:
+                CloudVolume(mask_dir)
+            except:
+                self._make_mask_info(mask_dir, vol)
+
 
         corners = self._get_corners(shape, chunk_size, max_coords)
         corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
@@ -212,7 +240,7 @@ class ApplyIlastik_LargeImage:
         for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
             results = Parallel(n_jobs=self.ncpu)(
                 delayed(self.process_chunk)(
-                    corner[0], corner[1], volume_base_dir, layer_names, threshold, data_dir, results_dir
+                    corner[0], corner[1], volume_base_dir, layer_names, threshold, data_dir, self.object_type, results_dir
                 )
                 for corner in tqdm(corners_chunk, leave=False)
             )
@@ -232,8 +260,25 @@ class ApplyIlastik_LargeImage:
                         corners.append([c1, c2])
 
         return corners
+    
+    def _make_mask_info(self, mask_dir: str, vol: CloudVolume):
+        info = CloudVolume.create_new_info(
+            num_channels=1,
+            layer_type="segmentation",
+            data_type="uint64",  # Channel images might be 'uint8'
+            encoding="raw",  # raw, jpeg, compressed_segmentation, fpzip, kempressed
+            resolution=vol.resolution,  # Voxel scaling, units are in nanometers
+            voxel_offset=vol.voxel_offset,  # x,y,z offset in voxels from the origin
+            # mesh            = 'mesh',
+            # Pick a convenient size for your underlying chunk representation
+            # Powers of two are recommended, doesn't need to cover image exactly
+            chunk_size=(128,128,128),  # units are voxels
+            volume_size=vol.volume_size,  # e.g. a cubic millimeter dataset
+        )
+        vol_mask = CloudVolume(mask_dir, info=info, compress=False)
+        vol_mask.commit_info()
 
-    def process_chunk(self, c1: list, c2: list, volume_base_dir: str, layer_names: list, threshold: float, data_dir: str, results_dir: str):
+    def process_chunk(self, c1: list, c2: list, volume_base_dir: str, layer_names: list, threshold: float, data_dir: str, object_type: str, results_dir: str = None):
         mip = 0
         area_threshold = 500
 
@@ -278,35 +323,43 @@ class ApplyIlastik_LargeImage:
         # subprocess.run(["/Applications/ilastik-1.3.3post3-OSX.app/Contents/ilastik-release/run_ilastik.sh", "--headless", "--project=/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain3/matt_benchmark_formal_brain3.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         fname_prob = fname[:-3] + "_Probabilities.h5"
-        fname_results = (
-            results_dir
-            + "image_"
-            + str(c1[0])
-            + "_"
-            + str(c1[1])
-            + "_"
-            + str(c1[2])
-            + "_somas.txt"
-        )
         with h5py.File(fname_prob, "r") as f:
             pred = f.get("exported_data")
-            pred = pred[0, :, :, :]
-            mask = pred > threshold
-            labels = measure.label(mask)
-            props = measure.regionprops(labels)
+            if object_type == "soma":
+                fname_results = (
+                    results_dir
+                    + "image_"
+                    + str(c1[0])
+                    + "_"
+                    + str(c1[1])
+                    + "_"
+                    + str(c1[2])
+                    + "_somas.txt"
+                )
+                pred = pred[0, :, :, :]
+                mask = pred > threshold
+                labels = measure.label(mask)
+                props = measure.regionprops(labels)
 
-            results = []
-            for prop in props:
-                if prop["area"] > area_threshold:
-                    location = list(np.add(c1, prop["centroid"]))
-                    results.append(location)
-            if len(results) > 0:
-                with open(fname_results, "w") as f2:
-                    for location in results:
-                        f2.write(str(location))
-                        f2.write("\n")
+                results = []
+                for prop in props:
+                    if prop["area"] > area_threshold:
+                        location = list(np.add(c1, prop["centroid"]))
+                        results.append(location)
+                if len(results) > 0:
+                    with open(fname_results, "w") as f2:
+                        for location in results:
+                            f2.write(str(location))
+                            f2.write("\n")
+            elif object_type == "axon":
+                dir_mask = volume_base_dir + "axon_mask"
+                vol_mask = CloudVolume(dir_mask, parallel=1, mip=mip, fill_missing=True, compress=False)
+                pred = pred[1, :, :, :]
+                mask = np.array(pred > threshold).astype("uint64")
+                vol_mask[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]] = mask
 
-    def collect_results(self, brain_id: str):
+
+    def collect_soma_results(self, brain_id: str):
         coords = []
         coords_target_space = []
         results_dir = self.results_dir
@@ -360,3 +413,28 @@ class ApplyIlastik_LargeImage:
             ngl_json, neuroglancer_link="https://viz.neurodata.io/?json_url="
         )
         print(f"Viz link with detections: {viz_link}")
+
+    def collect_axon_results(self, brain_id: str, ng_layer_name: str):
+        ng_link = brain2paths[brain_id]["val_info"]["url"]
+        viz_link = NGLink(ng_link.split("json_url=")[-1])
+        ngl_json = viz_link._json
+
+        ngl_json["layers"] = [layer for layer in ngl_json["layers"] if layer["type"] != "annotation"]
+        for layer in ngl_json["layers"]:
+            if layer['name'] == ng_layer_name:
+                source_pieces = layer['source'].split("/")
+                source = ""
+                for piece in source_pieces[:-1]:
+                    source += piece 
+                    source += "/"
+                source += "axon_mask"
+
+                ngl_json["layers"].append(
+                    {"type": "segmentation", "source": source, "name": "axon_mask"}
+                )
+                break
+        print(ngl_json)
+        viz_link = create_viz_link_from_json(
+            ngl_json, neuroglancer_link="https://viz.neurodata.io/?json_url="
+        )
+        print(f"Viz link with segmentation: {viz_link}")
