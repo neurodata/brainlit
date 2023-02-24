@@ -1,7 +1,7 @@
-from brainlit.BrainLine.data.soma_data import brain2paths, brain2centers
+from brainlit.BrainLine.data import soma_data, axon_data
 import numpy as np
 from cloudreg.scripts.transform_points import NGLink
-from cloudvolume import CloudVolume
+from cloudvolume import CloudVolume, exceptions
 from tqdm import tqdm
 from skimage import io, measure
 from brainlit.BrainLine.util import (
@@ -10,6 +10,7 @@ from brainlit.BrainLine.util import (
     fold,
     setup_atlas_graph,
     get_atlas_level_nodes,
+    _get_corners
 )
 import napari
 import scipy.ndimage as ndi
@@ -17,10 +18,69 @@ import seaborn as sns
 from statannotations.Annotator import Annotator
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
+from joblib import Parallel, delayed
+import pickle
 
-class SomaDistribution:
+class BrainDistribution():
     def __init__(self, brain_ids: list):
         self.brain_ids = brain_ids
+
+    def _slicetolabels(self, slice, fold_on: bool = False, atlas_level: int = 5):
+        region_graph = setup_atlas_graph()
+        atlas_level_nodes = get_atlas_level_nodes(atlas_level, region_graph)
+        newslice = np.copy(slice)
+        new_labels = {}
+
+        for label in tqdm(np.unique(slice), desc=f"Relabeling slice"):
+            atlas_level_label = find_atlas_level_label(
+                label, atlas_level_nodes, atlas_level, region_graph
+            )
+            newslice[slice == label] = atlas_level_label
+            if atlas_level_label not in new_labels.keys():
+                if atlas_level_label in region_graph.nodes:
+                    name = region_graph.nodes[atlas_level_label]["name"]
+                else:
+                    name = "??"
+                new_labels[atlas_level_label] = name
+
+        labels = measure.label(newslice)
+        borders = 0 * labels
+        for label in tqdm(np.unique(labels), desc=f"Processing labels"):
+            if label != 0:
+                mask = np.array(labels == label, dtype="int")
+                erode = np.array(ndi.binary_erosion(mask))
+                outline = mask - erode
+                borders += outline
+
+        if fold_on:
+            half_width = np.round(borders.shape[1] / 2).astype(int)
+            borders = borders[:, :half_width]
+            newslice = newslice[:, :half_width]
+        else:
+            half_width = -1
+        return newslice, borders, half_width
+    
+    def _get_subtype_counts(self, object_type):
+        if object_type == "soma":
+            brain2paths = soma_data.brain2paths
+        elif object_type == "axon":
+            brain2paths = axon_data.brain2paths
+        else:
+            raise ValueError(f"object_type must be soma or axon not: {object_type}")
+        brain_ids = self.brain_ids
+        counts = {}
+        for brain_id in brain_ids:
+            subtype = brain2paths[brain_id]["subtype"]
+            if subtype in counts.keys():
+                counts[subtype] = counts[subtype] + 1
+            else:
+                counts[subtype] = 1
+        return counts
+
+class SomaDistribution(BrainDistribution):
+    def __init__(self, brain_ids: list):
+        super().__init__(brain_ids)
         atlas_points = self._retrieve_soma_coords(brain_ids)
         self.atlas_points = atlas_points
         id_to_regioncounts = self._get_regions(atlas_points)
@@ -31,6 +91,7 @@ class SomaDistribution:
 
 
     def _retrieve_soma_coords(self, brain_ids: list):
+        brain2paths = soma_data.brain2paths
         atlas_points = {}
         for brain_id in brain_ids:
             if "somas_atlas_url" in brain2paths[brain_id].keys():
@@ -54,6 +115,7 @@ class SomaDistribution:
         return atlas_points
     
     def _get_regions(self, points: dict):
+        brain2paths = soma_data.brain2paths
         if "filepath" in brain2paths["atlas"].keys():
             vol_atlas = io.imread(brain2paths["atlas"]["filepath"])
         else:
@@ -76,6 +138,7 @@ class SomaDistribution:
 
 
     def napari_coronal_section(self, z: int, subtype_colors: dict, symbols: list, fold_on: bool = False):
+        brain2paths = soma_data.brain2paths
         atlas_points = self.atlas_points
         if "filepath" in brain2paths["atlas"].keys():
             vol_atlas = io.imread(brain2paths["atlas"]["filepath"])
@@ -83,7 +146,6 @@ class SomaDistribution:
             vol_atlas = CloudVolume(brain2paths["atlas"]["url"])
 
         slice = vol_atlas[z, :, :]
-
         newslice, borders, half_width = self._slicetolabels(slice, fold_on = fold_on)
 
         v = napari.Viewer()
@@ -130,46 +192,10 @@ class SomaDistribution:
         v.scale_bar.visible = True
         napari.run()
 
-
-    def _slicetolabels(self, slice, fold_on: bool = False, atlas_level: int = 5):
-        region_graph = setup_atlas_graph()
-        atlas_level_nodes = get_atlas_level_nodes(atlas_level, region_graph)
-        newslice = np.copy(slice)
-        new_labels = {}
-
-        for label in tqdm(np.unique(slice), desc=f"Relabeling slice"):
-            atlas_level_label = find_atlas_level_label(
-                label, atlas_level_nodes, atlas_level, region_graph
-            )
-            newslice[slice == label] = atlas_level_label
-            if atlas_level_label not in new_labels.keys():
-                if atlas_level_label in region_graph.nodes:
-                    name = region_graph.nodes[atlas_level_label]["name"]
-                else:
-                    name = "??"
-                new_labels[atlas_level_label] = name
-
-        labels = measure.label(newslice)
-        borders = 0 * labels
-        for label in tqdm(np.unique(labels), desc=f"Processing labels"):
-            if label != 0:
-                mask = np.array(labels == label, dtype="int")
-                erode = np.array(ndi.binary_erosion(mask))
-                outline = mask - erode
-                borders += outline
-
-        if fold_on:
-            half_width = np.round(borders.shape[1] / 2).astype(int)
-            borders = borders[:, :half_width]
-            newslice = newslice[:, :half_width]
-        else:
-            half_width = -1
-        return newslice, borders, half_width
-
     def region_barchart(self, regions: list, composite_regions: dict = {}, normalize_region: int = -1):
         region_graph = self.region_graph
 
-        subtype_counts = self._get_subtype_counts()
+        subtype_counts = self._get_subtype_counts(object_type="soma")
         id_to_somatotals = self._count_somas()
 
         df = self._make_bar_df(regions, composite_regions, id_to_somatotals, subtype_counts, normalize_region)
@@ -262,18 +288,6 @@ class SomaDistribution:
 
         return region_graph
 
-
-    def _get_subtype_counts(self):
-        brain_ids = self.brain_ids
-        counts = {}
-        for brain_id in brain_ids:
-            subtype = brain2paths[brain_id]["subtype"]
-            if subtype in counts.keys():
-                counts[subtype] = counts[subtype] + 1
-            else:
-                counts[subtype] = 1
-        return counts
-
     def _count_somas(self):
         id_to_somatotals = {}
         brain_ids = self.brain_ids
@@ -298,7 +312,7 @@ class SomaDistribution:
         for region in regions:
             print(f"Populating: {region_graph.nodes[region]['name']}" )
             for brain_id in brain_ids:
-                subtype = brain2paths[brain_id]["subtype"]
+                subtype = soma_data.brain2paths[brain_id]["subtype"]
                 soma_count = region_graph.nodes[region][brain_id]
                 somas.append(soma_count)
                 if normalize_region >= 0 and region_graph.nodes[normalize_region][brain_id] > 0:
@@ -315,7 +329,7 @@ class SomaDistribution:
             print(f"Populating: " + region_component_name)
             region_components = composite_regions[region_component_name]
             for brain_id in brain_ids:
-                subtype = brain2paths[brain_id]["subtype"]
+                subtype = soma_data.brain2paths[brain_id]["subtype"]
                 soma_count = 0
 
                 for region_component in region_components:
@@ -382,7 +396,400 @@ class SomaDistribution:
         )
 
         return annotator
+
+def _get_corners_collection(vol_mask, vol_reg, block_size, max_coords: list = [-1, -1, -1]):
+    corners = _get_corners(vol_mask.shape, chunk_size = block_size, max_coords=max_coords)
+
+    new_corners = []
+    for corner in corners:
+        x = corner[0][0]
+        x2 = corner[1][0]
+        x_reg = int(x / 8)
+        x2_reg = np.amin([int(x2 / 8), vol_reg.shape[0]])
+        y = corner[0][1]
+        y2 = corner[1][1]
+        y_reg = int(y / 8)
+        y2_reg = np.amin([int(y2 / 8), vol_reg.shape[0]])
+        z = corner[0][2]
+        z2 = corner[1][2]
+
+        new_corners.append([[x_reg, y_reg, z], [x2_reg, y2_reg, z2], corner[0], corner[1]])
+
+    return new_corners
+
+def _compute_composition_corner(corners, outdir, dir_base):
+    l_c1 = corners[0]
+    l_c2 = corners[1]
+    m_c1 = corners[2]
+    m_c2 = corners[3]
+
+    fname = outdir + str(l_c1[0]) + "_" + str(l_c1[1]) + "_" + str(l_c1[2]) + ".pickle"
+    if os.path.exists(fname):
+        return
+
+    dir = dir_base + "axon_mask"
+    vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=False)
+
+    dir = dir_base + "atlas_to_target"
+    vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
+
+    try:
+        labels = vol_reg[l_c1[0] : l_c2[0], l_c1[1] : l_c2[1], l_c1[2] : l_c2[2]]
+        labels = np.repeat(np.repeat(labels, 8, axis=0), 8, axis=1)
+        mask = vol_mask[m_c1[0] : m_c2[0], m_c1[1] : m_c2[1], m_c1[2] : m_c2[2]]
+    except exceptions.EmptyVolumeException:
+        return
+
+    width = np.amin([mask.shape[0], labels.shape[0]])
+    height = np.amin([mask.shape[1], labels.shape[1]])
+    mask = mask[:width, :height, :]
+    labels = labels[:width, :height, :]
+
+    labels_unique = np.unique(labels[labels > 0])
+
+    volumes = {}
+    for unq in labels_unique:
+        cur_vol = np.sum(mask[labels == unq])
+        cur_total = np.sum(labels == unq)
+        volumes[unq] = [cur_total, cur_vol]
+
+    with open(fname, "wb") as f:
+        pickle.dump(volumes, f)
+
+def _combine_regional_segmentations(outdir):
+    files = os.listdir(outdir)
+    volumes = {}
+    for file in tqdm(files, desc="Assembling results"):
+        if "pickle" in file:
+            filename = outdir + file
+            with open(filename, "rb") as f:
+                result = pickle.load(f)
+            for key in result.keys():
+                addition = result[key]
+                if key in volumes.keys():
+                    cur_vol = volumes[key][1]
+                    cur_total = volumes[key][0]
+                else:
+                    cur_vol = 0
+                    cur_total = 0
+
+                cur_vol += addition[1]
+                cur_total += addition[0]
+                volumes[key] = [cur_total, cur_vol]
+    return volumes
+
+def collect_regional_segmentation(brain_id: str, outdir: str, ncpu: int = 1, max_coords: list = [-1,-1,-1]):
+    dir_base = axon_data.brain2paths[brain_id]["base"]
+
+    dir = os.path.join(dir_base, "axon_mask")
+    vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
+    print(f"Mask shape: {vol_mask.shape}")
+
+    dir = os.path.join(dir_base, "atlas_to_target")
+    vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
+    print(f"Atlas shape: {vol_reg.shape}")
+
+    corners = _get_corners_collection(vol_mask, vol_reg, block_size=[256, 256, 256], max_coords=max_coords)
+    Parallel(n_jobs=ncpu)(
+        delayed(_compute_composition_corner)(corner, outdir, dir_base)
+        for corner in tqdm(corners, desc="Finding labels")
+    )
+
+    volumes = _combine_regional_segmentations(outdir)
+
+    outpath = outdir + "wholebrain_" + brain_id + ".pkl"
+    with open(outpath, "wb") as f:
+        pickle.dump(volumes, f)
+
+
+  
+class AxonDistribution(BrainDistribution):
+    def __init__(self, brain_ids: list, regional_distribution_dir: str):
+        super().__init__(brain_ids)
+        self.regional_distribution_dir = regional_distribution_dir
+        self.region_graph = self._setup_regiongraph(regional_distribution_dir)
+
+    def _setup_regiongraph(self, regional_distribution_dir):
+        regional_distribution_dir = self.regional_distribution_dir
+        brain_ids = self.brain_ids
+        region_graph = setup_atlas_graph()
+        max_level = 0
+
+        # set to 0
+        for node in region_graph.nodes:
+            if region_graph.nodes[node]["level"] > max_level:
+                max_level = region_graph.nodes[node]["level"]
+            for brain_id in brain_ids:
+                region_graph.nodes[node][brain_id + " axon"] = 0
+                region_graph.nodes[node][brain_id + " total"] = 0
+
+        #add data
+        for brain_id in brain_ids:
+            region_distribution = regional_distribution_dir + "wholebrain_" + brain_id + ".pkl"
+
+            with open(region_distribution, "rb") as f:
+                quantification_dict = pickle.load(f)
+            
+            for region in quantification_dict.keys():
+                if region in region_graph.nodes:
+                    region_graph.nodes[region][brain_id + " axon"] = region_graph.nodes[region][brain_id + " axon"] + float(quantification_dict[region][1])
+                    region_graph.nodes[region][brain_id+ " total"] = region_graph.nodes[region][brain_id + " total"] + float(quantification_dict[region][0])
+
+
+        #propagate counts up the hierarchy
+        for brain_id in brain_ids:
+            for lvl in range(max_level, 0, -1):
+                for node in region_graph.nodes:
+                    if region_graph.nodes[node]["level"] == lvl:
+                        parent = list(region_graph.in_edges(node))[0][0]
+                        region_graph.nodes[parent][brain_id + " axon"] = region_graph.nodes[parent][brain_id + " axon"] + region_graph.nodes[node][brain_id + " axon"]
+                        region_graph.nodes[parent][brain_id+ " total"] = region_graph.nodes[parent][brain_id + " total"] + region_graph.nodes[node][brain_id + " total"]
+
+        return region_graph
+
+    def napari_coronal_section(self, z: int, subtype_colors: dict, fold_on: bool = False):
+        brain2paths = axon_data.brain2paths
+        if "filepath" in brain2paths["atlas"].keys():
+            vol_atlas = io.imread(brain2paths["atlas"]["filepath"])
+        else:
+            vol_atlas = CloudVolume(brain2paths["atlas"]["url"])
+
+        slice = vol_atlas[z, :, :]
+
+        newslice, borders, half_width = self._slicetolabels(slice, fold_on = fold_on)
+
+        v = napari.Viewer()
+        v.add_labels(newslice, scale=[10, 10])
+
+        heatmaps = {subtype: 0*newslice for subtype in subtype_colors.keys()}
+        for brain_id in self.brain_ids:
+            subtype = brain2paths[brain_id]["subtype"]
+
+            transformed_mask_vol = CloudVolume(brain2paths[brain_id]['transformed_mask'], fill_missing = True)
+            mask_slice = np.squeeze(transformed_mask_vol[z - 10 : z + 10, :, :])
+            mask_slice = ndi.gaussian_filter(mask_slice.astype(float), sigma=(3, 3, 3))[
+                10, :, :
+            ]
+            if fold_on:
+                mask_slice = fold(mask_slice)
+            mask_slice[newslice == 0] = 0
+
+            heatmaps[subtype] = heatmaps[subtype] + mask_slice
+
+        for subtype in heatmaps.keys():
+            heatmaps[subtype] = heatmaps[subtype] / np.amax(heatmaps[subtype])
+
+        rgb_heatmap = [-1,-1,-1]
+        for subtype in heatmaps.keys():
+            if subtype_colors[subtype] == "red":
+                rgb_heatmap[0] = heatmaps[subtype]
+            elif subtype_colors[subtype] == "green":
+                rgb_heatmap[0] = heatmaps[subtype]
+        rgb_heatmap = [0*newslice if type(i) == int else i for i in rgb_heatmap]
+
+        rgb_heatmap = np.stack(rgb_heatmap, axis=-1)
+
+        v.add_image(rgb_heatmap, rgb=True, scale=[10,10], name=f"{subtype_colors}")
+        v.add_labels(borders*2, scale=[10, 10], name=f"z={z}")
+        v.scale_bar.unit = "um"
+        v.scale_bar.visible = True
+        napari.run()
+
+    def region_barchart(self, regions: list, composite_regions: dict = {}, normalize_region: int = -1):
+        region_graph = self.region_graph
+        subtype_counts = self._get_subtype_counts(object_type="axon")
+        print(subtype_counts)
+
+        df = self._make_bar_df(regions, composite_regions, subtype_counts, normalize_region)
+        subtypes = df["Subtype"].unique()
+
+        fig, axes = plt.subplots(1, 3, figsize=(39, 13))
+        sns.set(font_scale=2)
+
+        # first panel
+        fig_args = {
+            "x": "Axon Density (%)",
+            "y": "Region",
+            "hue": "Subtype",
+            "data": df,
+        }
+
+        sns.set(font_scale=2)
+        bplot = sns.barplot(ax=axes[0], orient="h", **fig_args)
+        bplot.set_xscale("log")
+
+        if len(subtypes) > 1:
+            annotator = self._configure_annotator(df, axes[0], "Axon Density (%)")
+            annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+            annotator.apply_and_annotate()
+
+        # second panel
+        fig_args = {
+            "x": "Normalized Axon Density",
+            "y": "Region",
+            "hue": "Subtype",
+            "data": df,
+        }
+
+        sns.set(font_scale=2)
+        bplot = sns.barplot(ax=axes[1], orient="h", **fig_args)
+        bplot.set_xscale("log")
+        
+        if len(subtypes) > 1:
+            annotator = self._configure_annotator(df, axes[1], "Normalized Axon Density")
+            annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+            annotator.apply_and_annotate()
+
+        # third panel
+        fig_args = {
+            "x": "Percent Total Axon Volume (%)",
+            "y": "Region",
+            "hue": "Subtype",
+            "data": df,
+        }
+
+        bplot = sns.barplot(ax=axes[2], orient="h", **fig_args)
+        bplot.set_xscale("log")
+
+        if len(subtypes) > 1:
+            annotator = self._configure_annotator(df, axes[2], "Percent Total Axon Volume (%)")
+            annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+            annotator.apply_and_annotate()
+
+        fig.tight_layout()
+        plt.show()
+
     
-class AxonDistribution:
-    def __init__(self, brain_ids: list):
-        self.brain_ids = brain_ids
+    def _make_bar_df(self, regions, composite_regions, subtype_counts, normalize_region):
+        region_graph = self.region_graph
+        brain_ids = self.brain_ids
+        region_vols = self._get_region_total_vols()
+
+        subtypes = []
+        axon_vols = []
+        axon_denss_norm = []
+        axon_denss = []
+        region_name = []
+        brain_ids_data = []
+
+        for region in regions:
+            print(f"Populating: {region_graph.nodes[region]['name']}" )
+            for brain_id in brain_ids:
+                subtype = axon_data.brain2paths[brain_id]["subtype"]
+                axon_vol = region_graph.nodes[region][brain_id + " axon"]
+                total_vol = region_graph.nodes[region][brain_id + " total"]
+
+                if normalize_region >= 0 and region_graph.nodes[normalize_region][brain_id + " axon"] > 0:
+                    norm_factor = region_graph.nodes[normalize_region][brain_id + " axon"] / region_graph.nodes[normalize_region][brain_id + " total"]
+                else:
+                    norm_factor = 1
+                    print(f"Warning: brain {brain_id} has no projection in normalizing region: {normalize_region}")
+
+                if total_vol == 0 and axon_vol == 0:
+                    axon_denss.append(0)
+                    axon_denss_norm.append(0)
+                elif total_vol == 0:
+                    raise ValueError("positive axon volume in zero volume region?")
+                else:
+                    dens = axon_vol / total_vol
+                    axon_denss.append(dens * 100)
+                    axon_denss_norm.append(dens / norm_factor)
+                    
+                
+                axon_vols.append(axon_vol / region_vols[brain_id] * 100)
+                subtypes.append(subtype + f" (n={subtype_counts[subtype]})")
+                region_name.append(region_graph.nodes[region]["name"])
+                brain_ids_data.append(brain_id)
+
+        for region_component_name in composite_regions.keys():
+            print(f"Populating: " + region_component_name)
+            region_components = composite_regions[region_component_name]
+            for brain_id in brain_ids:
+                subtype = axon_data.brain2paths[brain_id]["subtype"]
+                axon_vol = 0
+                total_vol = 0 
+
+                for region_component in region_components:
+                    axon_vol += region_graph.nodes[region][brain_id + " axon"]
+                    total_vol += region_graph.nodes[region][brain_id + " total"]
+
+                if normalize_region >= 0 and region_graph.nodes[normalize_region][brain_id + " axon"] > 0:
+                    norm_factor = region_graph.nodes[normalize_region][brain_id + " axon"] / region_graph.nodes[normalize_region][brain_id + " total"]
+                else:
+                    norm_factor = 1
+                    print(f"Warning: brain {brain_id} has no projection in normalizing region: {normalize_region}")
+
+                if total_vol == 0 and axon_vol == 0:
+                    axon_denss.append(0)
+                    axon_denss_norm.append(0)
+                elif total_vol == 0:
+                    raise ValueError("positive axon volume in zero volume region?")
+                else:
+                    dens = axon_vol / total_vol
+                    axon_denss.append(dens * 100)
+                    axon_denss_norm.append(dens / norm_factor)
+
+                axon_vols.append(axon_vol / region_vols[brain_id] * 100)
+                subtypes.append(subtype + f" (n={subtype_counts[subtype]})")
+                region_name.append(region_component_name)
+                brain_ids_data.append(brain_id)
+
+            d = {
+                "Percent Total Axon Volume (%)": axon_vols,
+                "Axon Density (%)": axon_denss,
+                "Subtype": subtypes,
+                "Region": region_name,
+                "Brain ID": brain_ids_data,
+            }
+            if normalize_region >= 0:
+                d["Normalized Axon Density"] = axon_denss_norm
+
+            df = pd.DataFrame(data=d)
+            return df
+        
+    def _get_region_total_vols(self): 
+        brain_ids = self.brain_ids
+        region_graph = self.region_graph
+        region_vols = {}
+
+        for brain in self.brain_ids:
+            total = 0
+            for node in region_graph.nodes:
+                total += region_graph.nodes[node][brain + " axon"]
+            region_vols[brain] = total
+        return region_vols
+    
+    
+    def _configure_annotator(self, df, axis, ind_variable: str):
+        test = "Mann-Whitney"
+        # test = "t-test_ind"
+        correction = "fdr_by"
+
+        pairs = []
+        unq_subregions = df["Region"].unique()
+        subtypes = df["Subtype"].unique()
+        subtype_pairs = [(a, b) for idx, a in enumerate(subtypes) for b in subtypes[idx + 1 :]]
+
+        for subtype_pair in subtype_pairs:
+            for subregion in unq_subregions:
+                pairs.append(
+                    (
+                        (subregion, subtype_pair[0]),
+                        (subregion, subtype_pair[1]),
+                    )
+                )
+
+
+        fig_args = {
+            "y": ind_variable,
+            "x": "Region",
+            "hue": "Subtype",
+            "data": df,
+        }
+
+        annotator = Annotator(axis, pairs, **fig_args)
+        annotator.configure(
+            test=test, text_format="star", loc="outside", comparisons_correction=correction
+        )
+
+        return annotator

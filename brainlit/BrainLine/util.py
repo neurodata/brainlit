@@ -89,6 +89,20 @@ def download_subvolumes(data_dir: str, brain_id: str, layer_names: list, dataset
                 dset = f.create_dataset("image_3channel", data=image)
 
 
+
+def _get_corners(shape, chunk_size, max_coords: list = [-1, -1, -1]):
+    corners = []
+    for i in tqdm(range(0, shape[0], chunk_size[0])):
+        for j in tqdm(range(0, shape[1], chunk_size[1]), leave=False):
+            for k in range(0, shape[2], chunk_size[2]):
+                c1 = [i, j, k]
+                c2 = [np.amin([shape[idx], c1[idx] + chunk_size[idx]]) for idx in range(3)]
+                conditions = [(max == -1 or c < max) for c,max in zip(c1, max_coords)]
+                if all(conditions):
+                    corners.append([c1, c2])
+
+    return corners
+
 def json_to_points(url, round=False):
     """Extract points from a neuroglancer url.
 

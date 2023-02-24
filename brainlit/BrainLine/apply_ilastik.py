@@ -4,7 +4,7 @@ from tqdm import tqdm
 import subprocess
 from joblib import Parallel, delayed
 import multiprocessing
-from brainlit.BrainLine.util import find_sample_names
+from brainlit.BrainLine.util import find_sample_names, _get_corners
 from brainlit.BrainLine.data.soma_data import brain2paths
 from datetime import date
 from cloudvolume import CloudVolume, exceptions
@@ -234,7 +234,7 @@ class ApplyIlastik_LargeImage:
                 self._make_mask_info(mask_dir, vol)
 
 
-        corners = self._get_corners(shape, chunk_size, max_coords)
+        corners = _get_corners(shape, chunk_size, max_coords)
         corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
 
         for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
@@ -248,19 +248,6 @@ class ApplyIlastik_LargeImage:
                 os.remove(os.path.join(data_dir, f))
 
 
-    def _get_corners(self, shape, chunk_size, max_coords):
-        corners = []
-        for i in tqdm(range(0, shape[0], chunk_size[0])):
-            for j in tqdm(range(0, shape[1], chunk_size[1]), leave=False):
-                for k in range(0, shape[2], chunk_size[2]):
-                    c1 = [i, j, k]
-                    c2 = [np.amin([shape[idx], c1[idx] + chunk_size[idx]]) for idx in range(3)]
-                    conditions = [(max == -1 or c < max) for c,max in zip(c1, max_coords)]
-                    if all(conditions):
-                        corners.append([c1, c2])
-
-        return corners
-    
     def _make_mask_info(self, mask_dir: str, vol: CloudVolume):
         info = CloudVolume.create_new_info(
             num_channels=1,
@@ -272,7 +259,7 @@ class ApplyIlastik_LargeImage:
             # mesh            = 'mesh',
             # Pick a convenient size for your underlying chunk representation
             # Powers of two are recommended, doesn't need to cover image exactly
-            chunk_size=(128,128,128),  # units are voxels
+            chunk_size=(128,128,2),  # units are voxels
             volume_size=vol.volume_size,  # e.g. a cubic millimeter dataset
         )
         vol_mask = CloudVolume(mask_dir, info=info, compress=False)
