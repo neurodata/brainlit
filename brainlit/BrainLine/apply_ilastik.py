@@ -78,7 +78,7 @@ class ApplyIlastik:
                 result_path = brain_dir + item[:-3] + "_Probabilities.h5"
                 shutil.move(result_path, results_dir + item[:-3] + "_Probabilities.h5")
 
-def plot_results(data_dir: str, brain_id: str, object_type: str, doubles: list = []):
+def plot_results(data_dir: str, brain_id: str, object_type: str, positive_channel: int, doubles: list = []):
     base_dir = data_dir + f"/brain{brain_id}/val/"
     recalls = []
     precisions = []
@@ -86,7 +86,7 @@ def plot_results(data_dir: str, brain_id: str, object_type: str, doubles: list =
 
     data_files = find_sample_names(base_dir, dset="", add_dir=True)
     test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
-    print(test_files)
+    print(f"Evaluating files: {test_files}")
 
     size_thresh = 500
 
@@ -100,7 +100,7 @@ def plot_results(data_dir: str, brain_id: str, object_type: str, doubles: list =
         for filename in tqdm(test_files, disable=True):
             f = h5py.File(filename, "r")
             pred = f.get("exported_data")
-            pred = pred[1, :, :, :]
+            pred = pred[positive_channel, :, :, :]
             mask = pred > threshold
 
             if object_type == "soma":
@@ -189,6 +189,118 @@ def plot_results(data_dir: str, brain_id: str, object_type: str, doubles: list =
     plt.legend()
     plt.show()
 
+def examine_threshold(data_dir: str, brain_id: str, threshold: float, object_type: str, positive_channel: int, doubles: list = []):
+    base_dir = data_dir + f"/brain{brain_id}/val/"
+
+    data_files = find_sample_names(base_dir, dset="", add_dir=True)
+    test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
+
+    size_thresh = 500
+
+    for im_fname, filename in tqdm(zip(data_files,test_files), disable=True, total=len(data_files)):
+        print(f"*************File: {im_fname}*********")
+        f = h5py.File(filename, "r")
+        pred = f.get("exported_data")
+        pred = pred[positive_channel, :, :, :]
+        mask = pred > threshold
+
+        if object_type == "soma":
+            if filename.split("/")[-1] in doubles:
+                newpos = 2
+            else:
+                newpos = 1
+
+            labels = measure.label(mask)
+            props = measure.regionprops(labels)
+            if "pos" in filename:
+                num_detected = 0
+                for prop in props:
+                    area = prop["area"]
+                    if area > size_thresh:
+                        num_detected += 1
+                        print(f"area of detected object: {area}")
+                        if num_detected > newpos:
+                            print(f"Soma false positive Area: {area}")
+                            f = h5py.File(im_fname, "r")
+                            im = f.get("image_3channel")
+                            viewer = napari.Viewer(ndisplay=3)
+                            viewer.add_image(im[0, :, :, :], name=filename)
+                            viewer.add_image(im[1, :, :, :], name="bg")
+                            viewer.add_image(im[2, :, :, :], name="endo")
+                            viewer.add_labels(mask)
+                            viewer.add_labels(
+                                labels == prop["label"],
+                                name=f"soma false positive area: {area}",
+                            )
+                    
+                if num_detected == 0:
+                    print(f"Soma false negative")
+                    f = h5py.File(im_fname, "r")
+                    im = f.get("image_3channel")
+                    viewer = napari.Viewer(ndisplay=3)
+                    viewer.add_image(im[0, :, :, :], name=filename)
+                    viewer.add_image(im[1, :, :, :], name="bg")
+                    viewer.add_image(im[2, :, :, :], name="endo")
+                    viewer.add_labels(mask, name="Soma false negative")
+
+            elif "neg" in filename:
+                for prop in props:
+                    area = prop["area"]
+                    if area > size_thresh:
+                        print(f"Nonsoma false positive Area: {area}")
+                        f = h5py.File(im_fname, "r")
+                        im = f.get("image_3channel")
+                        viewer = napari.Viewer(ndisplay=3)
+                        viewer.add_image(im[0, :, :, :], name=filename)
+                        viewer.add_image(im[1, :, :, :], name="bg")
+                        viewer.add_image(im[2, :, :, :], name="endo")
+                        viewer.add_labels(mask)
+                        viewer.add_labels(
+                            labels == prop["label"], name=f"nonsoma false positive area: {area}"
+                        )
+        elif object_type == "axon":
+            fname_lab = im_fname.split(".")[0] + "-image_3channel_Labels.h5"
+            f = h5py.File(fname_lab, "r")
+            gt = f.get("exported_data")
+            gt = gt[0, :, :, :]
+            if positive_channel == 1:
+                pos_labels = gt == 2
+                neg_labels = gt == 1
+            elif positive_channel == 0:
+                pos_labels = gt == 1
+                neg_labels = gt == 2
+            else:
+                raise ValueError(f"positive_channel expected to be 0 or 1 not {positive_channel}")
+
+            true_pos = np.sum(np.logical_and(mask, pos_labels))
+            false_pos = np.sum(np.logical_and(mask, neg_labels))
+            true_labels = np.sum(pos_labels)
+
+            if true_labels == 0:
+                recall = 1
+            else:
+                recall = true_pos / true_labels
+
+            if true_pos + false_pos == 0:
+                precision = 1
+            else:
+                precision = true_pos / (true_pos + false_pos)
+
+            if precision < 0.8 or recall < 0.8:
+                f = h5py.File(im_fname, "r")
+                im = f.get("image_3channel")
+                print(f"prec{precision} recall: {recall}")
+                viewer = napari.Viewer(ndisplay=3)
+                viewer.add_image(im[0, :, :, :], name=f"{im_fname}")
+                viewer.add_image(im[1, :, :, :], name="bg")
+                viewer.add_image(im[2, :, :, :], name="endo")
+                viewer.add_labels(mask, name="mask")
+                viewer.add_labels(pos_labels + 2 * neg_labels, name="pos labels")
+
+        else:
+            raise ValueError(f"object_type must be axon or soma, not {object_type}")
+ 
+
 class ApplyIlastik_LargeImage:
     def __init__(self, ilastik_path: str, ilastik_project: str, ncpu: int, object_type: str, results_dir: str = None):
         self.ilastik_path = ilastik_path
@@ -238,7 +350,7 @@ class ApplyIlastik_LargeImage:
         corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
 
         for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
-            results = Parallel(n_jobs=self.ncpu)(
+            Parallel(n_jobs=self.ncpu)(
                 delayed(self.process_chunk)(
                     corner[0], corner[1], volume_base_dir, layer_names, threshold, data_dir, self.object_type, results_dir
                 )

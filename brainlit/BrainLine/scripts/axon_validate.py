@@ -75,6 +75,7 @@ if make_trans_layers == "y":
     for layer in [
         antibody_layer,
         background_layer,
+        "axon_mask"
     ]:  # axon_mask is transformed into an image because nearest interpolation doesnt work well after downsampling
         layer_path = brain2paths[brain]["base"] + layer + "_transformed"
         print(f"Writing info file at {layer_path}")
