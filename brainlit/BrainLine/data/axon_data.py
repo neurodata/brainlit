@@ -5,6 +5,7 @@ Data should be stored in the brain2paths dictionary, with entries like:
 
     "<sample ID>": {
         "base": "<Path to directory with layers with CloudVolume prependings>",
+        "transformed_mask": "<axon mask layer that was transformed to atlas space with CloudVolume prependings"
         "val_info": {
             "url": "<neuroglancer URL>",
             "layer": "<name of layer with points for subvolumes>",
@@ -15,19 +16,19 @@ Data should be stored in the brain2paths dictionary, with entries like:
             "url": "<neuroglancer URL>",
             "layer": "<name of layer with points for subvolumes>",
         },
-        "transformed_mask": "<axon mask layer that was transformed to atlas space with CloudVolume prependings"
     },
 
     e.g.
 
-    "8790": {
-        "base": "precomputed://s3://smartspim-precomputed-volumes/2022_11_01/8790/",
+    "test": {
+        "base": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/brainlit/BrainLine/data/example/",
+        "transformed_mask": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/brainlit/BrainLine/data/example/axon_mask_transformed/",
         "val_info": {
-            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=hhlEcKDIfqrY-w",
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=rywXvJ3kVOV71w",
             "layer": "val",
         },
-        "subtype": "tph2 vglut3"
-    },
+        "subtype": "test_type",
+    }
 """
 
 brain2paths = {
