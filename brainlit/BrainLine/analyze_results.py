@@ -212,7 +212,9 @@ class SomaDistribution(BrainDistribution):
                 if layer["type"] == "annotation":
                     points = []
                     for annot in tqdm(
-                        layer["annotations"], desc="Going through points...", leave=False
+                        layer["annotations"],
+                        desc="Going through points...",
+                        leave=False,
                     ):
                         struct_coord = np.array(annot["point"]) / 5
                         try:
@@ -224,7 +226,11 @@ class SomaDistribution(BrainDistribution):
                     points = np.array(points) * 10
 
             scene.add(
-                Points(points, name="CELLS", colors=subtype_colors[brain2paths[brain_id]["subtype"]])
+                Points(
+                    points,
+                    name="CELLS",
+                    colors=subtype_colors[brain2paths[brain_id]["subtype"]],
+                )
             )
 
         scene.content
@@ -713,12 +719,14 @@ class AxonDistribution(BrainDistribution):
             for i, brain_id in enumerate(brain_ids):
                 if brain2paths[brain_id]["subtype"] == subtype:
                     print(f"Downloading transformed_mask from brain: {brain_id}")
-                    vol = CloudVolume(brain2paths[brain_id]["transformed_mask"], fill_missing=True)
+                    vol = CloudVolume(
+                        brain2paths[brain_id]["transformed_mask"], fill_missing=True
+                    )
                     if im_total == None:
-                        im_total = np.array(vol[:,:,:,:])
+                        im_total = np.array(vol[:, :, :, :])
                     else:
-                        im_total += np.array(vol[:,:,:,:])
-                
+                        im_total += np.array(vol[:, :, :, :])
+
             im_total = np.squeeze(im_total)
             im_total = np.swapaxes(im_total, 0, 2)
 
@@ -727,7 +735,9 @@ class AxonDistribution(BrainDistribution):
                 im_total,
                 voxel_size=20,  # size of a voxel's edge in microns
                 as_surface=False,  # if true a surface mesh is rendered instead of a volume
-                c=subtype_colors[subtype],  # use matplotlib colormaps to color the volume
+                c=subtype_colors[
+                    subtype
+                ],  # use matplotlib colormaps to color the volume
             )
 
             scene.add(actor)
@@ -735,7 +745,6 @@ class AxonDistribution(BrainDistribution):
         # render
         scene.content
         scene.render()
-
 
     def region_barchart(
         self, regions: list, composite_regions: dict = {}, normalize_region: int = -1

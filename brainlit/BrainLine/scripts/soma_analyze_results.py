@@ -45,5 +45,3 @@ sd.brainrender_somas(subtype_colors=colors)
 Make bar chart
 """
 sd.region_barchart(regions, composite_regions=composite_regions, normalize_region=872)
-
-

@@ -61,8 +61,10 @@ ad = AxonDistribution(
     brain_ids=brain_ids, regional_distribution_dir=regional_distribution_dir
 )
 ad.napari_coronal_section(z=1000, subtype_colors=colors, fold_on=fold_on)
-print("No segmentation will show in brainrender, because the segmentation covers a very small area")
-ad.brainrender_axons(subtype_colors = colors)
+print(
+    "No segmentation will show in brainrender, because the segmentation covers a very small area"
+)
+ad.brainrender_axons(subtype_colors=colors)
 
 """
 Make bar chart
