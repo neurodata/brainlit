@@ -6,7 +6,7 @@ from brainlit.BrainLine.util import (
     fold,
     setup_atlas_graph,
     get_atlas_level_nodes,
-    download_subvolumes
+    download_subvolumes,
 )
 from brainlit.BrainLine.apply_ilastik import ApplyIlastik, plot_results
 from brainlit.BrainLine.parse_ara import *
@@ -15,10 +15,12 @@ from cloudreg.scripts.transform_points import NGLink
 from brainlit.BrainLine.imports import *
 from brainlit.BrainLine.util import find_sample_names
 
-'''
+"""
 Inputs
-'''
-data_dir = str(Path.cwd().parents[0])  # path to directory where training/validation data should be stored
+"""
+data_dir = str(
+    Path.cwd().parents[0]
+)  # path to directory where training/validation data should be stored
 brain = "test"
 antibody_layer = "antibody"
 background_layer = "background"
@@ -26,12 +28,14 @@ endogenous_layer = "endogenous"
 
 dataset_to_save = "val"  # train or val
 
-ilastik_path = "/Applications/ilastik-1.4.0b21-OSX.app/Contents/ilastik-release/run_ilastik.sh"
+ilastik_path = (
+    "/Applications/ilastik-1.4.0b21-OSX.app/Contents/ilastik-release/run_ilastik.sh"
+)
 ilastik_project = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/axon_segmentation.ilp"
- 
-'''
+
+"""
 Setup
-'''
+"""
 brainlit_path = Path.cwd()
 print(f"Path to brainlit: {brainlit_path}")
 layer_names = [antibody_layer, background_layer, endogenous_layer]
@@ -44,32 +48,45 @@ if f"{dataset_to_save}_info" not in brain2paths[
 ].keys() or dataset_to_save not in ["train", "val"]:
     raise ValueError(f"{dataset_to_save}_info not in brain2paths[{brain}].keys()")
 
-'''
+"""
 Download data
-'''
-download_subvolumes(data_dir, brain_id = brain, layer_names = layer_names, dataset_to_save = dataset_to_save, object_type="axon")
+"""
+download_subvolumes(
+    data_dir,
+    brain_id=brain,
+    layer_names=layer_names,
+    dataset_to_save=dataset_to_save,
+    object_type="axon",
+)
 doubles = []
 
-'''
+"""
 Apply ilastik
-'''
-brains = [
-    brain
-]  # sample IDs to be processed
-applyilastik = ApplyIlastik(ilastk_path = ilastik_path, project_path = ilastik_project, brains_path = f"{data_dir}/", brains = brains)
+"""
+brains = [brain]  # sample IDs to be processed
+applyilastik = ApplyIlastik(
+    ilastk_path=ilastik_path,
+    project_path=ilastik_project,
+    brains_path=f"{data_dir}/",
+    brains=brains,
+)
 applyilastik.process_subvols()
 
-'''
+"""
 Check results
-'''
-plot_performance = input(f"Have you written ground truth labels for the validation volumes and are you ready to plot performance results? (y/n)")
+"""
+plot_performance = input(
+    f"Have you written ground truth labels for the validation volumes and are you ready to plot performance results? (y/n)"
+)
 if plot_performance == "y":
-    plot_results(data_dir, brain_id = brain, object_type="axon", positive_channel=1)
+    plot_results(data_dir, brain_id=brain, object_type="axon", positive_channel=1)
 
-'''
+"""
 Making info files for transformed images
-'''
-make_trans_layers = input(f"Will you be transforming image data into atlas space? (should relevant info files be made) (y/n)")
+"""
+make_trans_layers = input(
+    f"Will you be transforming image data into atlas space? (should relevant info files be made) (y/n)"
+)
 if make_trans_layers == "y":
     atlas_vol = CloudVolume(
         "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017"
@@ -77,7 +94,7 @@ if make_trans_layers == "y":
     for layer in [
         antibody_layer,
         background_layer,
-        "axon_mask"
+        "axon_mask",
     ]:  # axon_mask is transformed into an image because nearest interpolation doesnt work well after downsampling
         layer_path = brain2paths[brain]["base"] + layer + "_transformed"
         print(f"Writing info file at {layer_path}")

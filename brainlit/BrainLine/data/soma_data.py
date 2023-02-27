@@ -35,11 +35,10 @@ Data should be stored in the brain2paths dictionary, with entries like:
 """
 
 
-
 brain2paths = {
     "atlas": {
         "url": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017",
-        "filepath": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/ara/ara_10um.tif" # atlas can be downloaded from here: https://neurodata.io/data/allen_atlas/
+        "filepath": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/ara/ara_10um.tif",  # atlas can be downloaded from here: https://neurodata.io/data/allen_atlas/
     },
     "test": {
         "base": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/brainlit/BrainLine/data/example/",
@@ -49,7 +48,7 @@ brain2paths = {
             "nonsomas_layer": "nonsoma_val",
         },
         "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=LTWdmg7lYf1nbA",
-        "subtype": "test_type"
+        "subtype": "test_type",
     },
     "8557": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2021_10_06/8557/",
@@ -120,7 +119,7 @@ brain2paths = {
         "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=UgEYYM3ycYGC7A",
         "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=qACBTohd8X4DcA",
         "subtype": "gad2 vgat",
-    }, 
+    },
     "8531": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2022_03_10/8531/",
         "val_info": {

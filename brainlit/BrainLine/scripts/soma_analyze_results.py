@@ -1,14 +1,14 @@
 from brainlit.BrainLine.analyze_results import SomaDistribution
 
-'''
+"""
 Inputs
-'''
+"""
 colors = {
     "test_type": "blue",
 }  # colors for different subtypes
 symbols = ["o", "+", "^", "vbar"]
-brain_ids = ["test"] # brain ids from soma_data file
-fold_on = True # whether to fold
+brain_ids = ["test"]  # brain ids from soma_data file
+fold_on = True  # whether to fold
 
 regions = [
     688,  # cerebral cortex
@@ -31,14 +31,16 @@ composite_regions = {
     "Amygdalar Nuclei": [131, 295, 319, 780]
 }  # Custom composite allen regions where key is region name and value is list of allen regions
 
-'''
+"""
 Show coronal section
-'''
-sd = SomaDistribution(brain_ids = brain_ids)
-sd.napari_coronal_section(z=1000, subtype_colors = colors, symbols = symbols, fold_on = fold_on)
+"""
+sd = SomaDistribution(brain_ids=brain_ids)
+sd.napari_coronal_section(
+    z=1000, subtype_colors=colors, symbols=symbols, fold_on=fold_on
+)
 
 
-'''
+"""
 Make bar chart
-'''
+"""
 sd.region_barchart(regions, composite_regions=composite_regions, normalize_region=872)

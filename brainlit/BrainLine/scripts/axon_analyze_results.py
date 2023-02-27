@@ -1,18 +1,23 @@
-from brainlit.BrainLine.analyze_results import collect_regional_segmentation, AxonDistribution
+from brainlit.BrainLine.analyze_results import (
+    collect_regional_segmentation,
+    AxonDistribution,
+)
 import warnings
 
-'''
+"""
 Inputs
-'''
-brain_ids = ["test"] # brain ids from soma_data file
+"""
+brain_ids = ["test"]  # brain ids from soma_data file
 
-regional_distribution_dir = '/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/'
+regional_distribution_dir = (
+    "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/"
+)
 max_coords = [3072, 4352, 1792]
 
 colors = {
     "test_type": "red",
 }  # colors for different subtypes
-fold_on = True # whether to fold
+fold_on = True  # whether to fold
 
 regions = [
     688,  # cerebral cortex
@@ -38,20 +43,26 @@ composite_regions = {
 
 warnings.filterwarnings("ignore")
 
-'''
+"""
 Collect regional data
-'''
-collect_ask = input(f"Do you want to collect regional segmentation data (i.e. are registration and segmentation complete)? (y/n)")
+"""
+collect_ask = input(
+    f"Do you want to collect regional segmentation data (i.e. are registration and segmentation complete)? (y/n)"
+)
 if collect_ask == "y":
-    collect_regional_segmentation(brain_ids[0], regional_distribution_dir, ncpu = 1, max_coords=max_coords)
+    collect_regional_segmentation(
+        brain_ids[0], regional_distribution_dir, ncpu=1, max_coords=max_coords
+    )
 
-'''
+"""
 Show coronal section
-'''
-ad = AxonDistribution(brain_ids = brain_ids, regional_distribution_dir=regional_distribution_dir)
-ad.napari_coronal_section(z=1000, subtype_colors = colors, fold_on = fold_on)
+"""
+ad = AxonDistribution(
+    brain_ids=brain_ids, regional_distribution_dir=regional_distribution_dir
+)
+ad.napari_coronal_section(z=1000, subtype_colors=colors, fold_on=fold_on)
 
-'''
+"""
 Make bar chart
-'''
+"""
 ad.region_barchart(regions, composite_regions=composite_regions, normalize_region=872)

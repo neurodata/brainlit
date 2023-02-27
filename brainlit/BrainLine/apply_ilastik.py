@@ -22,7 +22,9 @@ from brainlit.BrainLine.imports import *
 
 
 class ApplyIlastik:
-    def __init__(self, ilastk_path: str, project_path: str, brains_path: str, brains: list):
+    def __init__(
+        self, ilastk_path: str, project_path: str, brains_path: str, brains: list
+    ):
         self.ilastk_path = ilastk_path
         self.project_path = project_path
         self.brains_path = brains_path
@@ -40,12 +42,10 @@ class ApplyIlastik:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
- 
 
     def process_subvols(self):
         items_total = []
         for brain in tqdm(self.brains, desc="Gathering brains..."):
-
             path = f"{self.brains_path}brain{brain}/val/"
 
             items_total += find_sample_names(path, dset="", add_dir=True)
@@ -78,7 +78,14 @@ class ApplyIlastik:
                 result_path = brain_dir + item[:-3] + "_Probabilities.h5"
                 shutil.move(result_path, results_dir + item[:-3] + "_Probabilities.h5")
 
-def plot_results(data_dir: str, brain_id: str, object_type: str, positive_channel: int, doubles: list = []):
+
+def plot_results(
+    data_dir: str,
+    brain_id: str,
+    object_type: str,
+    positive_channel: int,
+    doubles: list = [],
+):
     base_dir = data_dir + f"/brain{brain_id}/val/"
     recalls = []
     precisions = []
@@ -140,7 +147,7 @@ def plot_results(data_dir: str, brain_id: str, object_type: str, positive_channe
                 false_pos += np.sum(np.logical_and(mask, neg_labels))
             else:
                 raise ValueError(f"object_type must be axon or soma, not {object_type}")
-    
+
         print(f"{true_pos} {tot_pos}")
         recall = true_pos / tot_pos
         recalls.append(recall)
@@ -189,7 +196,15 @@ def plot_results(data_dir: str, brain_id: str, object_type: str, positive_channe
     plt.legend()
     plt.show()
 
-def examine_threshold(data_dir: str, brain_id: str, threshold: float, object_type: str, positive_channel: int, doubles: list = []):
+
+def examine_threshold(
+    data_dir: str,
+    brain_id: str,
+    threshold: float,
+    object_type: str,
+    positive_channel: int,
+    doubles: list = [],
+):
     base_dir = data_dir + f"/brain{brain_id}/val/"
 
     data_files = find_sample_names(base_dir, dset="", add_dir=True)
@@ -197,7 +212,9 @@ def examine_threshold(data_dir: str, brain_id: str, threshold: float, object_typ
 
     size_thresh = 500
 
-    for im_fname, filename in tqdm(zip(data_files,test_files), disable=True, total=len(data_files)):
+    for im_fname, filename in tqdm(
+        zip(data_files, test_files), disable=True, total=len(data_files)
+    ):
         print(f"*************File: {im_fname}*********")
         f = h5py.File(filename, "r")
         pred = f.get("exported_data")
@@ -232,7 +249,7 @@ def examine_threshold(data_dir: str, brain_id: str, threshold: float, object_typ
                                 labels == prop["label"],
                                 name=f"soma false positive area: {area}",
                             )
-                    
+
                 if num_detected == 0:
                     print(f"Soma false negative")
                     f = h5py.File(im_fname, "r")
@@ -256,7 +273,8 @@ def examine_threshold(data_dir: str, brain_id: str, threshold: float, object_typ
                         viewer.add_image(im[2, :, :, :], name="endo")
                         viewer.add_labels(mask)
                         viewer.add_labels(
-                            labels == prop["label"], name=f"nonsoma false positive area: {area}"
+                            labels == prop["label"],
+                            name=f"nonsoma false positive area: {area}",
                         )
         elif object_type == "axon":
             fname_lab = im_fname.split(".")[0] + "-image_3channel_Labels.h5"
@@ -270,7 +288,9 @@ def examine_threshold(data_dir: str, brain_id: str, threshold: float, object_typ
                 pos_labels = gt == 1
                 neg_labels = gt == 2
             else:
-                raise ValueError(f"positive_channel expected to be 0 or 1 not {positive_channel}")
+                raise ValueError(
+                    f"positive_channel expected to be 0 or 1 not {positive_channel}"
+                )
 
             true_pos = np.sum(np.logical_and(mask, pos_labels))
             false_pos = np.sum(np.logical_and(mask, neg_labels))
@@ -299,10 +319,17 @@ def examine_threshold(data_dir: str, brain_id: str, threshold: float, object_typ
 
         else:
             raise ValueError(f"object_type must be axon or soma, not {object_type}")
- 
+
 
 class ApplyIlastik_LargeImage:
-    def __init__(self, ilastik_path: str, ilastik_project: str, ncpu: int, object_type: str, results_dir: str = None):
+    def __init__(
+        self,
+        ilastik_path: str,
+        ilastik_project: str,
+        ncpu: int,
+        object_type: str,
+        results_dir: str = None,
+    ):
         self.ilastik_path = ilastik_path
         self.ilastik_project = ilastik_project
         self.ncpu = ncpu
@@ -310,13 +337,22 @@ class ApplyIlastik_LargeImage:
 
         if object_type == "axon":
             if results_dir != None:
-                raise ValueError(f"cannot give results_dir for object type {object_type}")
+                raise ValueError(
+                    f"cannot give results_dir for object type {object_type}"
+                )
         elif object_type != "soma":
             raise ValueError(f"object_type must be soma or axon not {object_type}")
         self.results_dir = results_dir
-        
 
-    def apply_ilastik_parallel(self, brain_id: str, layer_names: list, threshold: float, data_dir: str, chunk_size: list, max_coords: list = [-1, -1, -1]):
+    def apply_ilastik_parallel(
+        self,
+        brain_id: str,
+        layer_names: list,
+        threshold: float,
+        data_dir: str,
+        chunk_size: list,
+        max_coords: list = [-1, -1, -1],
+    ):
         results_dir = self.results_dir
         volume_base_dir = brain2paths[brain_id]["base"]
         sample_path = volume_base_dir + layer_names[0]
@@ -345,20 +381,25 @@ class ApplyIlastik_LargeImage:
             except:
                 self._make_mask_info(mask_dir, vol)
 
-
         corners = _get_corners(shape, chunk_size, max_coords)
         corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
 
         for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
             Parallel(n_jobs=self.ncpu)(
                 delayed(self.process_chunk)(
-                    corner[0], corner[1], volume_base_dir, layer_names, threshold, data_dir, self.object_type, results_dir
+                    corner[0],
+                    corner[1],
+                    volume_base_dir,
+                    layer_names,
+                    threshold,
+                    data_dir,
+                    self.object_type,
+                    results_dir,
                 )
                 for corner in tqdm(corners_chunk, leave=False)
             )
             for f in os.listdir(data_dir):
                 os.remove(os.path.join(data_dir, f))
-
 
     def _make_mask_info(self, mask_dir: str, vol: CloudVolume):
         info = CloudVolume.create_new_info(
@@ -371,13 +412,23 @@ class ApplyIlastik_LargeImage:
             # mesh            = 'mesh',
             # Pick a convenient size for your underlying chunk representation
             # Powers of two are recommended, doesn't need to cover image exactly
-            chunk_size=(128,128,2),  # units are voxels
+            chunk_size=(128, 128, 2),  # units are voxels
             volume_size=vol.volume_size,  # e.g. a cubic millimeter dataset
         )
         vol_mask = CloudVolume(mask_dir, info=info, compress=False)
         vol_mask.commit_info()
 
-    def process_chunk(self, c1: list, c2: list, volume_base_dir: str, layer_names: list, threshold: float, data_dir: str, object_type: str, results_dir: str = None):
+    def process_chunk(
+        self,
+        c1: list,
+        c2: list,
+        volume_base_dir: str,
+        layer_names: list,
+        threshold: float,
+        data_dir: str,
+        object_type: str,
+        results_dir: str = None,
+    ):
         mip = 0
         area_threshold = 500
 
@@ -402,9 +453,15 @@ class ApplyIlastik_LargeImage:
         except exceptions.EmptyVolumeException:
             return
 
-
         fname = (
-            data_dir + "image_" + str(c1[0]) + "_" + str(c1[1]) + "_" + str(c1[2]) + ".h5"
+            data_dir
+            + "image_"
+            + str(c1[0])
+            + "_"
+            + str(c1[1])
+            + "_"
+            + str(c1[2])
+            + ".h5"
         )
         with h5py.File(fname, "w") as f:
             dset = f.create_dataset("image_3channel", data=image_3channel)
@@ -452,17 +509,22 @@ class ApplyIlastik_LargeImage:
                             f2.write("\n")
             elif object_type == "axon":
                 dir_mask = volume_base_dir + "axon_mask"
-                vol_mask = CloudVolume(dir_mask, parallel=1, mip=mip, fill_missing=True, compress=False)
+                vol_mask = CloudVolume(
+                    dir_mask, parallel=1, mip=mip, fill_missing=True, compress=False
+                )
                 pred = pred[1, :, :, :]
                 mask = np.array(pred > threshold).astype("uint64")
                 vol_mask[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]] = mask
-
 
     def collect_soma_results(self, brain_id: str):
         coords = []
         coords_target_space = []
         results_dir = self.results_dir
-        onlyfiles = [join(results_dir, f) for f in listdir(results_dir) if isfile(join(results_dir, f))]
+        onlyfiles = [
+            join(results_dir, f)
+            for f in listdir(results_dir)
+            if isfile(join(results_dir, f))
+        ]
         onlyfiles = [f for f in onlyfiles if ".txt" in f]
         div_factor = [8, 8, 1]
         for file in tqdm(onlyfiles, desc="reading files"):
@@ -478,9 +540,10 @@ class ApplyIlastik_LargeImage:
 
                     coords_target_space.append([float(e.strip()) for e in coord])
                     coord = [
-                        int(round(float(e.strip()) / f)) for e, f in zip(coord, div_factor)
+                        int(round(float(e.strip()) / f))
+                        for e, f in zip(coord, div_factor)
                     ]
-                    coords.append(coord)   
+                    coords.append(coord)
         print(f"{len(coords)} somas detected, first is: {coords_target_space[0]}")
         all_somas_path = results_dir + "all_somas_" + brain_id + ".txt"
         print(f"Writing {all_somas_path}...")
@@ -497,13 +560,13 @@ class ApplyIlastik_LargeImage:
         else:
             name = "detected_somas"
 
-
         ng_link = brain2paths[brain_id]["val_info"]["url"]
         viz_link = NGLink(ng_link.split("json_url=")[-1])
         ngl_json = viz_link._json
 
-        ngl_json["layers"] = [layer for layer in ngl_json["layers"] if layer["type"] != "annotation"]
-
+        ngl_json["layers"] = [
+            layer for layer in ngl_json["layers"] if layer["type"] != "annotation"
+        ]
 
         ngl_json["layers"].append(
             {"type": "annotation", "points": coords_target_space, "name": name}
@@ -518,13 +581,15 @@ class ApplyIlastik_LargeImage:
         viz_link = NGLink(ng_link.split("json_url=")[-1])
         ngl_json = viz_link._json
 
-        ngl_json["layers"] = [layer for layer in ngl_json["layers"] if layer["type"] != "annotation"]
+        ngl_json["layers"] = [
+            layer for layer in ngl_json["layers"] if layer["type"] != "annotation"
+        ]
         for layer in ngl_json["layers"]:
-            if layer['name'] == ng_layer_name:
-                source_pieces = layer['source'].split("/")
+            if layer["name"] == ng_layer_name:
+                source_pieces = layer["source"].split("/")
                 source = ""
                 for piece in source_pieces[:-1]:
-                    source += piece 
+                    source += piece
                     source += "/"
                 source += "axon_mask"
 
