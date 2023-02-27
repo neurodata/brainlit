@@ -12,6 +12,7 @@ from brainlit.BrainLine.util import (
     get_atlas_level_nodes,
     _get_corners,
 )
+from brainlit.BrainLine.data import soma_data, axon_data
 import napari
 import scipy.ndimage as ndi
 import seaborn as sns
@@ -21,6 +22,8 @@ import matplotlib.pyplot as plt
 import os
 from joblib import Parallel, delayed
 import pickle
+from brainrender import Scene
+from brainrender.actors import Points, Volume
 
 
 class BrainDistribution:
@@ -89,6 +92,7 @@ class SomaDistribution(BrainDistribution):
         self.id_to_regioncounts = id_to_regioncounts
         region_graph = self._setup_regiongraph()
         self.region_graph = region_graph
+        self.brain2paths = soma_data.brain2paths
 
     def _retrieve_soma_coords(self, brain_ids: list):
         brain2paths = soma_data.brain2paths
@@ -192,6 +196,39 @@ class SomaDistribution(BrainDistribution):
         v.scale_bar.unit = "um"
         v.scale_bar.visible = True
         napari.run()
+
+    def brainrender_somas(self, subtype_colors):
+        brain_ids = self.brain_ids
+        brain2paths = self.brain2paths
+
+        scene = Scene(atlas_name="allen_mouse_50um", title="Input Somas")
+        scene.add_brain_region("DR", alpha=0.15)
+
+        for brain_id in brain_ids:
+            viz_link = brain2paths[brain_id]["somas_atlas_url"]
+            viz_link = NGLink(viz_link.split("json_url=")[-1])
+            ngl_json = viz_link._json
+            for layer in ngl_json["layers"]:
+                if layer["type"] == "annotation":
+                    points = []
+                    for annot in tqdm(
+                        layer["annotations"], desc="Going through points...", leave=False
+                    ):
+                        struct_coord = np.array(annot["point"]) / 5
+                        try:
+                            region = scene.atlas.structure_from_coords(struct_coord)
+                            if region != 0 and np.any(struct_coord < 0) == False:
+                                points.append(annot["point"])
+                        except IndexError:
+                            continue
+                    points = np.array(points) * 10
+
+            scene.add(
+                Points(points, name="CELLS", colors=subtype_colors[brain2paths[brain_id]["subtype"]])
+            )
+
+        scene.content
+        scene.render()
 
     def region_barchart(
         self, regions: list, composite_regions: dict = {}, normalize_region: int = -1
@@ -559,6 +596,7 @@ class AxonDistribution(BrainDistribution):
         super().__init__(brain_ids)
         self.regional_distribution_dir = regional_distribution_dir
         self.region_graph = self._setup_regiongraph(regional_distribution_dir)
+        self.brain2paths = axon_data.brain2paths
 
     def _setup_regiongraph(self, regional_distribution_dir):
         regional_distribution_dir = self.regional_distribution_dir
@@ -662,6 +700,42 @@ class AxonDistribution(BrainDistribution):
         v.scale_bar.unit = "um"
         v.scale_bar.visible = True
         napari.run()
+
+    def brainrender_axons(self, subtype_colors: dict):
+        brain_ids = self.brain_ids
+        brain2paths = self.brain2paths
+
+        scene = Scene(atlas_name="allen_mouse_50um", title="Input Somas")
+        scene.add_brain_region("DR", alpha=0.15)
+
+        for subtype in subtype_colors.keys():
+            im_total = None
+            for i, brain_id in enumerate(brain_ids):
+                if brain2paths[brain_id]["subtype"] == subtype:
+                    print(f"Downloading transformed_mask from brain: {brain_id}")
+                    vol = CloudVolume(brain2paths[brain_id]["transformed_mask"], fill_missing=True)
+                    if im_total == None:
+                        im_total = np.array(vol[:,:,:,:])
+                    else:
+                        im_total += np.array(vol[:,:,:,:])
+                
+            im_total = np.squeeze(im_total)
+            im_total = np.swapaxes(im_total, 0, 2)
+
+            # make a volume actor and add
+            actor = Volume(
+                im_total,
+                voxel_size=20,  # size of a voxel's edge in microns
+                as_surface=False,  # if true a surface mesh is rendered instead of a volume
+                c=subtype_colors[subtype],  # use matplotlib colormaps to color the volume
+            )
+
+            scene.add(actor)
+
+        # render
+        scene.content
+        scene.render()
+
 
     def region_barchart(
         self, regions: list, composite_regions: dict = {}, normalize_region: int = -1

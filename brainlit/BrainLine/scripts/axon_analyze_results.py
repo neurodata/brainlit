@@ -47,7 +47,7 @@ warnings.filterwarnings("ignore")
 Collect regional data
 """
 collect_ask = input(
-    f"Do you want to collect regional segmentation data (i.e. are registration and segmentation complete)? (y/n)"
+    f"Do you want to collect regional segmentation data (i.e. are registration and segmentation complete but need to be combined)? (y/n): "
 )
 if collect_ask == "y":
     collect_regional_segmentation(
@@ -55,12 +55,14 @@ if collect_ask == "y":
     )
 
 """
-Show coronal section
+Show results in brain space
 """
 ad = AxonDistribution(
     brain_ids=brain_ids, regional_distribution_dir=regional_distribution_dir
 )
 ad.napari_coronal_section(z=1000, subtype_colors=colors, fold_on=fold_on)
+print("No segmentation will show in brainrender, because the segmentation covers a very small area")
+ad.brainrender_axons(subtype_colors = colors)
 
 """
 Make bar chart
