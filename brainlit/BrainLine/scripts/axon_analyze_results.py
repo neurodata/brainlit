@@ -41,14 +41,15 @@ warnings.filterwarnings("ignore")
 '''
 Collect regional data
 '''
-collect_regional_segmentation(brain_ids[0], regional_distribution_dir, ncpu = 1, max_coords=max_coords)
+collect_ask = input(f"Do you want to collect regional segmentation data (i.e. are registration and segmentation complete)? (y/n)")
+if collect_ask == "y":
+    collect_regional_segmentation(brain_ids[0], regional_distribution_dir, ncpu = 1, max_coords=max_coords)
 
 '''
 Show coronal section
 '''
 ad = AxonDistribution(brain_ids = brain_ids, regional_distribution_dir=regional_distribution_dir)
 ad.napari_coronal_section(z=1000, subtype_colors = colors, fold_on = fold_on)
-
 
 '''
 Make bar chart
