@@ -41,7 +41,7 @@ warnings.filterwarnings("ignore")
 '''
 Collect regional data
 '''
-#collect_regional_segmentation(brain_ids[0], regional_distribution_dir, ncpu = 1, max_coords=max_coords)
+collect_regional_segmentation(brain_ids[0], regional_distribution_dir, ncpu = 1, max_coords=max_coords)
 
 '''
 Show coronal section

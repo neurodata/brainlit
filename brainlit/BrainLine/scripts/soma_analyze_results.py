@@ -4,7 +4,7 @@ from brainlit.BrainLine.analyze_results import SomaDistribution
 Inputs
 '''
 colors = {
-    "test": "blue",
+    "test_type": "blue",
 }  # colors for different subtypes
 symbols = ["o", "+", "^", "vbar"]
 brain_ids = ["test"] # brain ids from soma_data file

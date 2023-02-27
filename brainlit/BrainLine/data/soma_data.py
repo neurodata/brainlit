@@ -49,7 +49,7 @@ brain2paths = {
             "nonsomas_layer": "nonsoma_val",
         },
         "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=LTWdmg7lYf1nbA",
-        "subtype": "test_typw"
+        "subtype": "test_type"
     },
     "8557": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2021_10_06/8557/",

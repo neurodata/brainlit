@@ -53,31 +53,33 @@ alli.collect_axon_results(brain_id = brain, ng_layer_name="127.0.0.1:9010")
 Downsample Mask
 """
 # Cloudreg only works on complete volumes, so you cannot delete_black_uploads to allow missing data etc.
-print("Downsampling...")
-dir_base = brain2paths[brain]["base"]
-layer_path = dir_base + "axon_mask"
+downsample_ask = input(f"Do you want to downsample the axon_mask for brain {brain}? (y/n)")
+if downsample_ask == "y":
+    print("Downsampling...")
+    dir_base = brain2paths[brain]["base"]
+    layer_path = dir_base + "axon_mask"
 
-tq = LocalTaskQueue(parallel=16)
+    tq = LocalTaskQueue(parallel=16)
 
-tasks = tc.create_downsampling_tasks(
-    layer_path,  # e.g. 'gs://bucket/dataset/layer'
-    mip=0,  # Start downsampling from this mip level (writes to next level up)
-    fill_missing=True,  # Ignore missing chunks and fill them with black
-    axis="z",
-    num_mips=5,  # number of downsamples to produce. Downloaded shape is chunk_size * 2^num_mip
-    chunk_size=None,  # manually set chunk size of next scales, overrides preserve_chunk_size
-    preserve_chunk_size=True,  # use existing chunk size, don't halve to get more downsamples
-    sparse=False,  # for sparse segmentation, allow inflation of pixels against background
-    bounds=None,  # mip 0 bounding box to downsample
-    encoding=None,  # e.g. 'raw', 'compressed_segmentation', etc
-    delete_black_uploads=False,  # issue a delete instead of uploading files containing all background
-    background_color=0,  # Designates the background color
-    compress="gzip",  # None, 'gzip', and 'br' (brotli) are options
-    factor=(2, 2, 2),  # common options are (2,2,1) and (2,2,2)
-)
+    tasks = tc.create_downsampling_tasks(
+        layer_path,  # e.g. 'gs://bucket/dataset/layer'
+        mip=0,  # Start downsampling from this mip level (writes to next level up)
+        fill_missing=True,  # Ignore missing chunks and fill them with black
+        axis="z",
+        num_mips=5,  # number of downsamples to produce. Downloaded shape is chunk_size * 2^num_mip
+        chunk_size=None,  # manually set chunk size of next scales, overrides preserve_chunk_size
+        preserve_chunk_size=True,  # use existing chunk size, don't halve to get more downsamples
+        sparse=False,  # for sparse segmentation, allow inflation of pixels against background
+        bounds=None,  # mip 0 bounding box to downsample
+        encoding=None,  # e.g. 'raw', 'compressed_segmentation', etc
+        delete_black_uploads=False,  # issue a delete instead of uploading files containing all background
+        background_color=0,  # Designates the background color
+        compress="gzip",  # None, 'gzip', and 'br' (brotli) are options
+        factor=(2, 2, 2),  # common options are (2,2,1) and (2,2,2)
+    )
 
-tq.insert(tasks)
-tq.execute()
+    tq.insert(tasks)
+    tq.execute()
 
 '''
 Making info files for transformed images

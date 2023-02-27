@@ -42,6 +42,6 @@ Detect Somas
 """
 
 layer_names = [antibody_layer, background_layer, endogenous_layer]
-alli = ApplyIlastik_LargeImage(ilastik_path = ilastik_path, ilastik_project=ilastik_project, ncpu=ncpu, object_type="axon", results_dir=results_dir)
+alli = ApplyIlastik_LargeImage(ilastik_path = ilastik_path, ilastik_project=ilastik_project, ncpu=ncpu, object_type="soma", results_dir=results_dir)
 alli.apply_ilastik_parallel(brain_id=brain, layer_names=layer_names, threshold=threshold, data_dir=data_dir, chunk_size=chunk_size, max_coords=max_coords)
-alli.collect_results(brain_id=brain)
+alli.collect_soma_results(brain_id=brain)

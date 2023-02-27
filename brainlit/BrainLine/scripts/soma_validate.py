@@ -48,8 +48,7 @@ if f"{dataset_to_save}_info" not in brain2paths[
 Download data
 '''
 
-download_subvolumes(data_dir, brain_id = brain, layer_names = layer_names, dataset_to_save = dataset_to_save)
-doubles = []
+download_subvolumes(data_dir, brain_id = brain, layer_names = layer_names, dataset_to_save = dataset_to_save, object_type="soma")
 
 '''
 Apply ilastik
@@ -58,12 +57,13 @@ brains = [
     brain
 ]  # sample IDs to be processed
 applyilastik = ApplyIlastik(ilastk_path = ilastik_path, project_path = ilastik_project, brains_path = f"{data_dir}/", brains = brains)
-applyilastik.process_somas()
+applyilastik.process_subvols()
+doubles = []
 
 '''
 Check results
 '''
-plot_results(data_dir, brain_id = brain, doubles=doubles)
+plot_results(data_dir, brain_id = brain, object_type="soma", positive_channel=0, doubles=doubles)
 
 '''
 Making info files for transformed images

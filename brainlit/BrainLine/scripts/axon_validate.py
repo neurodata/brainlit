@@ -28,7 +28,7 @@ dataset_to_save = "val"  # train or val
 
 ilastik_path = "/Applications/ilastik-1.4.0b21-OSX.app/Contents/ilastik-release/run_ilastik.sh"
 ilastik_project = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/axon_segmentation.ilp"
-
+ 
 '''
 Setup
 '''
@@ -62,7 +62,9 @@ applyilastik.process_subvols()
 '''
 Check results
 '''
-plot_results(data_dir, brain_id = brain, object_type="axon")
+plot_performance = input(f"Have you written ground truth labels for the validation volumes and are you ready to plot performance results? (y/n)")
+if plot_performance == "y":
+    plot_results(data_dir, brain_id = brain, object_type="axon", positive_channel=1)
 
 '''
 Making info files for transformed images
