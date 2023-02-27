@@ -89,7 +89,6 @@ class SomaDistribution(BrainDistribution):
         self.region_graph = region_graph
 
 
-
     def _retrieve_soma_coords(self, brain_ids: list):
         brain2paths = soma_data.brain2paths
         atlas_points = {}
