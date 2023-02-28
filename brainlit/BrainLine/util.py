@@ -5,6 +5,111 @@ import os
 import networkx as nx
 from pathlib import Path
 from brainlit.BrainLine.parse_ara import build_tree
+from tqdm import tqdm
+from brainlit.BrainLine import data
+from brainlit.BrainLine.imports import *
+
+
+def download_subvolumes(
+    data_dir: str,
+    brain_id: str,
+    layer_names: list,
+    dataset_to_save: str,
+    object_type: str,
+):
+    if object_type == "soma":
+        brain2paths = data.soma_data.brain2paths
+        radius = 25
+    elif object_type == "axon":
+        brain2paths = data.axon_data.brain2paths
+        radius = 50
+    else:
+        raise ValueError(f"object_type must be soma or axon, not {object_type}")
+
+    base_dir = data_dir + f"/brain{brain_id}/{dataset_to_save}/"
+    antibody_layer, background_layer, endogenous_layer = layer_names
+
+    if "base" in brain2paths[brain_id].keys():
+        base_dir_s3 = brain2paths[brain_id]["base"]
+        dir = base_dir_s3 + antibody_layer
+        vol_fg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
+        print(f"fg shape: {vol_fg.shape} at {vol_fg.resolution}")
+
+        dir = base_dir_s3 + background_layer
+        vol_bg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
+        print(f"bg shape: {vol_bg.shape} at {vol_bg.resolution}")
+
+        dir = base_dir_s3 + endogenous_layer
+        vol_endo = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
+        print(f"endo shape: {vol_endo.shape} at {vol_endo.resolution}")
+
+    dataset_title = dataset_to_save + "_info"
+    url = brain2paths[brain_id][dataset_title]["url"]
+    l_dict = json_to_points(url)
+    if object_type == "soma":
+        soma_centers = l_dict[brain2paths[brain_id][dataset_title]["somas_layer"]]
+        nonsoma_centers = l_dict[brain2paths[brain_id][dataset_title]["nonsomas_layer"]]
+        centers_groups = [soma_centers, nonsoma_centers]
+        suffixes = ["_pos", "_neg"]
+    elif object_type == "axon":
+        axon_centers = l_dict[brain2paths[brain_id][dataset_title]["layer"]]
+        centers_groups = [axon_centers]
+        suffixes = [""]
+
+    print(f"{[len(c) for c in centers_groups]} centers")
+
+    isExist = os.path.exists(base_dir)
+    if not isExist:
+        print(f"Creating directory: {base_dir}")
+        os.makedirs(base_dir)
+    else:
+        print(f"Downloaded data will be stored in {base_dir}")
+
+    for suffix, centers in zip(suffixes, centers_groups):
+        for i, center in enumerate(tqdm(centers, desc="Saving positive samples")):
+            image_fg = vol_fg[
+                center[0] - radius + 1 : center[0] + radius,
+                center[1] - radius + 1 : center[1] + radius,
+                center[2] - radius + 1 : center[2] + radius,
+            ]
+            image_fg = image_fg[:, :, :, 0]
+            image_bg = vol_bg[
+                center[0] - radius + 1 : center[0] + radius,
+                center[1] - radius + 1 : center[1] + radius,
+                center[2] - radius + 1 : center[2] + radius,
+            ]
+            image_bg = image_bg[:, :, :, 0]
+            image_endo = vol_endo[
+                center[0] - radius + 1 : center[0] + radius,
+                center[1] - radius + 1 : center[1] + radius,
+                center[2] - radius + 1 : center[2] + radius,
+            ]
+            image_endo = image_endo[:, :, :, 0]
+
+            image = np.squeeze(np.stack([image_fg, image_bg, image_endo], axis=0))
+
+            fname = (
+                base_dir
+                + f"{int(center[0])}_{int(center[1])}_{int(center[2])}{suffix}.h5"
+            )
+            with h5py.File(fname, "w") as f:
+                dset = f.create_dataset("image_3channel", data=image)
+
+
+def _get_corners(shape, chunk_size, max_coords: list = [-1, -1, -1]):
+    corners = []
+    for i in tqdm(range(0, shape[0], chunk_size[0])):
+        for j in tqdm(range(0, shape[1], chunk_size[1]), leave=False):
+            for k in range(0, shape[2], chunk_size[2]):
+                c1 = [i, j, k]
+                c2 = [
+                    np.amin([shape[idx], c1[idx] + chunk_size[idx]]) for idx in range(3)
+                ]
+                conditions = [(max == -1 or c < max) for c, max in zip(c1, max_coords)]
+                if all(conditions):
+                    corners.append([c1, c2])
+
+    return corners
 
 
 def json_to_points(url, round=False):
@@ -42,7 +147,7 @@ def json_to_points(url, round=False):
     return point_layers
 
 
-def find_sample_names(dir, dset="val", add_dir=False):
+def find_sample_names(dir, dset="", add_dir=False):
     """Find file paths of samples in a given directory according to filters used in the workflow.
 
 

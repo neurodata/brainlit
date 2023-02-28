@@ -42,18 +42,16 @@ def test_find_sample_names(tmp_path):
             pass
 
     test_fnames = util.find_sample_names(tmp_path)
-    assert len(test_fnames) == 1
-    assert test_fnames[0] == "val_#_#_#.h5"
+    assert len(test_fnames) == 2
 
     test_fnames = util.find_sample_names(tmp_path, dset="train")
     assert len(test_fnames) == 1
     assert test_fnames[0] == "train_#_#_#.h5"
 
     test_fnames = util.find_sample_names(tmp_path, add_dir=True)
-    assert len(test_fnames) == 1
+    assert len(test_fnames) == 2
     true_fname = str(tmp_path) + "/val_#_#_#.h5"
-    print(true_fname)
-    assert test_fnames[0] == true_fname
+    assert test_fnames[0] == true_fname or test_fnames[1] == true_fname
 
 
 def test_setup_atlas_graph():

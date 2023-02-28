@@ -1,4 +1,4 @@
-BrainLine: An Open Pipeline for Connectivity Analysis in Whole-Brain Fluorescence Images
-****************************************************************************************
+BrainLine: An Open Pipeline for Connectivity Analysis of Heterogeneous Whole-Brain Fluorescence Volumes
+*******************************************************************************************************
 
-.. include:: ../experiments/BrainLine/README.rst
+.. include:: ../brainlit/BrainLine/README.rst

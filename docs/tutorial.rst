@@ -23,8 +23,8 @@ Pipelines
 
 .. _BrainLine_tutorials:
 
-Light-Sheet Microscopy Image Analysis Pipeline
-----------------------------------------------
+BrainLine: Whole-Brain Fluorescence Volume Analysis Pipeline
+------------------------------------------------------------
 Leverage `ilastik <https://www.ilastik.org/>`_ to perform axon detection and soma detection on brain images, and combine with `CloudReg <https://cloudreg.neurodata.io/>`_ image registration for visualization and analysis.
 
 .. toctree::
