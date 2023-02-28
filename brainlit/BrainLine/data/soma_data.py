@@ -200,6 +200,7 @@ brain2paths = {
             "nonsomas_layer": "nonsoma_train",
         },
         "subtype": "tph2 vglut3",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=iiX4cb9vLbHLXQ"
     },
 }
 
