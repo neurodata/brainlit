@@ -128,7 +128,9 @@ class SomaDistribution(BrainDistribution):
         id_to_regioncounts = {}
         for brain_id in tqdm(points.keys(), desc="Finding soma regions of brains"):
             brain_dict = {}
-            for point in tqdm(points[brain_id], desc="Finding soma regions", leave=False):
+            for point in tqdm(
+                points[brain_id], desc="Finding soma regions", leave=False
+            ):
                 point_int = [int(np.round(p)) for p in point]
                 try:
                     region = vol_atlas[point_int[0], point_int[1], point_int[2]]
