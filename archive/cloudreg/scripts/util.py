@@ -284,7 +284,6 @@ from awscli.clidriver import create_clidriver
 def aws_cli(*cmd):
     old_env = dict(os.environ)
     try:
-
         # Environment
         env = os.environ.copy()
         env["LC_CTYPE"] = "en_US.UTF"

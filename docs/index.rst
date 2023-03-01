@@ -28,6 +28,7 @@ Documentation
     splines
     viterbrain
     map_neurons
+    BrainLine
 
 
 .. toctree::

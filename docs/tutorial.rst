@@ -21,6 +21,18 @@ Tutorials showcasing how to use the utils folder.
 Pipelines
 =========
 
+.. _BrainLine_tutorials:
+
+BrainLine: Whole-Brain Fluorescence Volume Analysis Pipeline
+------------------------------------------------------------
+Leverage `ilastik <https://www.ilastik.org/>`_ to perform axon detection and soma detection on brain images, and combine with `CloudReg <https://cloudreg.neurodata.io/>`_ image registration for visualization and analysis.
+
+.. toctree::
+   :maxdepth: 1
+
+   notebooks/pipelines/BrainLine/axon_analysis
+   notebooks/pipelines/BrainLine/soma_analysis
+
 Semi-automatic Annotation Pipeline
 ----------------------------------
 Demonstrate pulling data and pushing traced annotations.

@@ -41,6 +41,7 @@ r"""
                                                  
 """
 
+
 # TODO: resolution --> spacing, template_resolution --> template_spacing.
 # TODO: template --> reference_image, target --> moving_image.
 # TODO: create issue that moving_image rudely implies one of two equal uses of a registration.
@@ -97,7 +98,6 @@ class _Lddmm:
         calibrate=None,
         track_progress_every_n=None,
     ):
-
         # Constant inputs.
 
         # Images.
@@ -1140,7 +1140,6 @@ class _Lddmm:
         # Loop backwards across time.
         d_matching_d_velocities = []
         for timestep in reversed(range(self.num_timesteps)):
-
             # Update phi.
             sample_coords = (
                 self.template_coords
@@ -1304,7 +1303,6 @@ class _Lddmm:
 
         # Loop backwards across time.
         for timestep in reversed(range(self.num_timesteps)):
-
             # Update phi.
             sample_coords = (
                 self.template_coords
@@ -1633,7 +1631,6 @@ def lddmm_register(
     # Each value in the multiscale_lddmm_kwargs dictionary is an array with shape (len(multiscales)).
 
     for scale_index, scale in enumerate(multiscales):
-
         # Extract appropriate multiscale_lddmm_kwargs.
         this_scale_lddmm_kwargs = dict(
             map(
@@ -1898,7 +1895,6 @@ def _transform_image(
     position_field_resolution,
     extrapolation_fill_value=None,
 ):
-
     # Validate inputs.
 
     # Validate position_field.
@@ -2069,7 +2065,6 @@ def _transform_points(
     position_field,
     position_field_resolution,
 ):
-
     # Validate inputs.
 
     # Validate position_field.

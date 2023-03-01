@@ -26,8 +26,10 @@ class state_generation:
     def __init__(
         self,
         image_path: str,
+        new_layers_dir: str,
         ilastik_program_path: str,
         ilastik_project_path: str,
+        fg_channel: int = 0,
         chunk_size: List[float] = [375, 375, 125],
         soma_coords: List[list] = [],
         resolution: List[float] = [0.3, 0.3, 1],
@@ -37,12 +39,50 @@ class state_generation:
         tiered_path: str = None,
         states_path: str = None,
     ) -> None:
+        """This class encapsulates the processing that turns an image into a set of fragments with endpoints etc. needed to perform viterbrain tracing.
+
+        Args:
+            image_path (str): Path to image zarr.
+            new_layers_dir (str): Path to directory where new layers will be written.
+            ilastik_program_path (str): Path to ilastik program.
+            ilastik_project_path (str): Path to ilastik project for segmentation of image.
+            fg_channel (int): Channel of image taken to be foreground.
+            chunk_size (List[float], optional): Chunk size too be used in parallel processing. Defaults to [375, 375, 125].
+            soma_coords (List[list], optional): List of coordinates of soma centers. Defaults to [].
+            resolution (List[float], optional): Resolution of image in microns. Defaults to [0.3, 0.3, 1].
+            parallel (int, optional): Number of threads to use for parallel processing. Defaults to 1.
+            prob_path (str, optional): Path to alrerady computed probability image (ilastik output). Defaults to None.
+            fragment_path (str, optional): Path to alrerady computed fragment image. Defaults to None.
+            tiered_path (str, optional): Path to alrerady computed tiered image. Defaults to None.
+            states_path (str, optional): Path to alrerady computed states file. Defaults to None.
+
+        Raises:
+            ValueError: Image must be four dimensional (cxyz)
+            ValueError: Chunks must include all channels and be 4D.
+            ValueError: Already computed images must match image in spatial dimensions.
+        """
 
         self.image_path = image_path
         image = zarr.open(image_path, mode="r")
+        if len(image.shape) == 4:
+            self.ndims = 4
+        elif len(image.shape) == 3:
+            self.ndims = 3
+        else:
+            raise ValueError(
+                f"Image must be 3D (xyz) or 4D (cxyz), rather than shape: {image.shape}"
+            )
+
+        self.fg_channel = fg_channel
         self.image_shape = image.shape
         self.ilastik_program_path = ilastik_program_path
         self.ilastik_project_path = ilastik_project_path
+
+        if len(chunk_size) == 4 and chunk_size[0] != self.image_shape[0]:
+            raise ValueError(
+                f"Chunk size must include all channels and be 4D (cxyz), not {chunk_size}"
+            )
+
         self.chunk_size = chunk_size
         self.soma_coords = soma_coords
         self.resolution = resolution
@@ -53,9 +93,14 @@ class state_generation:
         ):
             if other_im is not None:
                 other_image = zarr.open(other_im, mode="r")
-                if other_image.shape != self.image_shape:
-                    raise ValueError(f"{name} image has different shape than image")
+                if (self.ndims == 4 and other_image.shape != self.image_shape[1:]) or (
+                    self.ndims == 3 and other_image.shape != self.image_shape
+                ):
+                    raise ValueError(
+                        f"{name} image has different shape {other_image.shape} than image {self.image_shape}"
+                    )
 
+        self.new_layers_dir = new_layers_dir
         self.prob_path = prob_path
         self.fragment_path = fragment_path
         self.tiered_path = tiered_path
@@ -72,13 +117,21 @@ class state_generation:
             data_bin (str): path to directory to store intermediate files
         """
         image = zarr.open(self.image_path, mode="r")
-        image_chunk = np.squeeze(
-            image[
+        if self.ndims == 4:
+            image_chunk = image[
+                :,
                 corner1[0] : corner2[0],
                 corner1[1] : corner2[1],
                 corner1[2] : corner2[2],
             ]
-        )
+
+        else:
+            image_chunk = image[
+                corner1[0] : corner2[0],
+                corner1[1] : corner2[1],
+                corner1[2] : corner2[2],
+            ]
+
         fname = data_bin + "image_" + str(corner1[2]) + ".h5"
         with h5py.File(fname, "w") as f:
             f.create_dataset("image_chunk", data=image_chunk)
@@ -100,31 +153,35 @@ class state_generation:
             data_bin (str): path to directory to store intermediate files
         """
         image = zarr.open(self.image_path, mode="r")
-        probabilities = zarr.zeros(
-            np.squeeze(image.shape), chunks=image.chunks, dtype="float"
+        prob_fname = self.new_layers_dir + "probs.zarr"
+
+        probabilities = zarr.open(
+            prob_fname,
+            mode="w",
+            shape=image.shape[-3:],
+            chunks=image.chunks[1:],
+            dtype="float",
         )
         chunk_size = self.chunk_size
-        items = self.image_path.split(".")
-        prob_fname = items[0] + "_probs.zarr"
 
         print(
-            f"Constructing probability  image {prob_fname} of shape {probabilities.shape}"
+            f"Processing image of shape {image.shape} with chunks {image.chunks} into probability image {prob_fname} of shape {probabilities.shape}"
         )
 
         for x in tqdm(
-            np.arange(0, image.shape[0], chunk_size[0]),
+            np.arange(0, image.shape[-3], chunk_size[-3]),
             desc="Computing Ilastik Predictions",
         ):
-            x2 = np.amin([x + chunk_size[0], image.shape[0]])
-            for y in tqdm(np.arange(0, image.shape[1], chunk_size[1]), leave=False):
-                y2 = np.amin([y + chunk_size[1], image.shape[1]])
+            x2 = np.amin([x + chunk_size[-3], image.shape[-3]])
+            for y in tqdm(np.arange(0, image.shape[-2], chunk_size[-2]), leave=False):
+                y2 = np.amin([y + chunk_size[-2], image.shape[-2]])
                 Parallel(n_jobs=self.parallel)(
                     delayed(self._predict_thread)(
                         [x, y, z],
-                        [x2, y2, np.amin([z + chunk_size[2], image.shape[2]])],
+                        [x2, y2, np.amin([z + chunk_size[-1], image.shape[-1]])],
                         data_bin,
                     )
-                    for z in np.arange(0, image.shape[2], chunk_size[2])
+                    for z in np.arange(0, image.shape[-1], chunk_size[-1])
                 )
 
                 for f in os.listdir(data_bin):
@@ -132,15 +189,20 @@ class state_generation:
                     if "Probabilities" in f:
                         items = f.split("_")
                         z = int(items[1])
-                        z2 = np.amin([z + chunk_size[2], image.shape[2]])
+                        z2 = np.amin([z + chunk_size[-1], image.shape[-1]])
                         f = h5py.File(fname, "r")
                         pred = f.get("exported_data")
-                        pred = pred[:, :, :, 1]
+
+                        if self.ndims == 4:
+                            pred = np.squeeze(pred[1, :, :, :])
+                        else:
+                            pred = np.squeeze(pred[:, :, :, 1])
 
                         probabilities[x:x2, y:y2, z:z2] = pred
-                    os.remove(fname)
 
-        zarr.save(prob_fname, probabilities)
+                    if "image" in f:
+                        os.remove(fname)
+
         self.prob_path = prob_fname
 
     def _get_frag_specifications(self) -> list:
@@ -150,12 +212,12 @@ class state_generation:
 
         specifications = []
 
-        for x in np.arange(0, image.shape[0], chunk_size[0]):
-            x2 = np.amin([x + chunk_size[0], image.shape[0]])
-            for y in np.arange(0, image.shape[1], chunk_size[1]):
-                y2 = np.amin([y + chunk_size[1], image.shape[1]])
-                for z in np.arange(0, image.shape[2], chunk_size[2]):
-                    z2 = np.amin([z + chunk_size[2], image.shape[2]])
+        for x in np.arange(0, image.shape[-3], chunk_size[-3]):
+            x2 = np.amin([x + chunk_size[-3], image.shape[-3]])
+            for y in np.arange(0, image.shape[-2], chunk_size[-2]):
+                y2 = np.amin([y + chunk_size[-2], image.shape[-2]])
+                for z in np.arange(0, image.shape[-1], chunk_size[-1]):
+                    z2 = np.amin([z + chunk_size[-1], image.shape[-1]])
                     soma_coords_new = []
                     for soma_coord in soma_coords:
                         if (
@@ -246,12 +308,16 @@ class state_generation:
 
     def compute_frags(self) -> None:
         """Compute all fragments for image"""
-        image = zarr.open(self.image_path, mode="r")
-        fragments = zarr.zeros(
-            np.squeeze(image.shape), chunks=image.chunks, dtype="uint16"
+        probs = zarr.open(self.prob_path, mode="r")
+        frag_fname = self.new_layers_dir + "labels.zarr"
+
+        fragments = zarr.open(
+            frag_fname,
+            mode="w",
+            shape=probs.shape,
+            chunks=probs.chunks,
+            dtype="uint16",
         )
-        items = self.image_path.split(".")
-        frag_fname = items[0] + "_labels.zarr"
 
         print(f"Constructing fragment image {frag_fname} of shape {fragments.shape}")
 
@@ -277,7 +343,6 @@ class state_generation:
                 corner1[2] : corner2[2],
             ] = labels
         print(f"*****************Number of components: {max_label}*******************")
-        zarr.save(frag_fname, fragments)
 
         self.fragment_path = frag_fname
 
@@ -316,9 +381,20 @@ class state_generation:
         kde = self.kde
         image = zarr.open(self.image_path, mode="r")
 
-        image = image[
-            corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]
-        ]
+        if self.ndims == 4:
+            image = image[
+                self.fg_channel,
+                corner1[0] : corner2[0],
+                corner1[1] : corner2[1],
+                corner1[2] : corner2[2],
+            ]
+
+        else:
+            image = image[
+                corner1[0] : corner2[0],
+                corner1[1] : corner2[1],
+                corner1[2] : corner2[2],
+            ]
 
         vals = np.unique(image)
         scores_neg = -1 * kde.logpdf(vals)
@@ -335,15 +411,38 @@ class state_generation:
         """Compute entire tiered image then reassemble and save as zarr"""
         image = zarr.open(self.image_path, mode="r")
         fragments = zarr.open(self.fragment_path, mode="r")
-        tiered = zarr.zeros(
-            np.squeeze(image.shape), chunks=image.chunks, dtype="uint16"
+        tiered_fname = self.new_layers_dir + "tiered.zarr"
+
+        tiered = zarr.open(
+            tiered_fname,
+            mode="w",
+            shape=fragments.shape,
+            chunks=fragments.chunks,
+            dtype="uint16",
         )
-        items = self.image_path.split(".")
-        tiered_fname = items[0] + "_tiered.zarr"
+
         print(f"Constructing tiered image {tiered_fname} of shape {tiered.shape}")
 
-        image_chunk = image[:300, :300, :300]
-        fragments_chunk = fragments[:300, :300, :300]
+        shp = np.array(np.array(image.shape[-3:]) / 2).astype(int)
+
+        if self.ndims == 4:
+            image_chunk = image[
+                self.fg_channel,
+                shp[0] : shp[0] + 300,
+                shp[1] : shp[1] + 300,
+                shp[2] : shp[2] + 300,
+            ]
+
+        else:
+            image_chunk = image[
+                shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
+            ]
+
+        fragments_chunk = fragments[
+            shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
+        ]
+        print(f"{image.shape}-{fragments.shape}")
+        print(f"{image_chunk.shape}-{fragments_chunk.shape}")
         data_fg = image_chunk[fragments_chunk > 0]
         if len(data_fg.flatten()) > 10000:
             data_sample = random.sample(list(data_fg), k=10000)
@@ -372,11 +471,12 @@ class state_generation:
                 corner1[2] : corner2[2],
             ] = image_tiered
 
-        zarr.save(tiered_fname, tiered)
         self.tiered_path = tiered_fname
 
     def _compute_bounds(
-        self, label: np.ndarray, pad: float
+        self,
+        label: np.ndarray,
+        pad: float,
     ) -> Tuple[int, int, int, int, int, int]:
         """compute coordinates of bounding box around a masked object, with given padding
 
@@ -387,7 +487,7 @@ class state_generation:
         Returns:
             ints: integer coordinates of bounding box
         """
-        image_shape = self.image_shape
+        image_shape = label.shape
         res = self.resolution
 
         r = np.any(label, axis=(1, 2))
@@ -395,13 +495,13 @@ class state_generation:
         z = np.any(label, axis=(0, 1))
         rmin, rmax = np.where(r)[0][[0, -1]]
         rmin = np.amax((0, math.floor(rmin - pad / res[0])))
-        rmax = np.amin((image_shape[0], math.ceil(rmax + (pad + 1) / res[0])))
+        rmax = np.amin((image_shape[0], math.ceil(rmax + pad / res[0]) + 1))
         cmin, cmax = np.where(c)[0][[0, -1]]
         cmin = np.amax((0, math.floor(cmin - (pad) / res[1])))
-        cmax = np.amin((image_shape[1], math.ceil(cmax + (pad + 1) / res[1])))
+        cmax = np.amin((image_shape[1], math.ceil(cmax + pad / res[1]) + 1))
         zmin, zmax = np.where(z)[0][[0, -1]]
         zmin = np.amax((0, math.floor(zmin - (pad) / res[2])))
-        zmax = np.amin((image_shape[2], math.ceil(zmax + (pad + 1) / res[2])))
+        zmax = np.amin((image_shape[2], math.ceil(zmax + pad / res[2]) + 1))
         return int(rmin), int(rmax), int(cmin), int(cmax), int(zmin), int(zmax)
 
     def _endpoints_from_coords_neighbors(self, coords: np.ndarray) -> List[list]:
@@ -427,7 +527,10 @@ class state_generation:
             close_enough = 9
 
         A = radius_neighbors_graph(
-            coords, radius=radius, metric="wminkowski", metric_params={"w": res}
+            coords,
+            radius=radius,
+            metric="minkowski",
+            metric_params={"w": [r**2 for r in res]},
         )
         degrees = np.squeeze(np.array(np.sum(A, axis=1).T, dtype=int))
         indices = np.argsort(degrees)
@@ -530,6 +633,7 @@ class state_generation:
                 continue
 
             rmin, rmax, cmin, cmax, zmin, zmax = self._compute_bounds(mask, pad=1)
+
             # now in bounding box coordinates
             mask = mask[rmin:rmax, cmin:cmax, zmin:zmax]
 
@@ -537,6 +641,7 @@ class state_generation:
 
             coords_mask = np.argwhere(mask)
             coords_skel = np.argwhere(skel)
+
             if len(coords_skel) < 4:
                 coords = coords_mask
             else:
@@ -598,8 +703,7 @@ class state_generation:
             ValueError: erroneously computed endpoints of soma state
         """
         print(f"Computing states")
-        items = self.image_path.split(".")
-        states_fname = items[0] + "_nx.pickle"
+        states_fname = self.new_layers_dir + "nx.pickle"
 
         specifications = self._get_frag_specifications()
 
@@ -671,8 +775,7 @@ class state_generation:
 
     def compute_edge_weights(self) -> None:
         """Create viterbrain object and compute edge weights"""
-        items = self.image_path.split(".")
-        viterbrain_fname = items[0] + "_viterbrain.pickle"
+        viterbrain_fname = self.new_layers_dir + "viterbrain.pickle"
 
         with open(self.states_path, "rb") as handle:
             G = pickle.load(handle)

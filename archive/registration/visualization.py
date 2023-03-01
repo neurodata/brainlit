@@ -169,7 +169,6 @@ def _validate_inputs(data, title, n_cuts, xcuts, ycuts, zcuts, figsize):
 
 # TODO: update work with interesting_cuts and new Image class
 def _Image_to_Nifti2Image(image, affine=None):
-
     nifti2header = nib.Nifti2Header()
     nifti2header["dim"][1 : 1 + len(image.nxyz)] = image.nxyz
     nifti2header["pixdim"][1 : 1 + len(image.dxyz)] = image.dxyz

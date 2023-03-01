@@ -430,13 +430,13 @@ class ViterBrain:
 
         # create coordinate list
         coords = [coord1]
-        coords.append(self.nxGraph.nodes[states[0]]["point2"])
+        coords.append(list(self.nxGraph.nodes[states[0]]["point2"]))
         for i, state in enumerate(states[1:]):
             if self.nxGraph.nodes[state]["type"] == "fragment":
-                coords.append(self.nxGraph.nodes[state]["point1"])
-                coords.append(self.nxGraph.nodes[state]["point2"])
+                coords.append(list(self.nxGraph.nodes[state]["point1"]))
+                coords.append(list(self.nxGraph.nodes[state]["point2"]))
             elif self.nxGraph.nodes[state]["type"] == "soma":
-                coords.append(self.nxGraph.nodes[states[i]]["soma_pt"])
+                coords.append(list(self.nxGraph.nodes[states[i]]["soma_pt"]))
                 if i != len(states) - 2:
                     raise ValueError("Soma state is not last state")
 

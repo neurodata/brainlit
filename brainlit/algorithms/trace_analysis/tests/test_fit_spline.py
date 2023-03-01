@@ -23,7 +23,6 @@ url = url + "/serial"
 
 
 def test_fit_spline_tree_invariant_bad_input():
-
     # test nodes must have a 'loc' attribute
     neuron_no_loc = GeometricGraph()
     neuron_no_loc.add_node(1)
@@ -158,7 +157,6 @@ def test_init_from_df():
 
 
 def test_splNum():
-
     # test the number of splines is correct
     neuron = GeometricGraph()
     # add nodes
@@ -180,7 +178,6 @@ def test_splNum():
 
 
 def test_CompareLen():
-
     # test when there exists one longest path
     neuron_long1 = GeometricGraph()
     # add nodes
@@ -228,7 +225,6 @@ def test_CompareLen():
 
 
 def test_spline():
-
     # Compare the spline parameters u and tck from `fit_spline_tree_invariant` and directly from `scipy.interpolate.splprep`
     neuron = GeometricGraph()
     # add nodes
