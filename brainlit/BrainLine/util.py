@@ -27,7 +27,7 @@ def download_subvolumes(
         object_type (str): soma or axon, specifies which _data file to use.
 
     Raises:
-        ValueError: _description_
+        ValueError: If object_type is not soma or axon
     """
     if object_type == "soma":
         brain2paths = data.soma_data.brain2paths
