@@ -215,7 +215,7 @@ class SomaDistribution(BrainDistribution):
         v.scale_bar.visible = True
         napari.run()
 
-    def brainrender_somas(self, subtype_colors, brain_region: str = "DR"):
+    def brainrender_somas(self, subtype_colors: dict, brain_region: str = "DR"):
         """Generate brainrender viewer with soma detections.
 
         Args:
