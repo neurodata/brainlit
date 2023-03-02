@@ -83,8 +83,8 @@ class BrainDistribution:
 
 
 class SomaDistribution(BrainDistribution):
-    """Object to generate various analysis images for results from a set of brain IDs. An implementation of BrainDistribution class.
-    """
+    """Object to generate various analysis images for results from a set of brain IDs. An implementation of BrainDistribution class."""
+
     def __init__(self, brain_ids: list):
         super().__init__(brain_ids)
         atlas_points = self._retrieve_soma_coords(brain_ids)
@@ -147,7 +147,11 @@ class SomaDistribution(BrainDistribution):
         return id_to_regioncounts
 
     def napari_coronal_section(
-        self, z: int, subtype_colors: dict, symbols: list = ["o", "+", "^", "vbar"], fold_on: bool = False
+        self,
+        z: int,
+        subtype_colors: dict,
+        symbols: list = ["o", "+", "^", "vbar"],
+        fold_on: bool = False,
     ):
         """Generate napari view with allen atlas and points of soma detections.
 
@@ -633,8 +637,8 @@ def collect_regional_segmentation(
 
 
 class AxonDistribution(BrainDistribution):
-    """Generates visualizations of results of axon segmentations of a set of brains. Implements BrainDistribution.
-    """
+    """Generates visualizations of results of axon segmentations of a set of brains. Implements BrainDistribution."""
+
     def __init__(self, brain_ids: list, regional_distribution_dir: str):
         super().__init__(brain_ids)
         self.regional_distribution_dir = regional_distribution_dir
@@ -702,7 +706,7 @@ class AxonDistribution(BrainDistribution):
             subtype_colors (dict): Mapping of subtype to color to be used in visualization.
             fold_on (bool, optional): Whether to plot a single hemisphere, with results from other side mirrored. Defaults to False.
         """
-        
+
         brain2paths = axon_data.brain2paths
         if "filepath" in brain2paths["atlas"].keys():
             vol_atlas = io.imread(brain2paths["atlas"]["filepath"])

@@ -34,9 +34,7 @@ composite_regions = {
 Show results in brain space
 """
 sd = SomaDistribution(brain_ids=brain_ids)
-sd.napari_coronal_section(
-    z=1000, subtype_colors=colors, fold_on=fold_on
-)
+sd.napari_coronal_section(z=1000, subtype_colors=colors, fold_on=fold_on)
 
 sd.brainrender_somas(subtype_colors=colors)
 
