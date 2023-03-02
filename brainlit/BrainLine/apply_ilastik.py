@@ -22,8 +22,8 @@ from brainlit.BrainLine.imports import *
 
 
 class ApplyIlastik:
-    """Applies ilastik to subvolumes for the purpose of validating machine learning algorithms.
-    """
+    """Applies ilastik to subvolumes for the purpose of validating machine learning algorithms."""
+
     def __init__(
         self, ilastk_path: str, project_path: str, brains_path: str, brains: list
     ):
@@ -46,8 +46,7 @@ class ApplyIlastik:
             )
 
     def process_subvols(self):
-        """Apply ilastik to all validation subvolumes of the specified brain ids in the specified directory
-        """
+        """Apply ilastik to all validation subvolumes of the specified brain ids in the specified directory"""
         items_total = []
         for brain in tqdm(self.brains, desc="Gathering brains..."):
             path = f"{self.brains_path}brain{brain}/val/"
@@ -61,8 +60,7 @@ class ApplyIlastik:
         )
 
     def move_results(self):
-        """Move results from process_subvols to a new subfolder.
-        """
+        """Move results from process_subvols to a new subfolder."""
         for brain in tqdm(self.brains, desc="Moving results"):
             # if brain == "8557":
             #     brain_name = "r1"
@@ -353,8 +351,8 @@ def examine_threshold(
 
 
 class ApplyIlastik_LargeImage:
-    """Apply ilastik to large image, where chunking is necessary.
-    """
+    """Apply ilastik to large image, where chunking is necessary."""
+
     def __init__(
         self,
         ilastik_path: str,
