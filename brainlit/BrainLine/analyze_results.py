@@ -83,6 +83,8 @@ class BrainDistribution:
 
 
 class SomaDistribution(BrainDistribution):
+    """Object to generate various analysis images for results from a set of brain IDs. An implementation of BrainDistribution class.
+    """
     def __init__(self, brain_ids: list):
         super().__init__(brain_ids)
         atlas_points = self._retrieve_soma_coords(brain_ids)
@@ -145,8 +147,16 @@ class SomaDistribution(BrainDistribution):
         return id_to_regioncounts
 
     def napari_coronal_section(
-        self, z: int, subtype_colors: dict, symbols: list, fold_on: bool = False
+        self, z: int, subtype_colors: dict, symbols: list = ["o", "+", "^", "vbar"], fold_on: bool = False
     ):
+        """Generate napari view with allen atlas and points of soma detections.
+
+        Args:
+            z (int): index of coronal slice in Allen atlas.
+            subtype_colors (dict): Mapping of subtypes (in soma_data.py file) to colors for soma plotting.
+            symbols (list): Napari point symbols to use for different samples of the same subtype. Defaults to ["o", "+", "^", "vbar"].
+            fold_on (bool, optional): Whether napari views should be a hemisphere, in which case detections from the other side are mirrored. Defaults to False.
+        """
         brain2paths = soma_data.brain2paths
         atlas_points = self.atlas_points
         if "filepath" in brain2paths["atlas"].keys():
@@ -201,12 +211,18 @@ class SomaDistribution(BrainDistribution):
         v.scale_bar.visible = True
         napari.run()
 
-    def brainrender_somas(self, subtype_colors):
+    def brainrender_somas(self, subtype_colors, brain_region: str = "DR"):
+        """Generate brainrender viewer with soma detections.
+
+        Args:
+            subtype_colors (_type_): Mapping of subtypes (in soma_data.py file) to colors for soma plotting.
+            brain_region (str, optional): Brain region to display with the detections (e.g. dorsal raphe nucleus). Defaults to "DR".
+        """
         brain_ids = self.brain_ids
         brain2paths = self.brain2paths
 
         scene = Scene(atlas_name="allen_mouse_50um", title="Input Somas")
-        scene.add_brain_region("DR", alpha=0.15)
+        scene.add_brain_region(brain_region, alpha=0.15)
 
         for brain_id in brain_ids:
             viz_link = brain2paths[brain_id]["somas_atlas_url"]
@@ -243,6 +259,13 @@ class SomaDistribution(BrainDistribution):
     def region_barchart(
         self, regions: list, composite_regions: dict = {}, normalize_region: int = -1
     ):
+        """Generate bar charts comparing soma detection counts between regions.
+
+        Args:
+            regions (list): List of Allen atlas brain region IDs to display data for (ID's found here: http://api.brain-map.org/api/v2/structure_graph_download/1.json)
+            composite_regions (dict, optional): Mapping from a custom composite region (str, e.g. "Amygdala") to a set of regions that compose it (list of ints e.g. [131, 295, 319, 780]). Defaults to {}.
+            normalize_region (int, optional): Region ID to normalize data for the normalized bar chart. Defaults to -1.
+        """
         region_graph = self.region_graph
 
         subtype_counts = self._get_subtype_counts(object_type="soma")
@@ -576,6 +599,14 @@ def _combine_regional_segmentations(outdir):
 def collect_regional_segmentation(
     brain_id: str, outdir: str, ncpu: int = 1, max_coords: list = [-1, -1, -1]
 ):
+    """Combine segmentation and registration to generate counts of axon voxels across brain regions. Note this scripts writes a file for every chunk, which might be many.
+
+    Args:
+        brain_id (str): Brain ID to process, from axon_data.py
+        outdir (str): Path to directory to write files.
+        ncpu (int, optional): Number of cpus to use for parallel processing. Defaults to 1.
+        max_coords (list, optional): Upper limits of brain to complete processing, -1 will lead to processing the whole axis. Defaults to [-1, -1, -1].
+    """
     dir_base = axon_data.brain2paths[brain_id]["base"]
 
     dir = os.path.join(dir_base, "axon_mask")
@@ -602,6 +633,8 @@ def collect_regional_segmentation(
 
 
 class AxonDistribution(BrainDistribution):
+    """Generates visualizations of results of axon segmentations of a set of brains. Implements BrainDistribution.
+    """
     def __init__(self, brain_ids: list, regional_distribution_dir: str):
         super().__init__(brain_ids)
         self.regional_distribution_dir = regional_distribution_dir
@@ -662,6 +695,14 @@ class AxonDistribution(BrainDistribution):
     def napari_coronal_section(
         self, z: int, subtype_colors: dict, fold_on: bool = False
     ):
+        """Generate napari viewer with allen parcellation and heat map of axon segmentations.
+
+        Args:
+            z (int): Index of coronal slice of allen atlas.
+            subtype_colors (dict): Mapping of subtype to color to be used in visualization.
+            fold_on (bool, optional): Whether to plot a single hemisphere, with results from other side mirrored. Defaults to False.
+        """
+        
         brain2paths = axon_data.brain2paths
         if "filepath" in brain2paths["atlas"].keys():
             vol_atlas = io.imread(brain2paths["atlas"]["filepath"])
@@ -712,6 +753,11 @@ class AxonDistribution(BrainDistribution):
         napari.run()
 
     def brainrender_axons(self, subtype_colors: dict):
+        """Generate brainrender view to show axon segmentations.
+
+        Args:
+            subtype_colors (dict): Mapping of subtype to color to be used in visualization.
+        """
         brain_ids = self.brain_ids
         brain2paths = self.brain2paths
 
@@ -753,6 +799,13 @@ class AxonDistribution(BrainDistribution):
     def region_barchart(
         self, regions: list, composite_regions: dict = {}, normalize_region: int = -1
     ):
+        """Generate bar charts with statistical tests to compare segmentations between brains.
+
+        Args:
+            regions (list): List of Allen atlas brain region IDs to display data for (ID's found here: http://api.brain-map.org/api/v2/structure_graph_download/1.json)
+            composite_regions (dict, optional): Mapping from a custom composite region (str, e.g. "Amygdala") to a set of regions that compose it (list of ints e.g. [131, 295, 319, 780]). Defaults to {}.
+            normalize_region (int, optional): Region ID to normalize data for the normalized bar chart. Defaults to -1.
+        """
         region_graph = self.region_graph
         subtype_counts = self._get_subtype_counts(object_type="axon")
         print(subtype_counts)

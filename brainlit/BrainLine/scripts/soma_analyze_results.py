@@ -6,7 +6,6 @@ Inputs
 colors = {
     "test_type": "red",
 }  # colors for different subtypes
-symbols = ["o", "+", "^", "vbar"]
 brain_ids = ["test"]  # brain ids from soma_data file
 fold_on = True  # whether to fold
 
@@ -36,7 +35,7 @@ Show results in brain space
 """
 sd = SomaDistribution(brain_ids=brain_ids)
 sd.napari_coronal_section(
-    z=1000, subtype_colors=colors, symbols=symbols, fold_on=fold_on
+    z=1000, subtype_colors=colors, fold_on=fold_on
 )
 
 sd.brainrender_somas(subtype_colors=colors)
