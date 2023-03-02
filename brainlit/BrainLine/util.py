@@ -17,6 +17,18 @@ def download_subvolumes(
     dataset_to_save: str,
     object_type: str,
 ):
+    """Download subvolumes around a set of manually marked points for validation of machine learning model.
+
+    Args:
+        data_dir (str): Path to directory where subvolumes will be saved.
+        brain_id (str): Brain ID key in brain2paths dictionary from soma_data or axon_data/
+        layer_names (list): List of precomputed layer names associated with the brain_id, ordered by primary signal channel (e.g. antibody), background channel, and secondary signal channel (e.g. endogenous fluorescence).
+        dataset_to_save (str): val or train - specifies which set of subvolumes should be downloaded, if applicable.
+        object_type (str): soma or axon, specifies which _data file to use.
+
+    Raises:
+        ValueError: _description_
+    """
     if object_type == "soma":
         brain2paths = data.soma_data.brain2paths
         radius = 25
@@ -112,7 +124,7 @@ def _get_corners(shape, chunk_size, max_coords: list = [-1, -1, -1]):
     return corners
 
 
-def json_to_points(url, round=False):
+def json_to_points(url, round=False) -> dict:
     """Extract points from a neuroglancer url.
 
     Args:
@@ -147,7 +159,7 @@ def json_to_points(url, round=False):
     return point_layers
 
 
-def find_sample_names(dir, dset="", add_dir=False):
+def _find_sample_names(dir, dset="", add_dir=False):
     """Find file paths of samples in a given directory according to filters used in the workflow.
 
 
@@ -173,7 +185,7 @@ def find_sample_names(dir, dset="", add_dir=False):
     return items
 
 
-def setup_atlas_graph():
+def _setup_atlas_graph():
     """Create networkx graph of regions in allen atlas (from ara_structure_ontology.json). Initially uses vikram's code in build_tree, then converts to networkx.
 
     Returns:
@@ -219,7 +231,7 @@ def setup_atlas_graph():
     return G
 
 
-def get_atlas_level_nodes(atlas_level, atlas_graph):
+def _get_atlas_level_nodes(atlas_level, atlas_graph):
     """Find regions in atlas that are at a specified level in the hierarchy
 
     Args:
@@ -237,7 +249,7 @@ def get_atlas_level_nodes(atlas_level, atlas_graph):
     return atlas_level_nodes
 
 
-def find_atlas_level_label(label, atlas_level_nodes, atlas_level, G):
+def _find_atlas_level_label(label, atlas_level_nodes, atlas_level, G):
     """Map a given region label to a label at a specified level in the hierarchy.
 
     Args:
@@ -275,7 +287,7 @@ def find_atlas_level_label(label, atlas_level_nodes, atlas_level, G):
         return atlas_level_label
 
 
-def fold(image):
+def _fold(image):
     """Take a 2D image and add the left half to a reflected version of the right half.
 
     Args:

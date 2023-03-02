@@ -4,7 +4,7 @@ from tqdm import tqdm
 import subprocess
 from joblib import Parallel, delayed
 import multiprocessing
-from brainlit.BrainLine.util import find_sample_names, _get_corners
+from brainlit.BrainLine.util import _find_sample_names, _get_corners
 from brainlit.BrainLine.data.soma_data import brain2paths
 from datetime import date
 from cloudvolume import CloudVolume, exceptions
@@ -48,7 +48,7 @@ class ApplyIlastik:
         for brain in tqdm(self.brains, desc="Gathering brains..."):
             path = f"{self.brains_path}brain{brain}/val/"
 
-            items_total += find_sample_names(path, dset="", add_dir=True)
+            items_total += _find_sample_names(path, dset="", add_dir=True)
 
         # run all files
         Parallel(n_jobs=8)(
@@ -73,7 +73,7 @@ class ApplyIlastik:
                 print(f"Creating directory: {results_dir}")
                 os.makedirs(results_dir)
 
-            items = find_sample_names(brain_dir, dset="", add_dir=False)
+            items = _find_sample_names(brain_dir, dset="", add_dir=False)
             for item in items:
                 result_path = brain_dir + item[:-3] + "_Probabilities.h5"
                 shutil.move(result_path, results_dir + item[:-3] + "_Probabilities.h5")
@@ -91,7 +91,7 @@ def plot_results(
     precisions = []
     fscores = []
 
-    data_files = find_sample_names(base_dir, dset="", add_dir=True)
+    data_files = _find_sample_names(base_dir, dset="", add_dir=True)
     test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
     print(f"Evaluating files: {test_files}")
 
@@ -207,7 +207,7 @@ def examine_threshold(
 ):
     base_dir = data_dir + f"/brain{brain_id}/val/"
 
-    data_files = find_sample_names(base_dir, dset="", add_dir=True)
+    data_files = _find_sample_names(base_dir, dset="", add_dir=True)
     test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
 
     size_thresh = 500

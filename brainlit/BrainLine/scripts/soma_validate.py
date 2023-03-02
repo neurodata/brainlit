@@ -1,13 +1,6 @@
 from brainlit.preprocessing import removeSmallCCs
-from brainlit.BrainLine.data.soma_data import brain2paths, brain2centers
-from brainlit.BrainLine.util import (
-    json_to_points,
-    find_atlas_level_label,
-    fold,
-    setup_atlas_graph,
-    get_atlas_level_nodes,
-    download_subvolumes,
-)
+from brainlit.BrainLine.data.soma_data import brain2paths
+from brainlit.BrainLine.util import download_subvolumes
 from brainlit.BrainLine.apply_ilastik import ApplyIlastik, plot_results
 from brainlit.BrainLine.parse_ara import *
 import xml.etree.ElementTree as ET

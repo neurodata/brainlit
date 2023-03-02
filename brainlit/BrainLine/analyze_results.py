@@ -5,11 +5,10 @@ from cloudvolume import CloudVolume, exceptions
 from tqdm import tqdm
 from skimage import io, measure
 from brainlit.BrainLine.util import (
-    json_to_points,
-    find_atlas_level_label,
-    fold,
-    setup_atlas_graph,
-    get_atlas_level_nodes,
+    _find_atlas_level_label,
+    _fold,
+    _setup_atlas_graph,
+    _get_atlas_level_nodes,
     _get_corners,
 )
 from brainlit.BrainLine.data import soma_data, axon_data
@@ -31,7 +30,7 @@ class BrainDistribution:
         self.brain_ids = brain_ids
 
     def _slicetolabels(self, slice, fold_on: bool = False, atlas_level: int = 5):
-        region_graph = setup_atlas_graph()
+        region_graph = _setup_atlas_graph()
         atlas_level_nodes = get_atlas_level_nodes(atlas_level, region_graph)
         newslice = np.copy(slice)
         new_labels = {}
@@ -319,7 +318,7 @@ class SomaDistribution(BrainDistribution):
     def _setup_regiongraph(self):
         brain_ids = self.brain_ids
         id_to_regioncounts = self.id_to_regioncounts
-        region_graph = setup_atlas_graph()
+        region_graph = _setup_atlas_graph()
         max_level = 0
 
         # set to 0
@@ -612,7 +611,7 @@ class AxonDistribution(BrainDistribution):
     def _setup_regiongraph(self, regional_distribution_dir):
         regional_distribution_dir = self.regional_distribution_dir
         brain_ids = self.brain_ids
-        region_graph = setup_atlas_graph()
+        region_graph = _setup_atlas_graph()
         max_level = 0
 
         # set to 0
