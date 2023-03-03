@@ -1,6 +1,6 @@
 import h5py
 import numpy as np
-from brainlit.BrainLine.apply_ilastik import plot_results
+from brainlit.BrainLine.apply_ilastik import plot_results, examine_threshold
 import os
 import pytest
 import matplotlib.pyplot as plt
@@ -27,10 +27,16 @@ def axon_data_dir(tmp_path_factory):
 
     im_probs = np.zeros((2, 10, 10, 10))
     im_probs[0, 0, 0, :5] = 0.9
-    for fname in ["subvol.h5", "subvol_Probabilities.h5"]:
-        path = val_dir / fname
-        with h5py.File(path, "w") as f:
-            f.create_dataset("exported_data", data=im_probs)
+    path = val_dir / "subvol_Probabilities.h5"
+    with h5py.File(path, "w") as f:
+        f.create_dataset("exported_data", data=im_probs)
+
+    
+    im = np.zeros((3, 10, 10, 10))
+    im[0, 0, 0, :5] = 0.9
+    path = val_dir / "subvol.h5"
+    with h5py.File(path, "w") as f:
+        f.create_dataset("image_3channel", data=im)
 
     return data_dir
 
@@ -53,6 +59,10 @@ def test_plot_results_axon(axon_data_dir):
     assert test_best_threshold < 0.9
     assert true_max_fscore == test_max_fscore
 
+def test_examine_threshold_axon(axon_data_dir):
+    data_dir_str = str(axon_data_dir)
+    examine_threshold(data_dir=data_dir_str, brain_id="test", threshold=0.5, object_type="axon",positive_channel=0)
+
 
 @pytest.fixture(scope="session")
 def soma_data_dir(tmp_path_factory):
@@ -63,12 +73,13 @@ def soma_data_dir(tmp_path_factory):
     val_dir.mkdir()
 
     im_probs = np.zeros((2, 10, 10, 10))
+    im = np.zeros((3, 10, 10, 10))
     im_probs[1, :, :, :7] = 0.9
     for fname in ["subvol1_pos", "subvol2_pos", "subvol3_neg"]:
         fname_im = fname + ".h5"
         im_path = val_dir / fname_im
         with h5py.File(str(im_path), "w") as f:
-            pass
+            f.create_dataset("image_3channel", data=im)
 
         fname_prob = fname + "_Probabilities.h5"
         path = val_dir / fname_prob
@@ -96,3 +107,12 @@ def test_plot_results_soma(soma_data_dir):
 
     assert test_best_threshold < 0.9
     assert true_max_fscore == test_max_fscore
+
+
+def test_examine_threshold_soma(soma_data_dir):
+    data_dir_str = str(soma_data_dir)
+    examine_threshold(data_dir=data_dir_str, brain_id="test", threshold=0.5, object_type="soma",positive_channel=1, doubles = ["subvol2_pos.h5"])
+
+
+def test_ApplyIlastik_LargeImage():
+    pass # could do a partial test by creating local cloudvolume then just making max_coords so there are no chunks to be processed
