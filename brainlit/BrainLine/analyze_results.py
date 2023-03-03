@@ -31,12 +31,12 @@ class BrainDistribution:
 
     def _slicetolabels(self, slice, fold_on: bool = False, atlas_level: int = 5):
         region_graph = _setup_atlas_graph()
-        atlas_level_nodes = get_atlas_level_nodes(atlas_level, region_graph)
+        atlas_level_nodes = _get_atlas_level_nodes(atlas_level, region_graph)
         newslice = np.copy(slice)
         new_labels = {}
 
         for label in tqdm(np.unique(slice), desc=f"Relabeling slice"):
-            atlas_level_label = find_atlas_level_label(
+            atlas_level_label = _find_atlas_level_label(
                 label, atlas_level_nodes, atlas_level, region_graph
             )
             newslice[slice == label] = atlas_level_label
@@ -85,7 +85,7 @@ class BrainDistribution:
 class SomaDistribution(BrainDistribution):
     """Object to generate various analysis images for results from a set of brain IDs. An implementation of BrainDistribution class."""
 
-    def __init__(self, brain_ids: list):
+    def __init__(self, brain_ids: list, show_plots: bool = True):
         super().__init__(brain_ids)
         atlas_points = self._retrieve_soma_coords(brain_ids)
         self.atlas_points = atlas_points
@@ -94,6 +94,7 @@ class SomaDistribution(BrainDistribution):
         region_graph = self._setup_regiongraph()
         self.region_graph = region_graph
         self.brain2paths = soma_data.brain2paths
+        self.show_plots = show_plots
 
     def _retrieve_soma_coords(self, brain_ids: list):
         brain2paths = soma_data.brain2paths
@@ -171,9 +172,10 @@ class SomaDistribution(BrainDistribution):
         slice = vol_atlas[z, :, :]
         newslice, borders, half_width = self._slicetolabels(slice, fold_on=fold_on)
 
-        v = napari.Viewer()
-        v.add_labels(newslice, scale=[10, 10])
-        v.add_image(borders, scale=[10, 10], name=f"z={z}")
+        if self.show_plots:
+            v = napari.Viewer()
+            v.add_labels(newslice, scale=[10, 10])
+            v.add_image(borders, scale=[10, 10], name=f"z={z}")
 
         gtype_counts = {}
         for key in subtype_colors.keys():
@@ -200,20 +202,21 @@ class SomaDistribution(BrainDistribution):
                         im_coord[1] = 2 * half_width - im_coord[1]
 
                     fg_points.append([im_coord[0], im_coord[1]])
-
-            v.add_points(
-                fg_points,
-                symbol=symbols[gtype_counts[gtype]],
-                face_color=subtype_colors[gtype],
-                size=10,
-                name=f"{key}: {gtype}",
-                scale=[10, 10],
-            )
+            if self.show_plots:
+                v.add_points(
+                    fg_points,
+                    symbol=symbols[gtype_counts[gtype]],
+                    face_color=subtype_colors[gtype],
+                    size=10,
+                    name=f"{key}: {gtype}",
+                    scale=[10, 10],
+                )
             gtype_counts[gtype] = gtype_counts[gtype] + 1
 
-        v.scale_bar.unit = "um"
-        v.scale_bar.visible = True
-        napari.run()
+        if self.show_plots:
+            v.scale_bar.unit = "um"
+            v.scale_bar.visible = True
+            napari.run()
 
     def brainrender_somas(self, subtype_colors: dict, brain_region: str = "DR"):
         """Generate brainrender viewer with soma detections.
@@ -258,7 +261,9 @@ class SomaDistribution(BrainDistribution):
             )
 
         scene.content
-        scene.render()
+
+        if self.show_plots:
+            scene.render()
 
     def region_barchart(
         self, regions: list, composite_regions: dict = {}, normalize_region: int = -1
@@ -284,7 +289,11 @@ class SomaDistribution(BrainDistribution):
         )
         subtypes = df["Subtype"].unique()
 
-        fig, axes = plt.subplots(1, 3, figsize=(39, 13))
+        if normalize_region >= 0:
+            fig, axes = plt.subplots(1, 3, figsize=(39, 13))
+        else:
+            fig, axes = plt.subplots(1, 2, figsize=(26, 13))
+
         sns.set(font_scale=2)
 
         # first panel
@@ -306,41 +315,43 @@ class SomaDistribution(BrainDistribution):
 
         # second panel
         fig_args = {
-            "x": "Normalized Somas",
-            "y": "Region",
-            "hue": "Subtype",
-            "data": df,
-        }
-
-        sns.set(font_scale=2)
-        bplot = sns.barplot(ax=axes[1], orient="h", **fig_args)
-        bplot.set_xscale("log")
-
-        if len(subtypes) > 1:
-            annotator = self._configure_annotator(df, axes[1], "Normalized Somas")
-            annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
-            annotator.apply_and_annotate()
-
-        # third panel
-        fig_args = {
             "x": "Percent of Total Somas (%)",
             "y": "Region",
             "hue": "Subtype",
             "data": df,
         }
 
-        bplot = sns.barplot(ax=axes[2], orient="h", **fig_args)
+        bplot = sns.barplot(ax=axes[1], orient="h", **fig_args)
         bplot.set_xscale("log")
 
         if len(subtypes) > 1:
             annotator = self._configure_annotator(
-                df, axes[2], "Percent of Total Somas (%)"
+                df, axes[1], "Percent of Total Somas (%)"
             )
             annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
             annotator.apply_and_annotate()
 
+        # third panel
+        if normalize_region >= 0:
+            fig_args = {
+                "x": "Normalized Somas",
+                "y": "Region",
+                "hue": "Subtype",
+                "data": df,
+            }
+
+            sns.set(font_scale=2)
+            bplot = sns.barplot(ax=axes[2], orient="h", **fig_args)
+            bplot.set_xscale("log")
+
+            if len(subtypes) > 1:
+                annotator = self._configure_annotator(df, axes[2], "Normalized Somas")
+                annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+                annotator.apply_and_annotate()
+
         fig.tight_layout()
-        plt.show()
+        if self.show_plots:
+            plt.show()
 
     def _setup_regiongraph(self):
         brain_ids = self.brain_ids
@@ -639,11 +650,17 @@ def collect_regional_segmentation(
 class AxonDistribution(BrainDistribution):
     """Generates visualizations of results of axon segmentations of a set of brains. Implements BrainDistribution."""
 
-    def __init__(self, brain_ids: list, regional_distribution_dir: str):
+    def __init__(
+        self, brain_ids: list, regional_distribution_dir: str, show_plots: bool = True
+    ):
         super().__init__(brain_ids)
         self.regional_distribution_dir = regional_distribution_dir
-        self.region_graph = self._setup_regiongraph(regional_distribution_dir)
+        region_graph, total_axon_vols = self._setup_regiongraph(
+            regional_distribution_dir
+        )
+        self.region_graph, self.total_axon_vols = region_graph, total_axon_vols
         self.brain2paths = axon_data.brain2paths
+        self.show_plots = show_plots
 
     def _setup_regiongraph(self, regional_distribution_dir):
         regional_distribution_dir = self.regional_distribution_dir
@@ -679,6 +696,14 @@ class AxonDistribution(BrainDistribution):
                         quantification_dict[region][0]
                     )
 
+        total_axon_vols = {}
+
+        for brain in brain_ids:
+            total = 0
+            for node in region_graph.nodes:
+                total += region_graph.nodes[node][brain + " axon"]
+            total_axon_vols[brain] = total
+
         # propagate counts up the hierarchy
         for brain_id in brain_ids:
             for lvl in range(max_level, 0, -1):
@@ -694,7 +719,7 @@ class AxonDistribution(BrainDistribution):
                             + region_graph.nodes[node][brain_id + " total"]
                         )
 
-        return region_graph
+        return region_graph, total_axon_vols
 
     def napari_coronal_section(
         self, z: int, subtype_colors: dict, fold_on: bool = False
@@ -717,8 +742,9 @@ class AxonDistribution(BrainDistribution):
 
         newslice, borders, half_width = self._slicetolabels(slice, fold_on=fold_on)
 
-        v = napari.Viewer()
-        v.add_labels(newslice, scale=[10, 10])
+        if self.show_plots:
+            v = napari.Viewer()
+            v.add_labels(newslice, scale=[10, 10])
 
         heatmaps = {subtype: 0 * newslice for subtype in subtype_colors.keys()}
         for brain_id in self.brain_ids:
@@ -732,7 +758,7 @@ class AxonDistribution(BrainDistribution):
                 10, :, :
             ]
             if fold_on:
-                mask_slice = fold(mask_slice)
+                mask_slice = _fold(mask_slice)
             mask_slice[newslice == 0] = 0
 
             heatmaps[subtype] = heatmaps[subtype] + mask_slice
@@ -750,13 +776,14 @@ class AxonDistribution(BrainDistribution):
 
         rgb_heatmap = np.stack(rgb_heatmap, axis=-1)
 
-        v.add_image(rgb_heatmap, rgb=True, scale=[10, 10], name=f"{subtype_colors}")
-        v.add_labels(borders * 2, scale=[10, 10], name=f"z={z}")
-        v.scale_bar.unit = "um"
-        v.scale_bar.visible = True
-        napari.run()
+        if self.show_plots:
+            v.add_image(rgb_heatmap, rgb=True, scale=[10, 10], name=f"{subtype_colors}")
+            v.add_labels(borders * 2, scale=[10, 10], name=f"z={z}")
+            v.scale_bar.unit = "um"
+            v.scale_bar.visible = True
+            napari.run()
 
-    def brainrender_axons(self, subtype_colors: dict):
+    def brainrender_axons(self, subtype_colors: dict, brain_region: str = "DR"):
         """Generate brainrender view to show axon segmentations.
 
         Args:
@@ -766,7 +793,7 @@ class AxonDistribution(BrainDistribution):
         brain2paths = self.brain2paths
 
         scene = Scene(atlas_name="allen_mouse_50um", title="Input Somas")
-        scene.add_brain_region("DR", alpha=0.15)
+        scene.add_brain_region(brain_region, alpha=0.15)
 
         for subtype in subtype_colors.keys():
             im_total = None
@@ -798,7 +825,9 @@ class AxonDistribution(BrainDistribution):
 
         # render
         scene.content
-        scene.render()
+
+        if self.show_plots:
+            scene.render()
 
     def region_barchart(
         self, regions: list, composite_regions: dict = {}, normalize_region: int = -1
@@ -819,7 +848,10 @@ class AxonDistribution(BrainDistribution):
         )
         subtypes = df["Subtype"].unique()
 
-        fig, axes = plt.subplots(1, 3, figsize=(39, 13))
+        if normalize_region >= 0:
+            fig, axes = plt.subplots(1, 3, figsize=(39, 13))
+        else:
+            fig, axes = plt.subplots(1, 2, figsize=(26, 13))
         sns.set(font_scale=2)
 
         # first panel
@@ -841,50 +873,53 @@ class AxonDistribution(BrainDistribution):
 
         # second panel
         fig_args = {
-            "x": "Normalized Axon Density",
-            "y": "Region",
-            "hue": "Subtype",
-            "data": df,
-        }
-
-        sns.set(font_scale=2)
-        bplot = sns.barplot(ax=axes[1], orient="h", **fig_args)
-        bplot.set_xscale("log")
-
-        if len(subtypes) > 1:
-            annotator = self._configure_annotator(
-                df, axes[1], "Normalized Axon Density"
-            )
-            annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
-            annotator.apply_and_annotate()
-
-        # third panel
-        fig_args = {
             "x": "Percent Total Axon Volume (%)",
             "y": "Region",
             "hue": "Subtype",
             "data": df,
         }
 
-        bplot = sns.barplot(ax=axes[2], orient="h", **fig_args)
+        bplot = sns.barplot(ax=axes[1], orient="h", **fig_args)
         bplot.set_xscale("log")
 
         if len(subtypes) > 1:
             annotator = self._configure_annotator(
-                df, axes[2], "Percent Total Axon Volume (%)"
+                df, axes[1], "Percent Total Axon Volume (%)"
             )
             annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
             annotator.apply_and_annotate()
 
+        if normalize_region >= 0:
+            # third panel
+            fig_args = {
+                "x": "Normalized Axon Density",
+                "y": "Region",
+                "hue": "Subtype",
+                "data": df,
+            }
+
+            sns.set(font_scale=2)
+            bplot = sns.barplot(ax=axes[2], orient="h", **fig_args)
+            bplot.set_xscale("log")
+
+            if len(subtypes) > 1:
+                annotator = self._configure_annotator(
+                    df, axes[2], "Normalized Axon Density"
+                )
+                annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+                annotator.apply_and_annotate()
+
         fig.tight_layout()
-        plt.show()
+
+        if self.show_plots:
+            plt.show()
 
     def _make_bar_df(
         self, regions, composite_regions, subtype_counts, normalize_region
     ):
         region_graph = self.region_graph
         brain_ids = self.brain_ids
-        region_vols = self._get_region_total_vols()
+        total_axon_vols = self.total_axon_vols
 
         subtypes = []
         axon_vols = []
@@ -910,9 +945,10 @@ class AxonDistribution(BrainDistribution):
                     )
                 else:
                     norm_factor = 1
-                    print(
-                        f"Warning: brain {brain_id} has no projection in normalizing region: {normalize_region}"
-                    )
+                    if normalize_region >= 0:
+                        print(
+                            f"Warning: brain {brain_id} has no projection in normalizing region: {normalize_region}"
+                        )
 
                 if total_vol == 0 and axon_vol == 0:
                     axon_denss.append(0)
@@ -924,7 +960,7 @@ class AxonDistribution(BrainDistribution):
                     axon_denss.append(dens * 100)
                     axon_denss_norm.append(dens / norm_factor)
 
-                axon_vols.append(axon_vol / region_vols[brain_id] * 100)
+                axon_vols.append(axon_vol / total_axon_vols[brain_id] * 100)
                 subtypes.append(subtype + f" (n={subtype_counts[subtype]})")
                 region_name.append(region_graph.nodes[region]["name"])
                 brain_ids_data.append(brain_id)
@@ -938,8 +974,10 @@ class AxonDistribution(BrainDistribution):
                 total_vol = 0
 
                 for region_component in region_components:
-                    axon_vol += region_graph.nodes[region][brain_id + " axon"]
-                    total_vol += region_graph.nodes[region][brain_id + " total"]
+                    axon_vol += region_graph.nodes[region_component][brain_id + " axon"]
+                    total_vol += region_graph.nodes[region_component][
+                        brain_id + " total"
+                    ]
 
                 if (
                     normalize_region >= 0
@@ -951,9 +989,10 @@ class AxonDistribution(BrainDistribution):
                     )
                 else:
                     norm_factor = 1
-                    print(
-                        f"Warning: brain {brain_id} has no projection in normalizing region: {normalize_region}"
-                    )
+                    if normalize_region >= 0:
+                        print(
+                            f"Warning: brain {brain_id} has no projection in normalizing region: {normalize_region}"
+                        )
 
                 if total_vol == 0 and axon_vol == 0:
                     axon_denss.append(0)
@@ -965,7 +1004,7 @@ class AxonDistribution(BrainDistribution):
                     axon_denss.append(dens * 100)
                     axon_denss_norm.append(dens / norm_factor)
 
-                axon_vols.append(axon_vol / region_vols[brain_id] * 100)
+                axon_vols.append(axon_vol / total_axon_vols[brain_id] * 100)
                 subtypes.append(subtype + f" (n={subtype_counts[subtype]})")
                 region_name.append(region_component_name)
                 brain_ids_data.append(brain_id)
@@ -981,19 +1020,8 @@ class AxonDistribution(BrainDistribution):
                 d["Normalized Axon Density"] = axon_denss_norm
 
             df = pd.DataFrame(data=d)
+
             return df
-
-    def _get_region_total_vols(self):
-        brain_ids = self.brain_ids
-        region_graph = self.region_graph
-        region_vols = {}
-
-        for brain in self.brain_ids:
-            total = 0
-            for node in region_graph.nodes:
-                total += region_graph.nodes[node][brain + " axon"]
-            region_vols[brain] = total
-        return region_vols
 
     def _configure_annotator(self, df, axis, ind_variable: str):
         test = "Mann-Whitney"

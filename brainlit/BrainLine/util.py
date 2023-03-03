@@ -278,7 +278,7 @@ def _find_atlas_level_label(label, atlas_level_nodes, atlas_level, G):
             preds = list(G.predecessors(label))
             if len(preds) != 1:
                 raise ValueError(f"{len(preds)} predecessors of node {label}")
-            atlas_level_label = find_atlas_level_label(
+            atlas_level_label = _find_atlas_level_label(
                 preds[0], atlas_level_nodes, atlas_level, G
             )
             counter += 1

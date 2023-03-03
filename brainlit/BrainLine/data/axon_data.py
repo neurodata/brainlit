@@ -45,4 +45,7 @@ brain2paths = {
         },
         "subtype": "test_type",
     },
+    "pytest": {
+        "subtype": "test_type",
+    },
 }

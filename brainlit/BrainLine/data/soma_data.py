@@ -50,4 +50,8 @@ brain2paths = {
         "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=LTWdmg7lYf1nbA",
         "subtype": "test_type",
     },
+    "pytest": {
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=_psPASktgiqpXA",
+        "subtype": "test_type",
+    },
 }
