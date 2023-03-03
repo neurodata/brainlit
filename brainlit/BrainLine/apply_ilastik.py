@@ -229,6 +229,7 @@ def examine_threshold(
     object_type: str,
     positive_channel: int,
     doubles: list = [],
+    show_plot: bool = True,
 ):
     """Display results in napari of all subvolumes that were below some performance threshold, at a given threshold.
 
@@ -239,6 +240,7 @@ def examine_threshold(
         object_type (str): soma or axon, the data type being examined.
         positive_channel (int): 0 or 1, Channel that represents neuron in the predictions.
         doubles (list, optional): Filenames of soma subvolumes that contain two somas, if applicable. Defaults to [].
+        show_plot (bool, optional): Whether to run napari, useful for pytests when figures should not be displayed. Defaults to True.
 
     Raises:
         ValueError: If object_type is neither axon nor soma
@@ -275,7 +277,7 @@ def examine_threshold(
                     if area > size_thresh:
                         num_detected += 1
                         print(f"area of detected object: {area}")
-                        if num_detected > newpos:
+                        if num_detected > newpos and show_plot:
                             print(f"Soma false positive Area: {area}")
                             f = h5py.File(im_fname, "r")
                             im = f.get("image_3channel")
@@ -289,7 +291,7 @@ def examine_threshold(
                                 name=f"soma false positive area: {area}",
                             )
 
-                if num_detected == 0:
+                if num_detected == 0 and show_plot:
                     print(f"Soma false negative")
                     f = h5py.File(im_fname, "r")
                     im = f.get("image_3channel")
@@ -302,7 +304,7 @@ def examine_threshold(
             elif "neg" in filename:
                 for prop in props:
                     area = prop["area"]
-                    if area > size_thresh:
+                    if area > size_thresh and show_plot:
                         print(f"Nonsoma false positive Area: {area}")
                         f = h5py.File(im_fname, "r")
                         im = f.get("image_3channel")
@@ -345,7 +347,7 @@ def examine_threshold(
             else:
                 precision = true_pos / (true_pos + false_pos)
 
-            if precision < 0.8 or recall < 0.8:
+            if (precision < 0.8 or recall) < 0.8 and show_plot:
                 f = h5py.File(im_fname, "r")
                 im = f.get("image_3channel")
                 print(f"prec{precision} recall: {recall}")
