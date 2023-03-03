@@ -135,7 +135,7 @@ class SomaDistribution(BrainDistribution):
             ):
                 point_int = [int(np.round(p)) for p in point]
                 try:
-                    region = vol_atlas[point_int[0], point_int[1], point_int[2]]
+                    region = int(vol_atlas[point_int[0], point_int[1], point_int[2]])
                 except IndexError:
                     continue
                 if region in brain_dict.keys():
@@ -169,7 +169,7 @@ class SomaDistribution(BrainDistribution):
         else:
             vol_atlas = CloudVolume(brain2paths["atlas"]["url"])
 
-        slice = vol_atlas[z, :, :]
+        slice = np.squeeze(vol_atlas[z, :, :])
         newslice, borders, half_width = self._slicetolabels(slice, fold_on=fold_on)
 
         if self.show_plots:
