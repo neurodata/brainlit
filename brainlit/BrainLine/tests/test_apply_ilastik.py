@@ -67,7 +67,7 @@ def test_examine_threshold_axon(axon_data_dir):
         threshold=0.5,
         object_type="axon",
         positive_channel=0,
-        show_plot = False,
+        show_plot=False,
     )
 
 
@@ -125,7 +125,7 @@ def test_examine_threshold_soma(soma_data_dir):
         object_type="soma",
         positive_channel=1,
         doubles=["subvol2_pos.h5"],
-        show_plot = False,
+        show_plot=False,
     )
 
 
