@@ -1,6 +1,7 @@
 import warnings
 
 import brainlit.algorithms
+import brainlit.BrainLine
 import brainlit.feature_extraction
 import brainlit.preprocessing
 import brainlit.utils

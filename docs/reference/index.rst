@@ -8,8 +8,8 @@ Reference
 
     algs
     map_neurons
+    brainline
     feature_extraction
     preprocessing
-    registration
     utils
     viz
