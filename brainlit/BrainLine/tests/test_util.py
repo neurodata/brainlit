@@ -2,10 +2,15 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 from brainlit.BrainLine import util
+from cloudvolume import CloudVolume
 
 ############################
 ### functionality checks ###
 ############################
+
+def test_download_subvolumes(tmp_path):
+    # need to edit soma_data to accomodate this - maybe use ~/??
+    pass
 
 
 def test_json_to_points():

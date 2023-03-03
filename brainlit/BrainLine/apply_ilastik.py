@@ -88,6 +88,7 @@ def plot_results(
     object_type: str,
     positive_channel: int,
     doubles: list = [],
+    show_plot: bool = True
 ):
     """Plot precision recall curve for a specified brain.
 
@@ -97,9 +98,14 @@ def plot_results(
         object_type (str): soma or axon, the type of data to examine.
         positive_channel (int): Channel that represents neuron in the predictions.
         doubles (list, optional): Filenames of soma subvolumes that contain two somas, if applicable. Defaults to [].
+        show_plot (bool, optional): Whether to run pyplot, useful for pytests when figures should not be displayed. Defaults to True.
 
     Raises:
         ValueError: _description_
+
+    Returns:
+        float: Best f-score across all thresholds.
+        float: Threshold that yields the best validation f-score.
     """
     base_dir = data_dir + f"/brain{brain_id}/val/"
     recalls = []
@@ -209,7 +215,11 @@ def plot_results(
     plt.ylim([0, 1.1])
     plt.title(f"Brain {brain_id} Validation: {tot_pos}+ {tot_neg}-")
     plt.legend()
-    plt.show()
+
+    if show_plot:
+        plt.show()
+    
+    return max_fscore, best_threshold
 
 
 def examine_threshold(
