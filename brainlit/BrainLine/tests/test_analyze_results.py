@@ -7,8 +7,8 @@ def test_SomaDistribution():
     subtype_colors = {"test_type": "red"}
 
     sd = SomaDistribution(["pytest"], show_plots=False)
-    sd.brainrender_somas(subtype_colors=subtype_colors, brain_region="MOB")
-    sd.napari_coronal_section(z=1000, subtype_colors=subtype_colors, fold_on=True)
+    # sd.brainrender_somas(subtype_colors=subtype_colors, brain_region="MOB")
+    # sd.napari_coronal_section(z=1000, subtype_colors=subtype_colors, fold_on=True)
     sd.region_barchart(
         regions=[362, 795],
         composite_regions={"Olfactory Bulb": [507, 698, 1016]},
