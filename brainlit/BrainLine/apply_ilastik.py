@@ -88,7 +88,7 @@ def plot_results(
     object_type: str,
     positive_channel: int,
     doubles: list = [],
-    show_plot: bool = True
+    show_plot: bool = True,
 ):
     """Plot precision recall curve for a specified brain.
 
@@ -218,7 +218,7 @@ def plot_results(
 
     if show_plot:
         plt.show()
-    
+
     return max_fscore, best_threshold
 
 
