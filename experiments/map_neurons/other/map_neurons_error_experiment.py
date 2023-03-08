@@ -59,7 +59,7 @@ inter = -1
 ds_factors = [100,1]
 
 print(
-    f"Processing neurons starting with {inter} with a spacing {spacing} and downsampling factor {ds_factor}"
+    f"Processing neurons starting with {inter} with a spacing {spacing} and downsampling factor {ds_factors}"
 )
 
 ct = CloudReg_Transform(
