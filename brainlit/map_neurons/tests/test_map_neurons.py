@@ -8,6 +8,7 @@ from scipy.io import savemat
 from scipy.interpolate import splprep, CubicHermiteSpline
 import pytest
 import pandas as pd
+from copy import deepcopy
 
 
 @pytest.fixture(scope="session")
@@ -15,7 +16,7 @@ def init_crt(tmp_path_factory) -> CloudReg_Transform:
     """Write the mat files for a simulated CloudReg registration computation.
 
     Returns:
-        CloudReg_Transform: example CloudReg Transform that has an affine transform and whose nonlinear component is actually just a translation.
+        CloudReg_Transform: example CloudReg Transform that has an affine transform (scaling of 2, then shift of [10,10,10]) and whose nonlinear component is actually just a translation (in direction of [1,1,1] for 10 time steps, so mapping to atlas will be translation of [-1,-1,-1]).
     """
     data_dir = tmp_path_factory.mktemp("data")
 
@@ -141,15 +142,15 @@ def test_Jacobian_noonidentity(init_crt):
     """Jacobian of dilation should be 2*Id"""
 
     def Fx(pos):
-        return pos[0]
+        return pos[1]
 
     def Fy(pos):
-        return pos[1]
+        return pos[0]
 
     def Fz(pos):
         return pos[2]
 
-    crt = init_crt
+    crt = deepcopy(init_crt)
     og_diffeo = crt.diffeomorphism
     crt.diffeomorphism = (Fx, Fy, Fz)
     positions = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 1]])
@@ -168,6 +169,9 @@ def test_D(init_crt):
     derivs = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 1]])
     true_transformed_derivs = derivs
 
+    print(crt.Jacobian(np.array([1, 0, 0])))
+    print(crt.diffeomorphism[0]([0,2,0]))
+    print(crt.diffeomorphism[0]([0,1,0]))
     transformed_derivs = crt.D(positions, derivs)
 
     np.testing.assert_almost_equal(true_transformed_derivs, transformed_derivs)

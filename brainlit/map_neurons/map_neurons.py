@@ -219,7 +219,7 @@ class CloudReg_Transform(DiffeomorphismAction):
         self.diffeomorphism = (Fx, Fy, Fz)
 
     def evaluate(self, position: np.array) -> np.array:
-        """Apply non-affine component of mapping to positions.
+        """Apply non-affine component of mapping to positions, in direction of self.direction (default from target to atlas).
 
         Args:
             position (np.array): Positions at which to compute mappings.
@@ -257,17 +257,17 @@ class CloudReg_Transform(DiffeomorphismAction):
         Fz = self.diffeomorphism[2]
 
         J = np.zeros((3, 3))
-        J[0, 0] = (Fx([pos[1], pos[0] + step, pos[2]]) + step - Fx(pos[[1,0,2]])) / step
+        J[0, 0] = (Fx([pos[1], pos[0] + step, pos[2]]) - Fx(pos[[1,0,2]])) / step + 1
         J[0, 1] = (Fx([pos[1] + step, pos[0], pos[2]]) - Fx(pos[[1,0,2]])) / step
         J[0, 2] = (Fx([pos[1], pos[0], pos[2] + step]) - Fx(pos[[1,0,2]])) / step
 
         J[1, 0] = (Fy([pos[1], pos[0] + step, pos[2]]) - Fy(pos[[1,0,2]])) / step
-        J[1, 1] = (Fy([pos[1] + step, pos[0],pos[2]]) + step - Fy(pos[[1,0,2]])) / step
+        J[1, 1] = (Fy([pos[1] + step, pos[0],pos[2]]) - Fy(pos[[1,0,2]])) / step + 1
         J[1, 2] = (Fy([pos[1], pos[0], pos[2] + step]) - Fy(pos[[1,0,2]])) / step
 
         J[2, 0] = (Fz([pos[1], pos[0] + step, pos[2]]) - Fz(pos[[1,0,2]])) / step
         J[2, 1] = (Fz([pos[1] + step, pos[0], pos[2]]) - Fz(pos[[1,0,2]])) / step
-        J[2, 2] = (Fz([pos[1], pos[0], pos[2] + step]) + step - Fz(pos[[1,0,2]])) / step
+        J[2, 2] = (Fz([pos[1], pos[0], pos[2] + step]) - Fz(pos[[1,0,2]])) / step + 1
 
         return J
 
