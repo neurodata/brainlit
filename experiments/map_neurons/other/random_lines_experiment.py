@@ -1,34 +1,20 @@
-from pathlib import Path
-from brainlit.utils.Neuron_trace import NeuronTrace
+
 from brainlit.algorithms.trace_analysis.fit_spline import (
     GeometricGraph,
     compute_parameterization,
 )
-from scipy.interpolate import splprep, BSpline, CubicHermiteSpline
+from scipy.interpolate import splprep
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.cm import ScalarMappable
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib
 from scipy.interpolate import splev
 from brainlit.map_neurons.map_neurons import (
-    DiffeomorphismAction,
     transform_geometricgraph,
-    compute_derivs,
 )
 import pandas as pd
 import numpy as np
-import h5py
 from brainlit.map_neurons.map_neurons import CloudReg_Transform
 from scipy.spatial.distance import cosine
 from tqdm import tqdm
-from cloudvolume import CloudVolume
 from similaritymeasures import frechet_dist
-import seaborn as sns
-from statannotations.Annotator import Annotator
-from statannot import add_stat_annotation
-import time
-from cloudvolume.exceptions import SkeletonDecodeError
 import pickle
 from copy import deepcopy
 import random
