@@ -46,7 +46,7 @@ for i in tqdm(range(iterations)):
 
     dict = {"x": [pt1[0], pt2[0]], "y": [pt1[1], pt2[1]], "z": [pt1[2], pt2[2]], "sample": [0,1], "parent": [-1, 0]}
     df = pd.DataFrame(data=dict)
-    G_branch = GeometricGraph(df=df, root=s[0])
+    G_branch = GeometricGraph(df=df, root=0)
 
     G_branch.fit_spline_tree_invariant()
     spline_tree_branch = G_branch.spline_tree
