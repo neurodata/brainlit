@@ -50,9 +50,6 @@ for i in range(100):
 
 print(f"Valid IDs: {valid_ids}")
 
-methods = []
-errors = []
-av_sample_distances = []
 
 spacing = 2
 inter = -1
@@ -68,6 +65,9 @@ ct = CloudReg_Transform(
 )
 
 for ds_factor in ds_factors:
+    methods = []
+    errors = []
+    av_sample_distances = []
     for id in tqdm(valid_ids, desc="Processing neurons..."):
         if id <= inter:
             continue
