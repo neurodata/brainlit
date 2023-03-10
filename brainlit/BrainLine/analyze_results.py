@@ -258,7 +258,8 @@ class SomaDistribution(BrainDistribution):
         )
         subtypes = df["Subtype"].unique()
 
-        fig, axes = plt.subplots(1, 3, figsize=(39, 13))
+        num_entries = len(regions) + len(composite_regions.keys())
+        fig, axes = plt.subplots(1, 3, figsize=(39, num_entries*0.8))
         sns.set(font_scale=2)
 
         # first panel
@@ -448,7 +449,7 @@ class SomaDistribution(BrainDistribution):
             return df
 
     def _configure_annotator(self, df, axis, ind_variable: str):
-        test = "Mann-Whitney"
+        test = "Log t-test_ind"
         # test = "t-test_ind"
         correction = "fdr_by"
 
@@ -763,7 +764,8 @@ class AxonDistribution(BrainDistribution):
         )
         subtypes = df["Subtype"].unique()
 
-        fig, axes = plt.subplots(1, 3, figsize=(39, 13))
+        num_entries = len(regions) + len(composite_regions.keys())
+        fig, axes = plt.subplots(1, 3, figsize=(39, num_entries*0.8))
         sns.set(font_scale=2)
 
         # first panel
@@ -882,8 +884,8 @@ class AxonDistribution(BrainDistribution):
                 total_vol = 0
 
                 for region_component in region_components:
-                    axon_vol += region_graph.nodes[region][brain_id + " axon"]
-                    total_vol += region_graph.nodes[region][brain_id + " total"]
+                    axon_vol += region_graph.nodes[region_component][brain_id + " axon"]
+                    total_vol += region_graph.nodes[region_component][brain_id + " total"]
 
                 if (
                     normalize_region >= 0
@@ -940,7 +942,7 @@ class AxonDistribution(BrainDistribution):
         return region_vols
 
     def _configure_annotator(self, df, axis, ind_variable: str):
-        test = "Mann-Whitney"
+        test = "Log t-test_ind"
         # test = "t-test_ind"
         correction = "fdr_by"
 

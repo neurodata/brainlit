@@ -154,6 +154,7 @@ brain2paths = {
             "nonsomas_layer": "nonsoma_train",
         },
         "vizlink": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=C4DKojFJSgEo-A",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=HXtu5wki04Y0yw",
         "subtype": "gad2 vgat",
     },
     "8454": {
@@ -199,7 +200,7 @@ brain2paths = {
             "somas_layer": "soma_train",
             "nonsomas_layer": "nonsoma_train",
         },
-        "subtype": "tph2 vglut3",
+        "subtype": "tph2 gad2",
         "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=iiX4cb9vLbHLXQ",
     },
 }
