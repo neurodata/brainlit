@@ -129,19 +129,29 @@ def test_direction_errors(tmp_path_factory):
         ra = np.ones([nT] + shp)
         hf.create_dataset(comp, data=ra)
 
-    with pytest.raises(NotImplementedError, match=r"Cannot integrate from atlas to target space yet."):
-        crt = CloudReg_Transform(vpath=path_matt_v, Apath=path_matt_A, direction='target')
+    with pytest.raises(
+        NotImplementedError, match=r"Cannot integrate from atlas to target space yet."
+    ):
+        crt = CloudReg_Transform(
+            vpath=path_matt_v, Apath=path_matt_A, direction="target"
+        )
 
-    direction = 'neither'
-    with pytest.raises(ValueError, match=f"direction argument must be atlas or target, not {direction}"):
-        crt = CloudReg_Transform(vpath=path_matt_v, Apath=path_matt_A, direction=direction)
+    direction = "neither"
+    with pytest.raises(
+        ValueError, match=f"direction argument must be atlas or target, not {direction}"
+    ):
+        crt = CloudReg_Transform(
+            vpath=path_matt_v, Apath=path_matt_A, direction=direction
+        )
+
 
 def test_DiffeomorphismAction_interface():
     da = DiffeomorphismAction()
-    pos = np.array([0,0,0])
-    d = np.array([0,0,0])
+    pos = np.array([0, 0, 0])
+    d = np.array([0, 0, 0])
     da.evaluate(pos)
     da.D(pos, d)
+
 
 ##################
 ### validation ###
