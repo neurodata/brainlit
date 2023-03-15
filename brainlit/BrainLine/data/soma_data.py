@@ -50,6 +50,10 @@ brain2paths = {
         "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=LTWdmg7lYf1nbA",
         "subtype": "test_type",
     },
+    "biccn": {
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=8VHD-seixZg9pg",
+        "subtype": "test"
+    },
     "8557": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2021_10_06/8557/",
         "val_info": {
@@ -77,7 +81,7 @@ brain2paths = {
             "somas_layer": "<unknown>",
             "nonsomas_layer": "<unknown>",
         },
-        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=bRZIsX_3yiuhkw",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=UtK0gLiq_8WlQA",
         "subtype": "tph2 gad2",
     },
     "8468": {
@@ -95,7 +99,7 @@ brain2paths = {
             "somas_layer": "<unknown>",
             "nonsomas_layer": "<unknown>",
         },
-        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=CtofrUJNRnA0Ew",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=guSqN8FCetYXGA",
         "subtype": "tph2 gad2",
     },
     "8529": {
@@ -138,7 +142,7 @@ brain2paths = {
             "somas_layer": "soma_val",
             "nonsomas_layer": "nonsoma_val",
         },
-        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=NKbJwOj-JeDafg",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=sAjrqYlYDLkF_A",
         "subtype": "tph2 gad2",
     },
     "8446": {
@@ -201,7 +205,8 @@ brain2paths = {
             "nonsomas_layer": "nonsoma_train",
         },
         "subtype": "tph2 gad2",
-        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=iiX4cb9vLbHLXQ",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=6O1ufCnHBBeK8Q",
+        "somas_atlas_url_partial": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=iiX4cb9vLbHLXQ",
     },
 }
 
