@@ -1,4 +1,3 @@
-
 from brainlit.algorithms.trace_analysis.fit_spline import (
     GeometricGraph,
     compute_parameterization,
@@ -44,7 +43,13 @@ for i in tqdm(range(iterations)):
         length = np.linalg.norm(np.subtract(pt1, pt2))
         print(length)
 
-    dict = {"x": [pt1[0], pt2[0]], "y": [pt1[1], pt2[1]], "z": [pt1[2], pt2[2]], "sample": [0,1], "parent": [-1, 0]}
+    dict = {
+        "x": [pt1[0], pt2[0]],
+        "y": [pt1[1], pt2[1]],
+        "z": [pt1[2], pt2[2]],
+        "sample": [0, 1],
+        "parent": [-1, 0],
+    }
     df = pd.DataFrame(data=dict)
     G_branch = GeometricGraph(df=df, root=0)
 
@@ -53,7 +58,9 @@ for i in tqdm(range(iterations)):
 
     # transform the branch
     G_branch_transformed = deepcopy(G_branch)
-    G_branch_transformed = transform_geometricgraph(G_branch_transformed, ct, deriv_method="two-sided")
+    G_branch_transformed = transform_geometricgraph(
+        G_branch_transformed, ct, deriv_method="two-sided"
+    )
 
     spline_tree_transformed = G_branch_transformed.spline_tree
 

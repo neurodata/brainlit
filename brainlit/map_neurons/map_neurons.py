@@ -119,15 +119,15 @@ class CloudReg_Transform(DiffeomorphismAction):
 
         nxV = [vtx.shape[2], vtx.shape[3], vtx.shape[1]]
 
-        dxV = velocity_voxel_size # units: microns/voxel
-        xV = np.arange(0, nxV[0]) * dxV[0] # units: microns
+        dxV = velocity_voxel_size  # units: microns/voxel
+        xV = np.arange(0, nxV[0]) * dxV[0]  # units: microns
         yV = np.arange(0, nxV[1]) * dxV[1]
         zV = np.arange(0, nxV[2]) * dxV[2]
         xV = xV - np.mean(xV)
         yV = yV - np.mean(yV)
         zV = zV - np.mean(zV)
         # *V variables represent a static grid
-        [XV, YV, ZV] = np.meshgrid(xV, yV, zV, indexing="ij") # units: microns
+        [XV, YV, ZV] = np.meshgrid(xV, yV, zV, indexing="ij")  # units: microns
         # reshape to match matlab
         XV = np.swapaxes(XV, 0, 1)
         YV = np.swapaxes(YV, 0, 1)
@@ -148,7 +148,7 @@ class CloudReg_Transform(DiffeomorphismAction):
             )
 
         # trans variables aggregates the cumulative displacement from the originial grid coordinates
-        transx = XV # units: microns
+        transx = XV  # units: microns
         transy = YV
         transz = ZV
 
@@ -231,9 +231,9 @@ class CloudReg_Transform(DiffeomorphismAction):
         Fy = self.diffeomorphism[1]
         Fz = self.diffeomorphism[2]
 
-        transformed_positionx = Fx(position[:,[1,0,2]]) + position[:, 0]
-        transformed_positiony = Fy(position[:,[1,0,2]]) + position[:, 1]
-        transformed_positionz = Fz(position[:,[1,0,2]]) + position[:, 2]
+        transformed_positionx = Fx(position[:, [1, 0, 2]]) + position[:, 0]
+        transformed_positiony = Fy(position[:, [1, 0, 2]]) + position[:, 1]
+        transformed_positionz = Fz(position[:, [1, 0, 2]]) + position[:, 2]
 
         transformed_position = np.stack(
             (transformed_positionx, transformed_positiony, transformed_positionz),
@@ -257,17 +257,17 @@ class CloudReg_Transform(DiffeomorphismAction):
         Fz = self.diffeomorphism[2]
 
         J = np.zeros((3, 3))
-        J[0, 0] = (Fx([pos[1], pos[0] + step, pos[2]]) - Fx(pos[[1,0,2]])) / step + 1
-        J[0, 1] = (Fx([pos[1] + step, pos[0], pos[2]]) - Fx(pos[[1,0,2]])) / step
-        J[0, 2] = (Fx([pos[1], pos[0], pos[2] + step]) - Fx(pos[[1,0,2]])) / step
+        J[0, 0] = (Fx([pos[1], pos[0] + step, pos[2]]) - Fx(pos[[1, 0, 2]])) / step + 1
+        J[0, 1] = (Fx([pos[1] + step, pos[0], pos[2]]) - Fx(pos[[1, 0, 2]])) / step
+        J[0, 2] = (Fx([pos[1], pos[0], pos[2] + step]) - Fx(pos[[1, 0, 2]])) / step
 
-        J[1, 0] = (Fy([pos[1], pos[0] + step, pos[2]]) - Fy(pos[[1,0,2]])) / step
-        J[1, 1] = (Fy([pos[1] + step, pos[0],pos[2]]) - Fy(pos[[1,0,2]])) / step + 1
-        J[1, 2] = (Fy([pos[1], pos[0], pos[2] + step]) - Fy(pos[[1,0,2]])) / step
+        J[1, 0] = (Fy([pos[1], pos[0] + step, pos[2]]) - Fy(pos[[1, 0, 2]])) / step
+        J[1, 1] = (Fy([pos[1] + step, pos[0], pos[2]]) - Fy(pos[[1, 0, 2]])) / step + 1
+        J[1, 2] = (Fy([pos[1], pos[0], pos[2] + step]) - Fy(pos[[1, 0, 2]])) / step
 
-        J[2, 0] = (Fz([pos[1], pos[0] + step, pos[2]]) - Fz(pos[[1,0,2]])) / step
-        J[2, 1] = (Fz([pos[1] + step, pos[0], pos[2]]) - Fz(pos[[1,0,2]])) / step
-        J[2, 2] = (Fz([pos[1], pos[0], pos[2] + step]) - Fz(pos[[1,0,2]])) / step + 1
+        J[2, 0] = (Fz([pos[1], pos[0] + step, pos[2]]) - Fz(pos[[1, 0, 2]])) / step
+        J[2, 1] = (Fz([pos[1] + step, pos[0], pos[2]]) - Fz(pos[[1, 0, 2]])) / step
+        J[2, 2] = (Fz([pos[1], pos[0], pos[2] + step]) - Fz(pos[[1, 0, 2]])) / step + 1
 
         return J
 

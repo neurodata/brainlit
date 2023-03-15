@@ -170,8 +170,8 @@ def test_D(init_crt):
     true_transformed_derivs = derivs
 
     print(crt.Jacobian(np.array([1, 0, 0])))
-    print(crt.diffeomorphism[0]([0,2,0]))
-    print(crt.diffeomorphism[0]([0,1,0]))
+    print(crt.diffeomorphism[0]([0, 2, 0]))
+    print(crt.diffeomorphism[0]([0, 1, 0]))
     transformed_derivs = crt.D(positions, derivs)
 
     np.testing.assert_almost_equal(true_transformed_derivs, transformed_derivs)
