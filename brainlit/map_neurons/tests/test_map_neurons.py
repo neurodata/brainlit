@@ -8,6 +8,7 @@ from scipy.io import savemat
 from scipy.interpolate import splprep, CubicHermiteSpline
 import pytest
 import pandas as pd
+from copy import deepcopy
 
 
 @pytest.fixture(scope="session")
@@ -15,7 +16,7 @@ def init_crt(tmp_path_factory) -> CloudReg_Transform:
     """Write the mat files for a simulated CloudReg registration computation.
 
     Returns:
-        CloudReg_Transform: example CloudReg Transform that has an affine transform and whose nonlinear component is actually just a translation.
+        CloudReg_Transform: example CloudReg Transform that has an affine transform (scaling of 2, then shift of [10,10,10]) and whose nonlinear component is actually just a translation (in direction of [1,1,1] for 10 time steps, so mapping to atlas will be translation of [-1,-1,-1]).
     """
     data_dir = tmp_path_factory.mktemp("data")
 
@@ -97,6 +98,61 @@ def test_compute_derivs_input():
         compute_derivs(us=u, tck=tck, positions=pts, deriv_method="foo")
 
 
+def test_direction_errors(tmp_path_factory):
+    """Write the mat files for a simulated CloudReg registration computation.
+
+    Returns:
+        CloudReg_Transform: example CloudReg Transform that has an affine transform (scaling of 2, then shift of [10,10,10]) and whose nonlinear component is actually just a translation (in direction of [1,1,1] for 10 time steps, so mapping to atlas will be translation of [-1,-1,-1]).
+    """
+    data_dir = tmp_path_factory.mktemp("data")
+
+    # Save affine file
+    path_matt_A = data_dir / "A.mat"
+
+    # scale by 2 then add 10's
+    A = np.eye(4)
+    A[:3, :3] = np.eye(3) * 2
+    A[:3, 3] = [10, 10, 10]
+    A = np.linalg.inv(A)
+    data = {"A": A}
+    savemat(path_matt_A, data)
+
+    # Save velocity file
+    path_matt_v = data_dir / "v.mat"
+    hf = h5py.File(path_matt_v, "w")
+
+    nT = 10
+    shp = [20, 20, 20]
+
+    data = {}
+    for comp in ["vtx", "vty", "vtz"]:
+        ra = np.ones([nT] + shp)
+        hf.create_dataset(comp, data=ra)
+
+    with pytest.raises(
+        NotImplementedError, match=r"Cannot integrate from atlas to target space yet."
+    ):
+        crt = CloudReg_Transform(
+            vpath=path_matt_v, Apath=path_matt_A, direction="target"
+        )
+
+    direction = "neither"
+    with pytest.raises(
+        ValueError, match=f"direction argument must be atlas or target, not {direction}"
+    ):
+        crt = CloudReg_Transform(
+            vpath=path_matt_v, Apath=path_matt_A, direction=direction
+        )
+
+
+def test_DiffeomorphismAction_interface():
+    da = DiffeomorphismAction()
+    pos = np.array([0, 0, 0])
+    d = np.array([0, 0, 0])
+    da.evaluate(pos)
+    da.D(pos, d)
+
+
 ##################
 ### validation ###
 ##################
@@ -141,15 +197,15 @@ def test_Jacobian_noonidentity(init_crt):
     """Jacobian of dilation should be 2*Id"""
 
     def Fx(pos):
-        return pos[0]
+        return pos[1]
 
     def Fy(pos):
-        return pos[1]
+        return pos[0]
 
     def Fz(pos):
         return pos[2]
 
-    crt = init_crt
+    crt = deepcopy(init_crt)
     og_diffeo = crt.diffeomorphism
     crt.diffeomorphism = (Fx, Fy, Fz)
     positions = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 1]])
@@ -168,6 +224,9 @@ def test_D(init_crt):
     derivs = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 1]])
     true_transformed_derivs = derivs
 
+    print(crt.Jacobian(np.array([1, 0, 0])))
+    print(crt.diffeomorphism[0]([0, 2, 0]))
+    print(crt.diffeomorphism[0]([0, 1, 0]))
     transformed_derivs = crt.D(positions, derivs)
 
     np.testing.assert_almost_equal(true_transformed_derivs, transformed_derivs)
