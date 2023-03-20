@@ -15,8 +15,11 @@ from brainlit.BrainLine.util import (
 from brainlit.BrainLine.data import soma_data, axon_data
 import napari
 import scipy.ndimage as ndi
+from scipy.stats import ttest_ind
 import seaborn as sns
 from statannotations.Annotator import Annotator
+from statannotations.stats.StatTest import StatTest
+from statannotations import stats
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
@@ -24,13 +27,14 @@ from joblib import Parallel, delayed
 import pickle
 from brainrender import Scene
 from brainrender.actors import Points, Volume
+import json
 
 
 class BrainDistribution:
     def __init__(self, brain_ids: list):
         self.brain_ids = brain_ids
 
-    def _slicetolabels(self, slice, fold_on: bool = False, atlas_level: int = 5):
+    def _slicetolabels(self, slice, fold_on: bool = False, atlas_level: int = 8):
         region_graph = setup_atlas_graph()
         atlas_level_nodes = get_atlas_level_nodes(atlas_level, region_graph)
         newslice = np.copy(slice)
@@ -98,7 +102,18 @@ class SomaDistribution(BrainDistribution):
         brain2paths = soma_data.brain2paths
         atlas_points = {}
         for brain_id in brain_ids:
-            if "somas_atlas_url" in brain2paths[brain_id].keys():
+            if "somas_atlas_path" in brain2paths[brain_id].keys():
+                json_dir = brain2paths[brain_id]["somas_atlas_path"]
+                jsons = os.listdir(json_dir)
+                points = []
+                for json_file in jsons:
+                    json_path = json_dir + json_file
+                    with open(json_path) as f:
+                        data = json.load(f)
+                    for pt in data:
+                        points.append(pt['point'])
+                atlas_points[brain_id] = np.array(points)
+            elif "somas_atlas_url" in brain2paths[brain_id].keys():
                 viz_link = brain2paths[brain_id]["somas_atlas_url"]
                 viz_link = NGLink(viz_link.split("json_url=")[-1])
                 ngl_json = viz_link._json
@@ -193,14 +208,15 @@ class SomaDistribution(BrainDistribution):
                 symbol=symbols[gtype_counts[gtype]],
                 face_color=subtype_colors[gtype],
                 size=10,
-                name=f"{key}: {gtype}",
+                name=f"{key}: {gtype} - {symbols[gtype_counts[gtype]]}",
                 scale=[10, 10],
             )
             gtype_counts[gtype] = gtype_counts[gtype] + 1
 
         v.scale_bar.unit = "um"
         v.scale_bar.visible = True
-        napari.run()
+        # napari.run()
+        return v
 
     def brainrender_somas(self, subtype_colors):
         brain_ids = self.brain_ids
@@ -450,6 +466,7 @@ class SomaDistribution(BrainDistribution):
 
     def _configure_annotator(self, df, axis, ind_variable: str):
         test = "Log t-test_ind"
+        my_logttest = StatTest(self._log_ttest_ind, test_long_name='Log t-test_ind', test_short_name='log-t')
         # test = "t-test_ind"
         correction = "fdr_by"
 
@@ -478,7 +495,7 @@ class SomaDistribution(BrainDistribution):
 
         annotator = Annotator(axis, pairs, **fig_args)
         annotator.configure(
-            test=test,
+            test=my_logttest,
             text_format="star",
             loc="outside",
             comparisons_correction=correction,
@@ -486,6 +503,11 @@ class SomaDistribution(BrainDistribution):
 
         return annotator
 
+    def _log_ttest_ind(self, group_data1, group_data2, verbose=1, **stats_params):
+        group_data1_log = np.log(group_data1)
+        group_data2_log = np.log(group_data2)
+
+        return ttest_ind(group_data1_log, group_data2_log, **stats_params)
 
 def _get_corners_collection(
     vol_mask, vol_reg, block_size, max_coords: list = [-1, -1, -1]
