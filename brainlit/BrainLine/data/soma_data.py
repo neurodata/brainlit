@@ -210,6 +210,15 @@ brain2paths = {
         "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=6O1ufCnHBBeK8Q",
         "somas_atlas_url_partial": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=iiX4cb9vLbHLXQ",
     },
+    "969": {
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2023_03_15/969/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=kSzIi9RUiPLr9Q",
+            "somas_layer": "soma_val",
+            "nonsomas_layer": "nonsoma_val"
+        },
+        "subtype": "tph2 gad2"
+    }
 }
 
 # first entry is somas, second is nonsomas
