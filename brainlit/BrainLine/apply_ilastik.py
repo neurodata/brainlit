@@ -81,118 +81,118 @@ class ApplyIlastik:
 
 def plot_results(
     data_dir: str,
-    brain_id: str,
+    brain_ids: list,
     object_type: str,
     positive_channel: int,
     doubles: list = [],
 ):
-    base_dir = data_dir + f"/brain{brain_id}/val/"
     recalls = []
     precisions = []
-    fscores = []
-
-    data_files = find_sample_names(base_dir, dset="", add_dir=True)
-    test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
-    print(f"Evaluating files: {test_files}")
+    brain_ids_data = []
+    best_fscores = {}
+    best_precisions = []
+    best_recalls = []
 
     size_thresh = 500
 
     thresholds = list(np.arange(0.0, 1.0, 0.02))
+    for brain_id in tqdm(brain_ids, desc="Processing Brains"):
+        base_dir = data_dir + f"/brain{brain_id}/val/"
+        data_files = find_sample_names(base_dir, dset="", add_dir=True)
+        test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
 
-    for threshold in thresholds:
-        tot_pos = 0
-        tot_neg = 0
-        true_pos = 0
-        false_pos = 0
-        for filename in tqdm(test_files, disable=True):
-            f = h5py.File(filename, "r")
-            pred = f.get("exported_data")
-            pred = pred[positive_channel, :, :, :]
-            mask = pred > threshold
+        best_fscore = 0
+        best_thresh = -1
+        for threshold in thresholds:
+            tot_pos = 0
+            tot_neg = 0
+            true_pos = 0
+            false_pos = 0
+            for filename in tqdm(test_files, disable=True):
+                f = h5py.File(filename, "r")
+                pred = f.get("exported_data")
+                pred = pred[positive_channel, :, :, :]
+                mask = pred > threshold
 
-            if object_type == "soma":
-                if filename.split("/")[-1] in doubles:
-                    newpos = 2
-                else:
-                    newpos = 1
+                if object_type == "soma":
+                    if filename.split("/")[-1] in doubles:
+                        newpos = 2
+                    else:
+                        newpos = 1
 
-                labels = measure.label(mask)
-                props = measure.regionprops(labels)
-                if "pos" in filename:
-                    num_detected = 0
-                    tot_pos += newpos
-                    for prop in props:
-                        if prop["area"] > size_thresh:
-                            if num_detected < newpos:
-                                true_pos += 1
-                                num_detected += 1
-                            else:
+                    labels = measure.label(mask)
+                    props = measure.regionprops(labels)
+                    if "pos" in filename:
+                        num_detected = 0
+                        tot_pos += newpos
+                        for prop in props:
+                            if prop["area"] > size_thresh:
+                                if num_detected < newpos:
+                                    true_pos += 1
+                                    num_detected += 1
+                                else:
+                                    false_pos += 1
+                    elif "neg" in filename:
+                        tot_neg += 1
+                        for prop in props:
+                            if prop["area"] > size_thresh:
                                 false_pos += 1
-                elif "neg" in filename:
-                    tot_neg += 1
-                    for prop in props:
-                        if prop["area"] > size_thresh:
-                            false_pos += 1
-            elif object_type == "axon":
-                filename_lab = filename[:-17] + "-image_3channel_Labels.h5"
-                f = h5py.File(filename_lab, "r")
-                gt = f.get("exported_data")
-                gt = gt[0, :, :, :]
-                pos_labels = gt == 2
-                neg_labels = gt == 1
+                elif object_type == "axon":
+                    filename_lab = filename[:-17] + "-image_3channel_Labels.h5"
+                    f = h5py.File(filename_lab, "r")
+                    gt = f.get("exported_data")
+                    gt = gt[0, :, :, :]
+                    pos_labels = gt == 2
+                    neg_labels = gt == 1
 
-                tot_pos += np.sum(pos_labels)
-                tot_neg += np.sum(neg_labels)
-                true_pos += np.sum(np.logical_and(mask, pos_labels))
-                false_pos += np.sum(np.logical_and(mask, neg_labels))
+                    tot_pos += np.sum(pos_labels)
+                    tot_neg += np.sum(neg_labels)
+                    true_pos += np.sum(np.logical_and(mask, pos_labels))
+                    false_pos += np.sum(np.logical_and(mask, neg_labels))
+                else:
+                    raise ValueError(f"object_type must be axon or soma, not {object_type}")
+
+            brain_ids_data.append(brain_id)
+            recall = true_pos / tot_pos
+            recalls.append(recall)
+            if true_pos + false_pos == 0:
+                precision = 0
             else:
-                raise ValueError(f"object_type must be axon or soma, not {object_type}")
+                precision = true_pos / (true_pos + false_pos)
+            precisions.append(precision)
+            if precision == 0 and recall == 0:
+                fscore = 0
+            else:
+                fscore = 2 * precision * recall / (precision + recall)
 
-        print(f"{true_pos} {tot_pos}")
-        recall = true_pos / tot_pos
-        recalls.append(recall)
-        if true_pos + false_pos == 0:
-            precision = 0
-        else:
-            precision = true_pos / (true_pos + false_pos)
-        precisions.append(precision)
-        if precision == 0 and recall == 0:
-            fscore = 0
-        else:
-            fscore = 2 * precision * recall / (precision + recall)
-        fscores.append(fscore)
-        print(
-            f"Threshold: {threshold} --- Total prec.: {precision}, total rec.: {recall} w/{tot_pos}/{tot_neg} total pos/neg samples in {len(test_files)} images. F-score: {fscore} "
-        )
+            if fscore > best_fscore:
+                best_fscore = fscore
+                best_thresh = threshold 
+                best_prec = precision
+                best_recall = recall
+
+        best_fscores[brain_id] = (best_fscore, best_thresh)
+        best_precisions.append(best_prec)
+        best_recalls.append(best_recall)
+
+    for i, brain_id in enumerate(brain_ids_data):
+        brain_ids_data[i] = brain_id + f" - MaxFS: {best_fscores[brain_id][0]:.2f} @thresh: {best_fscores[brain_id][1]}"
 
     dict = {
+        "ID": brain_ids_data,
         "Recall": recalls,
         "Precision": precisions,
-        "F-score": fscores,
-        "Threshold": thresholds,
     }
     df = pd.DataFrame(dict)
-    max_fscore = df["F-score"].max()
-    best_threshold = float(df.loc[df["F-score"] == max_fscore]["Threshold"].iloc[0])
-    best_rec = float(df.loc[df["F-score"] == max_fscore]["Recall"].iloc[0])
-    best_prec = float(df.loc[df["F-score"] == max_fscore]["Precision"].iloc[0])
 
-    print(f"Max f-score: {max_fscore:.2f} thresh:{best_threshold:.2f}")
     print("If this performance is not adequate, improve model and try again")
 
     sns.set(font_scale=2)
-
-    plt.figure(figsize=(8, 8))
-    sns.lineplot(data=df, x="Recall", y="Precision", estimator=np.amax, ci=False)
-    plt.scatter(
-        best_rec,
-        best_prec,
-        c="r",
-        label=f"Max f-score: {max_fscore:.2f} thresh:{best_threshold:.2f}",
-    )
+    fig, ax = plt.subplots(figsize=(16, 16))
+    sns.lineplot(data=df, x="Recall", y="Precision", hue = "ID", estimator=np.amax, ci=False, ax=ax)
+    sns.scatterplot(x=best_recalls, y=best_precisions, ax=ax)
     plt.xlim([0, 1.1])
     plt.ylim([0, 1.1])
-    plt.title(f"Brain {brain_id} Validation: {tot_pos}+ {tot_neg}-")
     plt.legend()
     plt.show()
 
@@ -251,7 +251,7 @@ def examine_threshold(
                             )
 
                 if num_detected == 0:
-                    print(f"Soma false negative")
+                    print(f"Soma false negative: with {np.sum(labels)} positive voxels")
                     f = h5py.File(im_fname, "r")
                     im = f.get("image_3channel")
                     viewer = napari.Viewer(ndisplay=3)
