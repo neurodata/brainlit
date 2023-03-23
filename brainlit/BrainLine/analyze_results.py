@@ -123,11 +123,10 @@ class SomaDistribution(BrainDistribution):
                         for annot in layer["annotations"]:
                             points.append(annot["point"])
 
-                        atlas_points[brain_id] = np.array(points)
                         print(
                             f'Brain {brain_id}: Collecting atlas space soma points from layer: {layer["name"]}'
                         )
-                        break
+                atlas_points[brain_id] = np.array(points)
             else:
                 print(f"No somas_atlas_url layer for brain: {brain_id}")
 

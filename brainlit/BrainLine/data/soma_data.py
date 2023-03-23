@@ -217,7 +217,8 @@ brain2paths = {
             "somas_layer": "soma_val",
             "nonsomas_layer": "nonsoma_val"
         },
-        "subtype": "tph2 gad2"
+        "subtype": "tph2 gad2",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=tYjwxkvRGgMd5g"
     },
     "910": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2023_03_16/910/",
