@@ -3,9 +3,6 @@ Mapping Neurons
 
 .. currentmodule:: brainlit.map_neurons
 
-Fragment Generation
--------------------
-
 .. autoapiclass:: DiffeomorphismAction
 	:members:
 .. autoapiclass:: CloudReg_Transform
