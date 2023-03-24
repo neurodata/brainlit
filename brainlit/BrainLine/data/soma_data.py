@@ -217,6 +217,21 @@ brain2paths = {
             "somas_layer": "soma_val",
             "nonsomas_layer": "nonsoma_val"
         },
+        "subtype": "tph2 gad2",
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=tYjwxkvRGgMd5g"
+    },
+    "910": {
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2023_03_16/910/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=YzUVCI2qZiqp3w",
+            "somas_layer": "soma_val",
+            "nonsomas_layer": "nonsoma_val"
+        },
+        "train_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=QlJARbMY_pyoDQ",
+            "somas_layer": "soma_train",
+            "nonsomas_layer": "nonsoma_train"
+        },
         "subtype": "tph2 gad2"
     }
 }
