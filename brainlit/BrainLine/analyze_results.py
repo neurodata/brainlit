@@ -464,8 +464,8 @@ class SomaDistribution(BrainDistribution):
             return df
 
     def _configure_annotator(self, df, axis, ind_variable: str):
-        test = "Log t-test_ind"
-        my_logttest = StatTest(self._log_ttest_ind, test_long_name='Log t-test_ind', test_short_name='log-t')
+        test = "Mann-Whitney"
+        #my_logttest = StatTest(self._log_ttest_ind, test_long_name='Log t-test_ind', test_short_name='log-t')
         # test = "t-test_ind"
         correction = "fdr_by"
 
@@ -494,7 +494,7 @@ class SomaDistribution(BrainDistribution):
 
         annotator = Annotator(axis, pairs, **fig_args)
         annotator.configure(
-            test=my_logttest,
+            test=test,
             text_format="star",
             loc="outside",
             comparisons_correction=correction,
