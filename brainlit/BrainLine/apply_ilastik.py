@@ -552,10 +552,10 @@ class ApplyIlastik_LargeImage:
                 f.write(f"{coord}")
                 f.write("\n")
 
-        if len(coords_target_space) > 2000:
+        if len(coords_target_space) > 10000:
             random.shuffle(coords_target_space)
-            coords_target_space = coords_target_space[:2000]
-            print("*********Only posting first 2000 somas to neuroglancer**********")
+            coords_target_space = coords_target_space[:10000]
+            print("*********Only posting first 10000 somas to neuroglancer**********")
             name = "detected_somas_partial"
         else:
             name = "detected_somas"

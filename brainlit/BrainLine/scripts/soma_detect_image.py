@@ -20,29 +20,29 @@ Inputs
 # -dir_base
 # data_dir and results_dir ARE CLEAR
 # threshold IS CORRECT
-brain = "test"
-antibody_layer = "antibody"
-background_layer = "background"
-endogenous_layer = "endogenous"
+brain = "910"
+antibody_layer = "Ch_647"
+background_layer = "Ch_561"
+endogenous_layer = "Ch_488"
 
-threshold = 0.28  # threshold to use for ilastik
+threshold = 0.4  # threshold to use for ilastik
 data_dir = (
-    str(Path.cwd().parents[0]) + "/brainr_temp/"
-)  # "/data/tathey1/matt_wright/brainr_temp/"  # directory to store temporary subvolumes for segmentation
+    "/data/tathey1/matt_wright/brainr_temp/"
+)  # directory to store temporary subvolumes for segmentation
 results_dir = (
-    str(Path.cwd().parents[0]) + "/brainr_results/"
+    "/data/tathey1/matt_wright/brainr_results/"
 )  # directory to store coordinates of soma detections
 
 # Ilastik will run in "headless mode", and the following paths are needed to do so:
-ilastik_path = "/Applications/ilastik-1.4.0b21-OSX.app/Contents/ilastik-release/run_ilastik.sh"  # "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh"  # path to ilastik executable
-ilastik_project = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/matt_soma_rabies_pix_3ch.ilp"  # "/data/tathey1/matt_wright/ilastik/soma_model/matt_soma_rabies_pix_3ch.ilp"  # path to ilastik project
+ilastik_path = "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc8-Linux/run_ilastik.sh"  # path to ilastik executable
+ilastik_project = "/data/tathey1/matt_wright/ilastik/soma_model/matt_soma_rabies_pix_3ch.ilp"  # path to ilastik project
 
 max_coords = [
-    3072,
-    4352,
-    1792,
+    6177,
+    -1,
+    -1,
 ]  # max coords or -1 if you want to process everything along that dimension
-ncpu = 10  # 16  # number of cores to use for detection
+ncpu = 16  # 16  # number of cores to use for detection
 chunk_size = [256, 256, 256]  # [256, 256, 300]
 
 """ 
@@ -57,12 +57,12 @@ alli = ApplyIlastik_LargeImage(
     object_type="soma",
     results_dir=results_dir,
 )
-alli.apply_ilastik_parallel(
-    brain_id=brain,
-    layer_names=layer_names,
-    threshold=threshold,
-    data_dir=data_dir,
-    chunk_size=chunk_size,
-    max_coords=max_coords,
-)
+# alli.apply_ilastik_parallel(
+#     brain_id=brain,
+#     layer_names=layer_names,
+#     threshold=threshold,
+#     data_dir=data_dir,
+#     chunk_size=chunk_size,
+#     max_coords=max_coords,
+# )
 alli.collect_soma_results(brain_id=brain)
