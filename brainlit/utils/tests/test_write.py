@@ -72,12 +72,15 @@ def test_writeome_baddim(init_4dzarr):
 
 def test_writezarr(init_4dczi):
     czi_path, data_dir = init_4dczi
-    zarr_paths = czi_to_zarr(czi_path=czi_path, out_dir=str(data_dir))
+    zarr_paths = czi_to_zarr(czi_path=czi_path, out_dir=str(data_dir), fg_channel=1)
 
     assert len(zarr_paths) == 2
 
-    for zarr_path in zarr_paths:
-        zarr.open(zarr_path)
+    for zarr_path, value in zip(zarr_paths, [63, 8]):
+        z = zarr.open(zarr_path)
+        assert z.shape == (1998, 2009, 40)
+        assert z[100,100,10] == value
+
 
 
 def test_writeome(init_3dzarr):
