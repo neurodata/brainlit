@@ -8,9 +8,9 @@ Neuron Mapping
 
 * First, make sure that you have installed the ``brainlit`` package [`Documentation <https://brainlit.netlify.app/readme#installation>`_].
 
-* Second, uncompress the data ``brainlit/experiments/register_axons/data/mapping-files.zip``.
+* Second, uncompress the data ``brainlit/experiments/map_neurons/data/mapping-files.zip``.
 
-* Then, you can run the notebook that generates figures: ``brainlit/experiments/register_axons/map_neurons.ipynb``
+* Then, you can run the notebook that generates figures: ``brainlit/experiments/map_neurons/map_neurons.ipynb``
 
 * The files in the ``other`` are more for scratch work, and are unlikely to be useful to new users.
 
@@ -29,4 +29,4 @@ Nyquist Sampling Rate for Projection Neuron Reconstruction
 
 * First, make sure that you have installed the ``brainlit`` package [`Documentation <https://brainlit.netlify.app/readme#installation>`_].
 
-* Results are in the notebook: ``brainlit/experiments/register_axons/sampling.ipynb``
+* Results are in the notebook: ``brainlit/experiments/map_neurons/sampling.ipynb``
