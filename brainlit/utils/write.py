@@ -28,26 +28,27 @@ def _read_czi_slice(czi, C, Z):
         slice = np.squeeze(slice)
     return slice
 
+
 def _write_zrange_thread(zarr_path, czi_path, channel, zs):
     czi = aicspylibczi.CziFile(czi_path)
 
-    zarr_fg = zarr.open(
-        zarr_path
-    )
+    zarr_fg = zarr.open(zarr_path)
     for z in zs:
         zarr_fg[:, :, z] = _read_czi_slice(czi, C=channel, Z=z)
-    
 
-def czi_to_zarr(czi_path: str, out_dir: str, fg_channel: int = 0, parallel: int = 1) -> List[str]:
+
+def czi_to_zarr(
+    czi_path: str, out_dir: str, fg_channel: int = 0, parallel: int = 1
+) -> List[str]:
     """Convert  4D czi image to a zarr file(s) at a given directory. Single channel image will produce a single zarr, two channels will produce two.
-Å
-    Args:
-        czi_path (str): Path to czi image.
-        out_dir (str): Path to directory where zarr(s) will be written.
-        fg_channel (int): Index of foreground channel.
+    Å
+        Args:
+            czi_path (str): Path to czi image.
+            out_dir (str): Path to directory where zarr(s) will be written.
+            fg_channel (int): Index of foreground channel.
 
-    Returns:
-        list: paths to zarrs that were written
+        Returns:
+            list: paths to zarrs that were written
     """
     if fg_channel == 0:
         bg_channel = 1
@@ -80,8 +81,11 @@ def czi_to_zarr(czi_path: str, out_dir: str, fg_channel: int = 0, parallel: int 
         for z in tqdm(np.arange(Z), desc="Saving slices foreground..."):
             zarr_fg[:, :, z] = _read_czi_slice(czi, C=fg_channel, Z=z)
     elif parallel > 1:
-        z_blocks = [np.arange(i,i+chunk_z) for i in range(0, sz[2], chunk_z)]
-        Parallel(n_jobs=parallel)(delayed(_write_zrange_thread)(fg_path, czi_path, 1, zs) for zs in tqdm(z_blocks, desc="Saving slices foreground..."))
+        z_blocks = [np.arange(i, i + chunk_z) for i in range(0, sz[2], chunk_z)]
+        Parallel(n_jobs=parallel)(
+            delayed(_write_zrange_thread)(fg_path, czi_path, 1, zs)
+            for zs in tqdm(z_blocks, desc="Saving slices foreground...")
+        )
     else:
         raise ValueError(f"parallel must be positive integer, not {parallel}")
 
@@ -95,17 +99,18 @@ def czi_to_zarr(czi_path: str, out_dir: str, fg_channel: int = 0, parallel: int 
             bg_path, mode="w", shape=sz, chunks=(200, 200, 10), dtype="uint16"
         )
 
-
         if parallel == 1:
             for z in tqdm(np.arange(Z), desc="Saving slices background..."):
                 zarr_bg[:, :, z] = _read_czi_slice(czi, C=c, Z=z)
         elif parallel > 1:
-            z_blocks = [np.arange(i,i+chunk_z) for i in range(0, sz[2], chunk_z)]
-            Parallel(n_jobs=parallel)(delayed(_write_zrange_thread)(bg_path, czi_path, c, zs) for zs in tqdm(z_blocks, desc="Saving slices background..."))
+            z_blocks = [np.arange(i, i + chunk_z) for i in range(0, sz[2], chunk_z)]
+            Parallel(n_jobs=parallel)(
+                delayed(_write_zrange_thread)(bg_path, czi_path, c, zs)
+                for zs in tqdm(z_blocks, desc="Saving slices background...")
+            )
         else:
             raise ValueError(f"parallel must be positive integer, not {parallel}")
     return zarr_paths
-
 
 
 def zarr_to_omezarr(zarr_path: str, out_path: str):
