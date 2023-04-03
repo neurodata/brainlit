@@ -40,7 +40,6 @@ def change_resolution_to(
     return_final_resolution=False,
     **resize_kwargs,
 ):
-
     # Validate inputs.
     image = _validate_ndarray(image)
     resolution = _validate_resolution(resolution, image.ndim)
@@ -124,7 +123,6 @@ def change_resolution_by(
     return_final_resolution=False,
     **resize_kwargs,
 ):
-
     image = _validate_ndarray(image)
     scales = _validate_scalar_to_multi(scales, size=image.ndim)
     resolution = _validate_resolution(resolution, image.ndim)

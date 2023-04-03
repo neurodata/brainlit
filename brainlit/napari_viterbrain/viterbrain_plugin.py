@@ -12,7 +12,6 @@ import napari
 
 
 def viterbrain_reader(path: str) -> list:
-
     with open(path, "rb") as handle:
         viterbi = pickle.load(handle)
 

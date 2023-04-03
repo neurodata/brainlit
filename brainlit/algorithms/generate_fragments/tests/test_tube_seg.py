@@ -15,7 +15,6 @@ url = url + "/serial"
 
 
 def test_pairwise():
-
     """
     For a given iterable array [A1,A2,...,An], test if the function can return a zipped list [(A1,A2),(A2,A3),...,(An-1,An)]
 
@@ -42,7 +41,6 @@ def test_pairwise():
 
 
 def test_draw_sphere():
-
     """
     Test if the function maps all the points located within the given radius of the given center to 1, otherwise 0
 
@@ -82,7 +80,6 @@ def test_draw_sphere():
 
 
 def test_draw_tube_spheres():
-
     """
     Test if the function maps all the points within the radius of a segment line (defined by 2 given points) to 1, otherwise 0
 
@@ -134,7 +131,6 @@ def test_draw_tube_spheres():
 
 
 def test_draw_tube_edt():
-
     """
     Test if the function maps all the points within the radius of a segment line (defined by 2 given points) to 1, otherwise 0
 
@@ -186,7 +182,6 @@ def test_draw_tube_edt():
 
 
 def test_tubes_seg():
-
     """
     Test if the function maps all the points within the radius of polyline (defined by given vertices) to 1, otherwise 0
 

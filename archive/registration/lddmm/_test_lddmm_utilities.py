@@ -17,7 +17,6 @@ Test _validate_scalar_to_multi.
 
 
 class Test__validate_scalar_to_multi:
-
     # Test proper use.
 
     def test_singular(self):
@@ -118,7 +117,6 @@ Test _validate_ndarray.
 
 
 class Test__validate_ndarray:
-
     # Test proper use.
 
     def test_cast_array_to_dtype(self):
@@ -248,7 +246,6 @@ Test _validate_resolution.
 
 
 class Test__validate_resolution:
-
     # Test proper use.
 
     def test_scalar_resolution_1D_ndim(self):
@@ -294,7 +291,6 @@ Test _compute_axes.
 
 
 class Test__compute_axes:
-
     # Test proper use.
 
     # _compute_axes produces a list with a np.ndarray for each element in shape.
@@ -350,7 +346,6 @@ Test _compute_coords.
 
 
 class Test__compute_coords:
-
     # Test proper use.
 
     def test_1D_shape_center_origin(self):
@@ -376,7 +371,6 @@ Test _multiply_coords_by_affine.
 
 
 class Test__multiply_coords_by_affine:
-
     # Test proper use.
 
     def test_identity_affine_3D(self):
@@ -435,7 +429,6 @@ Test resample.
 
 
 class Test_resample:
-
     # Test proper use.
 
     def test_zero_origin_upsample(self):
@@ -627,9 +620,10 @@ class Test_resample:
 """
 Test sinc_resample.
 """
+
+
 # @pytest.mark.skip
 class Test_sinc_resample:
-
     # Test shape of an upsample.
     def test_upsample_shape(self):
         kwargs = dict(

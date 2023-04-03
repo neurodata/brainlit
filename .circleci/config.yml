@@ -58,7 +58,7 @@ commands:
           command: |
             . venv/bin/activate
             black --check --diff ./brainlit ./experiments
-            pytest brainlit/algorithms/ brainlit/feature_extraction/ brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/viz/
+            pytest brainlit/algorithms/ brainlit/feature_extraction/ brainlit/BrainLine brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/viz/
   all_test:
     steps:
       - run:

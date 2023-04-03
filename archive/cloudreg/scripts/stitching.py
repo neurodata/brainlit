@@ -244,7 +244,6 @@ def get_scanned_cells(fname_scanned_cells):
 def generate_stitching_commands(
     stitched_dir, stack_dir, metadata_s3_bucket, metadata_s3_path, do_steps=ALL_STEPS
 ):
-
     # download COLM metadata files
     scanned_cells_path = f"{stack_dir}/Scanned Cells.txt"
     config_file_path = f"{stack_dir}/Experiment.ini"
@@ -283,7 +282,6 @@ def run_terastitcher(
     stitch_only=False,
     compute_only=False,
 ):
-
     input_s3_url = S3Url(input_s3_path.strip("/"))
 
     # generate commands to stitch data using Terastitcher

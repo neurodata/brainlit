@@ -10,7 +10,6 @@ from ..lddmm._lddmm_utilities import _validate_resolution
 
 
 def _generate_rotation_matrix(angles):
-
     raise NotImplementedError(
         "This function, _generate_rotation_matrix, has not been completed."
     )
@@ -27,7 +26,6 @@ def _generate_rotation_matrix(angles):
     rotation_matrix = np.zeros((n_rotation_planes, ndim, ndim))
 
     for indices in product(*map(range, rotation_matrix.shape)):
-
         if min(indices) == max(indices):
             rotation_matrix[indices] = 1
 
