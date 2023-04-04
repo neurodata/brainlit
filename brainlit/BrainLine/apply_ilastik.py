@@ -201,25 +201,21 @@ def plot_results(
     print(f"Max f-score: {max_fscore:.2f} thresh:{best_threshold:.2f}")
     print("If this performance is not adequate, improve model and try again")
 
-    sns.set(font_scale=2)
-
-    plt.figure(figsize=(8, 8))
-    sns.lineplot(data=df, x="Recall", y="Precision", estimator=np.amax, ci=False)
-    plt.scatter(
-        best_rec,
-        best_prec,
-        c="r",
-        label=f"Max f-score: {max_fscore:.2f} thresh:{best_threshold:.2f}",
-    )
-    plt.xlim([0, 1.1])
-    plt.ylim([0, 1.1])
-    plt.title(f"Brain {brain_id} Validation: {tot_pos}+ {tot_neg}-")
-    plt.legend()
-
     if show_plot:
+        sns.set(font_scale=2)
+        plt.figure(figsize=(8, 8))
+        sns.lineplot(data=df, x="Recall", y="Precision", estimator=np.amax, ci=False)
+        plt.scatter(
+            best_rec,
+            best_prec,
+            c="r",
+            label=f"Max f-score: {max_fscore:.2f} thresh:{best_threshold:.2f}",
+        )
+        plt.xlim([0, 1.1])
+        plt.ylim([0, 1.1])
+        plt.title(f"Brain {brain_id} Validation: {tot_pos}+ {tot_neg}-")
+        plt.legend()
         plt.show()
-    else:
-        plt.close()
 
     return max_fscore, best_threshold
 
