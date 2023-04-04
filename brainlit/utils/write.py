@@ -41,15 +41,15 @@ def czi_to_zarr(
     czi_path: str, out_dir: str, fg_channel: int = 0, parallel: int = 1
 ) -> List[str]:
     """Convert  4D czi image to a zarr file(s) at a given directory. Single channel image will produce a single zarr, two channels will produce two.
-    Å
-        Args:
-            czi_path (str): Path to czi image.
-            out_dir (str): Path to directory where zarr(s) will be written.
-            fg_channel (int): Index of foreground channel.
-            parallel (int): Number of cpus to use to write zarr.
 
-        Returns:
-            list: paths to zarrs that were written
+    Args:
+        czi_path (str): Path to czi image.
+        out_dir (str): Path to directory where zarr(s) will be written.
+        fg_channel (int): Index of foreground channel.
+        parallel (int): Number of cpus to use to write zarr.
+
+    Returns:
+        list: paths to zarrs that were written
     """
     zarr_paths = []
     czi = aicspylibczi.CziFile(czi_path)

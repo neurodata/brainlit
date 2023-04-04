@@ -375,7 +375,23 @@ def examine_threshold(
 
 
 class ApplyIlastik_LargeImage:
-    """Apply ilastik to large image, where chunking is necessary."""
+    """Apply ilastik to large image, where chunking is necessary.
+
+    Arguments:
+        ilastk_path (str): Path to ilastik executable.
+        ilastik_project (str): Path to ilastik project.
+        ncpu (int): Number of cpus to use for applying ilastik in parallel.
+        object_type (str): Soma for soma detection or axon for axon segmentaiton.
+        results_dir: (str): For soma detection, the directory to write detection results.
+
+    Attributes:
+        ilastk_path (str): Path to ilastik executable.
+        ilastik_project (str): Path to ilastik project.
+        ncpu (int): Number of cpus to use for applying ilastik in parallel.
+        object_type (str): Soma for soma detection or axon for axon segmentaiton.
+        results_dir: (str): For soma detection, the directory to write detection results.
+
+    """
 
     def __init__(
         self,
