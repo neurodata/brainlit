@@ -50,11 +50,6 @@ def czi_to_zarr(
         Returns:
             list: paths to zarrs that were written
     """
-    if fg_channel == 0:
-        bg_channel = 1
-    else:
-        bg_channel = 0
-
     zarr_paths = []
     czi = aicspylibczi.CziFile(czi_path)
 
