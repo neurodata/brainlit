@@ -46,6 +46,7 @@ def czi_to_zarr(
             czi_path (str): Path to czi image.
             out_dir (str): Path to directory where zarr(s) will be written.
             fg_channel (int): Index of foreground channel.
+            parallel (int): Number of cpus to use to write zarr.
 
         Returns:
             list: paths to zarrs that were written
