@@ -22,7 +22,21 @@ from brainlit.BrainLine.imports import *
 
 
 class ApplyIlastik:
-    """Applies ilastik to subvolumes for the purpose of validating machine learning algorithms."""
+    """Applies ilastik to subvolumes for the purpose of validating machine learning algorithms.
+
+    Arguments:
+        ilastk_path (str): Path to ilastik executable.
+        project_path (str): Path to ilastik project.
+        brains_path (str): Path to directory that contains brain samples subdirectories.
+        brains (list): List of brain sample names.
+
+    Attributes:
+        ilastk_path (str): Path to ilastik executable.
+        project_path (str): Path to ilastik project.
+        brains_path (str): Path to directory that contains brain samples subdirectories.
+        brains (list): List of brain sample names.
+
+    """
 
     def __init__(
         self, ilastk_path: str, project_path: str, brains_path: str, brains: list

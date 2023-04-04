@@ -1,6 +1,10 @@
 import h5py
 import numpy as np
-from brainlit.BrainLine.apply_ilastik import plot_results, examine_threshold
+from brainlit.BrainLine.apply_ilastik import (
+    plot_results,
+    examine_threshold,
+    ApplyIlastik,
+)
 import os
 import pytest
 import matplotlib.pyplot as plt
@@ -38,6 +42,17 @@ def axon_data_dir(tmp_path_factory):
         f.create_dataset("image_3channel", data=im)
 
     return data_dir
+
+
+def test_move_results(axon_data_dir):
+    data_dir_str = str(axon_data_dir)
+    apl = ApplyIlastik(
+        ilastk_path="test",
+        project_path="test",
+        brains_path=data_dir_str,
+        brains=["test"],
+    )
+    apl.move_results()
 
 
 def test_plot_results_axon(axon_data_dir):

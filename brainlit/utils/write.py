@@ -104,8 +104,6 @@ def czi_to_zarr(
                 delayed(_write_zrange_thread)(bg_path, czi_path, c, zs)
                 for zs in tqdm(z_blocks, desc="Saving slices background...")
             )
-        else:
-            raise ValueError(f"parallel must be positive integer, not {parallel}")
     return zarr_paths
 
 
