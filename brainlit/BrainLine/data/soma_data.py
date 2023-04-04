@@ -233,7 +233,16 @@ brain2paths = {
             "nonsomas_layer": "nonsoma_train"
         },
         "subtype": "tph2 gad2"
-    }
+    },
+    "892": {
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2023_03_31/892/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=H7h_cTXW4gLgWA",
+            "somas_layer": "soma_val",
+            "nonsomas_layer": "nonsoma_val",
+        },
+        "subtype": "tph2 vglut3"
+    },
 }
 
 # first entry is somas, second is nonsomas
