@@ -218,6 +218,8 @@ def plot_results(
 
     if show_plot:
         plt.show()
+    else:
+        plt.close()
 
     return max_fscore, best_threshold
 

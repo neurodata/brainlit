@@ -49,7 +49,6 @@ def test_plot_results_axon(axon_data_dir):
         positive_channel=0,
         show_plot=False,
     )
-    plt.close("all")
 
     true_prec = 1
     true_rec = 0.5
