@@ -65,6 +65,14 @@ def test_writeome_baddim(init_4dzarr):
         zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path)
 
 
+def test_writezarr_badpar(init_4dczi):
+    czi_path, data_dir = init_4dczi
+    with pytest.raises(ValueError, match="parallel must be positive integer, not 1"):
+        czi_to_zarr(
+            czi_path=czi_path, out_dir=str(data_dir), fg_channel=1, parallel="1"
+        )
+
+
 ##################
 ### validation ###
 ##################
@@ -72,7 +80,23 @@ def test_writeome_baddim(init_4dzarr):
 
 def test_writezarr(init_4dczi):
     czi_path, data_dir = init_4dczi
-    zarr_paths = czi_to_zarr(czi_path=czi_path, out_dir=str(data_dir), fg_channel=1)
+    zarr_paths = czi_to_zarr(
+        czi_path=czi_path, out_dir=str(data_dir), fg_channel=1, parallel=1
+    )
+
+    assert len(zarr_paths) == 2
+
+    for zarr_path, value in zip(zarr_paths, [63, 8]):
+        z = zarr.open(zarr_path)
+        assert z.shape == (1998, 2009, 40)
+        assert z[100, 100, 10] == value
+
+
+def test_writezarr_parallel(init_4dczi):
+    czi_path, data_dir = init_4dczi
+    zarr_paths = czi_to_zarr(
+        czi_path=czi_path, out_dir=str(data_dir), fg_channel=1, parallel=2
+    )
 
     assert len(zarr_paths) == 2
 

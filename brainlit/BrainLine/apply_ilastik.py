@@ -22,7 +22,21 @@ from brainlit.BrainLine.imports import *
 
 
 class ApplyIlastik:
-    """Applies ilastik to subvolumes for the purpose of validating machine learning algorithms."""
+    """Applies ilastik to subvolumes for the purpose of validating machine learning algorithms.
+
+    Arguments:
+        ilastk_path (str): Path to ilastik executable.
+        project_path (str): Path to ilastik project.
+        brains_path (str): Path to directory that contains brain samples subdirectories.
+        brains (list): List of brain sample names.
+
+    Attributes:
+        ilastk_path (str): Path to ilastik executable.
+        project_path (str): Path to ilastik project.
+        brains_path (str): Path to directory that contains brain samples subdirectories.
+        brains (list): List of brain sample names.
+
+    """
 
     def __init__(
         self, ilastk_path: str, project_path: str, brains_path: str, brains: list
@@ -201,22 +215,20 @@ def plot_results(
     print(f"Max f-score: {max_fscore:.2f} thresh:{best_threshold:.2f}")
     print("If this performance is not adequate, improve model and try again")
 
-    sns.set(font_scale=2)
-
-    plt.figure(figsize=(8, 8))
-    sns.lineplot(data=df, x="Recall", y="Precision", estimator=np.amax, ci=False)
-    plt.scatter(
-        best_rec,
-        best_prec,
-        c="r",
-        label=f"Max f-score: {max_fscore:.2f} thresh:{best_threshold:.2f}",
-    )
-    plt.xlim([0, 1.1])
-    plt.ylim([0, 1.1])
-    plt.title(f"Brain {brain_id} Validation: {tot_pos}+ {tot_neg}-")
-    plt.legend()
-
     if show_plot:
+        sns.set(font_scale=2)
+        plt.figure(figsize=(8, 8))
+        sns.lineplot(data=df, x="Recall", y="Precision", estimator=np.amax, ci=False)
+        plt.scatter(
+            best_rec,
+            best_prec,
+            c="r",
+            label=f"Max f-score: {max_fscore:.2f} thresh:{best_threshold:.2f}",
+        )
+        plt.xlim([0, 1.1])
+        plt.ylim([0, 1.1])
+        plt.title(f"Brain {brain_id} Validation: {tot_pos}+ {tot_neg}-")
+        plt.legend()
         plt.show()
 
     return max_fscore, best_threshold
@@ -363,7 +375,23 @@ def examine_threshold(
 
 
 class ApplyIlastik_LargeImage:
-    """Apply ilastik to large image, where chunking is necessary."""
+    """Apply ilastik to large image, where chunking is necessary.
+
+    Arguments:
+        ilastk_path (str): Path to ilastik executable.
+        ilastik_project (str): Path to ilastik project.
+        ncpu (int): Number of cpus to use for applying ilastik in parallel.
+        object_type (str): Soma for soma detection or axon for axon segmentaiton.
+        results_dir: (str): For soma detection, the directory to write detection results.
+
+    Attributes:
+        ilastk_path (str): Path to ilastik executable.
+        ilastik_project (str): Path to ilastik project.
+        ncpu (int): Number of cpus to use for applying ilastik in parallel.
+        object_type (str): Soma for soma detection or axon for axon segmentaiton.
+        results_dir: (str): For soma detection, the directory to write detection results.
+
+    """
 
     def __init__(
         self,

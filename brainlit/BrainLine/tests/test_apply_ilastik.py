@@ -1,6 +1,10 @@
 import h5py
 import numpy as np
-from brainlit.BrainLine.apply_ilastik import plot_results, examine_threshold
+from brainlit.BrainLine.apply_ilastik import (
+    plot_results,
+    examine_threshold,
+    ApplyIlastik,
+)
 import os
 import pytest
 import matplotlib.pyplot as plt
@@ -40,6 +44,17 @@ def axon_data_dir(tmp_path_factory):
     return data_dir
 
 
+def test_move_results(axon_data_dir):
+    data_dir_str = str(axon_data_dir)
+    apl = ApplyIlastik(
+        ilastk_path="test",
+        project_path="test",
+        brains_path=data_dir_str,
+        brains=["test"],
+    )
+    apl.move_results()
+
+
 def test_plot_results_axon(axon_data_dir):
     data_dir_str = str(axon_data_dir)
     test_max_fscore, test_best_threshold = plot_results(
@@ -49,7 +64,6 @@ def test_plot_results_axon(axon_data_dir):
         positive_channel=0,
         show_plot=False,
     )
-    plt.close("all")
 
     true_prec = 1
     true_rec = 0.5
