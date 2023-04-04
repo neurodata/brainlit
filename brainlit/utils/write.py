@@ -76,7 +76,7 @@ def czi_to_zarr(
     if parallel == 1:
         for z in tqdm(np.arange(Z), desc="Saving slices foreground..."):
             zarr_fg[:, :, z] = _read_czi_slice(czi, C=fg_channel, Z=z)
-    elif parallel > 1:
+    elif isinstance(parallel, int) and parallel > 1:
         z_blocks = [np.arange(i, i + chunk_z) for i in range(0, sz[2], chunk_z)]
         Parallel(n_jobs=parallel)(
             delayed(_write_zrange_thread)(fg_path, czi_path, 1, zs)
