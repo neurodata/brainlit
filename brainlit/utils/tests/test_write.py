@@ -65,7 +65,7 @@ def test_writeome_baddim(init_4dzarr):
         zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path)
 
 
-def test_writezarr(init_4dczi):
+def test_writezarr_badpar(init_4dczi):
     czi_path, data_dir = init_4dczi
     with pytest.raises(ValueError, match="parallel must be positive integer, not 1"):
         czi_to_zarr(
