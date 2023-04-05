@@ -14,14 +14,15 @@ from scipy.spatial import KDTree
 import napari
 from napari._qt.qthreading import thread_worker
 import zarr
+import networkx as nx
 
 """
 copied from https://github.com/google/neuroglancer/blob/master/python/examples/example_action.py
-need to run in interactive mode: python -i ng.py
+need to run in interactive mode: python -i trace.py
 
 local:
 use env_39 on local
-- python cors_webserver.py -d "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/" -p 9010
+- python cors_webserver.py -d "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/" -p 9010
 
 
 cis:
@@ -43,9 +44,7 @@ trace_path_cis = (
     "precomputed://file:///cis/project/sriram/ng_data/sriram-adipo-brain1-im3/traces"
 )
 
-frag_layer = "precomputed://http://127.0.0.1:9010/frags"
-
-vb_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_viterbrain.pickle"
+vb_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/viterbrain.pickle"
 vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pickle"
 
 ######################
@@ -54,9 +53,11 @@ vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pick
 
 trace_path = trace_path_local  # cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
 im_path = im_path_local  # ckloudvolume compatible path or path to local zarr
-port = "9010"
+port = "9020"
 im_url = f"zarr://http://127.0.0.1:{port}/fg_ome.zarr"  # ng compatible url
 trace_url = f"precomputed://http://127.0.0.1:{port}/traces"  # ng compatible url
+vb_path = vb_path_local
+frag_layer = f"zarr://http://127.0.0.1:{port}/labels.zarr"
 
 
 data = np.random.random((10, 10, 10)) * 255
@@ -134,7 +135,6 @@ class ViterBrainViewer(neuroglancer.Viewer):
         if vb_path:
             with open(vb_path, "rb") as handle:
                 self.vb = pickle.load(handle)
-            self.vb.fragment_path = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_labels.zarr"
         else:
             self.vb = None
 
@@ -271,8 +271,17 @@ class ViterBrainViewer(neuroglancer.Viewer):
             layer_names = [l.name for l in vs.layers]
 
         if "start" in layer_names and "end" in layer_names:
-            print(f"Tracing path from {self.start_pt} to {self.end_pt}")
-            path = self.vb.shortest_path(coord1=self.start_pt, coord2=self.end_pt)
+            if len(self.start_pt) > 3 and len(self.end_pt) > 3:
+                path = [self.start_pt[:3], self.end_pt[:3]]
+            else:
+                path = [self.start_pt, self.end_pt]
+            print(f"Tracing path from {path[0]} to {path[1]}")
+            try:
+                path = self.vb.shortest_path(coord1=path[0], coord2=path[1])
+            except nx.NetworkXNoPath:
+                print("No path found")
+                return
+            
             self.render_line(path, layer_names)
             with self.txn() as vs:  # trace
                 del vs.layers["start"]
@@ -478,8 +487,8 @@ vbviewer = ViterBrainViewer(
     trace_path=trace_path,
     im_path=im_path,
     napari_viewer=viewer,
-    # frag_url=frag_layer,
-    # vb_path=vb_path_local,
+    frag_url=frag_layer,
+    vb_path=vb_path,
 )
 print(vbviewer)
 webbrowser.open_new(vbviewer.get_viewer_url())
