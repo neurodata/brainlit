@@ -281,7 +281,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
             except nx.NetworkXNoPath:
                 print("No path found")
                 return
-            
+
             self.render_line(path, layer_names)
             with self.txn() as vs:  # trace
                 del vs.layers["start"]
