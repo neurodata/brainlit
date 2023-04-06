@@ -20,12 +20,12 @@ Inputs
 # -dir_base
 # data_dir and results_dir ARE CLEAR
 # threshold IS CORRECT
-brain = "910"
+brain = "887"
 antibody_layer = "Ch_647"
 background_layer = "Ch_561"
 endogenous_layer = "Ch_488"
 
-threshold = 0.4  # threshold to use for ilastik
+threshold = 0.86  # threshold to use for ilastik
 data_dir = (
     "/data/tathey1/matt_wright/brainr_temp/"
 )  # directory to store temporary subvolumes for segmentation
@@ -38,7 +38,7 @@ ilastik_path = "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc8-Linux/run_ila
 ilastik_project = "/data/tathey1/matt_wright/ilastik/soma_model/matt_soma_rabies_pix_3ch.ilp"  # path to ilastik project
 
 max_coords = [
-    6177,
+    6113,
     -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
