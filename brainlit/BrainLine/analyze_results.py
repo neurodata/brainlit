@@ -108,6 +108,9 @@ class SomaDistribution(BrainDistribution):
                 points = []
                 for json_file in jsons:
                     json_path = json_dir + json_file
+                    print(
+                        f'Brain {brain_id}: Collecting atlas space soma points from file: {json_path}'
+                    )
                     with open(json_path) as f:
                         data = json.load(f)
                     for pt in data:
