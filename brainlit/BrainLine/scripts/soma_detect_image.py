@@ -26,12 +26,8 @@ background_layer = "Ch_561"
 endogenous_layer = "Ch_488"
 
 threshold = 0.86  # threshold to use for ilastik
-data_dir = (
-    "/data/tathey1/matt_wright/brainr_temp/"
-)  # directory to store temporary subvolumes for segmentation
-results_dir = (
-    "/data/tathey1/matt_wright/brainr_results/"
-)  # directory to store coordinates of soma detections
+data_dir = "/data/tathey1/matt_wright/brainr_temp/"  # directory to store temporary subvolumes for segmentation
+results_dir = "/data/tathey1/matt_wright/brainr_results/"  # directory to store coordinates of soma detections
 
 # Ilastik will run in "headless mode", and the following paths are needed to do so:
 ilastik_path = "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc8-Linux/run_ilastik.sh"  # path to ilastik executable

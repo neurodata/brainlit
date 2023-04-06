@@ -4,7 +4,7 @@ from tqdm import tqdm
 import subprocess
 from joblib import Parallel, delayed
 import multiprocessing
-from brainlit.BrainLine.util import find_sample_names, _get_corners
+from brainlit.BrainLine.util import _find_sample_names, _get_corners
 from brainlit.BrainLine.data.soma_data import brain2paths
 from datetime import date
 from cloudvolume import CloudVolume, exceptions
@@ -22,6 +22,22 @@ from brainlit.BrainLine.imports import *
 
 
 class ApplyIlastik:
+    """Applies ilastik to subvolumes for the purpose of validating machine learning algorithms.
+
+    Arguments:
+        ilastk_path (str): Path to ilastik executable.
+        project_path (str): Path to ilastik project.
+        brains_path (str): Path to directory that contains brain samples subdirectories.
+        brains (list): List of brain sample names.
+
+    Attributes:
+        ilastk_path (str): Path to ilastik executable.
+        project_path (str): Path to ilastik project.
+        brains_path (str): Path to directory that contains brain samples subdirectories.
+        brains (list): List of brain sample names.
+
+    """
+
     def __init__(
         self, ilastk_path: str, project_path: str, brains_path: str, brains: list
     ):
@@ -30,7 +46,7 @@ class ApplyIlastik:
         self.brains_path = brains_path
         self.brains = brains
 
-    def apply_ilastik(self, fname):
+    def _apply_ilastik(self, fname):
         if os.path.isfile(fname) and ".h5" in fname:
             subprocess.run(
                 [
@@ -44,20 +60,21 @@ class ApplyIlastik:
             )
 
     def process_subvols(self):
+        """Apply ilastik to all validation subvolumes of the specified brain ids in the specified directory"""
         items_total = []
         for brain in tqdm(self.brains, desc="Gathering brains..."):
             path = f"{self.brains_path}brain{brain}/val/"
 
-            items_total += find_sample_names(path, dset="", add_dir=True)
+            items_total += _find_sample_names(path, dset="", add_dir=True)
 
         # run all files
         Parallel(n_jobs=8)(
-            delayed(self.apply_ilastik)(item)
+            delayed(self._apply_ilastik)(item)
             for item in tqdm(items_total, desc="running ilastik...")
         )
 
     def move_results(self):
-        # move results
+        """Move results from process_subvols to a new subfolder."""
         for brain in tqdm(self.brains, desc="Moving results"):
             # if brain == "8557":
             #     brain_name = "r1"
@@ -73,7 +90,7 @@ class ApplyIlastik:
                 print(f"Creating directory: {results_dir}")
                 os.makedirs(results_dir)
 
-            items = find_sample_names(brain_dir, dset="", add_dir=False)
+            items = _find_sample_names(brain_dir, dset="", add_dir=False)
             for item in items:
                 result_path = brain_dir + item[:-3] + "_Probabilities.h5"
                 shutil.move(result_path, results_dir + item[:-3] + "_Probabilities.h5")
@@ -85,13 +102,33 @@ def plot_results(
     object_type: str,
     positive_channel: int,
     doubles: list = [],
+    show_plot: bool = True,
 ):
+    """Plot precision recall curve for a specified brain.
+
+    Args:
+        data_dir (str): Path to directory where brain subvolumes are stored.
+        brain_id (str): Brain id to examine (brain2paths key from _data.py file).
+        object_type (str): soma or axon, the type of data to examine.
+        positive_channel (int): Channel that represents neuron in the predictions.
+        doubles (list, optional): Filenames of soma subvolumes that contain two somas, if applicable. Defaults to [].
+        show_plot (bool, optional): Whether to run pyplot, useful for pytests when figures should not be displayed. Defaults to True.
+
+    Raises:
+        ValueError: _description_
+
+    Returns:
+        float: Best f-score across all thresholds.
+        float: Threshold that yields the best validation f-score.
+    """
+    base_dir = data_dir + f"/brain{brain_id}/val/"
     recalls = []
     precisions = []
-    brain_ids_data = []
-    best_fscores = {}
-    best_precisions = []
-    best_recalls = []
+    fscores = []
+
+    data_files = _find_sample_names(base_dir, dset="", add_dir=True)
+    test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
+    print(f"Evaluating files: {test_files}")
 
     size_thresh = 500
 
@@ -150,7 +187,9 @@ def plot_results(
                     true_pos += np.sum(np.logical_and(mask, pos_labels))
                     false_pos += np.sum(np.logical_and(mask, neg_labels))
                 else:
-                    raise ValueError(f"object_type must be axon or soma, not {object_type}")
+                    raise ValueError(
+                        f"object_type must be axon or soma, not {object_type}"
+                    )
 
             brain_ids_data.append(brain_id)
             recall = true_pos / tot_pos
@@ -167,7 +206,7 @@ def plot_results(
 
             if fscore > best_fscore:
                 best_fscore = fscore
-                best_thresh = threshold 
+                best_thresh = threshold
                 best_prec = precision
                 best_recall = recall
 
@@ -176,7 +215,10 @@ def plot_results(
         best_recalls.append(best_recall)
 
     for i, brain_id in enumerate(brain_ids_data):
-        brain_ids_data[i] = brain_id + f" - MaxFS: {best_fscores[brain_id][0]:.2f} @thresh: {best_fscores[brain_id][1]}"
+        brain_ids_data[i] = (
+            brain_id
+            + f" - MaxFS: {best_fscores[brain_id][0]:.2f} @thresh: {best_fscores[brain_id][1]}"
+        )
 
     dict = {
         "ID": brain_ids_data,
@@ -187,14 +229,23 @@ def plot_results(
 
     print("If this performance is not adequate, improve model and try again")
 
-    sns.set(font_scale=2)
-    fig, ax = plt.subplots(figsize=(16, 16))
-    sns.lineplot(data=df, x="Recall", y="Precision", hue = "ID", estimator=np.amax, ci=False, ax=ax)
-    sns.scatterplot(x=best_recalls, y=best_precisions, ax=ax)
-    plt.xlim([0, 1.1])
-    plt.ylim([0, 1.1])
-    plt.legend()
-    plt.show()
+    if show_plot:
+        sns.set(font_scale=2)
+        plt.figure(figsize=(8, 8))
+        sns.lineplot(data=df, x="Recall", y="Precision", estimator=np.amax, ci=False)
+        plt.scatter(
+            best_rec,
+            best_prec,
+            c="r",
+            label=f"Max f-score: {max_fscore:.2f} thresh:{best_threshold:.2f}",
+        )
+        plt.xlim([0, 1.1])
+        plt.ylim([0, 1.1])
+        plt.title(f"Brain {brain_id} Validation: {tot_pos}+ {tot_neg}-")
+        plt.legend()
+        plt.show()
+
+    return max_fscore, best_threshold
 
 
 def examine_threshold(
@@ -204,10 +255,26 @@ def examine_threshold(
     object_type: str,
     positive_channel: int,
     doubles: list = [],
+    show_plot: bool = True,
 ):
+    """Display results in napari of all subvolumes that were below some performance threshold, at a given threshold.
+
+    Args:
+        data_dir (str): Path to directory where brain subvolumes are stored.
+        brain_id (str): Brain ID to examine (from _data.py file).
+        threshold (float): Threshold to examine.
+        object_type (str): soma or axon, the data type being examined.
+        positive_channel (int): 0 or 1, Channel that represents neuron in the predictions.
+        doubles (list, optional): Filenames of soma subvolumes that contain two somas, if applicable. Defaults to [].
+        show_plot (bool, optional): Whether to run napari, useful for pytests when figures should not be displayed. Defaults to True.
+
+    Raises:
+        ValueError: If object_type is neither axon nor soma
+        ValueError: If positive_channel is not 0 or 1.
+    """
     base_dir = data_dir + f"/brain{brain_id}/val/"
 
-    data_files = find_sample_names(base_dir, dset="", add_dir=True)
+    data_files = _find_sample_names(base_dir, dset="", add_dir=True)
     test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
 
     size_thresh = 500
@@ -236,7 +303,7 @@ def examine_threshold(
                     if area > size_thresh:
                         num_detected += 1
                         print(f"area of detected object: {area}")
-                        if num_detected > newpos:
+                        if num_detected > newpos and show_plot:
                             print(f"Soma false positive Area: {area}")
                             f = h5py.File(im_fname, "r")
                             im = f.get("image_3channel")
@@ -250,8 +317,8 @@ def examine_threshold(
                                 name=f"soma false positive area: {area}",
                             )
 
-                if num_detected == 0:
-                    print(f"Soma false negative: with {np.sum(labels)} positive voxels")
+                if num_detected == 0 and show_plot:
+                    print(f"Soma false negative")
                     f = h5py.File(im_fname, "r")
                     im = f.get("image_3channel")
                     viewer = napari.Viewer(ndisplay=3)
@@ -263,7 +330,7 @@ def examine_threshold(
             elif "neg" in filename:
                 for prop in props:
                     area = prop["area"]
-                    if area > size_thresh:
+                    if area > size_thresh and show_plot:
                         print(f"Nonsoma false positive Area: {area}")
                         f = h5py.File(im_fname, "r")
                         im = f.get("image_3channel")
@@ -306,7 +373,7 @@ def examine_threshold(
             else:
                 precision = true_pos / (true_pos + false_pos)
 
-            if precision < 0.8 or recall < 0.8:
+            if (precision < 0.8 or recall) < 0.8 and show_plot:
                 f = h5py.File(im_fname, "r")
                 im = f.get("image_3channel")
                 print(f"prec{precision} recall: {recall}")
@@ -322,6 +389,24 @@ def examine_threshold(
 
 
 class ApplyIlastik_LargeImage:
+    """Apply ilastik to large image, where chunking is necessary.
+
+    Arguments:
+        ilastk_path (str): Path to ilastik executable.
+        ilastik_project (str): Path to ilastik project.
+        ncpu (int): Number of cpus to use for applying ilastik in parallel.
+        object_type (str): Soma for soma detection or axon for axon segmentaiton.
+        results_dir: (str): For soma detection, the directory to write detection results.
+
+    Attributes:
+        ilastk_path (str): Path to ilastik executable.
+        ilastik_project (str): Path to ilastik project.
+        ncpu (int): Number of cpus to use for applying ilastik in parallel.
+        object_type (str): Soma for soma detection or axon for axon segmentaiton.
+        results_dir: (str): For soma detection, the directory to write detection results.
+
+    """
+
     def __init__(
         self,
         ilastik_path: str,
@@ -353,6 +438,16 @@ class ApplyIlastik_LargeImage:
         chunk_size: list,
         max_coords: list = [-1, -1, -1],
     ):
+        """Apply ilastik to large brain, in parallel.
+
+        Args:
+            brain_id (str): Brain ID (key in brain2paths in _data.py file).
+            layer_names (list): Precomputed layer names to be appended to the base path.
+            threshold (float): Threshold for the ilastik predictor.
+            data_dir (str): Path to directory where downloaded data will be temporarily stored.
+            chunk_size (list): Size of chunks to be used for parallel application of ilastik.
+            max_coords (list, optional): Upper bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
+        """
         results_dir = self.results_dir
         volume_base_dir = brain2paths[brain_id]["base"]
         sample_path = volume_base_dir + layer_names[0]
@@ -386,7 +481,7 @@ class ApplyIlastik_LargeImage:
 
         for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
             Parallel(n_jobs=self.ncpu)(
-                delayed(self.process_chunk)(
+                delayed(self._process_chunk)(
                     corner[0],
                     corner[1],
                     volume_base_dir,
@@ -418,7 +513,7 @@ class ApplyIlastik_LargeImage:
         vol_mask = CloudVolume(mask_dir, info=info, compress=False)
         vol_mask.commit_info()
 
-    def process_chunk(
+    def _process_chunk(
         self,
         c1: list,
         c2: list,
@@ -517,6 +612,11 @@ class ApplyIlastik_LargeImage:
                 vol_mask[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]] = mask
 
     def collect_soma_results(self, brain_id: str):
+        """Combine all soma detections and post to neuroglancer. Intended for use after apply_ilastik_parallel.
+
+        Args:
+            brain_id (str): ID to process.
+        """
         coords = []
         coords_target_space = []
         results_dir = self.results_dir
@@ -554,12 +654,14 @@ class ApplyIlastik_LargeImage:
 
         if len(coords_target_space) > 10000:
             random.shuffle(coords_target_space)
-            point_chunks = [coords_target_space[i:i+10000] for i in range(0, len(coords_target_space), 10000)]
+            point_chunks = [
+                coords_target_space[i : i + 10000]
+                for i in range(0, len(coords_target_space), 10000)
+            ]
             name = "detected_somas_partial"
         else:
             point_chunks = [coords_target_space]
             name = "detected_somas"
-
 
         for coords_target_space in point_chunks:
             ng_link = brain2paths[brain_id]["val_info"]["url"]
@@ -578,6 +680,12 @@ class ApplyIlastik_LargeImage:
             print(f"Viz link with detections: {viz_link}")
 
     def collect_axon_results(self, brain_id: str, ng_layer_name: str):
+        """Generate neuroglancer link with the axon_mask segmentation. Intended for use after apply_ilastik_parallel
+
+        Args:
+            brain_id (str): ID to process.
+            ng_layer_name (str): Name of neuroglancer layer in val_info URL with image data.
+        """
         ng_link = brain2paths[brain_id]["val_info"]["url"]
         viz_link = NGLink(ng_link.split("json_url=")[-1])
         ngl_json = viz_link._json
