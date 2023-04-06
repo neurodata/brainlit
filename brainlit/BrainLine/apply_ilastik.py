@@ -554,27 +554,28 @@ class ApplyIlastik_LargeImage:
 
         if len(coords_target_space) > 10000:
             random.shuffle(coords_target_space)
-            coords_target_space = coords_target_space[:10000]
-            print("*********Only posting first 10000 somas to neuroglancer**********")
+            point_chunks = [coords_target_space[i:i+10000] for i in range(0, len(coords_target_space), 10000)]
             name = "detected_somas_partial"
         else:
+            point_chunks = [coords_target_space]
             name = "detected_somas"
 
-        ng_link = brain2paths[brain_id]["val_info"]["url"]
-        viz_link = NGLink(ng_link.split("json_url=")[-1])
-        ngl_json = viz_link._json
 
-        ngl_json["layers"] = [
-            layer for layer in ngl_json["layers"] if layer["type"] != "annotation"
-        ]
+        for coords_target_space in point_chunks:
+            ng_link = brain2paths[brain_id]["val_info"]["url"]
+            viz_link = NGLink(ng_link.split("json_url=")[-1])
+            ngl_json = viz_link._json
 
-        ngl_json["layers"].append(
-            {"type": "annotation", "points": coords_target_space, "name": name}
-        )
-        viz_link = create_viz_link_from_json(
-            ngl_json, neuroglancer_link="https://viz.neurodata.io/?json_url="
-        )
-        print(f"Viz link with detections: {viz_link}")
+            ngl_json["layers"] = [
+                layer for layer in ngl_json["layers"] if layer["type"] != "annotation"
+            ]
+            ngl_json["layers"].append(
+                {"type": "annotation", "points": coords_target_space, "name": name}
+            )
+            viz_link = create_viz_link_from_json(
+                ngl_json, neuroglancer_link="https://viz.neurodata.io/?json_url="
+            )
+            print(f"Viz link with detections: {viz_link}")
 
     def collect_axon_results(self, brain_id: str, ng_layer_name: str):
         ng_link = brain2paths[brain_id]["val_info"]["url"]
