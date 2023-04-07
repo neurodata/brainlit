@@ -399,13 +399,18 @@ class ViterBrain:
         labels = []
         radius = 20
         for coord in [coord1, coord2]:
+            x1 = np.amax([coord[0] - radius, 0])
+            y1 = np.amax([coord[1] - radius, 0])
+            z1 = np.amax([coord[2] - radius, 0])
             local_labels = fragments[
-                np.amax([coord[0] - radius, 0]) : coord[0] + radius,
-                np.amax([coord[1] - radius, 0]) : coord[1] + radius,
-                np.amax([coord[2] - radius, 0]) : coord[2] + radius,
+                x1 : coord[0] + radius,
+                y1 : coord[1] + radius,
+                z1 : coord[2] + radius,
             ]
             label = image_process.label_points(
-                local_labels, [[radius, radius, radius]], res=self.resolution
+                local_labels,
+                [[coord[0] - x1, coord[1] - y1, coord[2] - z1]],
+                res=self.resolution,
             )[1][0]
             labels.append(label)
 
@@ -428,6 +433,9 @@ class ViterBrain:
                         self.nxGraph, state1, state2, weight="total_cost"
                     )
 
+        if min_cost == -1:
+            raise nx.NetworkXNoPath(f"No path found between {coord1} and {coord2}")
+
         # create coordinate list
         coords = [coord1]
         coords.append(list(self.nxGraph.nodes[states[0]]["point2"]))
@@ -443,3 +451,47 @@ class ViterBrain:
         coords.append(coord2)
 
         return coords
+
+
+def explain_viterbrain(vb, c1, c2, frag_seq):
+    # assume c1,c2 fall on a fragment
+    path_coords = vb.shortest_path(c1, c2)
+    comp_to_states = vb.comp_to_states
+    z_frags = zarr.open(vb.fragment_path)
+
+    states1 = comp_to_states[z_frags[c1[0], c1[1], c1[2]]]
+    states2 = comp_to_states[z_frags[c2[0], c2[1], c2[2]]]
+
+    min_cost = -1
+    for state1 in states1:
+        for state2 in states2:
+            try:
+                cost = nx.shortest_path_length(
+                    vb.nxGraph, state1, state2, weight="total_cost"
+                )
+            except nx.NetworkXNoPath:
+                continue
+            if cost < min_cost or min_cost == -1:
+                min_cost = cost
+                states = nx.shortest_path(
+                    vb.nxGraph, state1, state2, weight="total_cost"
+                )
+
+    print(f"{len(states)} states")
+    print(f"{len(path_coords)} coordinates")
+    print(f"0: {path_coords[0]} f{z_frags[c1[0],c1[1],c1[2]]} ")
+
+    coord_idx = 1
+    for i, state in enumerate(states):
+        if i > 0:
+            e = vb.nxGraph.edges(states[i - 1], state)
+            print(f"Transition: {states[i-1]}->{state}: {e}")
+        c = path_coords[coord_idx]
+        print(f"{coord_idx}: {c} f{z_frags[c[0],c[1],c[2]]} s{state}")
+        coord_idx += 1
+        c = path_coords[coord_idx]
+        print(f"{coord_idx}: {c} f{z_frags[c[0],c[1],c[2]]} s{state}")
+
+    coord_idx += 1
+    c = path_coords[coord_idx]
+    print(f"{coord_idx}: {c} f{z_frags[c[0],c[1],c[2]]} s{state}")

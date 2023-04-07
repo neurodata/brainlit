@@ -11,6 +11,7 @@ from sklearn.neighbors import radius_neighbors_graph, KernelDensity
 from scipy.stats import gaussian_kde
 from brainlit.viz.swc2voxel import Bresenham3D
 from brainlit.algorithms.connect_fragments import ViterBrain
+from brainlit.BrainLine.util import _get_corners
 import math
 import warnings
 import subprocess
@@ -23,6 +24,44 @@ import pcurve.pcurve as pcurve
 
 
 class state_generation:
+    """This class encapsulates the processing that turns an image into a set of fragments with endpoints etc. needed to perform viterbrain tracing.
+
+    Arguments:
+        image_path (str): Path to image zarr.
+        new_layers_dir (str): Path to directory where new layers will be written.
+        ilastik_program_path (str): Path to ilastik program.
+        ilastik_project_path (str): Path to ilastik project for segmentation of image.
+        fg_channel (int): Channel of image taken to be foreground.
+        chunk_size (List[float]): Chunk size too be used in parallel processing. Defaults to [375, 375, 125].
+        soma_coords (List[list]): List of coordinates of soma centers. Defaults to [].
+        resolution (List[float): Resolution of image in microns. Defaults to [0.3, 0.3, 1].
+        parallel (int): Number of threads to use for parallel processing. Defaults to 1.
+        prob_path (str): Path to alrerady computed probability image (ilastik output). Defaults to None.
+        fragment_path (str): Path to alrerady computed fragment image. Defaults to None.
+        tiered_path (str): Path to alrerady computed tiered image. Defaults to None.
+        states_path (str): Path to alrerady computed states file. Defaults to None.
+
+    Attributes:
+        image_path (str): Path to image zarr.
+        new_layers_dir (str): Path to directory where new layers will be written.
+        ilastik_program_path (str): Path to ilastik program.
+        ilastik_project_path (str): Path to ilastik project for segmentation of image.
+        fg_channel (int): Channel of image taken to be foreground.
+        chunk_size (List[float], optional): Chunk size too be used in parallel processing.
+        soma_coords (List[list], optional): List of coordinates of soma centers.
+        resolution (List[float], optional): Resolution of image in microns.
+        parallel (int, optional): Number of threads to use for parallel processing.
+        prob_path (str, optional): Path to alrerady computed probability image (ilastik output).
+        fragment_path (str, optional): Path to alrerady computed fragment image.
+        tiered_path (str, optional): Path to alrerady computed tiered image.
+        states_path (str, optional): Path to alrerady computed states file.
+
+    Raises:
+        ValueError: Image must be four dimensional (cxyz)
+        ValueError: Chunks must include all channels and be 4D.
+        ValueError: Already computed images must match image in spatial dimensions.
+    """
+
     def __init__(
         self,
         image_path: str,
@@ -39,29 +78,6 @@ class state_generation:
         tiered_path: str = None,
         states_path: str = None,
     ) -> None:
-        """This class encapsulates the processing that turns an image into a set of fragments with endpoints etc. needed to perform viterbrain tracing.
-
-        Args:
-            image_path (str): Path to image zarr.
-            new_layers_dir (str): Path to directory where new layers will be written.
-            ilastik_program_path (str): Path to ilastik program.
-            ilastik_project_path (str): Path to ilastik project for segmentation of image.
-            fg_channel (int): Channel of image taken to be foreground.
-            chunk_size (List[float], optional): Chunk size too be used in parallel processing. Defaults to [375, 375, 125].
-            soma_coords (List[list], optional): List of coordinates of soma centers. Defaults to [].
-            resolution (List[float], optional): Resolution of image in microns. Defaults to [0.3, 0.3, 1].
-            parallel (int, optional): Number of threads to use for parallel processing. Defaults to 1.
-            prob_path (str, optional): Path to alrerady computed probability image (ilastik output). Defaults to None.
-            fragment_path (str, optional): Path to alrerady computed fragment image. Defaults to None.
-            tiered_path (str, optional): Path to alrerady computed tiered image. Defaults to None.
-            states_path (str, optional): Path to alrerady computed states file. Defaults to None.
-
-        Raises:
-            ValueError: Image must be four dimensional (cxyz)
-            ValueError: Chunks must include all channels and be 4D.
-            ValueError: Already computed images must match image in spatial dimensions.
-        """
-
         self.image_path = image_path
         image = zarr.open(image_path, mode="r")
         if len(image.shape) == 4:
@@ -132,7 +148,10 @@ class state_generation:
                 corner1[2] : corner2[2],
             ]
 
-        fname = data_bin + "image_" + str(corner1[2]) + ".h5"
+        fname = (
+            data_bin
+            + f"image_{corner1[0]}-{corner2[0]}_{corner1[1]}-{corner2[1]}_{corner1[2]}-{corner2[2]}.h5"
+        )
         with h5py.File(fname, "w") as f:
             f.create_dataset("image_chunk", data=image_chunk)
         subprocess.run(
@@ -152,6 +171,10 @@ class state_generation:
         Args:
             data_bin (str): path to directory to store intermediate files
         """
+        isExist = os.path.exists(data_bin)
+        if not isExist:
+            os.makedirs(data_bin)
+
         image = zarr.open(self.image_path, mode="r")
         prob_fname = self.new_layers_dir + "probs.zarr"
 
@@ -160,48 +183,53 @@ class state_generation:
             mode="w",
             shape=image.shape[-3:],
             chunks=image.chunks[1:],
-            dtype="float",
+            dtype="float64",
         )
         chunk_size = self.chunk_size
+
+        corners = _get_corners(image.shape[-3:], chunk_size)
+        corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
 
         print(
             f"Processing image of shape {image.shape} with chunks {image.chunks} into probability image {prob_fname} of shape {probabilities.shape}"
         )
 
-        for x in tqdm(
-            np.arange(0, image.shape[-3], chunk_size[-3]),
-            desc="Computing Ilastik Predictions",
-        ):
-            x2 = np.amin([x + chunk_size[-3], image.shape[-3]])
-            for y in tqdm(np.arange(0, image.shape[-2], chunk_size[-2]), leave=False):
-                y2 = np.amin([y + chunk_size[-2], image.shape[-2]])
-                Parallel(n_jobs=self.parallel)(
-                    delayed(self._predict_thread)(
-                        [x, y, z],
-                        [x2, y2, np.amin([z + chunk_size[-1], image.shape[-1]])],
-                        data_bin,
-                    )
-                    for z in np.arange(0, image.shape[-1], chunk_size[-1])
+        for corner_chunk in tqdm(corners_chunks, desc="Computing Ilastik Predictions"):
+            Parallel(n_jobs=self.parallel)(
+                delayed(self._predict_thread)(
+                    corner[0],
+                    corner[1],
+                    data_bin,
                 )
+                for corner in tqdm(corner_chunk, leave=False)
+            )
 
-                for f in os.listdir(data_bin):
-                    fname = os.path.join(data_bin, f)
-                    if "Probabilities" in f:
-                        items = f.split("_")
-                        z = int(items[1])
-                        z2 = np.amin([z + chunk_size[-1], image.shape[-1]])
-                        f = h5py.File(fname, "r")
-                        pred = f.get("exported_data")
+            for f in os.listdir(data_bin):
+                fname = os.path.join(data_bin, f)
+                if "Probabilities" in f:
+                    items = f.split("_")
 
-                        if self.ndims == 4:
-                            pred = np.squeeze(pred[1, :, :, :])
-                        else:
-                            pred = np.squeeze(pred[:, :, :, 1])
+                    x = int(items[1].split("-")[0])
+                    x2 = int(items[1].split("-")[1])
+                    y = int(items[2].split("-")[0])
+                    y2 = int(items[2].split("-")[1])
+                    z = int(items[3].split("-")[0])
+                    z2 = int(items[3].split("-")[1])
 
-                        probabilities[x:x2, y:y2, z:z2] = pred
+                    f = h5py.File(fname, "r")
+                    pred = f.get("exported_data")
 
-                    if "image" in f:
-                        os.remove(fname)
+                    if self.ndims == 4:
+                        pred = np.squeeze(pred[1, :, :, :])
+                    else:
+                        pred = np.squeeze(pred[:, :, :, 1])
+
+                    probabilities[x:x2, y:y2, z:z2] = pred
+
+            for f in os.listdir(data_bin):
+                fname = os.path.join(data_bin, f)
+                if "image" in f or "Probabilities" in f:
+                    os.remove(fname)
 
         self.prob_path = prob_fname
 
@@ -423,32 +451,40 @@ class state_generation:
 
         print(f"Constructing tiered image {tiered_fname} of shape {tiered.shape}")
 
-        shp = np.array(np.array(image.shape[-3:]) / 2).astype(int)
+        factor = 1
+        data_sample = []
 
-        if self.ndims == 4:
-            image_chunk = image[
-                self.fg_channel,
-                shp[0] : shp[0] + 300,
-                shp[1] : shp[1] + 300,
-                shp[2] : shp[2] + 300,
-            ]
+        while len(data_sample) < 100:
+            factor *= 2
+            shp = np.array(np.array(image.shape[-3:]) / factor).astype(int)
+            if shp[0] == 0:
+                raise ValueError("Could not find sufficient foreground samples")
 
-        else:
-            image_chunk = image[
+            if self.ndims == 4:
+                image_chunk = image[
+                    self.fg_channel,
+                    shp[0] : shp[0] + 300,
+                    shp[1] : shp[1] + 300,
+                    shp[2] : shp[2] + 300,
+                ]
+
+            else:
+                image_chunk = image[
+                    shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
+                ]
+
+            fragments_chunk = fragments[
                 shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
             ]
+            print(f"{image.shape}-{fragments.shape}")
+            print(f"{image_chunk.shape}-{fragments_chunk.shape}")
+            data_fg = image_chunk[fragments_chunk > 0]
+            if len(data_fg.flatten()) > 10000:
+                data_sample = random.sample(list(data_fg), k=10000)
+            else:
+                data_sample = data_fg
 
-        fragments_chunk = fragments[
-            shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
-        ]
-        print(f"{image.shape}-{fragments.shape}")
-        print(f"{image_chunk.shape}-{fragments_chunk.shape}")
-        data_fg = image_chunk[fragments_chunk > 0]
-        if len(data_fg.flatten()) > 10000:
-            data_sample = random.sample(list(data_fg), k=10000)
-        else:
-            data_sample = data_fg
-
+        print(f"Found enough foreground samples at corner: {shp}")
         kde = gaussian_kde(data_sample)
 
         self.kde = kde
