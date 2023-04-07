@@ -455,7 +455,7 @@ class ViterBrain:
 
 def explain_viterbrain(vb, c1, c2, frag_seq):
     # assume c1,c2 fall on a fragment
-    path_coords = vb.shortest_path([558, 549, 4], [480, 517, 2])
+    path_coords = vb.shortest_path(c1, c2)
     comp_to_states = vb.comp_to_states
     z_frags = zarr.open(vb.fragment_path)
 

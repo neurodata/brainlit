@@ -3,7 +3,10 @@ import pytest
 import zarr
 from pathlib import Path
 import numpy as np
-from brainlit.algorithms.connect_fragments.viterbrain import ViterBrain
+from brainlit.algorithms.connect_fragments.viterbrain import (
+    ViterBrain,
+    explain_viterbrain,
+)
 from brainlit.preprocessing import image_process
 import networkx as nx
 from numpy.testing import (
@@ -169,6 +172,18 @@ def test_frag_frag_dist_bad_input():
             pt2=[1, 0, 0],
             orientation2=[np.nan, 1, 0],
         )
+
+
+def test_explain_viterbrain():
+    vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
+    vb.compute_all_costs_int()
+    explain_viterbrain(vb, c1=[52, 0, 0], c2=[50, 90, 0], frag_seq=[])
+
+
+def test_shortest_path():
+    vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
+    vb.compute_all_costs_int()
+    vb.shortest_path([52, 0, 0], c2=[50, 90, 0])
 
 
 ############################
