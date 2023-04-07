@@ -5,7 +5,7 @@ import subprocess
 from joblib import Parallel, delayed
 import multiprocessing
 from brainlit.BrainLine.util import find_sample_names, _get_corners
-from brainlit.BrainLine.data.soma_data import brain2paths
+from brainlit.BrainLine.data import soma_data, axon_data
 from datetime import date
 from cloudvolume import CloudVolume, exceptions
 import numpy as np
@@ -340,8 +340,10 @@ class ApplyIlastik_LargeImage:
                 raise ValueError(
                     f"cannot give results_dir for object type {object_type}"
                 )
+            self.brain2paths = axon_data.brain2paths
         elif object_type != "soma":
             raise ValueError(f"object_type must be soma or axon not {object_type}")
+            self.brain2paths = soma_data.brain2paths
         self.results_dir = results_dir
 
     def apply_ilastik_parallel(
@@ -354,7 +356,7 @@ class ApplyIlastik_LargeImage:
         max_coords: list = [-1, -1, -1],
     ):
         results_dir = self.results_dir
-        volume_base_dir = brain2paths[brain_id]["base"]
+        volume_base_dir = self.brain2paths[brain_id]["base"]
         sample_path = volume_base_dir + layer_names[0]
         vol = CloudVolume(sample_path, parallel=True, mip=0, fill_missing=True)
         shape = vol.shape
@@ -560,7 +562,7 @@ class ApplyIlastik_LargeImage:
         else:
             name = "detected_somas"
 
-        ng_link = brain2paths[brain_id]["val_info"]["url"]
+        ng_link = self.brain2paths[brain_id]["val_info"]["url"]
         viz_link = NGLink(ng_link.split("json_url=")[-1])
         ngl_json = viz_link._json
 
@@ -577,7 +579,7 @@ class ApplyIlastik_LargeImage:
         print(f"Viz link with detections: {viz_link}")
 
     def collect_axon_results(self, brain_id: str, ng_layer_name: str):
-        ng_link = brain2paths[brain_id]["val_info"]["url"]
+        ng_link = self.brain2paths[brain_id]["val_info"]["url"]
         viz_link = NGLink(ng_link.split("json_url=")[-1])
         ngl_json = viz_link._json
 
