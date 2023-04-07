@@ -32,11 +32,10 @@ res = [0.1, 0.1, 0.1]
 ### input checks ###
 ####################
 
+
 def test_state_generation_inputs(tmp_path):
     im_file = str(tmp_path / "image.zarr")
-    z_im = zarr.open(
-        im_file, mode="w", shape=(10, 10), chunks=(5, 5), dtype="float"
-    )
+    z_im = zarr.open(im_file, mode="w", shape=(10, 10), chunks=(5, 5), dtype="float")
 
     with pytest.raises(ValueError):
         sg = state_generation(
@@ -57,9 +56,8 @@ def test_state_generation_inputs(tmp_path):
             new_layers_dir=str(tmp_path),
             ilastik_program_path=None,
             ilastik_project_path=None,
-            chunk_size=[1,5,5,5]
+            chunk_size=[1, 5, 5, 5],
         )
-
 
 
 ############################
