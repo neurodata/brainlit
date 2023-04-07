@@ -92,7 +92,7 @@ def czi_to_zarr(
         bg_path = out_dir + f"channel_{c}.zarr"
         zarr_paths.append(bg_path)
         zarr_bg = zarr.open(
-            bg_path, mode="w", shape=sz, chunks=(200, 200, 10), dtype="uint16"
+            bg_path, mode="w", shape=sz, chunks=(200, 200, chunk_z), dtype="uint16"
         )
 
         if parallel == 1:
