@@ -7,6 +7,7 @@ import pickle
 from numpy.testing import (
     assert_array_equal,
 )
+import pytest
 
 image = 0.5 * np.ones((100, 100, 1))
 image[50:55, 0:25, 0] = 0.91
@@ -25,6 +26,41 @@ labels[45:60, 85:, 0] = 5
 soma_coords = [[50, 90, 0]]
 
 res = [0.1, 0.1, 0.1]
+
+
+####################
+### input checks ###
+####################
+
+def test_state_generation_inputs(tmp_path):
+    im_file = str(tmp_path / "image.zarr")
+    z_im = zarr.open(
+        im_file, mode="w", shape=(10, 10), chunks=(5, 5), dtype="float"
+    )
+
+    with pytest.raises(ValueError):
+        sg = state_generation(
+            image_path=im_file,
+            new_layers_dir=str(tmp_path),
+            ilastik_program_path=None,
+            ilastik_project_path=None,
+        )
+
+    im_file = str(tmp_path / "image2.zarr")
+    z_im = zarr.open(
+        im_file, mode="w", shape=(2, 10, 10, 10), chunks=(5, 5), dtype="float"
+    )
+
+    with pytest.raises(ValueError):
+        sg = state_generation(
+            image_path=im_file,
+            new_layers_dir=str(tmp_path),
+            ilastik_program_path=None,
+            ilastik_project_path=None,
+            chunk_size=[1,5,5,5]
+        )
+
+
 
 ############################
 ### functionality checks ###

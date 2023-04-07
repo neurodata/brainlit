@@ -183,7 +183,7 @@ def test_explain_viterbrain():
 def test_shortest_path():
     vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
     vb.compute_all_costs_int()
-    vb.shortest_path([52, 0, 0], c2=[50, 90, 0])
+    vb.shortest_path([52, 0, 0], [50, 90, 0])
 
 
 ############################
