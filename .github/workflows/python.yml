@@ -30,4 +30,7 @@ jobs:
         shell: bash
       - name: Test with pytest without credentials
         run: |
-          pytest brainlit/algorithms/ brainlit/feature_extraction/ brainlit/BrainLine brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/viz/
+          pytest --cov=api.calculator --cov-report=xml brainlit/algorithms/ brainlit/feature_extraction/ brainlit/BrainLine brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/viz/
+      - name: Upload coverage reports to Codecov with GitHub Action
+        uses: codecov/codecov-action@v3
+          
