@@ -88,8 +88,8 @@ def test_writezarr(init_4dczi):
 
     for zarr_path, value in zip(zarr_paths, [63, 8]):
         z = zarr.open(zarr_path)
-        assert z.shape == (1998, 2009, 40)
-        assert z[100, 100, 10] == value
+        assert z.shape == (40, 1998, 2009)
+        assert z[10, 100, 100] == value
 
 
 def test_writezarr_parallel(init_4dczi):
@@ -102,8 +102,8 @@ def test_writezarr_parallel(init_4dczi):
 
     for zarr_path, value in zip(zarr_paths, [63, 8]):
         z = zarr.open(zarr_path)
-        assert z.shape == (1998, 2009, 40)
-        assert z[100, 100, 10] == value
+        assert z.shape == (40, 1998, 2009)
+        assert z[10, 100, 100] == value
 
 
 def test_writeome(init_3dzarr):
