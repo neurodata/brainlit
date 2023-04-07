@@ -85,7 +85,7 @@ jobs:
     # CircleCI will report the results back to your VCS provider.
     steps:
       - python_build
-      - fork_test
+      # - fork_test # commented bc this is done via github actions
       - early_return_for_forked_pull_requests
       - all_test
       
@@ -94,7 +94,7 @@ jobs:
       - image: cimg/python:3.9
     steps:
       - python_build
-      - fork_test
+      # - fork_test # commented bc this is done via github actions
       - early_return_for_forked_pull_requests
       - all_test
       
@@ -103,7 +103,7 @@ jobs:
       - image: cimg/python:3.10
     steps:
       - python_build
-      - fork_test
+      # - fork_test # commented bc this is done via github actions
       - early_return_for_forked_pull_requests
       - all_test
 
