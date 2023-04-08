@@ -34,7 +34,7 @@ def _write_zrange_thread(zarr_path, czi_path, channel, zs):
 
     zarr_fg = zarr.open(zarr_path)
     for z in zs:
-        zarr_fg[:, :, z] = _read_czi_slice(czi, C=channel, Z=z)
+        zarr_fg[z, :, :] = _read_czi_slice(czi, C=channel, Z=z)
 
 
 def czi_to_zarr(
@@ -61,23 +61,20 @@ def czi_to_zarr(
     W = slice1.shape[1]
     Z = czi.get_dims_shape()[0]["Z"][1]
 
-    print(
-        f"Writing {C} zarrs of shape {H}x{W}x{Z} from czi with dims {czi.get_dims_shape()}"
-    )
-    sz = np.array([H, W, Z], dtype="int")
-
-    fg_path = out_dir + "fg.zarr"
-    zarr_paths.append(fg_path)
+    sz = np.array([Z, H, W], dtype="int")
     chunk_z = 10
-    zarr_fg = zarr.open(
-        fg_path, mode="w", shape=sz, chunks=(200, 200, chunk_z), dtype="uint16"
-    )
+    chunk_sz = (chunk_z, 200, 200)
+    print(f"Writing {C} zarrs of shape {sz} from czi with dims {czi.get_dims_shape()}")
+
+    fg_path = Path(out_dir) / "fg.zarr"
+    zarr_paths.append(fg_path)
+    zarr_fg = zarr.open(fg_path, mode="w", shape=sz, chunks=chunk_sz, dtype="uint16")
 
     if parallel == 1:
         for z in tqdm(np.arange(Z), desc="Saving slices foreground..."):
-            zarr_fg[:, :, z] = _read_czi_slice(czi, C=fg_channel, Z=z)
+            zarr_fg[z, :, :] = _read_czi_slice(czi, C=fg_channel, Z=z)
     elif isinstance(parallel, int) and parallel > 1:
-        z_blocks = [np.arange(i, i + chunk_z) for i in range(0, sz[2], chunk_z)]
+        z_blocks = [np.arange(i, i + chunk_z) for i in range(0, sz[0], chunk_z)]
         Parallel(n_jobs=parallel)(
             delayed(_write_zrange_thread)(fg_path, czi_path, 1, zs)
             for zs in tqdm(z_blocks, desc="Saving slices foreground...")
@@ -89,17 +86,16 @@ def czi_to_zarr(
         if c == fg_channel:
             continue
 
-        bg_path = out_dir + f"channel_{c}.zarr"
+        bg_path = Path(out_dir) / f"channel_{c}.zarr"
         zarr_paths.append(bg_path)
         zarr_bg = zarr.open(
-            bg_path, mode="w", shape=sz, chunks=(200, 200, chunk_z), dtype="uint16"
+            bg_path, mode="w", shape=sz, chunks=chunk_sz, dtype="uint16"
         )
 
         if parallel == 1:
             for z in tqdm(np.arange(Z), desc="Saving slices background..."):
-                zarr_bg[:, :, z] = _read_czi_slice(czi, C=c, Z=z)
+                zarr_bg[z, :, :] = _read_czi_slice(czi, C=c, Z=z)
         elif parallel > 1:
-            z_blocks = [np.arange(i, i + chunk_z) for i in range(0, sz[2], chunk_z)]
             Parallel(n_jobs=parallel)(
                 delayed(_write_zrange_thread)(bg_path, czi_path, c, zs)
                 for zs in tqdm(z_blocks, desc="Saving slices background...")
@@ -124,4 +120,4 @@ def zarr_to_omezarr(zarr_path: str, out_path: str):
 
     store = parse_url(out_path, mode="w").store
     root = zarr.group(store=store)
-    write_image(image=dra, group=root, axes="xyz")
+    write_image(image=dra, group=root, axes="zxy")

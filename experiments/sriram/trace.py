@@ -15,6 +15,8 @@ import napari
 from napari._qt.qthreading import thread_worker
 import zarr
 import networkx as nx
+from pathlib import Path
+import os
 
 """
 copied from https://github.com/google/neuroglancer/blob/master/python/examples/example_action.py
@@ -35,11 +37,13 @@ zarr://http://127.0.0.1:9010/exp227/fg_ome.zarr
 a soma - 5346, 14801, 330
 """
 
-
-im_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/fg.zarr"
+sriram_exp_data_dir = Path(os.path.abspath(__file__)).parents[0] / "data"
+im_path_local = str(
+    sriram_exp_data_dir / "fg_ome.zarr/0/"
+)  # E:\\Projects\\KolodkinLab\\Sriram\\brainlit-tracing\\brainlit\\experiments\\sriram\\data\\
 im_path_cis = "/cis/project/sriram/ng_data/sriram-adipo-brain1-im3/fg_ome.zarr/0/"
 
-trace_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/traces"
+trace_path_local = f"precomputed://file://{str(sriram_exp_data_dir / 'traces')}"
 trace_path_cis = (
     "precomputed://file:///cis/project/sriram/ng_data/sriram-adipo-brain1-im3/traces"
 )
@@ -56,8 +60,8 @@ im_path = im_path_local  # ckloudvolume compatible path or path to local zarr
 port = "9020"
 im_url = f"zarr://http://127.0.0.1:{port}/fg_ome.zarr"  # ng compatible url
 trace_url = f"precomputed://http://127.0.0.1:{port}/traces"  # ng compatible url
-vb_path = vb_path_local
-frag_layer = f"zarr://http://127.0.0.1:{port}/labels.zarr"
+vb_path = None  # vb_path_local
+frag_layer = None  # f"zarr://http://127.0.0.1:{port}/labels.zarr"
 
 
 data = np.random.random((10, 10, 10)) * 255
@@ -90,7 +94,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
 
         cv_dict = {"traces": CloudVolume(trace_path, compress=False)}
         if "zarr" in im_path:
-            cv_dict["im"] = zarr.open(im_path)
+            cv_dict["im"] = zarr.open_array(im_path)
         elif "precomputed" in im_path:
             cv_dict["im"] = CloudVolume(im_path, compress=False)
         else:
