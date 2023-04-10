@@ -33,7 +33,7 @@ jobs:
         shell: bash
       - name: Test with pytest with credentials
         run: |
-          pytest --cov=brainlit brainlit/ # brainlit/algorithms/ brainlit/feature_extraction/ brainlit/BrainLine brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/utils/tests/test_write.py::test_writeome brainlit/viz/
+          pytest --cov=brainlit brainlit/algorithms/ brainlit/feature_extraction/ brainlit/BrainLine brainlit/napari_viterbrain/ brainlit/preprocessing/ brainlit/utils/tests/test_write.py::test_writeome brainlit/utils/tests/test_write.py::test_writeome_baddim brainlit/utils/tests/test_Neuron_trace.py brainlit/utils/tests/test_settion.py brainlit/utils/tests/test_upload.py brainlit/viz/
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3
           
