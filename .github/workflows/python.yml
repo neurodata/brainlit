@@ -25,6 +25,9 @@ jobs:
         run: |
           black .
       - name: Setup AWS credentials
+        env:
+          AWS_KEY: ${{ secrets.AWS_KEY }}
+          AWS_SEC_KEY: ${{ secrets.AWS_SEC_KEY }}
         run: |
           # bash ./.aws.sh # couldn't figure out how to get this to work
         shell: bash
