@@ -209,6 +209,14 @@ brain2paths = {
             "layer": "val",
         },
         "subtype": "tph2 gad2",
+    },
+    "MS15": {
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_03/MS15/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=uN171hvFEvDw-Q",
+            "layer": "val",
+        },
+        "subtype": "gad2 vgat",
     }
 }
 
