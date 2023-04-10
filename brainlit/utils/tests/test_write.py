@@ -3,6 +3,7 @@ import zarr
 import numpy as np
 from brainlit.utils.write import zarr_to_omezarr, czi_to_zarr
 import os
+import shutil
 import zipfile
 from pathlib import Path
 
@@ -73,6 +74,8 @@ def test_writeome_baddim(init_3dzarr, init_4dzarr):
         match=f"{out_path} already exists, please delete the existing file or change the name of the ome-zarr to be created.",
     ):
         zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path)
+
+    shutil.rmtree(out_path)
 
 
 def test_writezarr_badpar(init_4dczi):
