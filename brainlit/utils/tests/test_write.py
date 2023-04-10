@@ -58,10 +58,20 @@ def init_4dzarr(tmp_path_factory):
 ##############
 
 
-def test_writeome_baddim(init_4dzarr):
+def test_writeome_baddim(init_3dzarr, init_4dzarr):
     zarr_path, data_dir = init_4dzarr
     out_path = data_dir / "fg_ome.zarr"
     with pytest.raises(ValueError, match=r"Conversion only supported for 3D arrays"):
+        zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path)
+
+    zarr_path, data_dir = init_3dzarr
+    out_path = data_dir / "fg_ome.zarr"
+    zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path)
+
+    with pytest.raises(
+        ValueError,
+        match=f"{out_path} already exists, please delete the existing file or change the name of the ome-zarr to be created.",
+    ):
         zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path)
 
 
