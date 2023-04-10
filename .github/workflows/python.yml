@@ -29,7 +29,7 @@ jobs:
           AWS_KEY: ${{ secrets.AWS_KEY }}
           AWS_SEC_KEY: ${{ secrets.AWS_SEC_KEY }}
         run: |
-          # bash ./.aws.sh # couldn't figure out how to get this to work
+          bash ./.aws.sh # couldn't figure out how to get this to work
         shell: bash
       - name: Test with pytest without credentials
         run: |
