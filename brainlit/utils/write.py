@@ -8,6 +8,7 @@ from ome_zarr.io import parse_url
 from typing import List
 from pathlib import Path
 from joblib import Parallel, delayed
+import os
 
 
 def _read_czi_slice(czi, C, Z):
@@ -109,7 +110,16 @@ def zarr_to_omezarr(zarr_path: str, out_path: str):
     Args:
         zarr_path (str): Path to zarr.
         out_path (str): Path of ome-zarr to be created.
+
+    Raises:
+        ValueError: If zarr to be written already exists.
+        ValueError: If conversion is not 3D array.
     """
+    if os.path.exists(out_path):
+        raise ValueError(
+            f"{out_path} already exists, please delete the existing file or change the name of the ome-zarr to be created."
+        )
+
     print(f"Converting {zarr_path} to ome-zarr")
 
     z = zarr.open(zarr_path)
