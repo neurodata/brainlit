@@ -1,5 +1,9 @@
 ViterBrain Tracer
 
+Setup:
+- Make data is being served with, for example, python cors_webserver.py -d "<path-to-brainlit>/experiments/sriram/data/" -p <port-number>
+- Make sure port argument in beginning of trace.py corresponds to <port-number> in above command.
+
 Tracing workflow tips:
 - View only the coronal view window in neuroglancer
 - Trace proximally to distally.
@@ -12,3 +16,4 @@ Keyboard Controls - all keys must be paired with SHIFT
 - N "new" - new path
 - C "clear" - clear most recent line segment
 - H "hook" - instead of adding the first point for a new trace, you can use this to begin a new branch off an existing trace (it will snap to the closest point of all previously made traces)
+- T "trace" - run viterbrain tracer to automatically trace between fragments

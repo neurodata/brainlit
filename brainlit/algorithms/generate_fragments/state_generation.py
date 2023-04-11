@@ -18,7 +18,8 @@ import subprocess
 import random
 import pickle
 import networkx as nx
-from typing import List, Tuple
+from typing import List, Tuple, Union
+from pathlib import Path
 
 import pcurve.pcurve as pcurve
 
@@ -27,8 +28,8 @@ class state_generation:
     """This class encapsulates the processing that turns an image into a set of fragments with endpoints etc. needed to perform viterbrain tracing.
 
     Arguments:
-        image_path (str): Path to image zarr.
-        new_layers_dir (str): Path to directory where new layers will be written.
+        image_path (str or pathlib.Path): Path to image zarr.
+        new_layers_dir (str or pathlib.Path): Path to directory where new layers will be written.
         ilastik_program_path (str): Path to ilastik program.
         ilastik_project_path (str): Path to ilastik project for segmentation of image.
         fg_channel (int): Channel of image taken to be foreground.
@@ -36,10 +37,10 @@ class state_generation:
         soma_coords (List[list]): List of coordinates of soma centers. Defaults to [].
         resolution (List[float): Resolution of image in microns. Defaults to [0.3, 0.3, 1].
         parallel (int): Number of threads to use for parallel processing. Defaults to 1.
-        prob_path (str): Path to alrerady computed probability image (ilastik output). Defaults to None.
-        fragment_path (str): Path to alrerady computed fragment image. Defaults to None.
-        tiered_path (str): Path to alrerady computed tiered image. Defaults to None.
-        states_path (str): Path to alrerady computed states file. Defaults to None.
+        prob_path (str or pathlib.Path): Path to alrerady computed probability image (ilastik output). Defaults to None.
+        fragment_path (str or pathlib.Path): Path to alrerady computed fragment image. Defaults to None.
+        tiered_path (str or pathlib.Path): Path to alrerady computed tiered image. Defaults to None.
+        states_path (str or pathlib.Path): Path to alrerady computed states file. Defaults to None.
 
     Attributes:
         image_path (str): Path to image zarr.
@@ -64,8 +65,8 @@ class state_generation:
 
     def __init__(
         self,
-        image_path: str,
-        new_layers_dir: str,
+        image_path: Union[str, Path],
+        new_layers_dir: Union[str, Path],
         ilastik_program_path: str,
         ilastik_project_path: str,
         fg_channel: int = 0,
@@ -73,12 +74,44 @@ class state_generation:
         soma_coords: List[list] = [],
         resolution: List[float] = [0.3, 0.3, 1],
         parallel: int = 1,
-        prob_path: str = None,
-        fragment_path: str = None,
-        tiered_path: str = None,
-        states_path: str = None,
+        prob_path: Union[str, Path] = None,
+        fragment_path: Union[str, Path] = None,
+        tiered_path: Union[str, Path] = None,
+        states_path: Union[str, Path] = None,
     ) -> None:
+        modified_strs = []
+
+        for text in [
+            image_path,
+            new_layers_dir,
+            ilastik_program_path,
+            ilastik_project_path,
+            fragment_path,
+            tiered_path,
+            states_path,
+        ]:
+            if isinstance(text, Path):
+                text = str(text.resolve())
+            modified_strs.append(text)
+        (
+            image_path,
+            new_layers_dir,
+            ilastik_program_path,
+            ilastik_project_path,
+            fragment_path,
+            tiered_path,
+            states_path,
+        ) = modified_strs
+
         self.image_path = image_path
+        self.new_layers_dir = new_layers_dir
+        self.ilastik_program_path = ilastik_program_path
+        self.ilastik_project_path = ilastik_project_path
+        self.prob_path = prob_path
+        self.fragment_path = fragment_path
+        self.tiered_path = tiered_path
+        self.states_path = states_path
+
         image = zarr.open(image_path, mode="r")
         if len(image.shape) == 4:
             self.ndims = 4
@@ -91,8 +124,6 @@ class state_generation:
 
         self.fg_channel = fg_channel
         self.image_shape = image.shape
-        self.ilastik_program_path = ilastik_program_path
-        self.ilastik_project_path = ilastik_project_path
 
         if len(chunk_size) == 4 and chunk_size[0] != self.image_shape[0]:
             raise ValueError(
@@ -115,12 +146,6 @@ class state_generation:
                     raise ValueError(
                         f"{name} image has different shape {other_image.shape} than image {self.image_shape}"
                     )
-
-        self.new_layers_dir = new_layers_dir
-        self.prob_path = prob_path
-        self.fragment_path = fragment_path
-        self.tiered_path = tiered_path
-        self.states_path = states_path
 
     def _predict_thread(
         self, corner1: List[int], corner2: List[int], data_bin: str
@@ -150,7 +175,7 @@ class state_generation:
 
         fname = (
             data_bin
-            + f"image_{corner1[0]}-{corner2[0]}_{corner1[1]}-{corner2[1]}_{corner1[2]}-{corner2[2]}.h5"
+            / f"image_{corner1[0]}-{corner2[0]}_{corner1[1]}-{corner2[1]}_{corner1[2]}-{corner2[2]}.h5"
         )
         with h5py.File(fname, "w") as f:
             f.create_dataset("image_chunk", data=image_chunk)
@@ -176,7 +201,7 @@ class state_generation:
             os.makedirs(data_bin)
 
         image = zarr.open(self.image_path, mode="r")
-        prob_fname = self.new_layers_dir + "probs.zarr"
+        prob_fname = str(Path(self.new_layers_dir) / "probs.zarr")
 
         probabilities = zarr.open(
             prob_fname,
@@ -280,7 +305,6 @@ class state_generation:
         Returns:
             tuple: tuple containing corner coordinates and fragment image
         """
-        print(f"Processing @corner: {corner1}")
         threshold = 0.9
 
         prob = zarr.open(self.prob_path, mode="r")
@@ -337,7 +361,7 @@ class state_generation:
     def compute_frags(self) -> None:
         """Compute all fragments for image"""
         probs = zarr.open(self.prob_path, mode="r")
-        frag_fname = self.new_layers_dir + "labels.zarr"
+        frag_fname = str(Path(self.new_layers_dir) / "labels.zarr")
 
         fragments = zarr.open(
             frag_fname,
@@ -357,11 +381,11 @@ class state_generation:
                 specification["corner2"],
                 specification["soma_coords"],
             )
-            for specification in specifications
+            for specification in tqdm(specifications, desc="Splitting fragments...")
         )
 
         max_label = 0
-        for result in results:
+        for result in tqdm(results, desc="Renaming fragments..."):
             corner1, corner2, labels = result
             labels[labels > 0] += max_label
             max_label = np.amax([max_label, np.amax(labels)])
@@ -405,7 +429,6 @@ class state_generation:
         Returns:
             tuple: tuple containing corner coordinates and tiered image
         """
-        print(f"Processing @corner: {corner1}-{corner2}")
         kde = self.kde
         image = zarr.open(self.image_path, mode="r")
 
@@ -439,7 +462,7 @@ class state_generation:
         """Compute entire tiered image then reassemble and save as zarr"""
         image = zarr.open(self.image_path, mode="r")
         fragments = zarr.open(self.fragment_path, mode="r")
-        tiered_fname = self.new_layers_dir + "tiered.zarr"
+        tiered_fname = str(Path(self.new_layers_dir) / "tiered.zarr")
 
         tiered = zarr.open(
             tiered_fname,
@@ -476,8 +499,6 @@ class state_generation:
             fragments_chunk = fragments[
                 shp[0] : shp[0] + 300, shp[1] : shp[1] + 300, shp[2] : shp[2] + 300
             ]
-            print(f"{image.shape}-{fragments.shape}")
-            print(f"{image_chunk.shape}-{fragments_chunk.shape}")
             data_fg = image_chunk[fragments_chunk > 0]
             if len(data_fg.flatten()) > 10000:
                 data_sample = random.sample(list(data_fg), k=10000)
@@ -496,7 +517,7 @@ class state_generation:
                 specification["corner1"],
                 specification["corner2"],
             )
-            for specification in specifications
+            for specification in tqdm(specifications, desc="Computing tiered image...")
         )
 
         for result in results:
@@ -649,10 +670,7 @@ class state_generation:
         components = unq[unq != 0]
 
         results = []
-        for component in tqdm(
-            components,
-            desc=f"Computing state representations @corner {corner1}-{corner2}",
-        ):
+        for component in components:
             mask = labels == component
 
             if component in self.soma_lbls:
@@ -738,8 +756,7 @@ class state_generation:
         Raises:
             ValueError: erroneously computed endpoints of soma state
         """
-        print(f"Computing states")
-        states_fname = self.new_layers_dir + "nx.pickle"
+        states_fname = str(Path(self.new_layers_dir) / "nx.pickle")
 
         specifications = self._get_frag_specifications()
 
@@ -749,7 +766,7 @@ class state_generation:
                 specification["corner2"],
                 alg,
             )
-            for specification in specifications
+            for specification in tqdm(specifications, desc="Computing states...")
         )
         results = [item for result in results_tuple for item in result]
 
@@ -811,7 +828,7 @@ class state_generation:
 
     def compute_edge_weights(self) -> None:
         """Create viterbrain object and compute edge weights"""
-        viterbrain_fname = self.new_layers_dir + "viterbrain.pickle"
+        viterbrain_fname = str(Path(self.new_layers_dir) / "viterbrain.pickle")
 
         with open(self.states_path, "rb") as handle:
             G = pickle.load(handle)
