@@ -39,7 +39,7 @@ a soma - 5346, 14801, 330
 
 sriram_exp_data_dir = Path(os.path.abspath(__file__)).parents[0] / "data"
 im_path_local = str(
-    sriram_exp_data_dir / "fg_ome.zarr/0/"
+    sriram_exp_data_dir / "fg_ome.zarr" / "0"
 )  # E:\\Projects\\KolodkinLab\\Sriram\\brainlit-tracing\\brainlit\\experiments\\sriram\\data\\
 im_path_cis = "/cis/project/sriram/ng_data/sriram-adipo-brain1-im3/fg_ome.zarr/0/"
 
@@ -48,20 +48,27 @@ trace_path_cis = (
     "precomputed://file:///cis/project/sriram/ng_data/sriram-adipo-brain1-im3/traces"
 )
 
-vb_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/viterbrain.pickle"
+vb_path_local = str(sriram_exp_data_dir / "viterbrain.pickle")
 vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pickle"
 
 ######################
 # Enter inputs below #
 ######################
 
+
+port = "9020"
 trace_path = trace_path_local  # cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
 im_path = im_path_local  # ckloudvolume compatible path or path to local zarr
-port = "9020"
 im_url = f"zarr://http://127.0.0.1:{port}/fg_ome.zarr"  # ng compatible url
 trace_url = f"precomputed://http://127.0.0.1:{port}/traces"  # ng compatible url
-vb_path = None  # vb_path_local
-frag_layer = None  # f"zarr://http://127.0.0.1:{port}/labels.zarr"
+assisted_tracing = True
+
+if assisted_tracing:
+    vb_path = vb_path_local
+    frag_layer = f"zarr://http://127.0.0.1:{port}/labels.zarr"
+else:
+    vb_path = None
+    frag_layer = None
 
 
 data = np.random.random((10, 10, 10)) * 255
