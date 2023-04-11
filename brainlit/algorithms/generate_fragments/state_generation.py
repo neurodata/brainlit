@@ -18,7 +18,8 @@ import subprocess
 import random
 import pickle
 import networkx as nx
-from typing import List, Tuple
+from typing import List, Tuple, Union
+from pathlib import Path
 
 import pcurve.pcurve as pcurve
 
@@ -27,8 +28,8 @@ class state_generation:
     """This class encapsulates the processing that turns an image into a set of fragments with endpoints etc. needed to perform viterbrain tracing.
 
     Arguments:
-        image_path (str): Path to image zarr.
-        new_layers_dir (str): Path to directory where new layers will be written.
+        image_path (str or pathlib.Path): Path to image zarr.
+        new_layers_dir (str or pathlib.Path): Path to directory where new layers will be written.
         ilastik_program_path (str): Path to ilastik program.
         ilastik_project_path (str): Path to ilastik project for segmentation of image.
         fg_channel (int): Channel of image taken to be foreground.
@@ -64,8 +65,8 @@ class state_generation:
 
     def __init__(
         self,
-        image_path: str,
-        new_layers_dir: str,
+        image_path: Union[str, Path],
+        new_layers_dir: Union[str, Path],
         ilastik_program_path: str,
         ilastik_project_path: str,
         fg_channel: int = 0,
@@ -78,7 +79,14 @@ class state_generation:
         tiered_path: str = None,
         states_path: str = None,
     ) -> None:
+        if isinstance(image_path, Path):
+            image_path = str(image_path.resolve())
         self.image_path = image_path
+
+        if isinstance(new_layers_dir, Path):
+            new_layers_dir = str(new_layers_dir.resolve()) + "/"
+        self.new_layers_dir = new_layers_dir
+
         image = zarr.open(image_path, mode="r")
         if len(image.shape) == 4:
             self.ndims = 4
@@ -116,7 +124,6 @@ class state_generation:
                         f"{name} image has different shape {other_image.shape} than image {self.image_shape}"
                     )
 
-        self.new_layers_dir = new_layers_dir
         self.prob_path = prob_path
         self.fragment_path = fragment_path
         self.tiered_path = tiered_path
@@ -176,7 +183,7 @@ class state_generation:
             os.makedirs(data_bin)
 
         image = zarr.open(self.image_path, mode="r")
-        prob_fname = self.new_layers_dir + "probs.zarr"
+        prob_fname = str(Path(self.new_layers_dir) / "probs.zarr")
 
         probabilities = zarr.open(
             prob_fname,
@@ -337,7 +344,7 @@ class state_generation:
     def compute_frags(self) -> None:
         """Compute all fragments for image"""
         probs = zarr.open(self.prob_path, mode="r")
-        frag_fname = self.new_layers_dir + "labels.zarr"
+        frag_fname = str(Path(self.new_layers_dir) / "labels.zarr")
 
         fragments = zarr.open(
             frag_fname,
@@ -439,7 +446,7 @@ class state_generation:
         """Compute entire tiered image then reassemble and save as zarr"""
         image = zarr.open(self.image_path, mode="r")
         fragments = zarr.open(self.fragment_path, mode="r")
-        tiered_fname = self.new_layers_dir + "tiered.zarr"
+        tiered_fname = str(Path(self.new_layers_dir) / "tiered.zarr")
 
         tiered = zarr.open(
             tiered_fname,
@@ -739,7 +746,7 @@ class state_generation:
             ValueError: erroneously computed endpoints of soma state
         """
         print(f"Computing states")
-        states_fname = self.new_layers_dir + "nx.pickle"
+        states_fname = str(Path(self.new_layers_dir) / "nx.pickle")
 
         specifications = self._get_frag_specifications()
 
@@ -811,7 +818,7 @@ class state_generation:
 
     def compute_edge_weights(self) -> None:
         """Create viterbrain object and compute edge weights"""
-        viterbrain_fname = self.new_layers_dir + "viterbrain.pickle"
+        viterbrain_fname = str(Path(self.new_layers_dir) / "viterbrain.pickle")
 
         with open(self.states_path, "rb") as handle:
             G = pickle.load(handle)
