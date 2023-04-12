@@ -11,16 +11,11 @@ from pathlib import Path
 @pytest.fixture(scope="session")
 def init_4dczi(tmp_path_factory):
     data_dir = tmp_path_factory.mktemp("data")
-    czi_path = data_dir / "test.czi"
-    zip_path = (
-        Path(__file__).parents[3] / "experiments" / "sriram" / "data" / "test.czi.zip"
+    czi_path = (
+        Path(__file__).parents[0] / "data" / "mosaic_test.czi"
     )
 
-    with zipfile.ZipFile(
-        zip_path,
-        "r",
-    ) as zip_ref:
-        zip_ref.extractall(data_dir)
+    
     return czi_path, data_dir
 
 
@@ -82,7 +77,7 @@ def test_writezarr_badpar(init_4dczi):
     czi_path, data_dir = init_4dczi
     with pytest.raises(ValueError, match="parallel must be positive integer, not 1"):
         czi_to_zarr(
-            czi_path=czi_path, out_dir=str(data_dir), fg_channel=1, parallel="1"
+            czi_path=czi_path, out_dir=str(data_dir), fg_channel=0, parallel="1"
         )
 
 
@@ -94,29 +89,27 @@ def test_writezarr_badpar(init_4dczi):
 def test_writezarr(init_4dczi):
     czi_path, data_dir = init_4dczi
     zarr_paths = czi_to_zarr(
-        czi_path=czi_path, out_dir=str(data_dir), fg_channel=1, parallel=1
+        czi_path=czi_path, out_dir=str(data_dir), fg_channel=0, parallel=1
     )
 
-    assert len(zarr_paths) == 2
+    assert len(zarr_paths) == 1
 
-    for zarr_path, value in zip(zarr_paths, [63, 8]):
-        z = zarr.open(zarr_path)
-        assert z.shape == (40, 1998, 2009)
-        assert z[10, 100, 100] == value
+    z = zarr.open(zarr_paths[0])
+    assert z.shape == (1, 624, 1756)
+    assert z[0, 10, 10] == 411
 
 
 def test_writezarr_parallel(init_4dczi):
     czi_path, data_dir = init_4dczi
     zarr_paths = czi_to_zarr(
-        czi_path=czi_path, out_dir=str(data_dir), fg_channel=1, parallel=2
+        czi_path=czi_path, out_dir=str(data_dir), fg_channel=0, parallel=2
     )
 
-    assert len(zarr_paths) == 2
+    assert len(zarr_paths) == 1
 
-    for zarr_path, value in zip(zarr_paths, [63, 8]):
-        z = zarr.open(zarr_path)
-        assert z.shape == (40, 1998, 2009)
-        assert z[10, 100, 100] == value
+    z = zarr.open(zarr_paths[0])
+    assert z.shape == (1, 624, 1756)
+    assert z[0, 10, 10] == 411
 
 
 def test_writeome(init_3dzarr):
