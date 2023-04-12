@@ -11,11 +11,8 @@ from pathlib import Path
 @pytest.fixture(scope="session")
 def init_4dczi(tmp_path_factory):
     data_dir = tmp_path_factory.mktemp("data")
-    czi_path = (
-        Path(__file__).parents[0] / "data" / "mosaic_test.czi"
-    )
+    czi_path = Path(__file__).parents[0] / "data" / "mosaic_test.czi"
 
-    
     return czi_path, data_dir
 
 
