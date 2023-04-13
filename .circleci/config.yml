@@ -48,7 +48,7 @@ commands:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip install pytest pytest-cov codecov black[jupyter]
+            pip install pytest pytest-cov black[jupyter]
             pip install -e .
   fork_test:
     steps:
@@ -66,7 +66,7 @@ commands:
           # This assumes pytest is installed via the install-package step above
           command: |
             . venv/bin/activate
-            pytest --cov=brainlit ./brainlit
+            pytest --cov=brainlit --cov-report=xml ./brainlit
             codecov
             
 jobs:
