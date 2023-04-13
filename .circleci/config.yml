@@ -16,7 +16,6 @@ workflows:
       - build-and-test_38
       - build-and-test_39
       - build-and-test_310
-      - codecov/upload
 
 # Below I define commands that are used in many of the jobs
 commands:
@@ -69,7 +68,6 @@ commands:
           command: |
             . venv/bin/activate
             pytest --cov=brainlit --cov-report=xml ./brainlit
-            codecov
             
 jobs:
   build-and-test_38:  # This is the name of the job, feel free to change it to better match what you're trying to do!
@@ -108,4 +106,7 @@ jobs:
       # - fork_test # commented bc this is done via github actions
       - early_return_for_forked_pull_requests
       - all_test
+      - codecov/upload
+
+    
 
