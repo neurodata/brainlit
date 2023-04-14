@@ -170,6 +170,7 @@ brain2paths = {
             "layer": "val",
         },
         "subtype": "tph2 gad2",
+        "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/axon_mask_transformed",
     },
     "8786": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2022_11_02/8786/",
@@ -209,6 +210,7 @@ brain2paths = {
             "layer": "val",
         },
         "subtype": "tph2 gad2",
+        "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2023_04_03/MS32/axon_mask_transformed",
     },
     "MS15": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_03/MS15/",
@@ -217,7 +219,15 @@ brain2paths = {
             "layer": "val",
         },
         "subtype": "gad2 vgat",
-    }
+    },
+    "MS29": {
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_07/MS29/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=gf8YOhsEvdGXgQ",
+            "layer": "val",
+        },
+        "subtype": "tph2 gad2",
+    },
 }
 
 

@@ -69,13 +69,8 @@ class BrainDistribution:
             half_width = -1
         return newslice, borders, half_width
 
-    def _get_subtype_counts(self, object_type):
-        if object_type == "soma":
-            brain2paths = soma_data.brain2paths
-        elif object_type == "axon":
-            brain2paths = axon_data.brain2paths
-        else:
-            raise ValueError(f"object_type must be soma or axon not: {object_type}")
+    def _get_subtype_counts(self):
+        brain2paths = self.brain2paths
         brain_ids = self.brain_ids
         counts = {}
         for brain_id in brain_ids:
@@ -264,7 +259,7 @@ class SomaDistribution(BrainDistribution):
     ):
         region_graph = self.region_graph
 
-        subtype_counts = self._get_subtype_counts(object_type="soma")
+        subtype_counts = self._get_subtype_counts()
         id_to_somatotals = self._count_somas()
 
         df = self._make_bar_df(
@@ -505,11 +500,11 @@ class SomaDistribution(BrainDistribution):
 
         return annotator
 
-    def _log_ttest_ind(self, group_data1, group_data2, verbose=1, **stats_params):
-        group_data1_log = np.log(group_data1)
-        group_data2_log = np.log(group_data2)
+def _log_ttest_ind(group_data1, group_data2, verbose=1, **stats_params):
+    group_data1_log = np.log(group_data1)
+    group_data2_log = np.log(group_data2)
 
-        return ttest_ind(group_data1_log, group_data2_log, **stats_params)
+    return ttest_ind(group_data1_log, group_data2_log, **stats_params)
 
 def _get_corners_collection(
     vol_mask, vol_reg, block_size, max_coords: list = [-1, -1, -1]
@@ -633,6 +628,7 @@ class AxonDistribution(BrainDistribution):
         self.regional_distribution_dir = regional_distribution_dir
         self.region_graph = self._setup_regiongraph(regional_distribution_dir)
         self.brain2paths = axon_data.brain2paths
+        self.subtype_counts = self._get_subtype_counts()
 
     def _setup_regiongraph(self, regional_distribution_dir):
         regional_distribution_dir = self.regional_distribution_dir
@@ -703,6 +699,7 @@ class AxonDistribution(BrainDistribution):
 
         heatmaps = {subtype: 0 * newslice for subtype in subtype_colors.keys()}
         for brain_id in self.brain_ids:
+            print(brain_id)
             subtype = brain2paths[brain_id]["subtype"]
 
             transformed_mask_vol = CloudVolume(
@@ -726,7 +723,7 @@ class AxonDistribution(BrainDistribution):
             if subtype_colors[subtype] == "red":
                 rgb_heatmap[0] = heatmaps[subtype]
             elif subtype_colors[subtype] == "green":
-                rgb_heatmap[0] = heatmaps[subtype]
+                rgb_heatmap[1] = heatmaps[subtype]
         rgb_heatmap = [0 * newslice if type(i) == int else i for i in rgb_heatmap]
 
         rgb_heatmap = np.stack(rgb_heatmap, axis=-1)
@@ -779,8 +776,7 @@ class AxonDistribution(BrainDistribution):
     def region_barchart(
         self, regions: list, composite_regions: dict = {}, normalize_region: int = -1
     ):
-        region_graph = self.region_graph
-        subtype_counts = self._get_subtype_counts(object_type="axon")
+        subtype_counts = self.subtype_counts
         print(subtype_counts)
 
         df = self._make_bar_df(
@@ -966,16 +962,22 @@ class AxonDistribution(BrainDistribution):
         return region_vols
 
     def _configure_annotator(self, df, axis, ind_variable: str):
-        test = "Log t-test_ind"
+        subtype_counts = self.subtype_counts
+        
+        test = StatTest(_log_ttest_ind, test_long_name='Log t-test_ind', test_short_name='log-t')
         # test = "t-test_ind"
         correction = "fdr_by"
 
         pairs = []
         unq_subregions = df["Region"].unique()
         subtypes = df["Subtype"].unique()
+        subtypes = [subtype for subtype in subtypes if subtype_counts[subtype.split(" (n=")[0]] > 1]
+
         subtype_pairs = [
             (a, b) for idx, a in enumerate(subtypes) for b in subtypes[idx + 1 :]
         ]
+        print(subtype_pairs)
+
 
         for subtype_pair in subtype_pairs:
             for subregion in unq_subregions:
