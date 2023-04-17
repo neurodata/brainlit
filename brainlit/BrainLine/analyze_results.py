@@ -623,12 +623,14 @@ def collect_regional_segmentation(
 
 
 class AxonDistribution(BrainDistribution):
-    def __init__(self, brain_ids: list, regional_distribution_dir: str):
+    def __init__(self, brain_ids: list, regional_distribution_dir: str = None):
         super().__init__(brain_ids)
         self.regional_distribution_dir = regional_distribution_dir
-        self.region_graph = self._setup_regiongraph(regional_distribution_dir)
         self.brain2paths = axon_data.brain2paths
         self.subtype_counts = self._get_subtype_counts()
+
+        if regional_distribution_dir != None:
+            self.region_graph = self._setup_regiongraph(regional_distribution_dir)
 
     def _setup_regiongraph(self, regional_distribution_dir):
         regional_distribution_dir = self.regional_distribution_dir
