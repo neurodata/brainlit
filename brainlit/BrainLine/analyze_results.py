@@ -692,7 +692,7 @@ class AxonDistribution(BrainDistribution):
         else:
             vol_atlas = CloudVolume(brain2paths["atlas"]["url"])
 
-        slice = vol_atlas[z, :, :]
+        slice = np.squeeze(np.array(vol_atlas[z, :, :]))
 
         newslice, borders, half_width = self._slicetolabels(slice, fold_on=fold_on)
 
