@@ -597,6 +597,13 @@ def _combine_regional_segmentations(outdir):
 def collect_regional_segmentation(
     brain_id: str, outdir: str, ncpu: int = 1, max_coords: list = [-1, -1, -1]
 ):
+    isExist = os.path.exists(outdir)
+    if not isExist:
+        print(f"Creating directory: {outdir}")
+        os.makedirs(outdir)
+    else:
+        print(f"Downloaded data will be stored in {outdir}")
+
     dir_base = axon_data.brain2paths[brain_id]["base"]
 
     dir = os.path.join(dir_base, "axon_mask")
