@@ -234,7 +234,7 @@ brain2paths = {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=kcPAtNm-SdK2IQ",
             "layer": "val",
         },
-        "subtype": "tph2 vgat",
+        "subtype": "gad2 vgat",
     },
 }
 
