@@ -245,6 +245,15 @@ brain2paths = {
         "somas_atlas_path": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/wholebrain_results/atlas_somas_892/",
         "somas_atlas_url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=A4qnN-6JzqWCcw"
     },
+    "MS37": {
+        "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_12/MS37/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=NTaOrY8WpOLyKA",
+            "somas_layer": "soma_val",
+            "nonsomas_layer": "nonsoma_val",
+        },
+        "subtype": "gad2 vgat",
+    },
 }
 
 # first entry is somas, second is nonsomas

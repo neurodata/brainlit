@@ -66,7 +66,7 @@ def download_subvolumes(
         print(f"Downloaded data will be stored in {base_dir}")
 
     for suffix, centers in zip(suffixes, centers_groups):
-        for i, center in enumerate(tqdm(centers, desc="Saving positive samples")):
+        for i, center in enumerate(tqdm(centers, desc="Saving samples")):
             image_fg = vol_fg[
                 center[0] - radius + 1 : center[0] + radius,
                 center[1] - radius + 1 : center[1] + radius,
