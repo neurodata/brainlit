@@ -9,6 +9,8 @@ from typing import List
 from pathlib import Path
 from joblib import Parallel, delayed
 import os
+from cloudvolume import CloudVolume
+import json
 
 
 def _read_czi_slice(czi, C, Z):
@@ -107,12 +109,13 @@ def czi_to_zarr(
     return zarr_paths
 
 
-def zarr_to_omezarr(zarr_path: str, out_path: str):
+def zarr_to_omezarr(zarr_path: str, out_path: str, res: list):
     """Convert 3D zarr to ome-zarr.
 
     Args:
         zarr_path (str): Path to zarr.
         out_path (str): Path of ome-zarr to be created.
+        res (list): List of xyz resolution values in nanometers.
 
     Raises:
         ValueError: If zarr to be written already exists.
@@ -134,3 +137,62 @@ def zarr_to_omezarr(zarr_path: str, out_path: str):
     store = parse_url(out_path, mode="w").store
     root = zarr.group(store=store)
     write_image(image=dra, group=root, axes="zxy")
+    _edit_ome_metadata(out_path, res)
+
+
+def _edit_ome_metadata(out_path: str, res: list):
+    res = np.divide([res[-1], res[0], res[1]], 1000)
+    ome_zarr = zarr.open("/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/test-czi/fg_ome.zarr", "r+")
+    metadata_edit = ome_zarr.attrs['multiscales']
+    for i in range(3):
+        metadata_edit[0]['axes'][i]['unit'] = 'micrometer'
+    for i, dataset in enumerate(metadata_edit[0]["datasets"]):
+        new_res = list(np.multiply(dataset['coordinateTransformations'][0]['scale'], res))
+        metadata_edit[0]["datasets"][i]['coordinateTransformations'][0]['scale'] = new_res
+    ome_zarr.attrs['multiscales'] = metadata_edit
+
+def write_trace_layer(parent_dir: str, res: list):
+    """_summary_
+
+    Args:
+        parent_dir (str): Path to directory which holds fg_ome.zarr and where traces layer will be written.
+        res (list): List of xyz resolution values in nanometers.
+    """
+    if isinstance(parent_dir, str):
+        parent_dir = Path(parent_dir)
+
+    traces_dir = parent_dir / "traces"
+    z = zarr.open_array(parent_dir / "fg_ome.zarr" / "0")
+    volume_size = [z.shape[1],z.shape[2],z.shape[0]]
+    chunk_size = [z.chunks[1],z.chunks[2],z.chunks[0]]
+    outpath = f"precomputed://file://" + str(traces_dir)
+
+    info = CloudVolume.create_new_info(
+        num_channels=1,
+        layer_type="segmentation",
+        data_type="uint16",
+        encoding="raw",
+        resolution=res,  # Voxel scaling, units are in nanometers
+        voxel_offset=[0, 0, 0],  # x,y,z offset in voxels from the origin
+        # Pick a convenient size for your underlying chunk representation
+        # Powers of two are recommended, doesn't need to cover image exactly
+        chunk_size=chunk_size,  # units are voxels
+        volume_size=volume_size,  # e.g. a cubic millimeter dataset
+        skeletons="skeletons",
+    )
+    vol = CloudVolume(outpath, info=info, compress=False)
+    vol.commit_info()
+    vol.skeleton.meta.commit_info()
+
+    # remove vertex type attribute because it is a uint8 and incompatible with neuroglancer
+    info_path = traces_dir / "skeletons/info"
+    with open(info_path) as f:
+        data = json.load(f)
+        for i, attr in enumerate(data["vertex_attributes"]):
+            if attr["id"] == "vertex_types":
+                data["vertex_attributes"].pop(i)
+                break
+
+    with open(info_path, "w") as f:
+        json.dump(data, f)
+    

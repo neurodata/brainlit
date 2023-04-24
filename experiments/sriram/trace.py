@@ -77,7 +77,6 @@ layer = viewer.add_image(data)
 
 
 def show_napari(subvol):
-    print("updating napari")
     layer.data = subvol
 
 
@@ -102,6 +101,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
         cv_dict = {"traces": CloudVolume(trace_path, compress=False)}
         if "zarr" in im_path:
             cv_dict["im"] = zarr.open_array(im_path)
+            print(f"Image is zarr with shape: {cv_dict['im'].shape}")
         elif "precomputed" in im_path:
             cv_dict["im"] = CloudVolume(im_path, compress=False)
         else:
@@ -155,7 +155,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
         self.dimensions = neuroglancer.CoordinateSpace(
             names=["x", "y", "z"], units="nm", scales=cv_dict["traces"].resolution
         )
-        print(f"Dimensions: {self.dimensions} - {cv_dict["traces"].resolution}")
+        print(f"Dimensions: {self.dimensions} - {cv_dict['traces'].resolution}")
         self.im_shape = [i for i in cv_dict["traces"].shape if i != 1]
         self.cur_skel_coords = []
         self.cv_dict = cv_dict
@@ -461,9 +461,9 @@ class ViterBrainViewer(neuroglancer.Viewer):
         subvol = np.array(
             np.squeeze(
                 vol_im[
+                    pt[2] - radius : pt[2] + radius,
                     pt[0] - radius : pt[0] + radius,
                     pt[1] - radius : pt[1] + radius,
-                    pt[2] - radius : pt[2] + radius,
                 ]
             )
         )
