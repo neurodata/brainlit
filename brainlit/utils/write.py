@@ -142,14 +142,22 @@ def zarr_to_omezarr(zarr_path: str, out_path: str, res: list):
 
 def _edit_ome_metadata(out_path: str, res: list):
     res = np.divide([res[-1], res[0], res[1]], 1000)
-    ome_zarr = zarr.open("/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/test-czi/fg_ome.zarr", "r+")
-    metadata_edit = ome_zarr.attrs['multiscales']
+    ome_zarr = zarr.open(
+        "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/test-czi/fg_ome.zarr",
+        "r+",
+    )
+    metadata_edit = ome_zarr.attrs["multiscales"]
     for i in range(3):
-        metadata_edit[0]['axes'][i]['unit'] = 'micrometer'
+        metadata_edit[0]["axes"][i]["unit"] = "micrometer"
     for i, dataset in enumerate(metadata_edit[0]["datasets"]):
-        new_res = list(np.multiply(dataset['coordinateTransformations'][0]['scale'], res))
-        metadata_edit[0]["datasets"][i]['coordinateTransformations'][0]['scale'] = new_res
-    ome_zarr.attrs['multiscales'] = metadata_edit
+        new_res = list(
+            np.multiply(dataset["coordinateTransformations"][0]["scale"], res)
+        )
+        metadata_edit[0]["datasets"][i]["coordinateTransformations"][0][
+            "scale"
+        ] = new_res
+    ome_zarr.attrs["multiscales"] = metadata_edit
+
 
 def write_trace_layer(parent_dir: str, res: list):
     """_summary_
@@ -163,8 +171,8 @@ def write_trace_layer(parent_dir: str, res: list):
 
     traces_dir = parent_dir / "traces"
     z = zarr.open_array(parent_dir / "fg_ome.zarr" / "0")
-    volume_size = [z.shape[1],z.shape[2],z.shape[0]]
-    chunk_size = [z.chunks[1],z.chunks[2],z.chunks[0]]
+    volume_size = [z.shape[1], z.shape[2], z.shape[0]]
+    chunk_size = [z.chunks[1], z.chunks[2], z.chunks[0]]
     outpath = f"precomputed://file://" + str(traces_dir)
 
     info = CloudVolume.create_new_info(
@@ -195,4 +203,3 @@ def write_trace_layer(parent_dir: str, res: list):
 
     with open(info_path, "w") as f:
         json.dump(data, f)
-    

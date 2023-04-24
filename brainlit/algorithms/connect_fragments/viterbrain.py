@@ -489,6 +489,7 @@ def explain_viterbrain(vb, c1, c2, frag_seq):
     c = path_coords[coord_idx]
     print(f"{coord_idx}: {c} f{z_frags[c[0],c[1],c[2]]} s{state}")
 
+
 def get_valid_bbox(array, coord, radius):
     x1 = np.amax([coord[0] - radius, 0])
     y1 = np.amax([coord[1] - radius, 0])
@@ -497,5 +498,5 @@ def get_valid_bbox(array, coord, radius):
     y2 = np.amin([coord[1] + radius, array.shape[1]])
     z2 = np.amin([coord[2] + radius, array.shape[2]])
 
-    subvol = np.array(np.squeeze(array[x1:x2,y1:y2,z1:z2]))
-    return subvol, [coord[0]-x1, coord[1]-y1, coord[2]-z1]
+    subvol = np.array(np.squeeze(array[x1:x2, y1:y2, z1:z2]))
+    return subvol, [coord[0] - x1, coord[1] - y1, coord[2] - z1]
