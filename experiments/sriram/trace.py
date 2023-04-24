@@ -62,7 +62,9 @@ port = "9010"
 trace_path = trace_path_local  # cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
 im_path = im_path_local  # ckloudvolume compatible path or path to local zarr
 im_url = f"zarr://http://127.0.0.1:{port}/test-czi/fg_ome.zarr"  # ng compatible url
-trace_url = f"precomputed://http://127.0.0.1:{port}/test-czi/traces"  # ng compatible url
+trace_url = (
+    f"precomputed://http://127.0.0.1:{port}/test-czi/traces"  # ng compatible url
+)
 assisted_tracing = True
 
 if assisted_tracing:
@@ -191,9 +193,6 @@ class ViterBrainViewer(neuroglancer.Viewer):
             kdtree = KDTree(pts_total)
         return skel_num, kdtree, ids_total
 
-    def test_tool(self):
-        print('hi')
-
     def add_point(self, name, color, coord):
         """Add point to neuroglancer via Annotation Layer.
 
@@ -300,8 +299,10 @@ class ViterBrainViewer(neuroglancer.Viewer):
             print(f"Tracing path from {self.start_pt} to {self.end_pt}")
 
             try:
-                start_coord = [self.start_pt[i] for i in [2,0,1]] #correct dimension swap (originiating during ome-zarr conversion)
-                end_coord = [self.end_pt[i] for i in [2,0,1]]
+                start_coord = [
+                    self.start_pt[i] for i in [2, 0, 1]
+                ]  # correct dimension swap (originiating during ome-zarr conversion)
+                end_coord = [self.end_pt[i] for i in [2, 0, 1]]
                 path = self.vb.shortest_path(coord1=start_coord, coord2=end_coord)
                 path = [[pt[1], pt[2], pt[0]] for pt in path]
                 print(path)
@@ -468,7 +469,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
     def view(self, s):
         pt = [int(p) for p in s.mouse_voxel_coordinates]
         print(f"Updating napari with subvolume at coordinate {pt}")
-        subvol,_ = get_valid_bbox(self.cv_dict["im"], pt, radius=10)
+        subvol, _ = get_valid_bbox(self.cv_dict["im"], pt, radius=10)
         show_napari(subvol)
         # return subvol
 
