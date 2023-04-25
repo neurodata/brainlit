@@ -160,7 +160,7 @@ def _edit_ome_metadata(out_path: str, res: list):
 
 
 def write_trace_layer(parent_dir: str, res: list):
-    """_summary_
+    """Write precomputed layer (info file) for trace skeletons associated with an ome zarr file.
 
     Args:
         parent_dir (str): Path to directory which holds fg_ome.zarr and where traces layer will be written.

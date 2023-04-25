@@ -1,11 +1,12 @@
 import pytest
 import zarr
 import numpy as np
-from brainlit.utils.write import zarr_to_omezarr, czi_to_zarr
+from brainlit.utils.write import zarr_to_omezarr, czi_to_zarr, write_trace_layer
 import os
 import shutil
 import zipfile
 from pathlib import Path
+from cloudvolume import CloudVolume
 
 
 @pytest.fixture(scope="session")
@@ -44,6 +45,16 @@ def init_4dzarr(tmp_path_factory):
     z[:, :, :, :] = np.zeros((1, 64, 64, 64))
 
     return zarr_path, data_dir
+
+
+@pytest.fixture(scope="function")
+def init_omezarr(init_3dzarr):
+    res = [1, 1, 2]  # in nm
+    zarr_path, data_dir = init_3dzarr
+    out_path = data_dir / "fg_ome.zarr"
+    zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path, res=res)
+
+    return data_dir, res
 
 
 ##############
@@ -142,3 +153,12 @@ def test_writeome(init_3dzarr):
         np.testing.assert_almost_equal(
             true_res, resolution["coordinateTransformations"][0]["scale"], decimal=3
         )
+
+
+def test_write_trace_layer(init_omezarr):
+    data_dir, res = init_omezarr
+
+    write_trace_layer(parent_dir=data_dir, res=res)
+    vol_path = "precomputed://file://" + str(data_dir / "traces")
+    vol = CloudVolume(vol_path)
+    assert vol.info["skeletons"] == "skeletons"
