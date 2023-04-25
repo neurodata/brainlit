@@ -52,7 +52,7 @@ def init_omezarr(init_3dzarr):
     res = [1, 1, 2]  # in nm
     zarr_path, data_dir = init_3dzarr
     out_path = data_dir / "fg_ome.zarr"
-    
+
     if not os.path.exists(out_path):
         zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path, res=res)
     else:
