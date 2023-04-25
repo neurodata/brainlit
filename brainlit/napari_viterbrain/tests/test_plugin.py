@@ -5,16 +5,25 @@ from brainlit.napari_viterbrain.viterbrain_plugin import (
 )
 from brainlit.algorithms.connect_fragments.tests.test_viterbrain import create_vb
 import pickle
+import pytest
 
-vb = create_vb()
-vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
-vb.compute_all_costs_int()
-
-
-def test_reader(tmp_path):
-    my_test_file = str(tmp_path / "viterbrain.pickle")
+@pytest.fixture(scope="module")
+def create_compute_vb(tmp_path_factory, create_vb):
+    vb = create_vb
+    vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
+    vb.compute_all_costs_int()
+    
+    data_dir = tmp_path_factory.mktemp("data")
+    my_test_file = str(data_dir / "viterbrain.pickle")
     with open(my_test_file, "wb") as handle:
         pickle.dump(vb, handle)
+    return my_test_file
+
+
+
+
+def test_reader(create_compute_vb):
+    my_test_file =create_compute_vb
 
     # try to read it back in
     reader = napari_get_reader(my_test_file)
