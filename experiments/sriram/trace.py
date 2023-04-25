@@ -413,7 +413,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
 
     def newtrace(self, s):
         print(f"Saving trace #{self.cur_skel+1}")
-        self.p_print(s)
+        self.print(s)
         with self.txn() as vs:  # trace
             layer_names = [l.name for l in vs.layers]
             if "start" in layer_names:
