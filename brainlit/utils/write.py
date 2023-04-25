@@ -143,7 +143,7 @@ def zarr_to_omezarr(zarr_path: str, out_path: str, res: list):
 def _edit_ome_metadata(out_path: str, res: list):
     res = np.divide([res[-1], res[0], res[1]], 1000)
     ome_zarr = zarr.open(
-        "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/test-czi/fg_ome.zarr",
+        out_path,
         "r+",
     )
     metadata_edit = ome_zarr.attrs["multiscales"]
