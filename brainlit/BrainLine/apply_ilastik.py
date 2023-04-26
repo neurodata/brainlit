@@ -430,6 +430,7 @@ class ApplyIlastik_LargeImage:
         data_dir: str,
         chunk_size: list,
         max_coords: list = [-1, -1, -1],
+        min_coords: list = [-1, -1, -1],
     ):
         """Apply ilastik to large brain, in parallel.
 
@@ -440,6 +441,7 @@ class ApplyIlastik_LargeImage:
             data_dir (str): Path to directory where downloaded data will be temporarily stored.
             chunk_size (list): Size of chunks to be used for parallel application of ilastik.
             max_coords (list, optional): Upper bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
+            min_coords (list, optional): Lower bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
         """
         results_dir = self.results_dir
         volume_base_dir = self.brain2paths[brain_id]["base"]
@@ -469,7 +471,7 @@ class ApplyIlastik_LargeImage:
             except:
                 self._make_mask_info(mask_dir, vol)
 
-        corners = _get_corners(shape, chunk_size, max_coords)
+        corners = _get_corners(shape, chunk_size, max_coords=max_coords, min_coords=min_coords)
         corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
 
         for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
