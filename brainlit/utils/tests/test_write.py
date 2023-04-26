@@ -1,11 +1,12 @@
 import pytest
 import zarr
 import numpy as np
-from brainlit.utils.write import zarr_to_omezarr, czi_to_zarr
+from brainlit.utils.write import zarr_to_omezarr, czi_to_zarr, write_trace_layer
 import os
 import shutil
 import zipfile
 from pathlib import Path
+from cloudvolume import CloudVolume
 
 
 @pytest.fixture(scope="session")
@@ -46,26 +47,42 @@ def init_4dzarr(tmp_path_factory):
     return zarr_path, data_dir
 
 
+@pytest.fixture(scope="function")
+def init_omezarr(init_3dzarr):
+    res = [1, 1, 2]  # in nm
+    zarr_path, data_dir = init_3dzarr
+    out_path = data_dir / "fg_ome.zarr"
+
+    if not os.path.exists(out_path):
+        zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path, res=res)
+    else:
+        print("Relying on existing fg_ome zarr file")
+
+    return data_dir, res
+
+
 ##############
 ### inputs ###
 ##############
 
 
 def test_writeome_baddim(init_3dzarr, init_4dzarr):
+    # error for 4d zarrs
     zarr_path, data_dir = init_4dzarr
     out_path = data_dir / "fg_ome.zarr"
     with pytest.raises(ValueError, match=r"Conversion only supported for 3D arrays"):
-        zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path)
+        zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path, res=[1, 1, 1])
 
+    # error if ome already exists
     zarr_path, data_dir = init_3dzarr
     out_path = data_dir / "fg_ome.zarr"
-    zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path)
+    zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path, res=[1, 1, 1])
 
     with pytest.raises(
         ValueError,
         match=f"{out_path} already exists, please delete the existing file or change the name of the ome-zarr to be created.",
     ):
-        zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path)
+        zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path, res=[1, 1, 1])
 
     shutil.rmtree(out_path)
 
@@ -110,9 +127,42 @@ def test_writezarr_parallel(init_4dczi):
 
 
 def test_writeome(init_3dzarr):
+    res = [1, 1, 2]  # in nm
+    dimension_map = {"x": 0, "y": 1, "z": 2}
     zarr_path, data_dir = init_3dzarr
     out_path = data_dir / "fg_ome.zarr"
 
     assert not os.path.exists(out_path)
-    zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path)
+    zarr_to_omezarr(zarr_path=zarr_path, out_path=out_path, res=res)
     assert os.path.exists(out_path)
+
+    # check units are micrometers
+    ome_zarr = zarr.open(out_path)
+    metadata = ome_zarr.attrs["multiscales"][0]
+
+    dimension_names = []
+    for dimension in metadata["axes"]:
+        assert dimension["unit"] == "micrometer"
+        assert dimension["type"] == "space"
+        dimension_names.append(dimension["name"])
+
+    # check resolutions are multiples of 2 scaled in xy
+    for resolution in metadata["datasets"]:
+        lvl = int(resolution["path"])
+        true_res = np.multiply(res, [2**lvl, 2**lvl, 1]) / 1000  # in microns
+        true_res = [
+            true_res[dimension_map[dimension_name]]
+            for dimension_name in dimension_names
+        ]
+        np.testing.assert_almost_equal(
+            true_res, resolution["coordinateTransformations"][0]["scale"], decimal=3
+        )
+
+
+def test_write_trace_layer(init_omezarr):
+    data_dir, res = init_omezarr
+
+    write_trace_layer(parent_dir=data_dir, res=res)
+    vol_path = "precomputed://file://" + str(data_dir / "traces")
+    vol = CloudVolume(vol_path)
+    assert vol.info["skeletons"] == "skeletons"
