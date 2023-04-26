@@ -121,21 +121,19 @@ def plot_results(
         float: Best f-score across all thresholds.
         float: Threshold that yields the best validation f-score.
     """
-    base_dir = data_dir + f"/brain{brain_id}/val/"
     recalls = []
     precisions = []
-    fscores = []
-
-    data_files = _find_sample_names(base_dir, dset="", add_dir=True)
-    test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
-    print(f"Evaluating files: {test_files}")
+    brain_ids_data = []
+    best_fscores = {}
+    best_precisions = []
+    best_recalls = []
 
     size_thresh = 500
 
     thresholds = list(np.arange(0.0, 1.0, 0.02))
     for brain_id in tqdm(brain_ids, desc="Processing Brains"):
         base_dir = data_dir + f"/brain{brain_id}/val/"
-        data_files = find_sample_names(base_dir, dset="", add_dir=True)
+        data_files = _find_sample_names(base_dir, dset="", add_dir=True)
         test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
 
         best_fscore = 0
@@ -227,12 +225,10 @@ def plot_results(
     if show_plot:
         sns.set(font_scale=2)
         plt.figure(figsize=(8, 8))
-        sns.lineplot(data=df, x="Recall", y="Precision", estimator=np.amax, ci=False)
+        sns.lineplot(data=df, x="Recall", y="Precision", hue="ID", estimator=np.amax, ci=False)
         plt.scatter(
-            best_rec,
+            best_recall,
             best_prec,
-            c="r",
-            label=f"Max f-score: {max_fscore:.2f} thresh:{best_threshold:.2f}",
         )
         plt.xlim([0, 1.1])
         plt.ylim([0, 1.1])
@@ -240,7 +236,7 @@ def plot_results(
         plt.legend()
         plt.show()
 
-    return max_fscore, best_threshold
+    return best_fscore, best_thresh
 
 
 def examine_threshold(
