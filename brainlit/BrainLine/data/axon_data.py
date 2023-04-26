@@ -236,6 +236,9 @@ brain2paths = {
         },
         "subtype": "gad2 vgat",
     },
+    "pytest": {
+        "subtype": "test_type",
+    },
 }
 
 

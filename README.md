@@ -14,7 +14,7 @@
 ## Summary
 This repository is used for various tasks in processing, and analyzing light microscopy images of brains for the purpose of studing neuron morphology. Documentation can be found [here](http://brainlit.neurodata.io/).
 
-Brainlit is a product of the [neurodata lab](https://neurodata.io/). It is actively maintained by Thomas Athey (@tathey1), and is regularly used and contributed to by students in the [Neuro Data Design](https://neurodatadesign.io/) course. We strive to follow the same [code of conduct](https://opensource.microsoft.com/codeofconduct/) that applies to the Microsoft open source community.
+Brainlit is a product of the [neurodata lab](https://neurodata.io/) and the [Neuro Data Design](https://neurodatadesign.io/) course. It is actively maintained by Thomas Athey (@tathey1). We strive to follow the same [code of conduct](https://opensource.microsoft.com/codeofconduct/) that applies to the Microsoft open source community.
 
 ## Contributing and Questions
 We welcome all contributors, and encourage them to follow our contribution guidelines gound in [CONTRIBUTING.md](https://github.com/neurodata/brainlit/blob/master/CONTRIBUTING.md). Issues with the "good first issue" tag are meant for contributors that are either new to open source coding, or new to the package. Additionally, users are encouraged to use issues not only to discuss code-related problems, but for more general discussions or questions about the package.

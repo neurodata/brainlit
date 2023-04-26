@@ -23,6 +23,7 @@ ignore:
   - "**/tests"
   - "**/__init__.py"
   - "**/__version__.py"
+  - "**/scripts"
 
 # Pull request comments:
 # ----------------------
