@@ -418,7 +418,7 @@ class ApplyIlastik_LargeImage:
                     f"cannot give results_dir for object type {object_type}"
                 )
             self.brain2paths = axon_data.brain2paths
-        elif object_type != "soma":
+        elif object_type == "soma":
             self.brain2paths = soma_data.brain2paths
         else:
             raise ValueError(f"object_type must be soma or axon not {object_type}")
