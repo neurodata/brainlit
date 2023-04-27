@@ -1,20 +1,16 @@
 # Reference: https://github.com/neurodata/mouselight_code/blob/region_growing/src/ngl_pipeline.py
 
 import numpy as np
-import matplotlib.pyplot as plt
-import SimpleITK as sitk
-from cloudvolume import CloudVolume, view
+from cloudvolume import CloudVolume
 from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError
 from brainlit.utils import Neuron_trace
 from brainlit.algorithms.generate_fragments import tube_seg
-import napari
 import warnings
 import networkx as nx
 from typing import Optional, List, Union, Tuple
 from brainlit.utils.util import (
     check_type,
-    check_size,
     check_precomputed,
     check_iterable_type,
     check_iterable_nonnegative,
