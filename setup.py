@@ -20,7 +20,7 @@ REQUIRED_PACKAGES = [
     "numpy>=1.8.1",
     "scikit-image>=0.16.2",
     "networkx>=2.1",
-    "scikit-learn==1.1.2", # issues with pairwise_distances_argmin_min (e.g. used in NeuronTrace) on other versions
+    "scikit-learn==1.1.2",  # issues with pairwise_distances_argmin_min (e.g. used in NeuronTrace) on other versions
     "scipy>=1.1.0",
     "seaborn>=0.9.0",
     "tifffile>=2020.7.17",
