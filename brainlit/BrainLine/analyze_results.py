@@ -27,6 +27,7 @@ import pickle
 from brainrender import Scene
 from brainrender.actors import Points, Volume
 import json
+from cloudvolume.exceptions import OutOfBoundsError
 
 
 class BrainDistribution:
@@ -149,6 +150,8 @@ class SomaDistribution(BrainDistribution):
                 try:
                     region = int(vol_atlas[point_int[0], point_int[1], point_int[2]])
                 except IndexError:
+                    continue
+                except OutOfBoundsError:
                     continue
                 if region in brain_dict.keys():
                     brain_dict[region] = brain_dict[region] + 1
