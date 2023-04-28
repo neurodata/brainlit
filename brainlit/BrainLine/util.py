@@ -108,7 +108,9 @@ def download_subvolumes(
                 dset = f.create_dataset("image_3channel", data=image)
 
 
-def _get_corners(shape, chunk_size, max_coords: list = [-1, -1, -1], min_coords: list = [-1, -1, -1]):
+def _get_corners(
+    shape, chunk_size, max_coords: list = [-1, -1, -1], min_coords: list = [-1, -1, -1]
+):
     corners = []
     for i in tqdm(range(0, shape[0], chunk_size[0])):
         for j in tqdm(range(0, shape[1], chunk_size[1]), leave=False):
@@ -117,8 +119,12 @@ def _get_corners(shape, chunk_size, max_coords: list = [-1, -1, -1], min_coords:
                 c2 = [
                     np.amin([shape[idx], c1[idx] + chunk_size[idx]]) for idx in range(3)
                 ]
-                conditions_max = [(max == -1 or c < max) for c, max in zip(c1, max_coords)]
-                conditions_min = [(min == -1 or c > min) for c, min in zip(c2, min_coords)]
+                conditions_max = [
+                    (max == -1 or c < max) for c, max in zip(c1, max_coords)
+                ]
+                conditions_min = [
+                    (min == -1 or c > min) for c, min in zip(c2, min_coords)
+                ]
                 conditions = conditions_max + conditions_min
                 if all(conditions):
                     corners.append([c1, c2])

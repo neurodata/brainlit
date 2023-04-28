@@ -52,7 +52,7 @@ brain2paths = {
     },
     "biccn": {
         "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=8VHD-seixZg9pg",
-        "subtype": "test"
+        "subtype": "test",
     },
     "8557": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2021_10_06/8557/",
@@ -215,24 +215,24 @@ brain2paths = {
         "val_info": {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=kSzIi9RUiPLr9Q",
             "somas_layer": "soma_val",
-            "nonsomas_layer": "nonsoma_val"
+            "nonsomas_layer": "nonsoma_val",
         },
         "subtype": "tph2 gad2",
-        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=tYjwxkvRGgMd5g"
+        "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=tYjwxkvRGgMd5g",
     },
     "910": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2023_03_16/910/",
         "val_info": {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=YzUVCI2qZiqp3w",
             "somas_layer": "soma_val",
-            "nonsomas_layer": "nonsoma_val"
+            "nonsomas_layer": "nonsoma_val",
         },
         "train_info": {
             "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=QlJARbMY_pyoDQ",
             "somas_layer": "soma_train",
-            "nonsomas_layer": "nonsoma_train"
+            "nonsomas_layer": "nonsoma_train",
         },
-        "subtype": "tph2 gad2"
+        "subtype": "tph2 gad2",
     },
     "892": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2023_03_31/892/",
@@ -243,7 +243,7 @@ brain2paths = {
         },
         "subtype": "tph2 vglut3",
         "somas_atlas_path": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/wholebrain_results/atlas_somas_892/",
-        "somas_atlas_url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=A4qnN-6JzqWCcw"
+        "somas_atlas_url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=A4qnN-6JzqWCcw",
     },
     "MS37": {
         "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_12/MS37/",

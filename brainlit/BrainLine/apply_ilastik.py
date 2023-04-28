@@ -186,7 +186,9 @@ def plot_results(
                     true_pos += np.sum(np.logical_and(mask, pos_labels))
                     false_pos += np.sum(np.logical_and(mask, neg_labels))
                 else:
-                    raise ValueError(f"object_type must be axon or soma, not {object_type}")
+                    raise ValueError(
+                        f"object_type must be axon or soma, not {object_type}"
+                    )
 
             brain_ids_data.append(brain_id)
             recall = true_pos / tot_pos
@@ -203,7 +205,7 @@ def plot_results(
 
             if fscore > best_fscore:
                 best_fscore = fscore
-                best_thresh = threshold 
+                best_thresh = threshold
                 best_prec = precision
                 best_recall = recall
 
@@ -212,7 +214,10 @@ def plot_results(
         best_recalls.append(best_recall)
 
     for i, brain_id in enumerate(brain_ids_data):
-        brain_ids_data[i] = brain_id + f" - MaxFS: {best_fscores[brain_id][0]:.2f} @thresh: {best_fscores[brain_id][1]}"
+        brain_ids_data[i] = (
+            brain_id
+            + f" - MaxFS: {best_fscores[brain_id][0]:.2f} @thresh: {best_fscores[brain_id][1]}"
+        )
 
     dict = {
         "ID": brain_ids_data,
@@ -226,7 +231,9 @@ def plot_results(
     if show_plot:
         sns.set(font_scale=2)
         plt.figure(figsize=(8, 8))
-        sns.lineplot(data=df, x="Recall", y="Precision", hue="ID", estimator=np.amax, ci=False)
+        sns.lineplot(
+            data=df, x="Recall", y="Precision", hue="ID", estimator=np.amax, ci=False
+        )
         plt.scatter(
             best_recall,
             best_prec,
@@ -473,7 +480,9 @@ class ApplyIlastik_LargeImage:
             except:
                 self._make_mask_info(mask_dir, vol)
 
-        corners = _get_corners(shape, chunk_size, max_coords=max_coords, min_coords=min_coords)
+        corners = _get_corners(
+            shape, chunk_size, max_coords=max_coords, min_coords=min_coords
+        )
         corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
 
         for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):

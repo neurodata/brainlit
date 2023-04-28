@@ -107,12 +107,12 @@ class SomaDistribution(BrainDistribution):
                 for json_file in jsons:
                     json_path = json_dir + json_file
                     print(
-                        f'Brain {brain_id}: Collecting atlas space soma points from file: {json_path}'
+                        f"Brain {brain_id}: Collecting atlas space soma points from file: {json_path}"
                     )
                     with open(json_path) as f:
                         data = json.load(f)
                     for pt in data:
-                        points.append(pt['point'])
+                        points.append(pt["point"])
                 atlas_points[brain_id] = np.array(points)
             elif "somas_atlas_url" in brain2paths[brain_id].keys():
                 viz_link = brain2paths[brain_id]["somas_atlas_url"]
@@ -501,7 +501,7 @@ class SomaDistribution(BrainDistribution):
 
     def _configure_annotator(self, df, axis, ind_variable: str):
         test = "Mann-Whitney"
-        #my_logttest = StatTest(self._log_ttest_ind, test_long_name='Log t-test_ind', test_short_name='log-t')
+        # my_logttest = StatTest(self._log_ttest_ind, test_long_name='Log t-test_ind', test_short_name='log-t')
         # test = "t-test_ind"
         correction = "fdr_by"
 
@@ -538,11 +538,13 @@ class SomaDistribution(BrainDistribution):
 
         return annotator
 
+
 def _log_ttest_ind(group_data1, group_data2, verbose=1, **stats_params):
     group_data1_log = np.log(group_data1)
     group_data2_log = np.log(group_data2)
 
     return ttest_ind(group_data1_log, group_data2_log, **stats_params)
+
 
 def _get_corners_collection(
     vol_mask, vol_reg, block_size, max_coords: list = [-1, -1, -1]
@@ -1047,21 +1049,26 @@ class AxonDistribution(BrainDistribution):
 
     def _configure_annotator(self, df, axis, ind_variable: str):
         subtype_counts = self.subtype_counts
-        
-        test = StatTest(_log_ttest_ind, test_long_name='Log t-test_ind', test_short_name='log-t')
+
+        test = StatTest(
+            _log_ttest_ind, test_long_name="Log t-test_ind", test_short_name="log-t"
+        )
         # test = "t-test_ind"
         correction = "fdr_by"
 
         pairs = []
         unq_subregions = df["Region"].unique()
         subtypes = df["Subtype"].unique()
-        subtypes = [subtype for subtype in subtypes if subtype_counts[subtype.split(" (n=")[0]] > 1]
+        subtypes = [
+            subtype
+            for subtype in subtypes
+            if subtype_counts[subtype.split(" (n=")[0]] > 1
+        ]
 
         subtype_pairs = [
             (a, b) for idx, a in enumerate(subtypes) for b in subtypes[idx + 1 :]
         ]
         print(subtype_pairs)
-
 
         for subtype_pair in subtype_pairs:
             for subregion in unq_subregions:
