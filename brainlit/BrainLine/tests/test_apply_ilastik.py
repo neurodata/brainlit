@@ -59,7 +59,7 @@ def test_plot_results_axon(axon_data_dir):
     data_dir_str = str(axon_data_dir)
     test_max_fscore, test_best_threshold = plot_results(
         data_dir=data_dir_str,
-        brain_id="test",
+        brain_ids=["test"],
         object_type="axon",
         positive_channel=0,
         show_plot=False,
@@ -114,7 +114,7 @@ def test_plot_results_soma(soma_data_dir):
     data_dir_str = str(soma_data_dir)
     test_max_fscore, test_best_threshold = plot_results(
         data_dir=data_dir_str,
-        brain_id="test",
+        brain_ids=["test"],
         object_type="soma",
         positive_channel=1,
         show_plot=False,

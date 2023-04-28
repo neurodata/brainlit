@@ -290,8 +290,6 @@ class SomaDistribution(BrainDistribution):
             composite_regions (dict, optional): Mapping from a custom composite region (str, e.g. "Amygdala") to a set of regions that compose it (list of ints e.g. [131, 295, 319, 780]). Defaults to {}.
             normalize_region (int, optional): Region ID to normalize data for the normalized bar chart. Defaults to -1.
         """
-        region_graph = self.region_graph
-
         subtype_counts = self._get_subtype_counts()
         id_to_somatotals = self._count_somas()
 
@@ -863,8 +861,7 @@ class AxonDistribution(BrainDistribution):
             composite_regions (dict, optional): Mapping from a custom composite region (str, e.g. "Amygdala") to a set of regions that compose it (list of ints e.g. [131, 295, 319, 780]). Defaults to {}.
             normalize_region (int, optional): Region ID to normalize data for the normalized bar chart. Defaults to -1.
         """
-        region_graph = self.region_graph
-        subtype_counts = self._get_subtype_counts(object_type="axon")
+        subtype_counts = self._get_subtype_counts()
         print(subtype_counts)
 
         df = self._make_bar_df(
