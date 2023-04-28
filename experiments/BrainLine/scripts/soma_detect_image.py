@@ -20,10 +20,10 @@ Inputs
 # -dir_base
 # data_dir and results_dir ARE CLEAR
 # threshold IS CORRECT
-brain = "test"
-antibody_layer = "antibody"
-background_layer = "background"
-endogenous_layer = "endogenous"
+brain = "892"
+antibody_layer = "Ch_647"
+background_layer = "Ch_561"
+endogenous_layer = "Ch_488"
 
 threshold = 0.28  # threshold to use for ilastik
 data_dir = (
