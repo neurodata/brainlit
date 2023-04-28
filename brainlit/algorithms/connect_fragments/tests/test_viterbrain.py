@@ -14,27 +14,26 @@ from numpy.testing import (
 )
 
 
-def create_vb():
-    labels = np.zeros((100, 100, 1), dtype=int)
-    labels[50:55, 0:25, 0] = 1
-    labels[50:55, 30:50, 0] = 2
-    labels[45:50, 55:75, 0] = 3
-    labels[60:65, 55:75, 0] = 4
-    labels[45:60, 85:, 0] = 5
+@pytest.fixture(scope="session")
+def create_vb(tmp_path_factory):
+    data_dir = tmp_path_factory.mktemp("data")
 
-    tiered = np.zeros((100, 100, 1), dtype=int)
+    labels = np.zeros((100, 100, 2), dtype=int)
+    labels[50:55, 0:25, :] = 1
+    labels[50:55, 30:50, :] = 2
+    labels[45:50, 55:75, :] = 3
+    labels[60:65, 55:75, :] = 4
+    labels[45:60, 85:, :] = 5
 
-    z_tier = zarr.zeros((100, 100, 1), chunks=(50, 50, 1), dtype="float")
+    tiered = np.zeros((100, 100, 2), dtype=int)
+
+    z_tier = zarr.zeros((100, 100, 2), chunks=(50, 50, 2), dtype="float")
     z_tier[:, :, :] = tiered
-    z_tier_out = (
-        Path(__file__).parents[4] / "data" / "test_state_generation" / "image.zarr"
-    )
+    z_tier_out = data_dir / "test_state_generation" / "image.zarr"
     zarr.save(z_tier_out, z_tier)
-    z_lab = zarr.zeros((100, 100, 1), chunks=(50, 50, 1), dtype="int")
+    z_lab = zarr.zeros((100, 100, 2), chunks=(50, 50, 2), dtype="int")
     z_lab[:, :, :] = labels
-    z_frag_out = (
-        Path(__file__).parents[4] / "data" / "test_state_generation" / "fragments.zarr"
-    )
+    z_frag_out = data_dir / "test_state_generation" / "fragments.zarr"
     zarr.save(z_frag_out, z_lab)
 
     G = nx.DiGraph()
@@ -142,14 +141,14 @@ def create_vb():
     return vb
 
 
-vb = create_vb()
-
 ####################
 ### input checks ###
 ####################
 
 
-def test_frag_frag_dist_bad_input():
+def test_frag_frag_dist_bad_input(create_vb):
+    vb = create_vb
+
     with pytest.raises(ValueError):
         vb.frag_frag_dist(
             pt1=[0, 0, 0], orientation1=[1, 1, 0], pt2=[1, 0, 0], orientation2=[1, 0, 0]
@@ -174,13 +173,17 @@ def test_frag_frag_dist_bad_input():
         )
 
 
-def test_explain_viterbrain():
+def test_explain_viterbrain(create_vb):
+    vb = create_vb
+
     vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
     vb.compute_all_costs_int()
     explain_viterbrain(vb, c1=[52, 0, 0], c2=[50, 90, 0], frag_seq=[])
 
 
-def test_shortest_path():
+def test_shortest_path(create_vb):
+    vb = create_vb
+
     vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
     vb.compute_all_costs_int()
     vb.shortest_path([52, 0, 0], [50, 90, 0])
@@ -191,7 +194,9 @@ def test_shortest_path():
 ############################
 
 
-def test_frag_frag_dist():
+def test_frag_frag_dist(create_vb):
+    vb = create_vb
+
     cost = vb.frag_frag_dist(
         pt1=[0, 0, 0], orientation1=[1, 0, 0], pt2=[1, 0, 0], orientation2=[1, 0, 0]
     )
@@ -218,7 +223,9 @@ def test_frag_frag_dist():
     assert cost == np.inf
 
 
-def test_viterbrain():
+def test_viterbrain(create_vb):
+    vb = create_vb
+
     vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
     vb.compute_all_costs_int()
     assert_array_equal(nx.shortest_path(vb.nxGraph, source=0, target=8), [0, 2, 4, 8])
