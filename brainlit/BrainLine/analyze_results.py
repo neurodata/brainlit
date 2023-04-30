@@ -29,6 +29,15 @@ from cloudvolume.exceptions import OutOfBoundsError
 
 
 class BrainDistribution:
+    """Helps generate plots and visualizations for brain connection distributions across subtyeps.
+
+    Arguments:
+        brain_ids (list): List of brain IDs (keys of data json file).
+
+    Attributes:
+        brain_ids (list): List of brain IDs (keys of data json file).
+    """
+
     def __init__(self, brain_ids: list):
         self.brain_ids = brain_ids
 
@@ -81,7 +90,21 @@ class BrainDistribution:
 
 
 class SomaDistribution(BrainDistribution):
-    """Object to generate various analysis images for results from a set of brain IDs. An implementation of BrainDistribution class."""
+    """Object to generate various analysis images for results from a set of brain IDs. An implementation of BrainDistribution class.
+
+    Arguments:
+        brain_ids (list): List of brain IDs (keys of data json file).
+        data_files (str): Path to json file that contains information about samples.
+        show_plots (bool): Whether to show plots, only works if you have graphics access.
+
+    Attributes:
+        brain2paths (dict): Information about different data samples.
+        show_plots (bool): Whether to show plots, only works if you have graphics access.
+        atlas_points (dict): Key - sample ID, Value - coordinates of soma detection.
+        id_to_regioncounts (dict): Key - sample ID, Value - dictionary of detection counts by region.
+        region_graph (nx.DiGraph): Graph of region hierarchy with soma detection counts as node attributes.
+
+    """
 
     def __init__(self, brain_ids: list, data_file: str, show_plots: bool = True):
         super().__init__(brain_ids)
@@ -678,7 +701,22 @@ def collect_regional_segmentation(
 
 
 class AxonDistribution(BrainDistribution):
-    """Generates visualizations of results of axon segmentations of a set of brains. Implements BrainDistribution."""
+    """Generates visualizations of results of axon segmentations of a set of brains. Implements BrainDistribution.
+
+    Arguments:
+        brain_ids (list): List of brain IDs (keys of data json file).
+        data_files (str): Path to json file that contains information about samples.
+        regional_distribution_dir (str): Path to directory with pkl files that countain segmentation results by region.
+        show_plots (bool): Whether to show plots, only works if you have graphics access.
+
+    Attributes:
+        regional_distribution_dir (str): Path to directory with pkl files that countain segmentation results by region.
+        region_graph (nx.DiGraph): Graph of region hierarchy with segmentation results as node attributes.
+        total_axon_vols (dict): Key - sample ID Value - Total volume of segmented axon.
+        brain2paths (dict): Information about different data samples.
+        show_plots (bool): Whether to show plots, only works if you have graphics access.
+
+    """
 
     def __init__(
         self,
