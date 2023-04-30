@@ -153,7 +153,7 @@ class SomaDistribution(BrainDistribution):
                         )
                 atlas_points[brain_id] = np.array(points)
             else:
-                print(f"No somas_atlas_url layer for brain: {brain_id}")
+                raise ValueError(f"No somas_atlas_url layer for brain: {brain_id}")
 
         return atlas_points
 

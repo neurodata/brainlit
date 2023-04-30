@@ -20,7 +20,14 @@
             "subtype": "test"
         },
         "pytest": {
-            "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=f9iYKQbYLFRMbA",
+            "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=K0AO1rcfk-TObw",
+            "subtype": "test_type"
+        },
+        "pytest2": {
+            "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=K0AO1rcfk-TObw",
+            "subtype": "test_type"
+        },
+        "pytest_nosomasatlasurl": {
             "subtype": "test_type"
         }
     }

@@ -5,10 +5,19 @@ from pathlib import Path
 import os
 
 
+def test_SomaDistribution_no_somasatlasurl():
+    data_file = Path(os.path.abspath(__file__)).parents[1] / "data" / "soma_data.json"
+
+    with pytest.raises(ValueError):
+        SomaDistribution(
+            ["pytest_nosomasatlasurl"], data_file=data_file, show_plots=False
+        )
+
+
 def test_SomaDistribution():
     data_file = Path(os.path.abspath(__file__)).parents[1] / "data" / "soma_data.json"
 
-    sd = SomaDistribution(["pytest"], data_file=data_file, show_plots=False)
+    sd = SomaDistribution(["pytest", "pytest2"], data_file=data_file, show_plots=False)
     # sd.brainrender_somas(subtype_colors=subtype_colors, brain_region="MOB")
     # sd.napari_coronal_section(z=1000, subtype_colors=subtype_colors, fold_on=True)
     sd.region_barchart(
