@@ -42,7 +42,10 @@ def download_subvolumes(
     else:
         raise ValueError(f"object_type must be soma or axon, not {object_type}")
 
-    base_dir = data_dir + f"/brain{brain_id}/{dataset_to_save}/"
+    if isinstance(data_dir, str):
+        data_dir = Path(data_dir)
+
+    base_dir = data_dir / f"brain{brain_id}" / dataset_to_save
     antibody_layer, background_layer, endogenous_layer = layer_names
 
     if "base" in brain2paths[brain_id].keys():
@@ -106,7 +109,7 @@ def download_subvolumes(
 
             fname = (
                 base_dir
-                + f"{int(center[0])}_{int(center[1])}_{int(center[2])}{suffix}.h5"
+                / f"{int(center[0])}_{int(center[1])}_{int(center[2])}{suffix}.h5"
             )
             with h5py.File(fname, "w") as f:
                 dset = f.create_dataset("image_3channel", data=image)

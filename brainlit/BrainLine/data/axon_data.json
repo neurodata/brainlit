@@ -15,6 +15,11 @@
             "subtype": "test_type"
         },
         "pytest": {
+            "base": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/",
+            "val_info": {
+                "url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=_7H3OM-IAEgp0Q",
+                "layer": "val"
+            },
             "subtype": "test_type"
         }
     }
