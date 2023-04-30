@@ -1,0 +1,21 @@
+{
+    "object_type": "axon",
+"brain2paths" : {
+    "atlas": {
+        "url": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017",
+        "filepath": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/ara/ara_10um.tif"
+    },
+    "test": {
+        "base": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/brainlit/BrainLine/data/example/",
+        "transformed_mask": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/brainlit/BrainLine/data/example/axon_mask_transformed/",
+        "val_info": {
+            "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=Pmecz_5vjaeZHg",
+            "layer": "val"
+        },
+        "subtype": "test_type"
+    },
+    "pytest": {
+        "subtype": "test_type"
+    }
+}
+}

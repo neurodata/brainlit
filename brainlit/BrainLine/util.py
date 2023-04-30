@@ -8,6 +8,7 @@ from brainlit.BrainLine.parse_ara import build_tree
 from tqdm import tqdm
 from brainlit.BrainLine import data
 from brainlit.BrainLine.imports import *
+import json
 
 
 def download_subvolumes(
@@ -15,7 +16,7 @@ def download_subvolumes(
     brain_id: str,
     layer_names: list,
     dataset_to_save: str,
-    object_type: str,
+    data_file: str,
 ):
     """Download subvolumes around a set of manually marked points for validation of machine learning model.
 
@@ -24,16 +25,19 @@ def download_subvolumes(
         brain_id (str): Brain ID key in brain2paths dictionary from soma_data or axon_data/
         layer_names (list): List of precomputed layer names associated with the brain_id, ordered by primary signal channel (e.g. antibody), background channel, and secondary signal channel (e.g. endogenous fluorescence).
         dataset_to_save (str): val or train - specifies which set of subvolumes should be downloaded, if applicable.
-        object_type (str): soma or axon, specifies which _data file to use.
+        data_file (str): path to json file with data information.
 
     Raises:
         ValueError: If object_type is not soma or axon
     """
+    with open(data_file) as f:
+        data = json.load(f)
+    object_type = data["object_type"]
+    brain2paths = data["brain2paths"]
+
     if object_type == "soma":
-        brain2paths = data.soma_data.brain2paths
         radius = 25
     elif object_type == "axon":
-        brain2paths = data.axon_data.brain2paths
         radius = 50
     else:
         raise ValueError(f"object_type must be soma or axon, not {object_type}")

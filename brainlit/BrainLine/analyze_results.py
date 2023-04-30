@@ -1,4 +1,3 @@
-from brainlit.BrainLine.data import soma_data, axon_data
 import numpy as np
 from cloudreg.scripts.transform_points import NGLink
 from cloudvolume import CloudVolume, exceptions
@@ -11,7 +10,6 @@ from brainlit.BrainLine.util import (
     _get_atlas_level_nodes,
     _get_corners,
 )
-from brainlit.BrainLine.data import soma_data, axon_data
 import napari
 import scipy.ndimage as ndi
 from scipy.stats import ttest_ind
@@ -85,19 +83,22 @@ class BrainDistribution:
 class SomaDistribution(BrainDistribution):
     """Object to generate various analysis images for results from a set of brain IDs. An implementation of BrainDistribution class."""
 
-    def __init__(self, brain_ids: list, show_plots: bool = True):
+    def __init__(self, brain_ids: list, data_file: str, show_plots: bool = True):
         super().__init__(brain_ids)
+        with open(data_file) as f:
+            data = json.load(f)
+        self.brain2paths = data["brain2paths"]
+        self.show_plots = show_plots
+
         atlas_points = self._retrieve_soma_coords(brain_ids)
         self.atlas_points = atlas_points
         id_to_regioncounts = self._get_regions(atlas_points)
         self.id_to_regioncounts = id_to_regioncounts
         region_graph = self._setup_regiongraph()
         self.region_graph = region_graph
-        self.brain2paths = soma_data.brain2paths
-        self.show_plots = show_plots
 
     def _retrieve_soma_coords(self, brain_ids: list):
-        brain2paths = soma_data.brain2paths
+        brain2paths = self.brain2paths
         atlas_points = {}
         for brain_id in brain_ids:
             if "somas_atlas_path" in brain2paths[brain_id].keys():
@@ -134,7 +135,7 @@ class SomaDistribution(BrainDistribution):
         return atlas_points
 
     def _get_regions(self, points: dict):
-        brain2paths = soma_data.brain2paths
+        brain2paths = self.brain2paths
         if "filepath" in brain2paths["atlas"].keys():
             vol_atlas = io.imread(brain2paths["atlas"]["filepath"])
         else:
@@ -177,7 +178,7 @@ class SomaDistribution(BrainDistribution):
             symbols (list): Napari point symbols to use for different samples of the same subtype. Defaults to ["o", "+", "^", "vbar"].
             fold_on (bool, optional): Whether napari views should be a hemisphere, in which case detections from the other side are mirrored. Defaults to False.
         """
-        brain2paths = soma_data.brain2paths
+        brain2paths = self.brain2paths
         atlas_points = self.atlas_points
         if "filepath" in brain2paths["atlas"].keys():
             vol_atlas = io.imread(brain2paths["atlas"]["filepath"])
@@ -433,7 +434,7 @@ class SomaDistribution(BrainDistribution):
         for region in regions:
             print(f"Populating: {region_graph.nodes[region]['name']}")
             for brain_id in brain_ids:
-                subtype = soma_data.brain2paths[brain_id]["subtype"]
+                subtype = self.brain2paths[brain_id]["subtype"]
                 soma_count = region_graph.nodes[region][brain_id]
                 somas.append(soma_count)
                 if (
@@ -459,7 +460,7 @@ class SomaDistribution(BrainDistribution):
             print(f"Populating: " + region_component_name)
             region_components = composite_regions[region_component_name]
             for brain_id in brain_ids:
-                subtype = soma_data.brain2paths[brain_id]["subtype"]
+                subtype = self.brain2paths[brain_id]["subtype"]
                 soma_count = 0
 
                 for region_component in region_components:
@@ -633,17 +634,25 @@ def _combine_regional_segmentations(outdir):
 
 
 def collect_regional_segmentation(
-    brain_id: str, outdir: str, ncpu: int = 1, max_coords: list = [-1, -1, -1]
+    brain_id: str,
+    data_file: str,
+    outdir: str,
+    ncpu: int = 1,
+    max_coords: list = [-1, -1, -1],
 ):
     """Combine segmentation and registration to generate counts of axon voxels across brain regions. Note this scripts writes a file for every chunk, which might be many.
 
     Args:
         brain_id (str): Brain ID to process, from axon_data.py
+        data_file (str): path to json file with data information.
         outdir (str): Path to directory to write files.
         ncpu (int, optional): Number of cpus to use for parallel processing. Defaults to 1.
         max_coords (list, optional): Upper limits of brain to complete processing, -1 will lead to processing the whole axis. Defaults to [-1, -1, -1].
     """
-    dir_base = axon_data.brain2paths[brain_id]["base"]
+    with open(data_file) as f:
+        data = json.load(f)
+    brain2paths = data["brain2paths"]
+    dir_base = brain2paths[brain_id]["base"]
 
     dir = os.path.join(dir_base, "axon_mask")
     vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
@@ -672,7 +681,11 @@ class AxonDistribution(BrainDistribution):
     """Generates visualizations of results of axon segmentations of a set of brains. Implements BrainDistribution."""
 
     def __init__(
-        self, brain_ids: list, regional_distribution_dir: str, show_plots: bool = True
+        self,
+        brain_ids: list,
+        data_file: str,
+        regional_distribution_dir: str,
+        show_plots: bool = True,
     ):
         super().__init__(brain_ids)
         self.regional_distribution_dir = regional_distribution_dir
@@ -680,7 +693,9 @@ class AxonDistribution(BrainDistribution):
             regional_distribution_dir
         )
         self.region_graph, self.total_axon_vols = region_graph, total_axon_vols
-        self.brain2paths = axon_data.brain2paths
+        with open(data_file) as f:
+            data = json.load(f)
+        self.brain2paths = data["brain2paths"]
         self.show_plots = show_plots
 
     def _setup_regiongraph(self, regional_distribution_dir):
@@ -753,7 +768,7 @@ class AxonDistribution(BrainDistribution):
             fold_on (bool, optional): Whether to plot a single hemisphere, with results from other side mirrored. Defaults to False.
         """
 
-        brain2paths = axon_data.brain2paths
+        brain2paths = self.brain2paths
         if "filepath" in brain2paths["atlas"].keys():
             vol_atlas = io.imread(brain2paths["atlas"]["filepath"])
         else:
@@ -952,7 +967,7 @@ class AxonDistribution(BrainDistribution):
         for region in regions:
             print(f"Populating: {region_graph.nodes[region]['name']}")
             for brain_id in brain_ids:
-                subtype = axon_data.brain2paths[brain_id]["subtype"]
+                subtype = self.brain2paths[brain_id]["subtype"]
                 axon_vol = region_graph.nodes[region][brain_id + " axon"]
                 total_vol = region_graph.nodes[region][brain_id + " total"]
 
@@ -990,7 +1005,7 @@ class AxonDistribution(BrainDistribution):
             print(f"Populating: " + region_component_name)
             region_components = composite_regions[region_component_name]
             for brain_id in brain_ids:
-                subtype = axon_data.brain2paths[brain_id]["subtype"]
+                subtype = self.brain2paths[brain_id]["subtype"]
                 axon_vol = 0
                 total_vol = 0
 

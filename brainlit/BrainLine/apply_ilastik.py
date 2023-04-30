@@ -5,8 +5,6 @@ import subprocess
 from joblib import Parallel, delayed
 import multiprocessing
 from brainlit.BrainLine.util import _find_sample_names, _get_corners
-from brainlit.BrainLine.data import soma_data
-from brainlit.BrainLine.data import axon_data
 from datetime import date
 from cloudvolume import CloudVolume, exceptions
 import numpy as np
@@ -20,6 +18,7 @@ from cloudreg.scripts.transform_points import NGLink
 from cloudreg.scripts.visualization import create_viz_link_from_json
 import pandas as pd
 from brainlit.BrainLine.imports import *
+import json
 
 
 class ApplyIlastik:
@@ -411,9 +410,14 @@ class ApplyIlastik_LargeImage:
         ilastik_path: str,
         ilastik_project: str,
         ncpu: int,
-        object_type: str,
+        data_file: str,
         results_dir: str = None,
     ):
+        with open(data_file) as f:
+            data = json.load(f)
+        object_type = data["object_type"]
+        self.brain2paths = data["brain2paths"]
+
         self.ilastik_path = ilastik_path
         self.ilastik_project = ilastik_project
         self.ncpu = ncpu
@@ -424,10 +428,7 @@ class ApplyIlastik_LargeImage:
                 raise ValueError(
                     f"cannot give results_dir for object type {object_type}"
                 )
-            self.brain2paths = axon_data.brain2paths
-        elif object_type == "soma":
-            self.brain2paths = soma_data.brain2paths
-        else:
+        elif object_type != "soma":
             raise ValueError(f"object_type must be soma or axon not {object_type}")
         self.results_dir = results_dir
 
