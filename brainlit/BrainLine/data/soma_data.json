@@ -3,7 +3,7 @@
 "brain2paths" : {
     "atlas": {
         "url": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017",
-        "filepath": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/ara/ara_10um.tif"
+        "comment": "If you've downloaded the atlas, you can put a file path under the key 'filepath'"
     },
     "test": {
         "base": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/brainlit/BrainLine/data/example/",
