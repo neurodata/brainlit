@@ -29,6 +29,9 @@ def test_download_subvolumes(make_data_dir):
         dataset_to_save="val",
         data_file=data_file,
     )
+    output_dir = data_dir / "brainpytest" / "val"
+    files = os.listdir(output_dir)
+    assert len(files) == 2
 
 
 def test_json_to_points():
