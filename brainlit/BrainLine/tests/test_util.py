@@ -3,15 +3,35 @@ import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 from brainlit.BrainLine import util
 from cloudvolume import CloudVolume
+from pathlib import Path
+import os
+
+
+@pytest.fixture(scope="session")
+def make_data_dir(tmp_path_factory):
+    data_dir = tmp_path_factory.mktemp("data")
+    return data_dir
+
 
 ############################
 ### functionality checks ###
 ############################
 
 
-def test_download_subvolumes(tmp_path):
-    # need to edit soma_data to accomodate this - maybe use ~/??
-    pass
+def test_download_subvolumes(make_data_dir):
+    data_dir = make_data_dir  # tmp_path_factory.mktemp("data")
+    layer_names = ["average_10um"] * 3
+    data_file = Path(os.path.abspath(__file__)).parents[1] / "data" / "axon_data.json"
+    util.download_subvolumes(
+        data_dir=data_dir,
+        brain_id="pytest",
+        layer_names=layer_names,
+        dataset_to_save="val",
+        data_file=data_file,
+    )
+    output_dir = data_dir / "brainpytest" / "val"
+    files = os.listdir(output_dir)
+    assert len(files) == 2
 
 
 def test_json_to_points():

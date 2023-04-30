@@ -5,7 +5,6 @@ import subprocess
 from joblib import Parallel, delayed
 import multiprocessing
 from brainlit.BrainLine.util import _find_sample_names, _get_corners
-from brainlit.BrainLine.data.soma_data import brain2paths
 from datetime import date
 from cloudvolume import CloudVolume, exceptions
 import numpy as np
@@ -19,6 +18,7 @@ from cloudreg.scripts.transform_points import NGLink
 from cloudreg.scripts.visualization import create_viz_link_from_json
 import pandas as pd
 from brainlit.BrainLine.imports import *
+import json
 
 
 class ApplyIlastik:
@@ -98,7 +98,7 @@ class ApplyIlastik:
 
 def plot_results(
     data_dir: str,
-    brain_id: str,
+    brain_ids: list,
     object_type: str,
     positive_channel: int,
     doubles: list = [],
@@ -121,109 +121,121 @@ def plot_results(
         float: Best f-score across all thresholds.
         float: Threshold that yields the best validation f-score.
     """
-    base_dir = data_dir + f"/brain{brain_id}/val/"
     recalls = []
     precisions = []
-    fscores = []
-
-    data_files = _find_sample_names(base_dir, dset="", add_dir=True)
-    test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
-    print(f"Evaluating files: {test_files}")
+    brain_ids_data = []
+    best_fscores = {}
+    best_precisions = []
+    best_recalls = []
 
     size_thresh = 500
 
     thresholds = list(np.arange(0.0, 1.0, 0.02))
+    for brain_id in tqdm(brain_ids, desc="Processing Brains"):
+        base_dir = data_dir + f"/brain{brain_id}/val/"
+        data_files = _find_sample_names(base_dir, dset="", add_dir=True)
+        test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
 
-    for threshold in thresholds:
-        tot_pos = 0
-        tot_neg = 0
-        true_pos = 0
-        false_pos = 0
-        for filename in tqdm(test_files, disable=True):
-            f = h5py.File(filename, "r")
-            pred = f.get("exported_data")
-            pred = pred[positive_channel, :, :, :]
-            mask = pred > threshold
+        best_fscore = 0
+        best_thresh = -1
+        for threshold in thresholds:
+            tot_pos = 0
+            tot_neg = 0
+            true_pos = 0
+            false_pos = 0
+            for filename in tqdm(test_files, disable=True):
+                f = h5py.File(filename, "r")
+                pred = f.get("exported_data")
+                pred = pred[positive_channel, :, :, :]
+                mask = pred > threshold
 
-            if object_type == "soma":
-                if filename.split("/")[-1] in doubles:
-                    newpos = 2
-                else:
-                    newpos = 1
+                if object_type == "soma":
+                    if filename.split("/")[-1] in doubles:
+                        newpos = 2
+                    else:
+                        newpos = 1
 
-                labels = measure.label(mask)
-                props = measure.regionprops(labels)
-                if "pos" in filename:
-                    num_detected = 0
-                    tot_pos += newpos
-                    for prop in props:
-                        if prop["area"] > size_thresh:
-                            if num_detected < newpos:
-                                true_pos += 1
-                                num_detected += 1
-                            else:
+                    labels = measure.label(mask)
+                    props = measure.regionprops(labels)
+                    if "pos" in filename:
+                        num_detected = 0
+                        tot_pos += newpos
+                        for prop in props:
+                            if prop["area"] > size_thresh:
+                                if num_detected < newpos:
+                                    true_pos += 1
+                                    num_detected += 1
+                                else:
+                                    false_pos += 1
+                    elif "neg" in filename:
+                        tot_neg += 1
+                        for prop in props:
+                            if prop["area"] > size_thresh:
                                 false_pos += 1
-                elif "neg" in filename:
-                    tot_neg += 1
-                    for prop in props:
-                        if prop["area"] > size_thresh:
-                            false_pos += 1
-            elif object_type == "axon":
-                filename_lab = filename[:-17] + "-image_3channel_Labels.h5"
-                f = h5py.File(filename_lab, "r")
-                gt = f.get("exported_data")
-                gt = gt[0, :, :, :]
-                pos_labels = gt == 2
-                neg_labels = gt == 1
+                elif object_type == "axon":
+                    filename_lab = filename[:-17] + "-image_3channel_Labels.h5"
+                    f = h5py.File(filename_lab, "r")
+                    gt = f.get("exported_data")
+                    gt = gt[0, :, :, :]
+                    pos_labels = gt == 2
+                    neg_labels = gt == 1
 
-                tot_pos += np.sum(pos_labels)
-                tot_neg += np.sum(neg_labels)
-                true_pos += np.sum(np.logical_and(mask, pos_labels))
-                false_pos += np.sum(np.logical_and(mask, neg_labels))
+                    tot_pos += np.sum(pos_labels)
+                    tot_neg += np.sum(neg_labels)
+                    true_pos += np.sum(np.logical_and(mask, pos_labels))
+                    false_pos += np.sum(np.logical_and(mask, neg_labels))
+                else:
+                    raise ValueError(
+                        f"object_type must be axon or soma, not {object_type}"
+                    )
+
+            brain_ids_data.append(brain_id)
+            recall = true_pos / tot_pos
+            recalls.append(recall)
+            if true_pos + false_pos == 0:
+                precision = 0
             else:
-                raise ValueError(f"object_type must be axon or soma, not {object_type}")
+                precision = true_pos / (true_pos + false_pos)
+            precisions.append(precision)
+            if precision == 0 and recall == 0:
+                fscore = 0
+            else:
+                fscore = 2 * precision * recall / (precision + recall)
 
-        print(f"{true_pos} {tot_pos}")
-        recall = true_pos / tot_pos
-        recalls.append(recall)
-        if true_pos + false_pos == 0:
-            precision = 0
-        else:
-            precision = true_pos / (true_pos + false_pos)
-        precisions.append(precision)
-        if precision == 0 and recall == 0:
-            fscore = 0
-        else:
-            fscore = 2 * precision * recall / (precision + recall)
-        fscores.append(fscore)
-        print(
-            f"Threshold: {threshold} --- Total prec.: {precision}, total rec.: {recall} w/{tot_pos}/{tot_neg} total pos/neg samples in {len(test_files)} images. F-score: {fscore} "
+            if fscore > best_fscore:
+                best_fscore = fscore
+                best_thresh = threshold
+                best_prec = precision
+                best_recall = recall
+
+        best_fscores[brain_id] = (best_fscore, best_thresh)
+        best_precisions.append(best_prec)
+        best_recalls.append(best_recall)
+
+    for i, brain_id in enumerate(brain_ids_data):
+        brain_ids_data[i] = (
+            brain_id
+            + f" - MaxFS: {best_fscores[brain_id][0]:.2f} @thresh: {best_fscores[brain_id][1]}"
         )
 
     dict = {
+        "ID": brain_ids_data,
         "Recall": recalls,
         "Precision": precisions,
-        "F-score": fscores,
-        "Threshold": thresholds,
     }
     df = pd.DataFrame(dict)
-    max_fscore = df["F-score"].max()
-    best_threshold = float(df.loc[df["F-score"] == max_fscore]["Threshold"].iloc[0])
-    best_rec = float(df.loc[df["F-score"] == max_fscore]["Recall"].iloc[0])
-    best_prec = float(df.loc[df["F-score"] == max_fscore]["Precision"].iloc[0])
 
-    print(f"Max f-score: {max_fscore:.2f} thresh:{best_threshold:.2f}")
     print("If this performance is not adequate, improve model and try again")
 
     if show_plot:
         sns.set(font_scale=2)
         plt.figure(figsize=(8, 8))
-        sns.lineplot(data=df, x="Recall", y="Precision", estimator=np.amax, ci=False)
+        sns.lineplot(
+            data=df, x="Recall", y="Precision", hue="ID", estimator=np.amax, ci=False
+        )
         plt.scatter(
-            best_rec,
+            best_recall,
             best_prec,
-            c="r",
-            label=f"Max f-score: {max_fscore:.2f} thresh:{best_threshold:.2f}",
         )
         plt.xlim([0, 1.1])
         plt.ylim([0, 1.1])
@@ -231,7 +243,7 @@ def plot_results(
         plt.legend()
         plt.show()
 
-    return max_fscore, best_threshold
+    return best_fscore, best_thresh
 
 
 def examine_threshold(
@@ -398,9 +410,14 @@ class ApplyIlastik_LargeImage:
         ilastik_path: str,
         ilastik_project: str,
         ncpu: int,
-        object_type: str,
+        data_file: str,
         results_dir: str = None,
     ):
+        with open(data_file) as f:
+            data = json.load(f)
+        object_type = data["object_type"]
+        self.brain2paths = data["brain2paths"]
+
         self.ilastik_path = ilastik_path
         self.ilastik_project = ilastik_project
         self.ncpu = ncpu
@@ -423,6 +440,7 @@ class ApplyIlastik_LargeImage:
         data_dir: str,
         chunk_size: list,
         max_coords: list = [-1, -1, -1],
+        min_coords: list = [-1, -1, -1],
     ):
         """Apply ilastik to large brain, in parallel.
 
@@ -433,9 +451,10 @@ class ApplyIlastik_LargeImage:
             data_dir (str): Path to directory where downloaded data will be temporarily stored.
             chunk_size (list): Size of chunks to be used for parallel application of ilastik.
             max_coords (list, optional): Upper bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
+            min_coords (list, optional): Lower bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
         """
         results_dir = self.results_dir
-        volume_base_dir = brain2paths[brain_id]["base"]
+        volume_base_dir = self.brain2paths[brain_id]["base"]
         sample_path = volume_base_dir + layer_names[0]
         vol = CloudVolume(sample_path, parallel=True, mip=0, fill_missing=True)
         shape = vol.shape
@@ -462,7 +481,9 @@ class ApplyIlastik_LargeImage:
             except:
                 self._make_mask_info(mask_dir, vol)
 
-        corners = _get_corners(shape, chunk_size, max_coords)
+        corners = _get_corners(
+            shape, chunk_size, max_coords=max_coords, min_coords=min_coords
+        )
         corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
 
         for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
@@ -650,7 +671,7 @@ class ApplyIlastik_LargeImage:
             name = "detected_somas"
 
         for coords_target_space in point_chunks:
-            ng_link = brain2paths[brain_id]["val_info"]["url"]
+            ng_link = self.brain2paths[brain_id]["val_info"]["url"]
             viz_link = NGLink(ng_link.split("json_url=")[-1])
             ngl_json = viz_link._json
 
@@ -672,7 +693,7 @@ class ApplyIlastik_LargeImage:
             brain_id (str): ID to process.
             ng_layer_name (str): Name of neuroglancer layer in val_info URL with image data.
         """
-        ng_link = brain2paths[brain_id]["val_info"]["url"]
+        ng_link = self.brain2paths[brain_id]["val_info"]["url"]
         viz_link = NGLink(ng_link.split("json_url=")[-1])
         ngl_json = viz_link._json
 

@@ -1,0 +1,26 @@
+{
+    "object_type": "axon",
+    "brain2paths": {
+        "atlas": {
+            "url": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017",
+            "comment": "If you've downloaded the atlas, you can put a file path under the key 'filepath'"
+        },
+        "test": {
+            "base": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/brainlit/BrainLine/data/example/",
+            "transformed_mask": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/brainlit/BrainLine/data/example/axon_mask_transformed/",
+            "val_info": {
+                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=Pmecz_5vjaeZHg",
+                "layer": "val"
+            },
+            "subtype": "test_type"
+        },
+        "pytest": {
+            "base": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/",
+            "val_info": {
+                "url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=_7H3OM-IAEgp0Q",
+                "layer": "val"
+            },
+            "subtype": "test_type"
+        }
+    }
+}
