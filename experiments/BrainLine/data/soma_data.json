@@ -217,7 +217,8 @@
                 "somas_layer": "soma_val",
                 "nonsomas_layer": "nonsoma_val"
             },
-            "subtype": "gad2 vgat"
+            "subtype": "gad2 vgat",
+            "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=0ODrFAwgltkRuQ"
         },
         "pytest": {
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=f9iYKQbYLFRMbA",

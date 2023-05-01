@@ -345,10 +345,10 @@ class SomaDistribution(BrainDistribution):
         bplot = sns.barplot(ax=axes[0], orient="h", **fig_args)
         bplot.set_xscale("log")
 
-        if len(subtypes) > 1:
-            annotator = self._configure_annotator(df, axes[0], "Somas (#)")
-            annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
-            annotator.apply_and_annotate()
+        # if len(subtypes) > 1:
+        #     annotator = self._configure_annotator(df, axes[0], "Somas (#)")
+        #     annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+        #     annotator.apply_and_annotate()
 
         # second panel
         fig_args = {
@@ -361,12 +361,12 @@ class SomaDistribution(BrainDistribution):
         bplot = sns.barplot(ax=axes[1], orient="h", **fig_args)
         bplot.set_xscale("log")
 
-        if len(subtypes) > 1:
-            annotator = self._configure_annotator(
-                df, axes[1], "Percent of Total Somas (%)"
-            )
-            annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
-            annotator.apply_and_annotate()
+        # if len(subtypes) > 1:
+        #     annotator = self._configure_annotator(
+        #         df, axes[1], "Percent of Total Somas (%)"
+        #     )
+        #     annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+        #     annotator.apply_and_annotate()
 
         # third panel
         if normalize_region >= 0:
@@ -381,10 +381,10 @@ class SomaDistribution(BrainDistribution):
             bplot = sns.barplot(ax=axes[2], orient="h", **fig_args)
             bplot.set_xscale("log")
 
-            if len(subtypes) > 1:
-                annotator = self._configure_annotator(df, axes[2], "Normalized Somas")
-                annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
-                annotator.apply_and_annotate()
+            # if len(subtypes) > 1:
+            #     annotator = self._configure_annotator(df, axes[2], "Normalized Somas")
+            #     annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+            #     annotator.apply_and_annotate()
 
         fig.tight_layout()
         if self.show_plots:
@@ -522,6 +522,7 @@ class SomaDistribution(BrainDistribution):
             return df
 
     def _configure_annotator(self, df, axis, ind_variable: str):
+        subtype_counts = self._get_subtype_counts()
         test = "Mann-Whitney"
         # my_logttest = StatTest(self._log_ttest_ind, test_long_name='Log t-test_ind', test_short_name='log-t')
         # test = "t-test_ind"
@@ -531,7 +532,7 @@ class SomaDistribution(BrainDistribution):
         unq_subregions = df["Region"].unique()
         subtypes = df["Subtype"].unique()
         subtype_pairs = [
-            (a, b) for idx, a in enumerate(subtypes) for b in subtypes[idx + 1 :]
+            (a, b) for idx, a in enumerate(subtypes) for b in subtypes[idx + 1 :] if subtype_counts[a.split("(")[0].strip()] > 1 and subtype_counts[b.split("(")[0].strip()] > 1
         ]
 
         for subtype_pair in subtype_pairs:
