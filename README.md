@@ -7,8 +7,8 @@
 [![Downloads](https://img.shields.io/pypi/dw/brainlit)](https://img.shields.io/pypi/dw/brainlit)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![codecov](https://codecov.io/gh/neurodata/brainlit/branch/develop/graph/badge.svg)](https://codecov.io/gh/neurodata/brainlit)
-![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/bvarjavand/brainlit)
-![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/bvarjavand/brainlit)
+![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/neurodata/brainlit)
+![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/neurodata/brainlit)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)  
 
 ## Summary
