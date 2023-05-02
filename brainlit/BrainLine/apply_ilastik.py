@@ -19,6 +19,7 @@ from cloudreg.scripts.visualization import create_viz_link_from_json
 import pandas as pd
 from brainlit.BrainLine.imports import *
 import json
+from typing import Union
 
 
 class ApplyIlastik:
@@ -394,14 +395,14 @@ class ApplyIlastik_LargeImage:
         ilastik_project (str): Path to ilastik project.
         ncpu (int): Number of cpus to use for applying ilastik in parallel.
         object_type (str): Soma for soma detection or axon for axon segmentaiton.
-        results_dir: (str): For soma detection, the directory to write detection results.
+        results_dir: (str or Path): For soma detection, the directory to write detection results.
 
     Attributes:
         ilastk_path (str): Path to ilastik executable.
         ilastik_project (str): Path to ilastik project.
         ncpu (int): Number of cpus to use for applying ilastik in parallel.
         object_type (str): Soma for soma detection or axon for axon segmentaiton.
-        results_dir: (str): For soma detection, the directory to write detection results.
+        results_dir: (Path): For soma detection, the directory to write detection results.
 
     """
 
@@ -411,7 +412,7 @@ class ApplyIlastik_LargeImage:
         ilastik_project: str,
         ncpu: int,
         data_file: str,
-        results_dir: str = None,
+        results_dir: Union[str, Path] = None,
     ):
         with open(data_file) as f:
             data = json.load(f)
@@ -428,7 +429,10 @@ class ApplyIlastik_LargeImage:
                 raise ValueError(
                     f"cannot give results_dir for object type {object_type}"
                 )
-        elif object_type != "soma":
+        elif object_type == "soma":
+            if isinstance(results_dir, str):
+                results_dir = Path(results_dir)
+        else:
             raise ValueError(f"object_type must be soma or axon not {object_type}")
         self.results_dir = results_dir
 
@@ -559,7 +563,7 @@ class ApplyIlastik_LargeImage:
         except exceptions.EmptyVolumeException:
             return
 
-        fname = f"image_{str(c1[0])}_{str(c1[1])}_{str(c1[2])}.h5"
+        fname = f"image_{c1[0]}_{c1[1]}_{c1[2]}.h5"
         fname = data_dir / fname
 
         with h5py.File(fname, "w") as f:
@@ -577,20 +581,12 @@ class ApplyIlastik_LargeImage:
         )
         # subprocess.run(["/Applications/ilastik-1.3.3post3-OSX.app/Contents/ilastik-release/run_ilastik.sh", "--headless", "--project=/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain3/matt_benchmark_formal_brain3.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        fname_prob = fname[:-3] + "_Probabilities.h5"
+        fname_prob = str(fname).split(".")[0] + "_Probabilities.h5"
         with h5py.File(fname_prob, "r") as f:
             pred = f.get("exported_data")
             if object_type == "soma":
-                fname_results = (
-                    results_dir
-                    + "image_"
-                    + str(c1[0])
-                    + "_"
-                    + str(c1[1])
-                    + "_"
-                    + str(c1[2])
-                    + "_somas.txt"
-                )
+                fname_results = f"image_{c1[0]}_{c1[1]}_{c1[2]}_somas.txt"
+                fname_results = results_dir / fname_results
                 pred = pred[0, :, :, :]
                 mask = pred > threshold
                 labels = measure.label(mask)
@@ -649,7 +645,7 @@ class ApplyIlastik_LargeImage:
                     ]
                     coords.append(coord)
         print(f"{len(coords)} somas detected, first is: {coords_target_space[0]}")
-        all_somas_path = results_dir + "all_somas_" + brain_id + ".txt"
+        all_somas_path = results_dir / f"all_somas_{brain_id}.txt"
         print(f"Writing {all_somas_path}...")
         with open(all_somas_path, "w") as f:
             for coord in coords_target_space:
