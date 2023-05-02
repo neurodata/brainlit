@@ -23,4 +23,4 @@ jobs:
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag brainlit:$(date +%s)
     - name: Docker Push
-      run: docker push ${{secrets.DOCKER_USER}}/neurodata/brainlit
+      run: docker push neurodata/brainlit
