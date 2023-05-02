@@ -41,7 +41,6 @@ ilastik_path = "/Applications/ilastik-1.4.0b21-OSX.app/Contents/ilastik-release/
 ilastik_project = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/matt_soma_rabies_pix_3ch.ilp"  # "/data/tathey1/matt_wright/ilastik/soma_model/matt_soma_rabies_pix_3ch.ilp"  # path to ilastik project
 
 
-
 min_coords = [2500, 6500, 2050]
 max_coords = [
     2778,
