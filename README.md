@@ -2,8 +2,6 @@
 [![DOI](https://zenodo.org/badge/237507496.svg)](https://zenodo.org/badge/latestdoi/237507496)
 [![Python](https://img.shields.io/badge/python-3.7-blue.svg)]()
 ![Tests](https://img.shields.io/github/actions/workflow/status/neurodata/brainlit/python.yml)
-![Docker](https://img.shields.io/github/actions/workflow/status/neurodata/brainlit/docker-image.yml)
-![Lint](https://img.shields.io/github/actions/workflow/status/neurodata/brainlit/black.yml)
 [![CircleCI](https://circleci.com/gh/neurodata/brainlit/tree/develop.svg?style=svg)](https://circleci.com/gh/neurodata/brainlit/tree/develop)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/daad6ab0-1d47-4685-b6ab-ecc487a01ba7/deploy-status)](https://brainlit.netlify.app/)
 [![PyPI version](https://badge.fury.io/py/brainlit.svg)](https://badge.fury.io/py/brainlit)
