@@ -448,7 +448,7 @@ class ApplyIlastik_LargeImage:
             brain_id (str): Brain ID (key in brain2paths in _data.py file).
             layer_names (list): Precomputed layer names to be appended to the base path.
             threshold (float): Threshold for the ilastik predictor.
-            data_dir (str): Path to directory where downloaded data will be temporarily stored.
+            data_dir (str or Path): Path to directory where downloaded data will be temporarily stored.
             chunk_size (list): Size of chunks to be used for parallel application of ilastik.
             max_coords (list, optional): Upper bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
             min_coords (list, optional): Lower bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
@@ -466,6 +466,10 @@ class ApplyIlastik_LargeImage:
             os.makedirs(data_dir)
         else:
             print(f"Downloaded data will be stored in {data_dir}")
+        if isinstance(data_dir, str):
+            data_dir = Path(data_dir)
+        elif not isinstance(data_dir, Path):
+            raise ValueError(f"data_dir must be str or Path")
 
         if self.object_type == "soma":
             isExist = os.path.exists(results_dir)
@@ -527,7 +531,7 @@ class ApplyIlastik_LargeImage:
         volume_base_dir: str,
         layer_names: list,
         threshold: float,
-        data_dir: str,
+        data_dir: Path,
         object_type: str,
         results_dir: str = None,
     ):
@@ -555,16 +559,9 @@ class ApplyIlastik_LargeImage:
         except exceptions.EmptyVolumeException:
             return
 
-        fname = (
-            data_dir
-            + "image_"
-            + str(c1[0])
-            + "_"
-            + str(c1[1])
-            + "_"
-            + str(c1[2])
-            + ".h5"
-        )
+        fname = f"image_{str(c1[0])}_{str(c1[1])}_{str(c1[2])}.h5"
+        fname = data_dir / fname
+
         with h5py.File(fname, "w") as f:
             dset = f.create_dataset("image_3channel", data=image_3channel)
 
