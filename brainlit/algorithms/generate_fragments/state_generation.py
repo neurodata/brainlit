@@ -220,7 +220,7 @@ class state_generation:
         )
 
         for corner_chunk in tqdm(corners_chunks, desc="Computing Ilastik Predictions"):
-            Parallel(n_jobs=self.parallel)(
+            Parallel(n_jobs=self.parallel, backend="threading")(
                 delayed(self._predict_thread)(
                     corner[0],
                     corner[1],
@@ -375,7 +375,7 @@ class state_generation:
 
         specifications = self._get_frag_specifications()
 
-        results = Parallel(n_jobs=self.parallel)(
+        results = Parallel(n_jobs=self.parallel, backend="threading")(
             delayed(self._split_frags_thread)(
                 specification["corner1"],
                 specification["corner2"],
@@ -512,7 +512,7 @@ class state_generation:
 
         specifications = self._get_frag_specifications()
 
-        results = Parallel(n_jobs=self.parallel)(
+        results = Parallel(n_jobs=self.parallel, backend="threading")(
             delayed(self._compute_image_tiered_thread)(
                 specification["corner1"],
                 specification["corner2"],
@@ -762,7 +762,7 @@ class state_generation:
 
         specifications = self._get_frag_specifications()
 
-        results_tuple = Parallel(n_jobs=self.parallel)(
+        results_tuple = Parallel(n_jobs=self.parallel, backend="threading")(
             delayed(self._compute_states_thread)(
                 specification["corner1"],
                 specification["corner2"],
