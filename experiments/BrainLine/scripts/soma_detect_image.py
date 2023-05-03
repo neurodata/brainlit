@@ -37,8 +37,6 @@ data_file = brainline_exp_dir / "data" / "soma_data.json"
 # Ilastik will run in "headless mode", and the following paths are needed to do so:
 ilastik_path = "/brainlit_dir/ilastik-1.4.0-Linux/run_ilastik.sh"  # "/Applications/ilastik-1.4.0b21-OSX.app/Contents/ilastik-release/run_ilastik.sh"  # "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh"  # path to ilastik executable
 ilastik_project = "/brainlit_dir/experiments/BrainLine/data/matt_soma_rabies_pix_3ch.ilp"  # "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/matt_soma_rabies_pix_3ch.ilp"  # "/data/tathey1/matt_wright/ilastik/soma_model/matt_soma_rabies_pix_3ch.ilp"  # path to ilastik project
-ilastik_path = "/Applications/ilastik-1.4.0b21-OSX.app/Contents/ilastik-release/run_ilastik.sh"  # "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh"  # path to ilastik executable
-ilastik_project = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/matt_soma_rabies_pix_3ch.ilp"  # "/data/tathey1/matt_wright/ilastik/soma_model/matt_soma_rabies_pix_3ch.ilp"  # path to ilastik project
 
 
 min_coords = [2500, 6500, 2050]
@@ -47,7 +45,7 @@ max_coords = [
     6793,
     2232,
 ]  # max coords or -1 if you want to process everything along that dimension
-ncpu = 2  # 16  # number of cores to use for detection
+ncpu = 1  # 16  # number of cores to use for detection
 chunk_size = [256, 256, 256]  # [256, 256, 300]
 
 """ 

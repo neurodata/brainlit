@@ -10,3 +10,6 @@ RUN tar xjf ilastik-1.4.0-Linux.tar.bz2
 
 COPY . .
 RUN pip install -e .
+
+RUN mkdir /root/.cloudvolume/
+RUN mkdir /root/.cloudvolume/secrets/
