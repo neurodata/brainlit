@@ -203,6 +203,8 @@ class SomaDistribution(BrainDistribution):
         """
         brain2paths = self.brain2paths
         atlas_points = self.atlas_points
+        subtype_counts = self._get_subtype_counts()
+
         if "filepath" in brain2paths["atlas"].keys():
             vol_atlas = io.imread(brain2paths["atlas"]["filepath"])
         else:
@@ -214,7 +216,7 @@ class SomaDistribution(BrainDistribution):
         if self.show_plots:
             v = napari.Viewer()
             v.add_labels(newslice, scale=[10, 10])
-            v.add_image(borders, scale=[10, 10], name=f"z={z}")
+            heatmap = np.zeros([borders.shape[0],borders.shape[1],3])
 
         gtype_counts = {}
         for key in subtype_colors.keys():
@@ -229,6 +231,8 @@ class SomaDistribution(BrainDistribution):
 
             # only select points that fall on an ROI
             fg_points = []
+            channel_map = {"red": 0, "green": 1, "blue": 2}
+            channel = channel_map[subtype_colors[gtype]]
             for point in points:
                 im_coord = [int(point[1]), int(point[2])]
 
@@ -241,6 +245,7 @@ class SomaDistribution(BrainDistribution):
                         im_coord[1] = 2 * half_width - im_coord[1]
 
                     fg_points.append([im_coord[0], im_coord[1]])
+                    heatmap[int(im_coord[0]), int(im_coord[1]), channel] += 1/subtype_counts[gtype] # 1
             if self.show_plots:
                 v.add_points(
                     fg_points,
@@ -250,9 +255,15 @@ class SomaDistribution(BrainDistribution):
                     name=f"{key}: {gtype}",
                     scale=[10, 10],
                 )
+
             gtype_counts[gtype] = gtype_counts[gtype] + 1
 
         if self.show_plots:
+            for c in range(3):
+                heatmap[:,:,c] = ndi.gaussian_filter(heatmap[:,:,c], sigma = 3)
+            v.add_image(heatmap, scale=[10, 10], name=f"Heatmap", rgb=True)
+            v.add_labels(borders*2, scale=[10, 10], name=f"z={z}")
+
             v.scale_bar.unit = "um"
             v.scale_bar.visible = True
             napari.run()
