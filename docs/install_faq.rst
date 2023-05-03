@@ -39,7 +39,7 @@ When installing from source ``pip install -e .`` on Windows 10 with Python 3.9.0
 
 It was fixed according to this `thread <https://github.com/google/brotli/issues/782>`_ where the Visual C++ Redistributable was updated by downloading the x64 version from `here <https://learn.microsoft.com/en-GB/cpp/windows/latest-supported-vc-redist?view=msvc-170>`_.
 
-Also, an import error would occur for ``_curses``. This was fixed by ``pip install windows-curses`` like from this `thread<https://stackoverflow.com/questions/35850362/importerror-no-module-named-curses-when-trying-to-import-blessings>`_.
+Also, an import error would occur for ``_curses``. This was fixed by ``pip install windows-curses`` like from this `thread <https://stackoverflow.com/questions/35850362/importerror-no-module-named-curses-when-trying-to-import-blessings>`_.
 
 Napari Display Problem
 ~~~~~~~~~~~~~~~~~~~~~~
