@@ -13,10 +13,12 @@ from brainlit.BrainLine.util import (
 import napari
 import scipy.ndimage as ndi
 from scipy.stats import ttest_ind
+from scipy.signal import convolve2d
 import seaborn as sns
 from statannotations.Annotator import Annotator
 from statannotations.stats.StatTest import StatTest
 from statannotations import stats
+from statsmodels.stats.proportion import proportions_ztest
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
@@ -245,7 +247,7 @@ class SomaDistribution(BrainDistribution):
                         im_coord[1] = 2 * half_width - im_coord[1]
 
                     fg_points.append([im_coord[0], im_coord[1]])
-                    heatmap[int(im_coord[0]), int(im_coord[1]), channel] += 1/subtype_counts[gtype] # 1
+                    heatmap[int(im_coord[0]), int(im_coord[1]), channel] += 1#/subtype_counts[gtype]
             if self.show_plots:
                 v.add_points(
                     fg_points,
@@ -259,9 +261,32 @@ class SomaDistribution(BrainDistribution):
             gtype_counts[gtype] = gtype_counts[gtype] + 1
 
         if self.show_plots:
+            x,y = np.meshgrid(np.arange(-13,13),np.arange(-13,13))
+            d = np.sqrt(x**2+y**2)
+            filter = np.ones(d.shape) * (d <= 13)
+
             for c in range(3):
-                heatmap[:,:,c] = ndi.gaussian_filter(heatmap[:,:,c], sigma = 3)
-            v.add_image(heatmap, scale=[10, 10], name=f"Heatmap", rgb=True)
+                heatmap[:,:,c] = convolve2d(heatmap[:,:,c], filter, mode='same') #ndi.gaussian_filter(heatmap[:,:,c], sigma = 3)
+            heatmap = heatmap.astype(int)
+            pvals = np.zeros(heatmap.shape[:-1])
+            nobs = [-1,-1]
+            for gtype in subtype_colors.keys():
+                if subtype_colors[gtype] == "red":
+                    nobs[0] = subtype_counts[gtype]
+                elif subtype_colors[gtype] == "blue":
+                    nobs[1] = subtype_counts[gtype]
+            shp = pvals.shape
+            for x in tqdm(range(shp[0]), desc="Testing..."):
+                for y in range(shp[1]):
+                    rs = heatmap[x,y,0]
+                    bs = heatmap[x,y,2]
+                    if rs != bs:
+                        pvals[x,y] = 1-proportions_ztest([rs,bs], nobs)[1]
+            pvals[pvals < 0.95] = 0
+
+
+            v.add_image(pvals, scale=[10, 10], name=f"P values")
+            v.add_image(heatmap, scale=[10, 10], name=f"Heatmap")#, rgb=True)
             v.add_labels(borders*2, scale=[10, 10], name=f"z={z}")
 
             v.scale_bar.unit = "um"
