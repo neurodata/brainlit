@@ -46,6 +46,48 @@ class DiffeomorphismAction:
         """
         pass
 
+class Diffeomorphism_Transform(DiffeomorphismAction):
+    def __init__(self, points, values):
+        self.og_coords = np.meshgrid(*points)
+        self.F = RegularGridInterpolator([points[0],points[1],points[2]], values)
+    def evaluate(self, position):
+        return self.F(position)
+    def Jacobian(self, pos: np.array) -> np.array:
+        step = 1
+
+        J = np.zeros((3, 3))
+        J[:,0] = (self.F([pos[0] + step, pos[1], pos[2]])-self.F([pos[0], pos[1], pos[2]]))/step
+        J[:,1] = (self.F([pos[0], pos[1] + step, pos[2]])-self.F([pos[0], pos[1], pos[2]]))/step
+        J[:,2] = (self.F([pos[0], pos[1], pos[2] + step])-self.F([pos[0], pos[1], pos[2]]))/step
+        J += np.eye(3)
+
+        return J
+    
+    def D(self, position: np.array, deriv: np.array, order: int = 1) -> np.array:
+        """Compute transformed derivatives of mapping at given positions. Only for the non-affine component.
+
+        Args:
+            position (np.array): nx3 positions at which to compute derivatives.
+            deriv (np.array): nx3 derivatives at the respective positions.
+            order (int, optional): Order of derivative (must be 1). Defaults to 1.
+
+        Raises:
+            ValueError: Only derivative order 1 is allowed here.
+
+        Returns:
+            np.array: Transformed derivatives
+        """
+
+        if order != 1:
+            raise ValueError(f"Argument order must be 1, not {order}")
+
+        transformed_deriv = deriv.copy()
+        for i, (pos, d) in enumerate(zip(position, deriv)):
+            J = self.Jacobian(pos)
+            transformed_deriv[i, :] = np.matmul(J, d).T
+
+        return transformed_deriv
+
 
 class CloudReg_Transform(DiffeomorphismAction):
     """Object that can read mat files from CloudReg, and compute transformations on points and Jacobians.
