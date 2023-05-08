@@ -1,14 +1,9 @@
 import pytest
-from brainlit.utils.session import NeuroglancerSession
 from brainlit.feature_extraction import neighborhood as nbrhood
-from brainlit.utils.upload import upload_volumes, upload_segments
 import numpy as np
-import pandas as pd
-from cloudvolume import CloudVolume
 from pathlib import Path
 
 top_level = Path(__file__).parents[3] / "data"
-input = (top_level / "data_octree").as_posix()
 url = (top_level / "test_upload").as_uri()
 url_seg = url + "_segments"
 url = url + "/serial"
