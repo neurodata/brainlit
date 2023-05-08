@@ -12,7 +12,6 @@ import pandas as pd
 top_level = Path(__file__).parents[4] / "data"
 url = (top_level / "test_upload").as_uri()
 url_seg = url + "_segments"
-url = url + "/serial"
 
 
 ##############

@@ -5,21 +5,28 @@ from pathlib import Path
 import networkx as nx
 from cloudvolume.exceptions import InfoUnavailableError, SkeletonDecodeError
 from brainlit.algorithms.generate_fragments.tube_seg import tubes_seg
+from brainlit.utils.tests.test_upload import (
+    create_segmentation_layer,
+    create_image_layer,
+    volume_info,
+    upload_volumes_serial,
+    paths,
+    upload_segmentation,
+)
 
 
-@pytest.fixture
-def vars_local():
-    top_level = Path(__file__).parents[3] / "data"
-    url = (top_level / "test_upload").as_uri()
-    url_segments = url + "_segments"
-    url = url + "/serial"
+@pytest.fixture(scope="session")
+def vars_local(upload_volumes_serial, upload_segmentation):
+    url_segments, _ = upload_segmentation
+    url_segments = url_segments.as_uri()
+    url = upload_volumes_serial.as_uri()
     mip = 0
     seg_id = 2
-    v_id = 300
+    v_id = 2
     return url, url_segments, mip, seg_id, v_id
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def session(vars_local):  # using local vars
     url, url_seg, mip, seg_id, v_id = vars_local
     sess = NeuroglancerSession(url=url, mip=mip, url_segments=url_seg)
@@ -262,7 +269,7 @@ def test_create_tubes(session):
     img, bbox, verts = sess.pull_voxel(
         seg_id,
         v_id,
-        radius=5,
+        radius=1,
     )  # A valid bbox with data.
     tubes = sess.create_tubes(seg_id, bbox)
     assert (tubes != 0).any()
@@ -285,9 +292,7 @@ def test_pull_voxel(session):
 def test_pull_vertex_list(session):
     """Tests that pulling a vertex list returns valid regions."""
     sess, seg_id, v_id = session
-    img, bounds, voxel = sess.pull_vertex_list(
-        seg_id, [100, 101, 102, 103], buffer=[1, 1, 1]
-    )
+    img, bounds, voxel = sess.pull_vertex_list(seg_id, [1, 2, 3, 4], buffer=[1, 1, 1])
     assert len(img.shape) == 3
     assert img.shape == tuple(bounds.size())
     for vox in voxel:
