@@ -336,10 +336,8 @@ class NeuroglancerSession:
         check_iterable_nonnegative(bounds)
         img = self.cv.download(Bbox(bounds[:3], bounds[3:]), mip=self.mip)
         img = np.squeeze(np.array(img))
-        print(f"img shape: {img.shape}")
         if len(img.shape) < 3:  # in case a dimension with size 1 got squeezed away
             sz = np.subtract(bounds[3:], bounds[:3])
-            print(f"sz: {sz}")
             for i, s in enumerate(sz):
                 if s == 1:
                     img = np.expand_dims(img, axis=i)
