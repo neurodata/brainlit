@@ -4,14 +4,12 @@ from brainlit.algorithms.trace_analysis.fit_spline import (
     compute_parameterization,
 )
 from brainlit.utils.Neuron_trace import NeuronTrace
-import networkx as nx
 from scipy.interpolate import splprep, CubicHermiteSpline
 import numpy as np
 from pathlib import Path
 import pandas as pd
 
 top_level = Path(__file__).parents[4] / "data"
-input = (top_level / "data_octree").as_posix()
 url = (top_level / "test_upload").as_uri()
 url_seg = url + "_segments"
 url = url + "/serial"
