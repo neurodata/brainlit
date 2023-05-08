@@ -4,14 +4,25 @@ from brainlit.algorithms.trace_analysis.fit_spline import (
     compute_parameterization,
 )
 from brainlit.utils.Neuron_trace import NeuronTrace
+from brainlit.utils.tests.test_upload import (
+    create_segmentation_layer,
+    create_image_layer,
+    volume_info,
+    upload_volumes_serial,
+    paths,
+    upload_segmentation,
+)
 from scipy.interpolate import splprep, CubicHermiteSpline
 import numpy as np
 from pathlib import Path
 import pandas as pd
 
-top_level = Path(__file__).parents[4] / "data"
-url = (top_level / "test_upload").as_uri()
-url_seg = url + "_segments"
+
+@pytest.fixture(scope="session")
+def vars_local(upload_segmentation):
+    url_segments, _ = upload_segmentation
+    url_segments = url_segments.as_uri()
+    return url_segments
 
 
 ##############
@@ -146,7 +157,8 @@ def test_compute_parameterization():
     np.testing.assert_equal(true_dists, compute_parameterization(positions))
 
 
-def test_init_from_df():
+def test_init_from_df(vars_local):
+    url_seg = vars_local
     s3_trace = NeuronTrace(path=url_seg, seg_id=2, mip=0, rounding=False)
     df_s3 = s3_trace.get_df()
     G = GeometricGraph(df=df_s3)
