@@ -12,6 +12,7 @@ url = url + "/serial"
 
 node_id = 2
 
+
 def test_pairwise():
     """
     For a given iterable array [A1,A2,...,An], test if the function can return a zipped list [(A1,A2),(A2,A3),...,(An-1,An)]
