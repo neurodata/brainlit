@@ -40,8 +40,12 @@ class BrainDistribution:
         brain_ids (list): List of brain IDs (keys of data json file).
     """
 
-    def __init__(self, brain_ids: list):
+    def __init__(self, brain_ids: list, data_file: str):
         self.brain_ids = brain_ids
+        with open(data_file) as f:
+            data = json.load(f)
+        self.brain2paths = data["brain2paths"]
+        self.subtype_counts = self._get_subtype_counts()
 
     def _slicetolabels(self, slice, fold_on: bool = False, atlas_level: int = 5):
         region_graph = _setup_atlas_graph()
@@ -109,10 +113,7 @@ class SomaDistribution(BrainDistribution):
     """
 
     def __init__(self, brain_ids: list, data_file: str, show_plots: bool = True):
-        super().__init__(brain_ids)
-        with open(data_file) as f:
-            data = json.load(f)
-        self.brain2paths = data["brain2paths"]
+        super().__init__(brain_ids, data_file)
         self.show_plots = show_plots
 
         atlas_points = self._retrieve_soma_coords(brain_ids)
@@ -266,8 +267,8 @@ class SomaDistribution(BrainDistribution):
             filter = np.ones(d.shape) * (d <= 13)
 
             for c in range(3):
-                heatmap[:,:,c] = convolve2d(heatmap[:,:,c], filter, mode='same') #ndi.gaussian_filter(heatmap[:,:,c], sigma = 3)
-            heatmap = heatmap.astype(int)
+                heatmap[:,:,c] = ndi.gaussian_filter(heatmap[:,:,c], sigma = 3) #convolve2d(heatmap[:,:,c], filter, mode='same') #ndi.gaussian_filter(heatmap[:,:,c], sigma = 3)
+            #heatmap = heatmap.astype(int)
             pvals = np.zeros(heatmap.shape[:-1])
             nobs = [-1,-1]
             for gtype in subtype_colors.keys():
@@ -363,9 +364,9 @@ class SomaDistribution(BrainDistribution):
         subtypes = df["Subtype"].unique()
 
         if normalize_region >= 0:
-            fig, axes = plt.subplots(1, 3, figsize=(39, 13))
+            fig, axes = plt.subplots(1, 3, figsize=(39, 20))
         else:
-            fig, axes = plt.subplots(1, 2, figsize=(26, 13))
+            fig, axes = plt.subplots(1, 2, figsize=(26, 20))
 
         sns.set(font_scale=2)
 
@@ -762,15 +763,12 @@ class AxonDistribution(BrainDistribution):
         regional_distribution_dir: str,
         show_plots: bool = True,
     ):
-        super().__init__(brain_ids)
+        super().__init__(brain_ids, data_file)
         self.regional_distribution_dir = regional_distribution_dir
         region_graph, total_axon_vols = self._setup_regiongraph(
             regional_distribution_dir
         )
         self.region_graph, self.total_axon_vols = region_graph, total_axon_vols
-        with open(data_file) as f:
-            data = json.load(f)
-        self.brain2paths = data["brain2paths"]
         self.show_plots = show_plots
 
     def _setup_regiongraph(self, regional_distribution_dir):
@@ -884,6 +882,8 @@ class AxonDistribution(BrainDistribution):
                 rgb_heatmap[0] = heatmaps[subtype]
             elif subtype_colors[subtype] == "green":
                 rgb_heatmap[1] = heatmaps[subtype]
+            elif subtype_colors[subtype] == "blue":
+                rgb_heatmap[2] = heatmaps[subtype]
         rgb_heatmap = [0 * newslice if type(i) == int else i for i in rgb_heatmap]
 
         rgb_heatmap = np.stack(rgb_heatmap, axis=-1)
@@ -960,9 +960,9 @@ class AxonDistribution(BrainDistribution):
         subtypes = df["Subtype"].unique()
 
         if normalize_region >= 0:
-            fig, axes = plt.subplots(1, 3, figsize=(39, 13))
+            fig, axes = plt.subplots(1, 3, figsize=(39, 20))
         else:
-            fig, axes = plt.subplots(1, 2, figsize=(26, 13))
+            fig, axes = plt.subplots(1, 2, figsize=(26, 20))
         sns.set(font_scale=2)
 
         # first panel
