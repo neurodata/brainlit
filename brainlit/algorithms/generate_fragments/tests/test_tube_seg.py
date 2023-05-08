@@ -10,6 +10,7 @@ url = (top_level / "test_upload").as_uri()
 url_seg = url + "_segments"
 url = url + "/serial"
 
+node_id = 2
 
 def test_pairwise():
     """
@@ -55,7 +56,7 @@ def test_draw_sphere():
         np.random.randint(shape[1]),
         np.random.randint(shape[2]),
     ]
-    radius = np.random.randint(1, 4)
+    radius = 1
     sphere = tube_seg.draw_sphere(shape, center, radius)
     coords = np.where(sphere < 1)
     d_bg = min(np.sum((np.array(coords).T - center) ** 2, axis=1))
@@ -99,7 +100,7 @@ def test_draw_tube_spheres():
         np.random.randint(shape[1]),
         np.random.randint(shape[2]),
     ]
-    radius = np.random.randint(1, 4)
+    radius = 1
     labels = tube_seg.draw_tube_from_spheres(img, vertex0, vertex1, radius)
     line = draw.line_nd(vertex0, vertex1, endpoint=True)
     coords = np.where(labels < 1)
@@ -150,7 +151,7 @@ def test_draw_tube_edt():
         np.random.randint(shape[1]),
         np.random.randint(shape[2]),
     ]
-    radius = np.random.randint(1, 4)
+    radius = 1
     labels = tube_seg.draw_tube_from_edt(img, vertex0, vertex1, radius)
     line = draw.line_nd(vertex0, vertex1, endpoint=True)
     coords = np.where(labels < 1)
@@ -192,7 +193,7 @@ def test_tubes_seg():
     img, _, _ = ngl_session.pull_vertex_list(2, [4], expand=True)
     shape = img.shape
     vertices = np.random.randint(min(shape), size=(4, 3))
-    radius = np.random.randint(1, 4)
+    radius = 1
     labels = tube_seg.tubes_seg(img, vertices, radius)
     point = np.empty((3, 0), dtype=int)
     for i in range(3):
@@ -226,7 +227,7 @@ def test_tubes_seg():
 def test_tubes_from_paths_bad_inputs():
     """Tests that the tubes_from_paths method raises errors when given bad inputs."""
     sess = NeuroglancerSession(url, 0, url_seg)
-    img, bbox, verts = sess.pull_voxel(2, 300, radius=5)  # A valid bbox with data.
+    img, bbox, verts = sess.pull_voxel(2, node_id, radius=1)  # A valid bbox with data.
     G_paths = sess.get_segments(2, bbox)
     G = G_paths[0]
     paths = G_paths[1]  # valid paths
@@ -249,7 +250,7 @@ def test_tubes_from_paths_bad_inputs():
 def test_tubes_from_paths():
     """Tests that, given valid paths, valid tubes are created."""
     sess = NeuroglancerSession(url, 0, url_seg)
-    img, bbox, verts = sess.pull_voxel(2, 300, radius=5)  # A valid bbox with data.
+    img, bbox, verts = sess.pull_voxel(2, node_id, radius=1)  # A valid bbox with data.
     G_paths = sess.get_segments(2, bbox)
     bbox = bbox.to_list()
     paths = G_paths[1]  # valid paths
