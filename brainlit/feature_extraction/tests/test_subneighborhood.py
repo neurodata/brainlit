@@ -1,19 +1,32 @@
 import pytest
 from brainlit.feature_extraction import neighborhood as nbrhood
+from brainlit.utils.tests.test_upload import (
+    create_segmentation_layer,
+    create_image_layer,
+    volume_info,
+    upload_volumes_serial,
+    paths,
+    upload_segmentation,
+)
 import numpy as np
 from pathlib import Path
 
-top_level = Path(__file__).parents[3] / "data"
-url = (top_level / "test_upload").as_uri()
-url_seg = url + "_segments"
-url = url + "/serial"
+
+@pytest.fixture(scope="session")
+def vars_local(upload_volumes_serial, upload_segmentation):
+    url = upload_volumes_serial.as_uri()
+    url_segments, _ = upload_segmentation
+    url_segments = url_segments.as_uri()
+    return url, url_segments
+
 
 SIZE = 1
 OFF = [1, 1, 0]
 
 
 @pytest.fixture
-def gen_array():
+def gen_array(vars_local):
+    url, url_seg = vars_local
     nbr = nbrhood.NeighborhoodFeatures(
         url=url, radius=SIZE, offset=OFF, segment_url=url_seg
     )
