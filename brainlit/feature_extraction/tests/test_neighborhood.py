@@ -13,7 +13,7 @@ url = url + "/serial"
 
 SIZE = 2
 SEGLIST = [2]
-OFF = [15, 15, 15]
+OFF = [1, 1, 0]
 
 ##############
 ### inputs ###
@@ -63,7 +63,7 @@ def test_fit_bad_inputs():
 def test_neighborhood():
     """Tests that neighborhood data is generated correctly."""
     nbr = nbrhood.NeighborhoodFeatures(
-        url=url, radius=1, offset=[15, 15, 15], segment_url=url_seg
+        url=url, radius=1, offset=OFF, segment_url=url_seg
     )
     df_nbr = nbr.fit([2], 5)
     assert df_nbr.shape == (10, 30)  # 5on, 5off for each swc
@@ -101,7 +101,7 @@ def test_file_write():
         os.remove(f)
 
     nbr = nbrhood.NeighborhoodFeatures(
-        url=url, radius=1, offset=[15, 15, 15], segment_url=url_seg
+        url=url, radius=1, offset=OFF, segment_url=url_seg
     )
     nbr.fit([2], 5, file_path="test", batch_size=10)
 
