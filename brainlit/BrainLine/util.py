@@ -6,7 +6,6 @@ import networkx as nx
 from pathlib import Path
 from brainlit.BrainLine.parse_ara import build_tree
 from tqdm import tqdm
-from brainlit.BrainLine import data
 from brainlit.BrainLine.imports import *
 import json
 

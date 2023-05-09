@@ -60,7 +60,7 @@ class ApplyIlastik:
                 stderr=subprocess.PIPE,
             )
 
-    def process_subvols(self):
+    def process_subvols(self, ncpu: int = 6):
         """Apply ilastik to all validation subvolumes of the specified brain ids in the specified directory"""
         items_total = []
         for brain in tqdm(self.brains, desc="Gathering brains..."):
@@ -68,8 +68,7 @@ class ApplyIlastik:
 
             items_total += _find_sample_names(path, dset="", add_dir=True)
 
-        # run all files
-        Parallel(n_jobs=8)(
+        Parallel(n_jobs=ncpu)(
             delayed(self._apply_ilastik)(item)
             for item in tqdm(items_total, desc="running ilastik...")
         )
@@ -493,7 +492,6 @@ class ApplyIlastik_LargeImage:
             shape, chunk_size, max_coords=max_coords, min_coords=min_coords
         )
         corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
-
         for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
             Parallel(n_jobs=self.ncpu)(
                 delayed(self._process_chunk)(
@@ -522,7 +520,7 @@ class ApplyIlastik_LargeImage:
             # mesh            = 'mesh',
             # Pick a convenient size for your underlying chunk representation
             # Powers of two are recommended, doesn't need to cover image exactly
-            chunk_size=(128, 128, 2),  # units are voxels
+            chunk_size=(100, 100, 100),  # units are voxels
             volume_size=vol.volume_size,  # e.g. a cubic millimeter dataset
         )
         vol_mask = CloudVolume(mask_dir, info=info, compress=False)
