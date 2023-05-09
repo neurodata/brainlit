@@ -13,6 +13,7 @@ from brainlit.BrainLine.util import (
 import napari
 import scipy.ndimage as ndi
 from scipy.stats import ttest_ind
+from scipy.signal import convolve2d
 import seaborn as sns
 from statannotations.Annotator import Annotator
 from statannotations.stats.StatTest import StatTest
@@ -38,8 +39,12 @@ class BrainDistribution:
         brain_ids (list): List of brain IDs (keys of data json file).
     """
 
-    def __init__(self, brain_ids: list):
+    def __init__(self, brain_ids: list, data_file: str):
         self.brain_ids = brain_ids
+        with open(data_file) as f:
+            data = json.load(f)
+        self.brain2paths = data["brain2paths"]
+        self.subtype_counts = self._get_subtype_counts()
 
     def _slicetolabels(self, slice, fold_on: bool = False, atlas_level: int = 5):
         region_graph = _setup_atlas_graph()
@@ -107,10 +112,7 @@ class SomaDistribution(BrainDistribution):
     """
 
     def __init__(self, brain_ids: list, data_file: str, show_plots: bool = True):
-        super().__init__(brain_ids)
-        with open(data_file) as f:
-            data = json.load(f)
-        self.brain2paths = data["brain2paths"]
+        super().__init__(brain_ids, data_file)
         self.show_plots = show_plots
 
         atlas_points = self._retrieve_soma_coords(brain_ids)
@@ -203,6 +205,8 @@ class SomaDistribution(BrainDistribution):
         """
         brain2paths = self.brain2paths
         atlas_points = self.atlas_points
+        subtype_counts = self._get_subtype_counts()
+
         if "filepath" in brain2paths["atlas"].keys():
             vol_atlas = io.imread(brain2paths["atlas"]["filepath"])
         else:
@@ -210,11 +214,11 @@ class SomaDistribution(BrainDistribution):
 
         slice = np.squeeze(vol_atlas[z, :, :])
         newslice, borders, half_width = self._slicetolabels(slice, fold_on=fold_on)
+        heatmap = np.zeros([borders.shape[0], borders.shape[1], 3])
 
         if self.show_plots:
             v = napari.Viewer()
             v.add_labels(newslice, scale=[10, 10])
-            v.add_image(borders, scale=[10, 10], name=f"z={z}")
 
         gtype_counts = {}
         for key in subtype_colors.keys():
@@ -229,6 +233,8 @@ class SomaDistribution(BrainDistribution):
 
             # only select points that fall on an ROI
             fg_points = []
+            channel_map = {"red": 0, "green": 1, "blue": 2}
+            channel = channel_map[subtype_colors[gtype]]
             for point in points:
                 im_coord = [int(point[1]), int(point[2])]
 
@@ -241,6 +247,9 @@ class SomaDistribution(BrainDistribution):
                         im_coord[1] = 2 * half_width - im_coord[1]
 
                     fg_points.append([im_coord[0], im_coord[1]])
+                    heatmap[
+                        int(im_coord[0]), int(im_coord[1]), channel
+                    ] += 1  # /subtype_counts[gtype]
             if self.show_plots:
                 v.add_points(
                     fg_points,
@@ -250,9 +259,15 @@ class SomaDistribution(BrainDistribution):
                     name=f"{key}: {gtype}",
                     scale=[10, 10],
                 )
+
             gtype_counts[gtype] = gtype_counts[gtype] + 1
 
         if self.show_plots:
+            for c in range(3):
+                heatmap[:, :, c] = ndi.gaussian_filter(heatmap[:, :, c], sigma=3)
+            v.add_image(heatmap, scale=[10, 10], name=f"Heatmap")  # , rgb=True)
+            v.add_labels(borders * 2, scale=[10, 10], name=f"z={z}")
+
             v.scale_bar.unit = "um"
             v.scale_bar.visible = True
             napari.run()
@@ -327,9 +342,9 @@ class SomaDistribution(BrainDistribution):
         subtypes = df["Subtype"].unique()
 
         if normalize_region >= 0:
-            fig, axes = plt.subplots(1, 3, figsize=(39, 13))
+            fig, axes = plt.subplots(1, 3, figsize=(39, 20))
         else:
-            fig, axes = plt.subplots(1, 2, figsize=(26, 13))
+            fig, axes = plt.subplots(1, 2, figsize=(26, 20))
 
         sns.set(font_scale=2)
 
@@ -522,6 +537,7 @@ class SomaDistribution(BrainDistribution):
             return df
 
     def _configure_annotator(self, df, axis, ind_variable: str):
+        subtype_counts = self._get_subtype_counts()
         test = "Mann-Whitney"
         # my_logttest = StatTest(self._log_ttest_ind, test_long_name='Log t-test_ind', test_short_name='log-t')
         # test = "t-test_ind"
@@ -531,7 +547,11 @@ class SomaDistribution(BrainDistribution):
         unq_subregions = df["Region"].unique()
         subtypes = df["Subtype"].unique()
         subtype_pairs = [
-            (a, b) for idx, a in enumerate(subtypes) for b in subtypes[idx + 1 :]
+            (a, b)
+            for idx, a in enumerate(subtypes)
+            for b in subtypes[idx + 1 :]
+            if subtype_counts[a.split("(")[0].strip()] > 1
+            and subtype_counts[b.split("(")[0].strip()] > 1
         ]
 
         for subtype_pair in subtype_pairs:
@@ -725,15 +745,12 @@ class AxonDistribution(BrainDistribution):
         regional_distribution_dir: str,
         show_plots: bool = True,
     ):
-        super().__init__(brain_ids)
+        super().__init__(brain_ids, data_file)
         self.regional_distribution_dir = regional_distribution_dir
         region_graph, total_axon_vols = self._setup_regiongraph(
             regional_distribution_dir
         )
         self.region_graph, self.total_axon_vols = region_graph, total_axon_vols
-        with open(data_file) as f:
-            data = json.load(f)
-        self.brain2paths = data["brain2paths"]
         self.show_plots = show_plots
 
     def _setup_regiongraph(self, regional_distribution_dir):
@@ -847,6 +864,8 @@ class AxonDistribution(BrainDistribution):
                 rgb_heatmap[0] = heatmaps[subtype]
             elif subtype_colors[subtype] == "green":
                 rgb_heatmap[1] = heatmaps[subtype]
+            elif subtype_colors[subtype] == "blue":
+                rgb_heatmap[2] = heatmaps[subtype]
         rgb_heatmap = [0 * newslice if type(i) == int else i for i in rgb_heatmap]
 
         rgb_heatmap = np.stack(rgb_heatmap, axis=-1)
@@ -923,9 +942,9 @@ class AxonDistribution(BrainDistribution):
         subtypes = df["Subtype"].unique()
 
         if normalize_region >= 0:
-            fig, axes = plt.subplots(1, 3, figsize=(39, 13))
+            fig, axes = plt.subplots(1, 3, figsize=(39, 20))
         else:
-            fig, axes = plt.subplots(1, 2, figsize=(26, 13))
+            fig, axes = plt.subplots(1, 2, figsize=(26, 20))
         sns.set(font_scale=2)
 
         # first panel
