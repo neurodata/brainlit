@@ -6,6 +6,7 @@
             "comment": "If you've downloaded the atlas, you can put a file path under the key 'filepath'"
         },
         "test": {
+            "comment": "Sampled used for demos, need to download precomputed data and put in brainlit/BrainLine/data/example. Data should be served via neuroglancer's cors_webserver.py",
             "base": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/brainlit/BrainLine/data/example/",
             "transformed_mask": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/brainlit/BrainLine/data/example/axon_mask_transformed/",
             "val_info": {
