@@ -51,7 +51,7 @@ for i in range(100):
 print(f"Valid IDs: {valid_ids}")
 
 
-spacing = 2
+spacing = 0.1
 inter = -1
 ds_factors = [10, 1]
 
