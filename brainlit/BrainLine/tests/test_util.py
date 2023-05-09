@@ -21,7 +21,14 @@ def make_data_dir(tmp_path_factory):
 def test_download_subvolumes(make_data_dir):
     data_dir = make_data_dir  # tmp_path_factory.mktemp("data")
     layer_names = ["average_10um"] * 3
-    data_file = Path(os.path.abspath(__file__)).parents[1] / "data" / "axon_data.json"
+    data_file = (
+        Path(os.path.abspath(__file__)).parents[3]
+        / "docs"
+        / "notebooks"
+        / "pipelines"
+        / "BrainLine"
+        / "axon_data.json"
+    )
     util.download_subvolumes(
         data_dir=data_dir,
         brain_id="pytest",
