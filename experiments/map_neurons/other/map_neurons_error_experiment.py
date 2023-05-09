@@ -63,7 +63,7 @@ print(
 #     "/cis/home/tathey/projects/mouselight/axon_mapping/low_res/2018-12-01/precomputed_ch1_otsu_iso_registration/downloop_1_v.mat",
 #     "/cis/home/tathey/projects/mouselight/axon_mapping/low_res/2018-12-01/precomputed_ch1_otsu_iso_registration/downloop_1_A.mat",
 # )
-with open('/data/tathey1/axon-mapping/random-diffeo/random-diffeo.pickle', 'rb') as handle:
+with open('/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/random-diffeo.pickle', 'rb') as handle:
     ct = pickle.load(handle)
 
 for ds_factor in ds_factors:
