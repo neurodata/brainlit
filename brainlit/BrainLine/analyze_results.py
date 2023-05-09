@@ -214,11 +214,11 @@ class SomaDistribution(BrainDistribution):
 
         slice = np.squeeze(vol_atlas[z, :, :])
         newslice, borders, half_width = self._slicetolabels(slice, fold_on=fold_on)
+        heatmap = np.zeros([borders.shape[0], borders.shape[1], 3])
 
         if self.show_plots:
             v = napari.Viewer()
             v.add_labels(newslice, scale=[10, 10])
-            heatmap = np.zeros([borders.shape[0], borders.shape[1], 3])
 
         gtype_counts = {}
         for key in subtype_colors.keys():
@@ -263,14 +263,10 @@ class SomaDistribution(BrainDistribution):
             gtype_counts[gtype] = gtype_counts[gtype] + 1
 
         if self.show_plots:
-            x, y = np.meshgrid(np.arange(-13, 13), np.arange(-13, 13))
-            d = np.sqrt(x**2 + y**2)
-            filter = np.ones(d.shape) * (d <= 13)
-
             for c in range(3):
                 heatmap[:, :, c] = ndi.gaussian_filter(
                     heatmap[:, :, c], sigma=3
-                )  # convolve2d(heatmap[:,:,c], filter, mode='same') #ndi.gaussian_filter(heatmap[:,:,c], sigma = 3)
+                ) 
             v.add_image(heatmap, scale=[10, 10], name=f"Heatmap")  # , rgb=True)
             v.add_labels(borders * 2, scale=[10, 10], name=f"z={z}")
 
@@ -366,10 +362,10 @@ class SomaDistribution(BrainDistribution):
         bplot = sns.barplot(ax=axes[0], orient="h", **fig_args)
         bplot.set_xscale("log")
 
-        # if len(subtypes) > 1:
-        #     annotator = self._configure_annotator(df, axes[0], "Somas (#)")
-        #     annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
-        #     annotator.apply_and_annotate()
+        if len(subtypes) > 1:
+            annotator = self._configure_annotator(df, axes[0], "Somas (#)")
+            annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+            annotator.apply_and_annotate()
 
         # second panel
         fig_args = {
@@ -382,12 +378,12 @@ class SomaDistribution(BrainDistribution):
         bplot = sns.barplot(ax=axes[1], orient="h", **fig_args)
         bplot.set_xscale("log")
 
-        # if len(subtypes) > 1:
-        #     annotator = self._configure_annotator(
-        #         df, axes[1], "Percent of Total Somas (%)"
-        #     )
-        #     annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
-        #     annotator.apply_and_annotate()
+        if len(subtypes) > 1:
+            annotator = self._configure_annotator(
+                df, axes[1], "Percent of Total Somas (%)"
+            )
+            annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+            annotator.apply_and_annotate()
 
         # third panel
         if normalize_region >= 0:
@@ -402,10 +398,10 @@ class SomaDistribution(BrainDistribution):
             bplot = sns.barplot(ax=axes[2], orient="h", **fig_args)
             bplot.set_xscale("log")
 
-            # if len(subtypes) > 1:
-            #     annotator = self._configure_annotator(df, axes[2], "Normalized Somas")
-            #     annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
-            #     annotator.apply_and_annotate()
+            if len(subtypes) > 1:
+                annotator = self._configure_annotator(df, axes[2], "Normalized Somas")
+                annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+                annotator.apply_and_annotate()
 
         fig.tight_layout()
         if self.show_plots:
