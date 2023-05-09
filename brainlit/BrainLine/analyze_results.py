@@ -264,9 +264,7 @@ class SomaDistribution(BrainDistribution):
 
         if self.show_plots:
             for c in range(3):
-                heatmap[:, :, c] = ndi.gaussian_filter(
-                    heatmap[:, :, c], sigma=3
-                ) 
+                heatmap[:, :, c] = ndi.gaussian_filter(heatmap[:, :, c], sigma=3)
             v.add_image(heatmap, scale=[10, 10], name=f"Heatmap")  # , rgb=True)
             v.add_labels(borders * 2, scale=[10, 10], name=f"z={z}")
 
