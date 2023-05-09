@@ -147,7 +147,8 @@
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=YRB3G4Hn19TjIA",
                 "layer": "val"
             },
-            "subtype": "tph2 vglut3"
+            "subtype": "tph2 vglut3",
+            "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_11_02/8786/axon_mask_transformed"
         },
         "8790": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2022_11_01/8790/",
@@ -155,7 +156,8 @@
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=hhlEcKDIfqrY-w",
                 "layer": "val"
             },
-            "subtype": "tph2 vglut3"
+            "subtype": "tph2 vglut3",
+            "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_11_01/8790/axon_mask_transformed"
         },
         "MS32": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_03/MS32/",
@@ -172,7 +174,8 @@
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=uN171hvFEvDw-Q",
                 "layer": "val"
             },
-            "subtype": "gad2 vgat"
+            "subtype": "gad2 vgat",
+            "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2023_04_03/MS15/axon_mask_transformed"
         },
         "MS29": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_07/MS29/",
@@ -180,7 +183,8 @@
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=gf8YOhsEvdGXgQ",
                 "layer": "val"
             },
-            "subtype": "tph2 gad2"
+            "subtype": "tph2 gad2",
+            "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2023_04_07/MS29/axon_mask_transformed"
         },
         "MS11": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_10/MS11/",
@@ -188,7 +192,8 @@
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=kcPAtNm-SdK2IQ",
                 "layer": "val"
             },
-            "subtype": "gad2 vgat"
+            "subtype": "gad2 vgat",
+            "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2023_04_10/MS11/axon_mask_transformed"
         },
         "pytest": {
             "subtype": "test_type"
