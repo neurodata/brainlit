@@ -3,7 +3,8 @@
     "brain2paths": {
         "atlas": {
             "url": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017",
-            "comment": "If you've downloaded the atlas, you can put a file path under the key 'filepath'"
+            "comment": "If you've downloaded the atlas, you can put a file path under the key 'filepath'",
+            "filepath": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/ara/ara_10um.tif"
         },
         "test": {
             "comment": "Sampled used for demos, need to download precomputed data and put in brainlit/BrainLine/data/example. Data should be served via neuroglancer's cors_webserver.py",
@@ -13,7 +14,7 @@
                 "somas_layer": "soma_val",
                 "nonsomas_layer": "nonsoma_val"
             },
-            "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=LTWdmg7lYf1nbA",
+            "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=U46ynq6npcJ1FQ",
             "subtype": "test_type"
         },
         "biccn": {
