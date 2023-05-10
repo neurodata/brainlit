@@ -53,7 +53,7 @@ print(f"Valid IDs: {valid_ids}")
 
 spacing = 0.1
 inter = -1
-ds_factors = [10, 1]
+ds_factors = [1]#[10, 1]
 
 print(
     f"Processing neurons starting with {inter} with a spacing {spacing} and downsampling factor {ds_factors}"
