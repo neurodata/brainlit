@@ -35,7 +35,7 @@ REQUIRED_PACKAGES = [
     "similaritymeasures>=0.4.4",
     "statannotations>=0.4.4",
     "pre-commit",
-    "igneous-pipeline"
+    "igneous-pipeline",
 ]
 
 # Find savanna version.
