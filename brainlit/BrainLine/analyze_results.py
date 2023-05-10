@@ -589,9 +589,18 @@ def _log_ttest_ind(group_data1, group_data2, verbose=1, **stats_params):
 
 
 def _get_corners_collection(
-    vol_mask, vol_reg, block_size, max_coords: list = [-1, -1, -1]
+    vol_mask,
+    vol_reg,
+    block_size,
+    max_coords: list = [-1, -1, -1],
+    min_coords: list = [-1, -1, -1],
 ):
-    corners = _get_corners(vol_mask.shape, chunk_size=block_size, max_coords=max_coords)
+    corners = _get_corners(
+        vol_mask.shape,
+        chunk_size=block_size,
+        max_coords=max_coords,
+        min_coords=min_coords,
+    )
 
     new_corners = []
     for corner in corners:
@@ -682,6 +691,7 @@ def collect_regional_segmentation(
     outdir: str,
     ncpu: int = 1,
     max_coords: list = [-1, -1, -1],
+    min_coords: list = [-1, -1, -1],
 ):
     """Combine segmentation and registration to generate counts of axon voxels across brain regions. Note this scripts writes a file for every chunk, which might be many.
 
@@ -706,7 +716,11 @@ def collect_regional_segmentation(
     print(f"Atlas shape: {vol_reg.shape}")
 
     corners = _get_corners_collection(
-        vol_mask, vol_reg, block_size=[256, 256, 256], max_coords=max_coords
+        vol_mask,
+        vol_reg,
+        block_size=[100, 100, 100],
+        max_coords=max_coords,
+        min_coords=min_coords,
     )
     Parallel(n_jobs=ncpu)(
         delayed(_compute_composition_corner)(corner, outdir, dir_base)

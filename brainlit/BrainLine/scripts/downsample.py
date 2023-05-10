@@ -1,4 +1,3 @@
-
 import igneous.task_creation as tc
 from taskqueue import LocalTaskQueue
 

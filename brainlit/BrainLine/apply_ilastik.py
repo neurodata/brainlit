@@ -712,6 +712,7 @@ class ApplyIlastik_LargeImage:
         )
         print(f"Viz link with segmentation: {viz_link}")
 
+
 def downsample_mask(brain, data_file, ncpu: int = 1):
     with open(data_file) as f:
         data = json.load(f)
@@ -723,7 +724,6 @@ def downsample_mask(brain, data_file, ncpu: int = 1):
     layer_path = dir_base + "axon_mask"
 
     tq = LocalTaskQueue(parallel=ncpu)
-    
 
     tasks = tc.create_downsampling_tasks(
         layer_path,  # e.g. 'gs://bucket/dataset/layer'
@@ -736,7 +736,7 @@ def downsample_mask(brain, data_file, ncpu: int = 1):
         sparse=False,  # for sparse segmentation, allow inflation of pixels against background
         bounds=None,  # mip 0 bounding box to downsample
         encoding=None,  # e.g. 'raw', 'compressed_segmentation', etc
-        delete_black_uploads=False,  # issue a delete instead of uploading files containing all background
+        delete_black_uploads=True,  # issue a delete instead of uploading files containing all background
         background_color=0,  # Designates the background color
         compress="gzip",  # None, 'gzip', and 'br' (brotli) are options
         factor=(2, 2, 2),  # common options are (2,2,1) and (2,2,2)
