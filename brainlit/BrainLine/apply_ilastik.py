@@ -20,6 +20,8 @@ import pandas as pd
 from brainlit.BrainLine.imports import *
 import json
 from typing import Union
+import igneous.task_creation as tc
+from taskqueue import LocalTaskQueue
 
 
 class ApplyIlastik:
@@ -709,3 +711,36 @@ class ApplyIlastik_LargeImage:
             ngl_json, neuroglancer_link="https://viz.neurodata.io/?json_url="
         )
         print(f"Viz link with segmentation: {viz_link}")
+
+def downsample_mask(brain, data_file, ncpu: int = 1):
+    with open(data_file) as f:
+        data = json.load(f)
+    object_type = data["object_type"]
+    brain2paths = data["brain2paths"]
+    if object_type != "axon":
+        raise ValueError(f"Entered non-axon data file")
+    dir_base = brain2paths[brain]["base"]
+    layer_path = dir_base + "axon_mask"
+
+    tq = LocalTaskQueue(parallel=ncpu)
+    
+
+    tasks = tc.create_downsampling_tasks(
+        layer_path,  # e.g. 'gs://bucket/dataset/layer'
+        mip=0,  # Start downsampling from this mip level (writes to next level up)
+        fill_missing=True,  # Ignore missing chunks and fill them with black
+        axis="z",
+        num_mips=5,  # number of downsamples to produce. Downloaded shape is chunk_size * 2^num_mip
+        chunk_size=None,  # manually set chunk size of next scales, overrides preserve_chunk_size
+        preserve_chunk_size=True,  # use existing chunk size, don't halve to get more downsamples
+        sparse=False,  # for sparse segmentation, allow inflation of pixels against background
+        bounds=None,  # mip 0 bounding box to downsample
+        encoding=None,  # e.g. 'raw', 'compressed_segmentation', etc
+        delete_black_uploads=False,  # issue a delete instead of uploading files containing all background
+        background_color=0,  # Designates the background color
+        compress="gzip",  # None, 'gzip', and 'br' (brotli) are options
+        factor=(2, 2, 2),  # common options are (2,2,1) and (2,2,2)
+    )
+
+    tq.insert(tasks)
+    tq.execute()
