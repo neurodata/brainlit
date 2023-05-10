@@ -34,6 +34,8 @@ REQUIRED_PACKAGES = [
     # "pcurvepy @ git+https://git@github.com/CaseyWeiner/pcurvepy@master#egg=pcurvepy",
     "similaritymeasures>=0.4.4",
     "statannotations>=0.4.4",
+    "pre-commit",
+    "igneous-pipeline"
 ]
 
 # Find savanna version.
