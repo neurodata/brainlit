@@ -495,8 +495,9 @@ class ApplyIlastik_LargeImage:
         corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
 
         for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
-            Parallel(n_jobs=self.ncpu)(
-                delayed(self._process_chunk)(
+            if self.ncpu == 1:
+                for corner in tqdm(corners_chunk, leave=False):
+                    self._process_chunk(
                     corner[0],
                     corner[1],
                     volume_base_dir,
@@ -506,8 +507,20 @@ class ApplyIlastik_LargeImage:
                     self.object_type,
                     results_dir,
                 )
-                for corner in tqdm(corners_chunk, leave=False)
-            )
+            else:
+                Parallel(n_jobs=self.ncpu)(
+                    delayed(self._process_chunk)(
+                        corner[0],
+                        corner[1],
+                        volume_base_dir,
+                        layer_names,
+                        threshold,
+                        data_dir,
+                        self.object_type,
+                        results_dir,
+                    )
+                    for corner in tqdm(corners_chunk, leave=False)
+                )
             for f in os.listdir(data_dir):
                 os.remove(os.path.join(data_dir, f))
 
@@ -566,50 +579,58 @@ class ApplyIlastik_LargeImage:
         fname = f"image_{c1[0]}_{c1[1]}_{c1[2]}.h5"
         fname = data_dir / fname
 
-        with h5py.File(fname, "w") as f:
-            dset = f.create_dataset("image_3channel", data=image_3channel)
+        for attempt in range(3):
+            with h5py.File(fname, "w") as f:
+                dset = f.create_dataset("image_3channel", data=image_3channel)
 
-        subprocess.run(
-            [
-                f"{self.ilastik_path}",
-                "--headless",
-                f"--project={self.ilastik_project}",
-                fname,
-            ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        # subprocess.run(["/Applications/ilastik-1.3.3post3-OSX.app/Contents/ilastik-release/run_ilastik.sh", "--headless", "--project=/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain3/matt_benchmark_formal_brain3.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(
+                [
+                    f"{self.ilastik_path}",
+                    "--headless",
+                    f"--project={self.ilastik_project}",
+                    fname,
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
 
-        fname_prob = str(fname).split(".")[0] + "_Probabilities.h5"
-        with h5py.File(fname_prob, "r") as f:
-            pred = f.get("exported_data")
-            if object_type == "soma":
-                fname_results = f"image_{c1[0]}_{c1[1]}_{c1[2]}_somas.txt"
-                fname_results = results_dir / fname_results
-                pred = pred[0, :, :, :]
-                mask = pred > threshold
-                labels = measure.label(mask)
-                props = measure.regionprops(labels)
+            fname_prob = str(fname).split(".")[0] + "_Probabilities.h5"
+            try:
+                with h5py.File(fname_prob, "r") as f:
+                    pred = f.get("exported_data")
+            except:
+                if attempt >= 2:
+                    raise ValueError(f"Tried to evaluate thrice and failed")
+                if os.path.isfile(fname_prob):
+                    os.remove(fname_prob)
+                continue
+            
+        if object_type == "soma":
+            fname_results = f"image_{c1[0]}_{c1[1]}_{c1[2]}_somas.txt"
+            fname_results = results_dir / fname_results
+            pred = pred[0, :, :, :]
+            mask = pred > threshold
+            labels = measure.label(mask)
+            props = measure.regionprops(labels)
 
-                results = []
-                for prop in props:
-                    if prop["area"] > area_threshold:
-                        location = list(np.add(c1, prop["centroid"]))
-                        results.append(location)
-                if len(results) > 0:
-                    with open(fname_results, "w") as f2:
-                        for location in results:
-                            f2.write(str(location))
-                            f2.write("\n")
-            elif object_type == "axon":
-                dir_mask = volume_base_dir + "axon_mask"
-                vol_mask = CloudVolume(
-                    dir_mask, parallel=1, mip=mip, fill_missing=True, compress=False
-                )
-                pred = pred[1, :, :, :]
-                mask = np.array(pred > threshold).astype("uint64")
-                vol_mask[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]] = mask
+            results = []
+            for prop in props:
+                if prop["area"] > area_threshold:
+                    location = list(np.add(c1, prop["centroid"]))
+                    results.append(location)
+            if len(results) > 0:
+                with open(fname_results, "w") as f2:
+                    for location in results:
+                        f2.write(str(location))
+                        f2.write("\n")
+        elif object_type == "axon":
+            dir_mask = volume_base_dir + "axon_mask"
+            vol_mask = CloudVolume(
+                dir_mask, parallel=1, mip=mip, fill_missing=True, compress=False
+            )
+            pred = pred[1, :, :, :]
+            mask = np.array(pred > threshold).astype("uint64")
+            vol_mask[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]] = mask
 
     def collect_soma_results(self, brain_id: str):
         """Combine all soma detections and post to neuroglancer. Intended for use after apply_ilastik_parallel.

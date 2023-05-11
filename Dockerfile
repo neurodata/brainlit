@@ -19,7 +19,7 @@ RUN pip install -e .
 RUN chmod +x ./.aws.sh
 RUN ./.aws.sh
 
-
+CMD python experiments/BrainLine/scripts/soma_detect_image.py
 
 # Old version
 # FROM python:3.8-slim
@@ -28,7 +28,7 @@ RUN ./.aws.sh
 # WORKDIR /usr/src/app
 
 # #RUN apt-get update \
-# #    && apt-get install -y --no-install-recommends git \
+# #    && apt-get install -y --no-install-recommends git 
 # #    && apt-get purge -y --auto-remove \
 # RUN apt-get update
 # RUN apt-get install -y --no-install-recommends \
