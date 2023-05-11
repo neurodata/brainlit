@@ -27,12 +27,13 @@ from tqdm import tqdm
 from scipy.interpolate import splev, splprep, CubicHermiteSpline
 from similaritymeasures import frechet_dist
 import os
+import pickle
 
 # INPUTS
 spacing = 5.0
 sampling = 2
 ds_factors = [1, 2, 4, 8, 16]
-swc_dir = Path("/Users/thomasathey/Documents/mimlab/mouselight/axon_mapping/mouselight-swcs")
+swc_dir = Path("/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/mouselight-swcs")
 
 swcs = os.listdir(swc_dir)
 
@@ -40,7 +41,9 @@ print(
     f"Processing {len(swcs)} neurons with a sampling rate of {sampling} and downsampling factor {ds_factors} with a diffeo of spacing {spacing} "
 )
 
-# create diffeomorphism
+"""
+CREATE DIFFEOMORPHISM
+"""
 # a domain for sampling your velocity and deformatoin
 dv = np.array([spacing]*3)
 nv = np.array([132,80,114])
@@ -76,7 +79,9 @@ phii = phii.detach().cpu().numpy()
 ct = Diffeomorphism_Transform(xv, phii)
 
 
-# make computations
+"""
+MAP NEURONS
+"""
 ds_factors = []
 methods = []
 errors = []
