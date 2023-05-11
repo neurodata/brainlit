@@ -643,7 +643,7 @@ class NeuronTrace:
             G = self._df_to_graph(self.df)
 
         G_sub = self._get_sub_neuron(G, bounding_box)
-        paths = self._graph_to_paths(G_sub, round=True)
+        paths = self._graph_to_paths(G_sub, round=self.rounding)
 
         return paths
 

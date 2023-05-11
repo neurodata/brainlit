@@ -28,12 +28,13 @@ from scipy.interpolate import splev, splprep, CubicHermiteSpline
 from similaritymeasures import frechet_dist
 import os
 import pickle
+from tqdm import tqdm
 
 # INPUTS
 spacing = 5.0
 sampling = 2
 ds_factors = [1, 2, 4, 8, 16]
-swc_dir = Path("/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/mouselight-swcs")
+swc_dir = Path("/Users/thomasathey/Documents/mimlab/mouselight/axon_mapping/mouselight-swcs")
 
 swcs = os.listdir(swc_dir)
 
@@ -82,19 +83,35 @@ ct = Diffeomorphism_Transform(xv, phii)
 """
 MAP NEURONS
 """
-ds_factors = []
-methods = []
-errors = []
-av_sample_distances = []
-neurons = []
+res_ds_factors = []
+res_methods = []
+res_errors = []
+res_av_sample_distances = []
+res_neurons = []
 for ns, swc in enumerate(swcs):
+    if "swc" not in swc:
+        continue
     swc_path = swc_dir / swc
-    ntrace = NeuronTrace(swc_path)
+    ntrace = NeuronTrace(str(swc_path), rounding=False)
     g = ntrace.get_graph()
 
     coords = []
     for n in g.nodes:
         coords.append([g.nodes[n][i] for i in ['x','y','z']])
+
+    
+    dupes = []
+    seen = set()
+    for coord in coords:
+        coord = tuple(coord)
+        if coord in seen:
+            dupes.append(coord)
+        else:
+            seen.add(coord)
+    if len(dupes) > 0:
+        print(f"Duplicate nodes in {swc}")
+        continue
+
     coords = np.array(coords)
     center = np.mean(coords,axis=0)
 
@@ -104,7 +121,7 @@ for ns, swc in enumerate(swcs):
     for e in g.edges:
         G_neuron.add_edge(e[0], e[1])
     spline_tree = G_neuron.fit_spline_tree_invariant()
-    for ds_factor in ds_factors:
+    for ds_factor in tqdm(ds_factors, desc="downsample factors..."):
         for branch_id in tqdm(
             spline_tree.nodes, desc="Processing branches...", leave=False
         ):
@@ -205,23 +222,26 @@ for ns, swc in enumerate(swcs):
             # print("1st order mapping...")
             first_order_pts = chspline(u_first_order)
 
-            for method, method_pts in zip(
+            for method, method_pts in tqdm(zip(
                 ["Zeroth Order", "First Order"], [zero_order_pts, first_order_pts]
-            ):
-                error = frechet_dist(dense_line_pts, method_pts)
+            ), total=2, leave=False):
+                if len(dense_line_pts) < np.inf:
+                    error = frechet_dist(dense_line_pts, method_pts)
 
-                ds_factors.append(ds_factor)
-                methods.append(method)
-                errors.append(error)
-                av_sample_distances.append(av_sample_distance)
-                neurons.append(swc)
+                    res_ds_factors.append(ds_factor)
+                    res_methods.append(method)
+                    res_errors.append(error)
+                    res_av_sample_distances.append(av_sample_distance)
+                    res_neurons.append(swc)
 
 
-    fname = f"/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/{ns}neurons_spac{sampling}.pickle"
+    fname = f"/Users/thomasathey/Documents/mimlab/mouselight/axon_mapping/mouselight-swcs/{ns}neurons_spac{sampling}.pickle"
     data = {
-        "Method": methods,
-        "Frechet Distance": errors,
-        "Average Sampling": av_sample_distances,
+        "Method": res_methods,
+        "Frechet Error (microns)": res_errors,
+        "Average Sampling (microns)": res_av_sample_distances,
+        "Downsample factor": res_ds_factors,
+        "Sample": res_neurons
     }
     with open(fname, "wb") as handle:
         pickle.dump(data, handle)
