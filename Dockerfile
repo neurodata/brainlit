@@ -5,7 +5,7 @@ ENV AWS_SEC_KEY=
 WORKDIR /brainlit_dir
 
 RUN apt-get update && apt-get install -y gcc libgl1-mesa-glx libxrender1
-RUN apt install -y wget bzip2
+RUN apt install -y wget bzip2 vim
 
 # install ilastik
 RUN wget https://files.ilastik.org/ilastik-1.4.0-Linux.tar.bz2
