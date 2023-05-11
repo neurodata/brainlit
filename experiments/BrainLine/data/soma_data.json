@@ -19,6 +19,10 @@
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=8VHD-seixZg9pg",
             "subtype": "test"
         },
+        "pytest": {
+            "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=f9iYKQbYLFRMbA",
+            "subtype": "test_type"
+        },
         "8557": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2021_10_06/8557/",
             "val_info": {
@@ -220,9 +224,14 @@
             "subtype": "gad2 vgat",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=0ODrFAwgltkRuQ"
         },
-        "pytest": {
-            "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=f9iYKQbYLFRMbA",
-            "subtype": "test_type"
+        "MS25": {
+            "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_14/MS25/",
+            "val_info": {
+                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=s76nWlFZjjg-lQ",
+                "somas_layer": "soma_val",
+                "nonsomas_layer": "nonsoma_val"
+            },
+            "subtype": "unknown"
         }
     },
     "brain2centers": {

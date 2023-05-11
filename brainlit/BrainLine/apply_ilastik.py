@@ -59,7 +59,7 @@ class ApplyIlastik:
                 stderr=subprocess.PIPE,
             )
 
-    def process_subvols(self):
+    def process_subvols(self, ncpu: int=1):
         """Apply ilastik to all validation subvolumes of the specified brain ids in the specified directory"""
         items_total = []
         for brain in tqdm(self.brains, desc="Gathering brains..."):
@@ -68,7 +68,7 @@ class ApplyIlastik:
             items_total += _find_sample_names(path, dset="", add_dir=True)
 
         # run all files
-        Parallel(n_jobs=8)(
+        Parallel(n_jobs=ncpu)(
             delayed(self._apply_ilastik)(item)
             for item in tqdm(items_total, desc="running ilastik...")
         )
