@@ -88,3 +88,5 @@ experiments/sriram/sample/
 # experiments/register_axons
 experiments/map_neurons/.ipynb_checkpoints/
 experiments/map_neurons/data/mapping-files/
+
+experiments/BrainLine/data/models/
