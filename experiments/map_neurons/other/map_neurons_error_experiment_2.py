@@ -31,6 +31,7 @@ import pickle
 from tqdm import tqdm
 
 # INPUTS
+first_neuron = 2
 spacing = 5.0
 sampling = 2
 ds_factors = [1, 2, 4, 8, 16]
@@ -89,8 +90,9 @@ res_errors = []
 res_av_sample_distances = []
 res_neurons = []
 for ns, swc in enumerate(swcs):
-    if "swc" not in swc:
+    if ns < first_neuron or "swc" not in swc:
         continue
+
     swc_path = swc_dir / swc
     ntrace = NeuronTrace(str(swc_path), rounding=False)
     g = ntrace.get_graph()
@@ -113,7 +115,10 @@ for ns, swc in enumerate(swcs):
         continue
 
     coords = np.array(coords)
-    center = np.mean(coords,axis=0)
+    mx = np.amax(coords, axis=0)
+    mn = np.amin(coords, axis=0)
+    center = np.mean(np.array([mx,mn]), axis=0)
+    # center = np.mean(coords,axis=0)
 
     G_neuron = GeometricGraph()
     for n in g.nodes:
