@@ -51,8 +51,8 @@ max_coords = [
     -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
-ncpu = -1  # 16  # number of cores to use for detection
-chunk_size = [256, 256, 256]  # [256, 256, 300]
+ncpu = 1  # 16  # number of cores to use for detection
+chunk_size = [512, 512, 2560]  # [256, 256, 300]
 
 """ 
 Detect Somas
