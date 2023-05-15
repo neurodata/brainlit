@@ -9,7 +9,6 @@ import h5py
 from joblib import Parallel, delayed
 import multiprocessing
 import os
-from brainlit.BrainLine.data.soma_data import brain2paths
 from brainlit.BrainLine.apply_ilastik import ApplyIlastik_LargeImage
 from pathlib import Path
 
