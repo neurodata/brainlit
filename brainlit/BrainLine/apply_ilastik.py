@@ -19,6 +19,7 @@ from cloudreg.scripts.visualization import create_viz_link_from_json
 import pandas as pd
 from brainlit.BrainLine.imports import *
 import json
+from typing import Union
 
 
 class ApplyIlastik:
@@ -394,14 +395,14 @@ class ApplyIlastik_LargeImage:
         ilastik_project (str): Path to ilastik project.
         ncpu (int): Number of cpus to use for applying ilastik in parallel.
         object_type (str): Soma for soma detection or axon for axon segmentaiton.
-        results_dir: (str): For soma detection, the directory to write detection results.
+        results_dir: (str or Path): For soma detection, the directory to write detection results.
 
     Attributes:
         ilastk_path (str): Path to ilastik executable.
         ilastik_project (str): Path to ilastik project.
         ncpu (int): Number of cpus to use for applying ilastik in parallel.
         object_type (str): Soma for soma detection or axon for axon segmentaiton.
-        results_dir: (str): For soma detection, the directory to write detection results.
+        results_dir: (Path): For soma detection, the directory to write detection results.
 
     """
 
@@ -411,7 +412,7 @@ class ApplyIlastik_LargeImage:
         ilastik_project: str,
         ncpu: int,
         data_file: str,
-        results_dir: str = None,
+        results_dir: Union[str, Path] = None,
     ):
         with open(data_file) as f:
             data = json.load(f)
@@ -428,7 +429,10 @@ class ApplyIlastik_LargeImage:
                 raise ValueError(
                     f"cannot give results_dir for object type {object_type}"
                 )
-        elif object_type != "soma":
+        elif object_type == "soma":
+            if isinstance(results_dir, str):
+                results_dir = Path(results_dir)
+        else:
             raise ValueError(f"object_type must be soma or axon not {object_type}")
         self.results_dir = results_dir
 
@@ -448,7 +452,7 @@ class ApplyIlastik_LargeImage:
             brain_id (str): Brain ID (key in brain2paths in _data.py file).
             layer_names (list): Precomputed layer names to be appended to the base path.
             threshold (float): Threshold for the ilastik predictor.
-            data_dir (str): Path to directory where downloaded data will be temporarily stored.
+            data_dir (str or Path): Path to directory where downloaded data will be temporarily stored.
             chunk_size (list): Size of chunks to be used for parallel application of ilastik.
             max_coords (list, optional): Upper bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
             min_coords (list, optional): Lower bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
@@ -466,6 +470,10 @@ class ApplyIlastik_LargeImage:
             os.makedirs(data_dir)
         else:
             print(f"Downloaded data will be stored in {data_dir}")
+        if isinstance(data_dir, str):
+            data_dir = Path(data_dir)
+        elif not isinstance(data_dir, Path):
+            raise ValueError(f"data_dir must be str or Path")
 
         if self.object_type == "soma":
             isExist = os.path.exists(results_dir)
@@ -487,8 +495,9 @@ class ApplyIlastik_LargeImage:
         corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
 
         for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
-            Parallel(n_jobs=self.ncpu)(
-                delayed(self._process_chunk)(
+            if self.ncpu == 1:
+                for corner in tqdm(corners_chunk, leave=False):
+                    self._process_chunk(
                     corner[0],
                     corner[1],
                     volume_base_dir,
@@ -498,8 +507,20 @@ class ApplyIlastik_LargeImage:
                     self.object_type,
                     results_dir,
                 )
-                for corner in tqdm(corners_chunk, leave=False)
-            )
+            else:
+                Parallel(n_jobs=self.ncpu)(
+                    delayed(self._process_chunk)(
+                        corner[0],
+                        corner[1],
+                        volume_base_dir,
+                        layer_names,
+                        threshold,
+                        data_dir,
+                        self.object_type,
+                        results_dir,
+                    )
+                    for corner in tqdm(corners_chunk, leave=False)
+                )
             for f in os.listdir(data_dir):
                 os.remove(os.path.join(data_dir, f))
 
@@ -527,7 +548,7 @@ class ApplyIlastik_LargeImage:
         volume_base_dir: str,
         layer_names: list,
         threshold: float,
-        data_dir: str,
+        data_dir: Path,
         object_type: str,
         results_dir: str = None,
     ):
@@ -555,68 +576,61 @@ class ApplyIlastik_LargeImage:
         except exceptions.EmptyVolumeException:
             return
 
-        fname = (
-            data_dir
-            + "image_"
-            + str(c1[0])
-            + "_"
-            + str(c1[1])
-            + "_"
-            + str(c1[2])
-            + ".h5"
-        )
-        with h5py.File(fname, "w") as f:
-            dset = f.create_dataset("image_3channel", data=image_3channel)
+        fname = f"image_{c1[0]}_{c1[1]}_{c1[2]}.h5"
+        fname = data_dir / fname
 
-        subprocess.run(
-            [
-                f"{self.ilastik_path}",
-                "--headless",
-                f"--project={self.ilastik_project}",
-                fname,
-            ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        # subprocess.run(["/Applications/ilastik-1.3.3post3-OSX.app/Contents/ilastik-release/run_ilastik.sh", "--headless", "--project=/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain3/matt_benchmark_formal_brain3.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        for attempt in range(3):
+            with h5py.File(fname, "w") as f:
+                dset = f.create_dataset("image_3channel", data=image_3channel)
 
-        fname_prob = fname[:-3] + "_Probabilities.h5"
-        with h5py.File(fname_prob, "r") as f:
-            pred = f.get("exported_data")
-            if object_type == "soma":
-                fname_results = (
-                    results_dir
-                    + "image_"
-                    + str(c1[0])
-                    + "_"
-                    + str(c1[1])
-                    + "_"
-                    + str(c1[2])
-                    + "_somas.txt"
-                )
-                pred = pred[0, :, :, :]
-                mask = pred > threshold
-                labels = measure.label(mask)
-                props = measure.regionprops(labels)
+            subprocess.run(
+                [
+                    f"{self.ilastik_path}",
+                    "--headless",
+                    f"--project={self.ilastik_project}",
+                    fname,
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
 
-                results = []
-                for prop in props:
-                    if prop["area"] > area_threshold:
-                        location = list(np.add(c1, prop["centroid"]))
-                        results.append(location)
-                if len(results) > 0:
-                    with open(fname_results, "w") as f2:
-                        for location in results:
-                            f2.write(str(location))
-                            f2.write("\n")
-            elif object_type == "axon":
-                dir_mask = volume_base_dir + "axon_mask"
-                vol_mask = CloudVolume(
-                    dir_mask, parallel=1, mip=mip, fill_missing=True, compress=False
-                )
-                pred = pred[1, :, :, :]
-                mask = np.array(pred > threshold).astype("uint64")
-                vol_mask[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]] = mask
+            fname_prob = str(fname).split(".")[0] + "_Probabilities.h5"
+            try:
+                with h5py.File(fname_prob, "r") as f:
+                    pred = f.get("exported_data")
+            except:
+                if attempt >= 2:
+                    raise ValueError(f"Tried to evaluate thrice and failed")
+                if os.path.isfile(fname_prob):
+                    os.remove(fname_prob)
+                continue
+            
+        if object_type == "soma":
+            fname_results = f"image_{c1[0]}_{c1[1]}_{c1[2]}_somas.txt"
+            fname_results = results_dir / fname_results
+            pred = pred[0, :, :, :]
+            mask = pred > threshold
+            labels = measure.label(mask)
+            props = measure.regionprops(labels)
+
+            results = []
+            for prop in props:
+                if prop["area"] > area_threshold:
+                    location = list(np.add(c1, prop["centroid"]))
+                    results.append(location)
+            if len(results) > 0:
+                with open(fname_results, "w") as f2:
+                    for location in results:
+                        f2.write(str(location))
+                        f2.write("\n")
+        elif object_type == "axon":
+            dir_mask = volume_base_dir + "axon_mask"
+            vol_mask = CloudVolume(
+                dir_mask, parallel=1, mip=mip, fill_missing=True, compress=False
+            )
+            pred = pred[1, :, :, :]
+            mask = np.array(pred > threshold).astype("uint64")
+            vol_mask[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]] = mask
 
     def collect_soma_results(self, brain_id: str):
         """Combine all soma detections and post to neuroglancer. Intended for use after apply_ilastik_parallel.
@@ -652,7 +666,7 @@ class ApplyIlastik_LargeImage:
                     ]
                     coords.append(coord)
         print(f"{len(coords)} somas detected, first is: {coords_target_space[0]}")
-        all_somas_path = results_dir + "all_somas_" + brain_id + ".txt"
+        all_somas_path = results_dir / f"all_somas_{brain_id}.txt"
         print(f"Writing {all_somas_path}...")
         with open(all_somas_path, "w") as f:
             for coord in coords_target_space:
