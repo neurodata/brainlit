@@ -69,7 +69,7 @@ assisted_tracing = True
 
 if assisted_tracing:
     vb_path = vb_path_local
-    frag_layer = f"zarr://http://127.0.0.1:{port}/test-czi/labels.zarr"
+    frag_layer = f"zarr://http://127.0.0.1:{port}/test-czi/labels_ome.zarr"
 else:
     vb_path = None
     frag_layer = None
@@ -286,16 +286,9 @@ class ViterBrainViewer(neuroglancer.Viewer):
         with self.txn() as vs:  # trace
             layer_names = [l.name for l in vs.layers]
 
-        if "start" in layer_names and "end" in layer_names:
-            if "end" in layer_names:
-                with self.txn() as vs:  # trace
-                    del vs.layers["start"]
-                    vs.layers["end"].name = "start"
-            else:
+        if "start" in layer_names:
+            if "end" not in layer_names:
                 self.end_pt = [int(p) for p in s.mouse_voxel_coordinates]
-                with self.txn() as vs:  # trace
-                    del vs.layers["start"]
-                self.add_point("start", "#0f0", s.mouse_voxel_coordinates)
             print(f"Tracing path from {self.start_pt} to {self.end_pt}")
 
             try:
@@ -306,16 +299,22 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 path = self.vb.shortest_path(coord1=start_coord, coord2=end_coord)
                 path = [[pt[1], pt[2], pt[0]] for pt in path]
                 print(path)
+                self.render_line(path)
+                with self.txn() as vs:  # trace
+                    del vs.layers["start"]
+                    if "end" in layer_names:
+                        vs.layers["end"].name = "start"
+                    else:
+                        self.add_point(
+                            "start", "#0f0", end_coord
+                        )  # might need to be outside txn context
+
+                    self.start_pt = self.end_pt
+                    self.end_pt = None
             except nx.NetworkXNoPath:
                 print("No path found")
                 return
 
-            self.render_line(path, layer_names)
-            with self.txn() as vs:  # trace
-                del vs.layers["start"]
-                self.start_pt = self.end_pt
-                self.end_pt = None
-                vs.layers["end"].name = "start"
         else:
             print("No start layer yet")
 
@@ -339,14 +338,15 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 path = [self.start_pt[:3], self.end_pt[:3]]
             else:
                 path = [self.start_pt, self.end_pt]
-            self.render_line(path, layer_names)
+            self.render_line(path)
             self.start_pt = self.end_pt
             self.end_pt = None
         else:
             print("No start layer yet")
 
-    def render_line(self, path, layer_names):
+    def render_line(self, path):
         with self.txn() as vs:  # trace
+            layer_names = [l.name for l in vs.layers]
             self.cur_skel_coords.append(path)
             trace_layer_name = f"vb_traces_{self.cur_skel}"
             if trace_layer_name in layer_names:
@@ -370,8 +370,17 @@ class ViterBrainViewer(neuroglancer.Viewer):
             )
 
     def clearlast(self, s):
+        with self.txn() as vs:
+            layer_names = [l.name for l in vs.layers]
+            if "start" in layer_names:
+                print(f"Deleting start layer")
+                del vs.layers["start"]
+            if "end" in layer_names:
+                print(f"Deleting end layer")
+                del vs.layers["end"]
+
         if len(self.cur_skel_coords) == 0:
-            print("Nothing to clear")
+            print("No paths to clear")
         else:
             self.cur_skel_coords = self.cur_skel_coords[:-1]
 
@@ -380,10 +389,6 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 trace_layer_name = f"vb_traces_{self.cur_skel}"
                 if trace_layer_name in layer_names:
                     del vs.layers[trace_layer_name]
-                if "start" in layer_names:
-                    del vs.layers["start"]
-                if "end" in layer_names:
-                    del vs.layers["end"]
 
             if len(self.cur_skel_coords) > 0:
                 coord = self.cur_skel_coords[-1][-1]
