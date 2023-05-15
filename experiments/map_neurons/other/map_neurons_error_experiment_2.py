@@ -31,16 +31,16 @@ import pickle
 from tqdm import tqdm
 
 # INPUTS
-first_neuron = 2
+first_neuron = 0
 spacings = [3.0, 6.0, 12.0, 24.0]
 sampling = 2
 ds_factors = [1, 2, 4, 8, 16]
-swc_dir = Path("/Users/thomasathey/Documents/mimlab/mouselight/axon_mapping/mouselight-swcs")
+swc_dir = Path("/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/mouselight-swcs")
 
 swcs = os.listdir(swc_dir)
 
 print(
-    f"Processing {len(swcs)} neurons with a sampling rate of {sampling} and downsampling factor {ds_factors} with a diffeo of spacing {spacing} "
+    f"Processing {len(swcs)} neurons with a sampling rate of {sampling} and downsampling factor {ds_factors} with spacings of {spacings} "
 )
 
 for spacing in tqdm(spacings, desc="Spacings..."):
@@ -81,10 +81,10 @@ for spacing in tqdm(spacings, desc="Spacings..."):
 
     ct = Diffeomorphism_Transform(xv, phii)
 
-    transform = {"xv": xv, "phii": phii}
-    transform_data = swc_dir.parents[0] / f"{spacing}.pickle"
-    with open(fname, "wb") as handle:
-        pickle.dump(transform, handle)
+    transform_data = {"xv": xv, "phii": phii}
+    transform_fname = swc_dir.parents[0] / f"{spacing}.pickle"
+    with open(transform_fname, "wb") as handle:
+        pickle.dump(transform_data, handle)
 
 
     """
@@ -236,7 +236,7 @@ for spacing in tqdm(spacings, desc="Spacings..."):
 
                 for method, method_pts in tqdm(zip(
                     ["Zeroth Order", "First Order"], [zero_order_pts, first_order_pts]
-                ), total=2, leave=False):
+                ), total=2, leave=False, disable=True):
                     if len(dense_line_pts) < np.inf:
                         error = frechet_dist(dense_line_pts, method_pts)
 
@@ -248,7 +248,7 @@ for spacing in tqdm(spacings, desc="Spacings..."):
                         res_spacings.append(spacing)
 
 
-        fname = f"/Users/thomasathey/Documents/mimlab/mouselight/axon_mapping/mouselight-swcs/{ns}neurons_spac{sampling}.pickle"
+        fname = f"/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/mouselight-swcs/spac{spacing}_{ns}neurons_sample{sampling}.pickle"
         data = {
             "Method": res_methods,
             "Frechet Error (microns)": res_errors,
