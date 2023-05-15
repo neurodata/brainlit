@@ -32,6 +32,15 @@ Obstacles Encountered During downloading_brains Tutorial (macOS)
 Windows
 ^^^^^^^
 
+Importing Brotli and Curses
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When installing from source ``pip install -e .`` on Windows 10 with Python 3.9.0, sometimes brainlit would appear to install but upon importing, there was an issue with ``import _brotli``.
+
+It was fixed according to this `thread <https://github.com/google/brotli/issues/782>`_ where the Visual C++ Redistributable was updated by downloading the x64 version from `here <https://learn.microsoft.com/en-GB/cpp/windows/latest-supported-vc-redist?view=msvc-170>`_.
+
+Also, an import error would occur for ``_curses``. This was fixed by ``pip install windows-curses`` like from this `thread <https://stackoverflow.com/questions/35850362/importerror-no-module-named-curses-when-trying-to-import-blessings>`_.
+
 Napari Display Problem
 ~~~~~~~~~~~~~~~~~~~~~~
 This document reports an issue that is encountered when running the tutorial ``downloading_brains.ipynb``.
@@ -41,7 +50,7 @@ The document includes two sections:
 2. a detailed code history
 
 1. Brief Description of Issue#127:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If your drivers/operating system are out of the date:
 - Windows 7
 - python3.7.9

@@ -59,7 +59,6 @@ coverage.xml
 docs/_build/
 
 # Pytest data
-data/test_state_generation
 data/test_napari_plugin
 data/test_upload
 data/test_upload_segments

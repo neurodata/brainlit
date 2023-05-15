@@ -7,6 +7,7 @@ Setup:
     - Source dimensions scale (3um, 510nm, 510nm)
     - Output dimensions names (z,x,y)
 - Hide image data from traces layer: uncheck uint16 volume.
+- When in middle of trace: option-scroll (alt-scroll on Windows) will expand the skeleton in z.
 
 Tracing workflow tips:
 - View only the coronal view window in neuroglancer

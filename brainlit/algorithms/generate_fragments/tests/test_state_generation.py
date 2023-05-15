@@ -164,7 +164,8 @@ def test_state_generation_3d(init_3d_im_lab):
     assert_array_equal(sg.soma_lbls, [5])
 
     sg.compute_states("nb")
-    sg.compute_states("pc")
+    with pytest.raises(NotImplementedError):
+        sg.compute_states("pc")
 
     with open(sg.states_path, "rb") as handle:
         G = pickle.load(handle)
@@ -197,7 +198,8 @@ def test_state_generation_4d(init_4d_im_probs_lab):
     assert_array_equal(sg.soma_lbls, [5])
 
     sg.compute_states("nb")
-    sg.compute_states("pc")
+    with pytest.raises(NotImplementedError):
+        sg.compute_states("pc")
 
     with open(sg.states_path, "rb") as handle:
         G = pickle.load(handle)

@@ -19,9 +19,8 @@ REQUIRED_PACKAGES = [
     "brainrender",
     "numpy>=1.8.1",
     "scikit-image>=0.16.2",
-    "simpleitk>=1.2.4",
     "networkx>=2.1",
-    "scikit-learn==1.1.2",
+    "scikit-learn==1.1.2",  # issues with pairwise_distances_argmin_min (e.g. used in NeuronTrace) on other versions
     "scipy>=1.1.0",
     "seaborn>=0.9.0",
     "tifffile>=2020.7.17",
@@ -29,15 +28,12 @@ REQUIRED_PACKAGES = [
     "PyQt5<=5.15.7",  # bc there was an error with 5.15.8, can remove once that's resolved
     "cloud-volume>=4.2.0",
     "feather-format==0.4.1",
-    "nibabel>=2.4.1",
-    "nilearn>=0.5.2",
     "ome-zarr>=0.6.0",
     "zarr>=2.10.2",
     "h5py>=3.3.0",
-    "pcurvepy @ git+https://git@github.com/CaseyWeiner/pcurvepy@master#egg=pcurvepy",
+    # "pcurvepy @ git+https://git@github.com/CaseyWeiner/pcurvepy@master#egg=pcurvepy",
     "similaritymeasures>=0.4.4",
     "statannotations>=0.4.4",
-    "statannot>=0.2.3",
 ]
 
 # Find savanna version.

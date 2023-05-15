@@ -21,7 +21,7 @@ import networkx as nx
 from typing import List, Tuple, Union
 from pathlib import Path
 
-import pcurve.pcurve as pcurve
+# import pcurve.pcurve as pcurve
 
 
 class state_generation:
@@ -220,7 +220,7 @@ class state_generation:
         )
 
         for corner_chunk in tqdm(corners_chunks, desc="Computing Ilastik Predictions"):
-            Parallel(n_jobs=self.parallel)(
+            Parallel(n_jobs=self.parallel, backend="threading")(
                 delayed(self._predict_thread)(
                     corner[0],
                     corner[1],
@@ -375,7 +375,7 @@ class state_generation:
 
         specifications = self._get_frag_specifications()
 
-        results = Parallel(n_jobs=self.parallel)(
+        results = Parallel(n_jobs=self.parallel, backend="threading")(
             delayed(self._split_frags_thread)(
                 specification["corner1"],
                 specification["corner2"],
@@ -512,7 +512,7 @@ class state_generation:
 
         specifications = self._get_frag_specifications()
 
-        results = Parallel(n_jobs=self.parallel)(
+        results = Parallel(n_jobs=self.parallel, backend="threading")(
             delayed(self._compute_image_tiered_thread)(
                 specification["corner1"],
                 specification["corner2"],
@@ -628,19 +628,21 @@ class state_generation:
         .. [2] Principal Curves Code written by zsteve,
         https://github.com/zsteve, https://github.com/zsteve/pcurvepy
         """
+        # ends = []
 
-        ends = []
+        # p_curve = pcurve.PrincipalCurve(k=1, s_factor=5)
+        # p_curve.fit(coords, max_iter=50)
+        # pc = p_curve.p
 
-        p_curve = pcurve.PrincipalCurve(k=1, s_factor=5)
-        p_curve.fit(coords, max_iter=50)
-        pc = p_curve.p
+        # pc = np.asarray(np.floor(pc + 0.5), dtype=np.int64)
 
-        pc = np.asarray(np.floor(pc + 0.5), dtype=np.int64)
+        # ends.append(pc[0])
+        # ends.append(pc[-1])
 
-        ends.append(pc[0])
-        ends.append(pc[-1])
-
-        return ends
+        # return ends
+        raise NotImplementedError(
+            f"Principal curves has been removed, in order to use, install pcurvepy @ git+https://git@github.com/CaseyWeiner/pcurvepy@master#egg=pcurvepy"
+        )
 
     def _compute_states_thread(
         self, corner1: List[int], corner2: List[int], alg: str = "nb"
@@ -760,7 +762,7 @@ class state_generation:
 
         specifications = self._get_frag_specifications()
 
-        results_tuple = Parallel(n_jobs=self.parallel)(
+        results_tuple = Parallel(n_jobs=self.parallel, backend="threading")(
             delayed(self._compute_states_thread)(
                 specification["corner1"],
                 specification["corner2"],
