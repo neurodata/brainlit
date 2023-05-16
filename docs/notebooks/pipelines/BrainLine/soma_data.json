@@ -21,6 +21,15 @@
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=8VHD-seixZg9pg",
             "subtype": "test"
         },
+        "pytest_download": {
+            "base": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/",
+            "val_info": {
+                "url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=X2Mjv5Nm8-JEKQ",
+                "somas_layer": "soma_val",
+                "nonsomas_layer": "nonsoma_val"
+            },
+            "subtype": "test_type"
+        },
         "pytest": {
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=K0AO1rcfk-TObw",
             "subtype": "test_type"

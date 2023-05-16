@@ -115,7 +115,7 @@ def download_subvolumes(
 
 
 def _get_corners(
-    shape, chunk_size, max_coords: list = [-1, -1, -1], min_coords: list = [-1, -1, -1]
+    shape, chunk_size, min_coords: list = [-1, -1, -1], max_coords: list = [-1, -1, -1]
 ):
     corners = []
     for i in tqdm(range(0, shape[0], chunk_size[0])):
