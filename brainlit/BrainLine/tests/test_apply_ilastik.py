@@ -4,7 +4,7 @@ from brainlit.BrainLine.apply_ilastik import (
     plot_results,
     examine_threshold,
     ApplyIlastik,
-    ApplyIlastik_LargeImage
+    ApplyIlastik_LargeImage,
 )
 import os
 import pytest
@@ -145,7 +145,6 @@ def test_examine_threshold_soma(soma_data_dir):
     )
 
 
-
 def test_ApplyIlastik_LargeImage():
     data_file = (
         Path(os.path.abspath(__file__)).parents[3]
@@ -155,5 +154,7 @@ def test_ApplyIlastik_LargeImage():
         / "BrainLine"
         / "axon_data.json"
     )
-    aili = ApplyIlastik_LargeImage(ilastik_path="", ilastik_project="", ncpu=1, data_file=data_file)
+    aili = ApplyIlastik_LargeImage(
+        ilastik_path="", ilastik_project="", ncpu=1, data_file=data_file
+    )
     # Sample data is there but file path in data json is specific to thomastathey
