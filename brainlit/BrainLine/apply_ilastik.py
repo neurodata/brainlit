@@ -492,7 +492,8 @@ class ApplyIlastik_LargeImage:
         corners = _get_corners(
             shape, chunk_size, max_coords=max_coords, min_coords=min_coords
         )
-        corners_chunks = [corners[i : i + 2] for i in range(0, len(corners), 100)]
+        chunk_interval = 2
+        corners_chunks = [corners[i : i + chunk_interval] for i in range(0, len(corners), chunk_interval)]
 
         for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
             if self.ncpu == 1:
