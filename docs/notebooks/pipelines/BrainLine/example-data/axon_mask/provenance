@@ -4,42 +4,11 @@
   "processing": [
     {
       "by": "b'tom.l.athey@gmail.com'",
-      "date": "2023-05-10 10:21 EDT",
+      "date": "2023-05-16 15:58 EDT",
       "method": {
         "axis": "z",
         "background_color": 0,
-        "bounds": "Bbox([0, 0, 0],[7410, 4424, 3000], dtype=int32)",
-        "chunk_size": null,
-        "compress": "gzip",
-        "delete_black_uploads": false,
-        "dest_path": null,
-        "encoding": null,
-        "factor": [
-          2,
-          2,
-          2
-        ],
-        "fill_missing": true,
-        "method": "downsample_segmentation",
-        "mip": 0,
-        "num_mips": 5,
-        "preserve_chunk_size": true,
-        "shape": [
-          3200,
-          3200,
-          3200
-        ],
-        "sparse": false,
-        "task": "DownsampleTask"
-      }
-    },
-    {
-      "by": "b'tom.l.athey@gmail.com'",
-      "date": "2023-05-10 10:57 EDT",
-      "method": {
-        "axis": "z",
-        "background_color": 0,
-        "bounds": "Bbox([0, 0, 0],[7410, 4424, 3000], dtype=int32)",
+        "bounds": "Bbox([2000, 1600, 1600],[2400, 2000, 2000], dtype=int32)",
         "chunk_size": null,
         "compress": "gzip",
         "delete_black_uploads": true,
@@ -53,12 +22,12 @@
         "fill_missing": true,
         "method": "downsample_segmentation",
         "mip": 0,
-        "num_mips": 1,
+        "num_mips": 2,
         "preserve_chunk_size": true,
         "shape": [
-          200,
-          200,
-          200
+          400,
+          400,
+          400
         ],
         "sparse": false,
         "task": "DownsampleTask"

@@ -6,7 +6,7 @@ from joblib import Parallel, delayed
 import multiprocessing
 from brainlit.BrainLine.util import _find_sample_names, _get_corners
 from datetime import date
-from cloudvolume import CloudVolume, exceptions
+from cloudvolume import CloudVolume, exceptions, Bbox
 import numpy as np
 import h5py
 from skimage import io, measure
@@ -488,7 +488,7 @@ class ApplyIlastik_LargeImage:
             try:
                 CloudVolume(mask_dir)
             except:
-                self._make_mask_info(mask_dir, vol)
+                self._make_mask_info(mask_dir, vol, chunk_size)
 
         corners = _get_corners(
             shape, chunk_size, max_coords=max_coords, min_coords=min_coords
@@ -511,7 +511,7 @@ class ApplyIlastik_LargeImage:
             for f in os.listdir(data_dir):
                 os.remove(os.path.join(data_dir, f))
 
-    def _make_mask_info(self, mask_dir: str, vol: CloudVolume):
+    def _make_mask_info(self, mask_dir: str, vol: CloudVolume, chunk_size: list):
         info = CloudVolume.create_new_info(
             num_channels=1,
             layer_type="segmentation",
@@ -522,7 +522,7 @@ class ApplyIlastik_LargeImage:
             # mesh            = 'mesh',
             # Pick a convenient size for your underlying chunk representation
             # Powers of two are recommended, doesn't need to cover image exactly
-            chunk_size=(100, 100, 100),  # units are voxels
+            chunk_size=chunk_size,  # units are voxels
             volume_size=vol.volume_size,  # e.g. a cubic millimeter dataset
         )
         vol_mask = CloudVolume(mask_dir, info=info, compress=False)
@@ -713,7 +713,7 @@ class ApplyIlastik_LargeImage:
         print(f"Viz link with segmentation: {viz_link}")
 
 
-def downsample_mask(brain, data_file, ncpu: int = 1):
+def downsample_mask(brain, data_file, ncpu: int = 1, bounds: list = None):
     with open(data_file) as f:
         data = json.load(f)
     object_type = data["object_type"]
@@ -725,16 +725,19 @@ def downsample_mask(brain, data_file, ncpu: int = 1):
 
     tq = LocalTaskQueue(parallel=ncpu)
 
+    if bounds != None:
+        bounds = Bbox(bounds[0], bounds[1])
+
     tasks = tc.create_downsampling_tasks(
         layer_path,  # e.g. 'gs://bucket/dataset/layer'
         mip=0,  # Start downsampling from this mip level (writes to next level up)
         fill_missing=True,  # Ignore missing chunks and fill them with black
         axis="z",
-        num_mips=5,  # number of downsamples to produce. Downloaded shape is chunk_size * 2^num_mip
+        num_mips=2,  # number of downsamples to produce. Downloaded shape is chunk_size * 2^num_mip
         chunk_size=None,  # manually set chunk size of next scales, overrides preserve_chunk_size
         preserve_chunk_size=True,  # use existing chunk size, don't halve to get more downsamples
         sparse=False,  # for sparse segmentation, allow inflation of pixels against background
-        bounds=None,  # mip 0 bounding box to downsample
+        bounds=bounds,  # mip 0 bounding box to downsample
         encoding=None,  # e.g. 'raw', 'compressed_segmentation', etc
         delete_black_uploads=True,  # issue a delete instead of uploading files containing all background
         background_color=0,  # Designates the background color
