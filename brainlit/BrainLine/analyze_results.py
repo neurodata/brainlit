@@ -690,8 +690,8 @@ def collect_regional_segmentation(
     data_file: str,
     outdir: str,
     ncpu: int = 1,
-    max_coords: list = [-1, -1, -1],
     min_coords: list = [-1, -1, -1],
+    max_coords: list = [-1, -1, -1],
 ):
     """Combine segmentation and registration to generate counts of axon voxels across brain regions. Note this scripts writes a file for every chunk, which might be many.
 
@@ -700,7 +700,8 @@ def collect_regional_segmentation(
         data_file (str): path to json file with data information.
         outdir (str): Path to directory to write files.
         ncpu (int, optional): Number of cpus to use for parallel processing. Defaults to 1.
-        max_coords (list, optional): Upper limits of brain to complete processing, -1 will lead to processing the whole axis. Defaults to [-1, -1, -1].
+        min_coords (list, optional): Lower limits of brain to complete processing, -1 will lead to processing from the beginning of the axis. Defaults to [-1, -1, -1].
+        max_coords (list, optional): Upper limits of brain to complete processing, -1 will lead to processing to the end of the axis. Defaults to [-1, -1, -1].
     """
     with open(data_file) as f:
         data = json.load(f)

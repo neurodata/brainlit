@@ -63,7 +63,11 @@ class ApplyIlastik:
             )
 
     def process_subvols(self, ncpu: int = 6):
-        """Apply ilastik to all validation subvolumes of the specified brain ids in the specified directory"""
+        """Apply ilastik to all validation subvolumes of the specified brain ids in the specified directory
+
+        Args:
+            ncpu (int, optional): Number of cpus to use for segmentation. Defaults to 6.
+        """
         items_total = []
         for brain in tqdm(self.brains, desc="Gathering brains..."):
             path = f"{self.brains_path}brain{brain}/val/"
@@ -444,8 +448,8 @@ class ApplyIlastik_LargeImage:
         threshold: float,
         data_dir: str,
         chunk_size: list,
-        max_coords: list = [-1, -1, -1],
         min_coords: list = [-1, -1, -1],
+        max_coords: list = [-1, -1, -1],
     ):
         """Apply ilastik to large brain, in parallel.
 
@@ -455,8 +459,8 @@ class ApplyIlastik_LargeImage:
             threshold (float): Threshold for the ilastik predictor.
             data_dir (str or Path): Path to directory where downloaded data will be temporarily stored.
             chunk_size (list): Size of chunks to be used for parallel application of ilastik.
+            min_coords (list, optional): Lower bound of bounding box on which to apply ilastk (i.e. does not apply ilastik before these bounds). Defaults to [-1, -1, -1].
             max_coords (list, optional): Upper bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
-            min_coords (list, optional): Lower bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
         """
         results_dir = self.results_dir
         volume_base_dir = self.brain2paths[brain_id]["base"]
@@ -714,6 +718,17 @@ class ApplyIlastik_LargeImage:
 
 
 def downsample_mask(brain, data_file, ncpu: int = 1, bounds: list = None):
+    """Use Igneous pipeline to downsample new axon_mask segmentation. Necessary to transform the mask into atlas space.
+
+    Args:
+        brain (str): ID key whose axon_mask will be downsampled.
+        data_file (str): Path to data JSON.
+        ncpu (int, optional): Number of cores to use for downsampling. Defaults to 1.
+        bounds (list, optional): List of two lists of length 3 specifying corners of bounding box to restrict downsampling to. Defaults to None.
+
+    Raises:
+        ValueError: _description_
+    """
     with open(data_file) as f:
         data = json.load(f)
     object_type = data["object_type"]
