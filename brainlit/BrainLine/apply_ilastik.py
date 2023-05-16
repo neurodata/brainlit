@@ -599,6 +599,14 @@ class ApplyIlastik_LargeImage:
             try:
                 with h5py.File(fname_prob, "r") as f:
                     pred = f.get("exported_data")
+                    if object_type == "soma":
+                        pred = pred[0, :, :, :]
+                        mask = pred > threshold
+                        labels = measure.label(mask)
+                        props = measure.regionprops(labels)
+                    elif object_type == "axon":
+                        pred = pred[1, :, :, :]
+                        mask = np.array(pred > threshold).astype("uint64")
             except:
                 if attempt >= 2:
                     raise ValueError(f"Tried to evaluate thrice and failed")
@@ -609,10 +617,6 @@ class ApplyIlastik_LargeImage:
         if object_type == "soma":
             fname_results = f"image_{c1[0]}_{c1[1]}_{c1[2]}_somas.txt"
             fname_results = results_dir / fname_results
-            pred = pred[0, :, :, :]
-            mask = pred > threshold
-            labels = measure.label(mask)
-            props = measure.regionprops(labels)
 
             results = []
             for prop in props:
@@ -629,8 +633,6 @@ class ApplyIlastik_LargeImage:
             vol_mask = CloudVolume(
                 dir_mask, parallel=1, mip=mip, fill_missing=True, compress=False
             )
-            pred = pred[1, :, :, :]
-            mask = np.array(pred > threshold).astype("uint64")
             vol_mask[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]] = mask
 
     def collect_soma_results(self, brain_id: str):
