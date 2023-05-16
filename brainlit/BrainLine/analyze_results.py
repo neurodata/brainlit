@@ -117,10 +117,23 @@ class SomaDistribution(BrainDistribution):
 
         atlas_points = self._retrieve_soma_coords(brain_ids)
         self.atlas_points = atlas_points
+
+
+        id_to_regioncounts_l = self._get_regions(atlas_points, side="l")
+        self.id_to_regioncounts = id_to_regioncounts_l
+        region_graph_l = self._setup_regiongraph()
+        self.region_graph_l = region_graph_l
+        id_to_regioncounts_r = self._get_regions(atlas_points, side="r")
+        self.id_to_regioncounts = id_to_regioncounts_r
+        region_graph_r = self._setup_regiongraph()
+        self.region_graph_r = region_graph_r
+
         id_to_regioncounts = self._get_regions(atlas_points)
         self.id_to_regioncounts = id_to_regioncounts
         region_graph = self._setup_regiongraph()
         self.region_graph = region_graph
+
+
 
     def _retrieve_soma_coords(self, brain_ids: list):
         brain2paths = self.brain2paths
@@ -159,7 +172,7 @@ class SomaDistribution(BrainDistribution):
 
         return atlas_points
 
-    def _get_regions(self, points: dict):
+    def _get_regions(self, points: dict, side: str = None):
         brain2paths = self.brain2paths
         if "filepath" in brain2paths["atlas"].keys():
             vol_atlas = io.imread(brain2paths["atlas"]["filepath"])
@@ -173,6 +186,10 @@ class SomaDistribution(BrainDistribution):
                 points[brain_id], desc="Finding soma regions", leave=False
             ):
                 point_int = [int(np.round(p)) for p in point]
+                if side == "l" and point_int[2] >= 570:
+                    continue
+                elif side == "r" and point_int[2] < 570:
+                    continue
                 try:
                     region = int(vol_atlas[point_int[0], point_int[1], point_int[2]])
                 except IndexError:

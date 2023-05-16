@@ -579,11 +579,10 @@ class ApplyIlastik_LargeImage:
 
         fname = f"image_{c1[0]}_{c1[1]}_{c1[2]}.h5"
         fname = data_dir / fname
+        with h5py.File(fname, "w") as f:
+            dset = f.create_dataset("image_3channel", data=image_3channel)
 
         for attempt in range(3):
-            with h5py.File(fname, "w") as f:
-                dset = f.create_dataset("image_3channel", data=image_3channel)
-
             subprocess.run(
                 [
                     f"{self.ilastik_path}",
@@ -607,6 +606,7 @@ class ApplyIlastik_LargeImage:
                     elif object_type == "axon":
                         pred = pred[1, :, :, :]
                         mask = np.array(pred > threshold).astype("uint64")
+                break
             except:
                 if attempt >= 2:
                     raise ValueError(f"Tried to evaluate thrice and failed")
