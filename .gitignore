@@ -66,6 +66,10 @@ data/test_upload_segments
 # Documentation notebook data
 docs/notebooks/utils/data
 docs/notebooks/pipelines/BrainLine/validation-data/soma/
+docs/notebooks/pipelines/BrainLine/validation-data/axon/250_237_1800.pickle
+docs/notebooks/pipelines/BrainLine/validation-data/axon/braintest/val/2054_1951_1825.h5
+docs/notebooks/pipelines/BrainLine/validation-data/axon/braintest/val/2054_1951_1825_Probabilities.h5
+docs/notebooks/pipelines/BrainLine/validation-data/axon/wholebrain_test.pkl
 
 # PyBuilder
 target/
