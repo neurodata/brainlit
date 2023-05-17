@@ -14,14 +14,19 @@ from scipy.spatial import KDTree
 import napari
 from napari._qt.qthreading import thread_worker
 import zarr
+import networkx as nx
+from pathlib import Path
+import os
+
+from brainlit.algorithms.connect_fragments import get_valid_bbox
 
 """
 copied from https://github.com/google/neuroglancer/blob/master/python/examples/example_action.py
-need to run in interactive mode: python -i ng.py
+need to run in interactive mode: python -i trace.py
 
 local:
 use env_39 on local
-- python cors_webserver.py -d "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/ng/" -p 9010
+- python cors_webserver.py -d "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/" -p 9010
 
 
 cis:
@@ -34,29 +39,40 @@ zarr://http://127.0.0.1:9010/exp227/fg_ome.zarr
 a soma - 5346, 14801, 330
 """
 
-
-im_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/fg.zarr"
+sriram_exp_data_dir = Path(os.path.abspath(__file__)).parents[0] / "data" / "test-czi"
+im_path_local = str(
+    sriram_exp_data_dir / "fg_ome.zarr" / "0"
+)  # E:\\Projects\\KolodkinLab\\Sriram\\brainlit-tracing\\brainlit\\experiments\\sriram\\data\\
 im_path_cis = "/cis/project/sriram/ng_data/sriram-adipo-brain1-im3/fg_ome.zarr/0/"
 
-trace_path_local = "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/data/traces"
+trace_path_local = f"precomputed://file://{str(sriram_exp_data_dir / 'traces')}"
 trace_path_cis = (
     "precomputed://file:///cis/project/sriram/ng_data/sriram-adipo-brain1-im3/traces"
 )
 
-frag_layer = "precomputed://http://127.0.0.1:9010/frags"
-
-vb_path_local = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_viterbrain.pickle"
+vb_path_local = str(sriram_exp_data_dir / "viterbrain.pickle")
 vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pickle"
 
 ######################
 # Enter inputs below #
 ######################
 
+
+port = "9010"
 trace_path = trace_path_local  # cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
 im_path = im_path_local  # ckloudvolume compatible path or path to local zarr
-port = "9010"
-im_url = f"zarr://http://127.0.0.1:{port}/fg_ome.zarr"  # ng compatible url
-trace_url = f"precomputed://http://127.0.0.1:{port}/traces"  # ng compatible url
+im_url = f"zarr://http://127.0.0.1:{port}/test-czi/fg_ome.zarr"  # ng compatible url
+trace_url = (
+    f"precomputed://http://127.0.0.1:{port}/test-czi/traces"  # ng compatible url
+)
+assisted_tracing = True
+
+if assisted_tracing:
+    vb_path = vb_path_local
+    frag_layer = f"zarr://http://127.0.0.1:{port}/test-czi/labels.zarr"
+else:
+    vb_path = None
+    frag_layer = None
 
 
 data = np.random.random((10, 10, 10)) * 255
@@ -65,7 +81,6 @@ layer = viewer.add_image(data)
 
 
 def show_napari(subvol):
-    print("updating napari")
     layer.data = subvol
 
 
@@ -89,7 +104,8 @@ class ViterBrainViewer(neuroglancer.Viewer):
 
         cv_dict = {"traces": CloudVolume(trace_path, compress=False)}
         if "zarr" in im_path:
-            cv_dict["im"] = zarr.open(im_path)
+            cv_dict["im"] = zarr.open_array(im_path)
+            print(f"Image is zarr with shape: {cv_dict['im'].shape}")
         elif "precomputed" in im_path:
             cv_dict["im"] = CloudVolume(im_path, compress=False)
         else:
@@ -111,21 +127,21 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 )
 
         # add keyboard actions
-        self.actions.add("s_select", self.s_select)
-        self.actions.add("t_trace", self.t_trace)
-        self.actions.add("n_newtrace", self.n_newtrace)
-        self.actions.add("c_clearlast", self.c_clearlast)
-        self.actions.add("p_print", self.p_print)
-        self.actions.add("l_line", self.l_line)
-        self.actions.add("h_hook", self.h_hook)
-        self.actions.add("v_view", self.v_view)
+        self.actions.add("s_select", self.select)
+        self.actions.add("f_find", self.trace)
+        self.actions.add("n_newtrace", self.newtrace)
+        self.actions.add("c_clearlast", self.clearlast)
+        self.actions.add("s_save", self.print)
+        self.actions.add("d_draw", self.line)
+        self.actions.add("h_hook", self.hook)
+        self.actions.add("v_view", self.view)
         with self.config_state.txn() as s:
-            s.input_event_bindings.viewer["shift+keys"] = "s_select"
-            s.input_event_bindings.viewer["shift+keyt"] = "t_trace"
+            s.input_event_bindings.viewer["keys"] = "s_select"
+            s.input_event_bindings.viewer["keyf"] = "f_find"
             s.input_event_bindings.viewer["shift+keyn"] = "n_newtrace"
             s.input_event_bindings.viewer["shift+keyc"] = "c_clearlast"
-            s.input_event_bindings.viewer["shift+keyp"] = "p_print"
-            s.input_event_bindings.viewer["shift+keyl"] = "l_line"
+            s.input_event_bindings.viewer["shift+keys"] = "s_save"
+            s.input_event_bindings.viewer["keyd"] = "d_draw"
             s.input_event_bindings.viewer["shift+keyh"] = "h_hook"
             s.input_event_bindings.viewer["shift+keyv"] = "v_view"
             s.status_messages["hello"] = "Welcome to the ViterBrain tracer"
@@ -134,7 +150,6 @@ class ViterBrainViewer(neuroglancer.Viewer):
         if vb_path:
             with open(vb_path, "rb") as handle:
                 self.vb = pickle.load(handle)
-            self.vb.fragment_path = "/Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/experiments/sriram/sample/3-1-soma_labels.zarr"
         else:
             self.vb = None
 
@@ -144,6 +159,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
         self.dimensions = neuroglancer.CoordinateSpace(
             names=["x", "y", "z"], units="nm", scales=cv_dict["traces"].resolution
         )
+        print(f"Dimensions: {self.dimensions} - {cv_dict['traces'].resolution}")
         self.im_shape = [i for i in cv_dict["traces"].shape if i != 1]
         self.cur_skel_coords = []
         self.cv_dict = cv_dict
@@ -228,7 +244,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 ),
             )
 
-    def s_select(self, s):
+    def select(self, s):
         """Action to add point to neuroglancer
 
         Args:
@@ -250,7 +266,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 self.start_pt = [int(p) for p in s.mouse_voxel_coordinates]
         self.add_point(name, color, s.mouse_voxel_coordinates)
 
-    def h_hook(self, s):
+    def hook(self, s):
         _, kdtree, ids_total = self.build_kdtree()
         _, closest_idx = kdtree.query(s.mouse_voxel_coordinates)
         self.start_pt = [int(p) for p in s.mouse_voxel_coordinates]
@@ -261,7 +277,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
         )
         self.add_point("start", "#0f0", s.mouse_voxel_coordinates)
 
-    def t_trace(self, s):
+    def trace(self, s):
         if not self.vb:
             raise ValueError(
                 f"Cannot perform ViterBrain tracing without Viterbrain object"
@@ -271,8 +287,29 @@ class ViterBrainViewer(neuroglancer.Viewer):
             layer_names = [l.name for l in vs.layers]
 
         if "start" in layer_names and "end" in layer_names:
+            if "end" in layer_names:
+                with self.txn() as vs:  # trace
+                    del vs.layers["start"]
+                    vs.layers["end"].name = "start"
+            else:
+                self.end_pt = [int(p) for p in s.mouse_voxel_coordinates]
+                with self.txn() as vs:  # trace
+                    del vs.layers["start"]
+                self.add_point("start", "#0f0", s.mouse_voxel_coordinates)
             print(f"Tracing path from {self.start_pt} to {self.end_pt}")
-            path = self.vb.shortest_path(coord1=self.start_pt, coord2=self.end_pt)
+
+            try:
+                start_coord = [
+                    self.start_pt[i] for i in [2, 0, 1]
+                ]  # correct dimension swap (originiating during ome-zarr conversion)
+                end_coord = [self.end_pt[i] for i in [2, 0, 1]]
+                path = self.vb.shortest_path(coord1=start_coord, coord2=end_coord)
+                path = [[pt[1], pt[2], pt[0]] for pt in path]
+                print(path)
+            except nx.NetworkXNoPath:
+                print("No path found")
+                return
+
             self.render_line(path, layer_names)
             with self.txn() as vs:  # trace
                 del vs.layers["start"]
@@ -280,26 +317,23 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 self.end_pt = None
                 vs.layers["end"].name = "start"
         else:
-            print("No start/end layers yet")
+            print("No start layer yet")
 
-    def l_line(self, s):
+    def line(self, s):
         with self.txn() as vs:  # trace
             layer_names = [l.name for l in vs.layers]
 
         if "start" in layer_names:
             if "end" in layer_names:
-                print(f"Drawing line from {self.start_pt} to {self.end_pt}")
                 with self.txn() as vs:  # trace
                     del vs.layers["start"]
                     vs.layers["end"].name = "start"
             else:
                 self.end_pt = [int(p) for p in s.mouse_voxel_coordinates]
-                print(
-                    f"Drawing line from {self.start_pt} to mouse location {self.end_pt}"
-                )
                 with self.txn() as vs:  # trace
                     del vs.layers["start"]
                 self.add_point("start", "#0f0", s.mouse_voxel_coordinates)
+            print(f"Drawing line from {self.start_pt} to {self.end_pt}")
 
             if len(self.start_pt) > 3 and len(self.end_pt) > 3:
                 path = [self.start_pt[:3], self.end_pt[:3]]
@@ -309,7 +343,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
             self.start_pt = self.end_pt
             self.end_pt = None
         else:
-            print("No start/end layers yet")
+            print("No start layer yet")
 
     def render_line(self, path, layer_names):
         with self.txn() as vs:  # trace
@@ -335,7 +369,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 ),
             )
 
-    def c_clearlast(self, s):
+    def clearlast(self, s):
         if len(self.cur_skel_coords) == 0:
             print("Nothing to clear")
         else:
@@ -377,9 +411,9 @@ class ViterBrainViewer(neuroglancer.Viewer):
                         ),
                     )
 
-    def n_newtrace(self, s):
+    def newtrace(self, s):
         print(f"Saving trace #{self.cur_skel+1}")
-        self.p_print(s)
+        self.print(s)
         with self.txn() as vs:  # trace
             layer_names = [l.name for l in vs.layers]
             if "start" in layer_names:
@@ -395,7 +429,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
         self.cur_skel_head = 0
         print(f"Creating new trace #{self.cur_skel}")
 
-    def p_print(self, s):
+    def print(self, s):
         if len(self.cur_skel_coords) == 0:
             print("No coordinates to save")
         else:
@@ -432,20 +466,10 @@ class ViterBrainViewer(neuroglancer.Viewer):
             print(f"verts: {vertices}, edges: {edges}")
 
     # @thread_worker(connect={'returned': show_napari})
-    def v_view(self, s):
+    def view(self, s):
         pt = [int(p) for p in s.mouse_voxel_coordinates]
         print(f"Updating napari with subvolume at coordinate {pt}")
-        vol_im = self.cv_dict["im"]
-        radius = 10
-        subvol = np.array(
-            np.squeeze(
-                vol_im[
-                    pt[0] - radius : pt[0] + radius,
-                    pt[1] - radius : pt[1] + radius,
-                    pt[2] - radius : pt[2] + radius,
-                ]
-            )
-        )
+        subvol, _ = get_valid_bbox(self.cv_dict["im"], pt, radius=10)
         show_napari(subvol)
         # return subvol
 
@@ -478,8 +502,8 @@ vbviewer = ViterBrainViewer(
     trace_path=trace_path,
     im_path=im_path,
     napari_viewer=viewer,
-    # frag_url=frag_layer,
-    # vb_path=vb_path_local,
+    frag_url=frag_layer,
+    vb_path=vb_path,
 )
 print(vbviewer)
 webbrowser.open_new(vbviewer.get_viewer_url())

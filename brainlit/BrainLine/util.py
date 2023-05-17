@@ -6,8 +6,8 @@ import networkx as nx
 from pathlib import Path
 from brainlit.BrainLine.parse_ara import build_tree
 from tqdm import tqdm
-from brainlit.BrainLine import data
 from brainlit.BrainLine.imports import *
+import json
 
 
 def download_subvolumes(
@@ -15,7 +15,7 @@ def download_subvolumes(
     brain_id: str,
     layer_names: list,
     dataset_to_save: str,
-    object_type: str,
+    data_file: str,
 ):
     """Download subvolumes around a set of manually marked points for validation of machine learning model.
 
@@ -24,21 +24,27 @@ def download_subvolumes(
         brain_id (str): Brain ID key in brain2paths dictionary from soma_data or axon_data/
         layer_names (list): List of precomputed layer names associated with the brain_id, ordered by primary signal channel (e.g. antibody), background channel, and secondary signal channel (e.g. endogenous fluorescence).
         dataset_to_save (str): val or train - specifies which set of subvolumes should be downloaded, if applicable.
-        object_type (str): soma or axon, specifies which _data file to use.
+        data_file (str): path to json file with data information.
 
     Raises:
         ValueError: If object_type is not soma or axon
     """
+    with open(data_file) as f:
+        data = json.load(f)
+    object_type = data["object_type"]
+    brain2paths = data["brain2paths"]
+
     if object_type == "soma":
-        brain2paths = data.soma_data.brain2paths
         radius = 25
     elif object_type == "axon":
-        brain2paths = data.axon_data.brain2paths
         radius = 50
     else:
         raise ValueError(f"object_type must be soma or axon, not {object_type}")
 
-    base_dir = data_dir + f"/brain{brain_id}/{dataset_to_save}/"
+    if isinstance(data_dir, str):
+        data_dir = Path(data_dir)
+
+    base_dir = data_dir / f"brain{brain_id}" / dataset_to_save
     antibody_layer, background_layer, endogenous_layer = layer_names
 
     if "base" in brain2paths[brain_id].keys():
@@ -78,7 +84,7 @@ def download_subvolumes(
         print(f"Downloaded data will be stored in {base_dir}")
 
     for suffix, centers in zip(suffixes, centers_groups):
-        for i, center in enumerate(tqdm(centers, desc="Saving positive samples")):
+        for i, center in enumerate(tqdm(centers, desc="Saving samples")):
             image_fg = vol_fg[
                 center[0] - radius + 1 : center[0] + radius,
                 center[1] - radius + 1 : center[1] + radius,
@@ -102,13 +108,15 @@ def download_subvolumes(
 
             fname = (
                 base_dir
-                + f"{int(center[0])}_{int(center[1])}_{int(center[2])}{suffix}.h5"
+                / f"{int(center[0])}_{int(center[1])}_{int(center[2])}{suffix}.h5"
             )
             with h5py.File(fname, "w") as f:
                 dset = f.create_dataset("image_3channel", data=image)
 
 
-def _get_corners(shape, chunk_size, max_coords: list = [-1, -1, -1]):
+def _get_corners(
+    shape, chunk_size, min_coords: list = [-1, -1, -1], max_coords: list = [-1, -1, -1]
+):
     corners = []
     for i in tqdm(range(0, shape[0], chunk_size[0])):
         for j in tqdm(range(0, shape[1], chunk_size[1]), leave=False):
@@ -117,7 +125,13 @@ def _get_corners(shape, chunk_size, max_coords: list = [-1, -1, -1]):
                 c2 = [
                     np.amin([shape[idx], c1[idx] + chunk_size[idx]]) for idx in range(3)
                 ]
-                conditions = [(max == -1 or c < max) for c, max in zip(c1, max_coords)]
+                conditions_max = [
+                    (max == -1 or c < max) for c, max in zip(c1, max_coords)
+                ]
+                conditions_min = [
+                    (min == -1 or c > min) for c, min in zip(c2, min_coords)
+                ]
+                conditions = conditions_max + conditions_min
                 if all(conditions):
                     corners.append([c1, c2])
 

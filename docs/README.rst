@@ -6,9 +6,9 @@ Brainlit
 ========
 
 
-.. image:: https://travis-ci.com/neurodata/brainlit.svg?branch=master
-   :target: https://travis-ci.com/neurodata/brainlit
-   :alt: Build Status
+.. image:: https://img.shields.io/github/actions/workflow/status/neurodata/brainlit/python.yml
+   :target: https://img.shields.io/github/actions/workflow/status/neurodata/brainlit/python.yml
+   :alt: PyTest Status
 
 
 .. image:: https://badge.fury.io/py/brainlit.svg
@@ -26,13 +26,8 @@ Brainlit
    :alt: codecov
 
 
-.. image:: https://img.shields.io/docker/cloud/build/bvarjavand/brainlit
-   :target: https://img.shields.io/docker/cloud/build/bvarjavand/brainlit
-   :alt: Docker Cloud Build Status
-
-
-.. image:: https://img.shields.io/docker/image-size/bvarjavand/brainlit
-   :target: https://img.shields.io/docker/image-size/bvarjavand/brainlit
+.. image:: https://img.shields.io/docker/image-size/neurodata/brainlit
+   :target: https://img.shields.io/docker/image-size/neurodata/brainlit
    :alt: Docker Image Size (latest by date)
 
 
