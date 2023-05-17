@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 import os
 from joblib import Parallel, delayed
 import pickle
+import brainrender
 from brainrender import Scene
 from brainrender.actors import Points, Volume
 import json
@@ -282,6 +283,7 @@ class SomaDistribution(BrainDistribution):
         brain_ids = self.brain_ids
         brain2paths = self.brain2paths
 
+        brainrender.settings.WHOLE_SCREEN = False
         scene = Scene(atlas_name="allen_mouse_50um", title="Input Somas")
         scene.add_brain_region(brain_region, alpha=0.15)
 
@@ -901,6 +903,7 @@ class AxonDistribution(BrainDistribution):
         brain_ids = self.brain_ids
         brain2paths = self.brain2paths
 
+        brainrender.settings.WHOLE_SCREEN = False
         scene = Scene(atlas_name="allen_mouse_50um", title="Input Somas")
         scene.add_brain_region(brain_region, alpha=0.15)
 

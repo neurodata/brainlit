@@ -630,6 +630,7 @@ class ApplyIlastik_LargeImage:
             if isfile(join(results_dir, f))
         ]
         onlyfiles = [f for f in onlyfiles if ".txt" in f]
+        onlyfiles = [f for f in onlyfiles if "all_somas" not in f]
         div_factor = [8, 8, 1]
         for file in tqdm(onlyfiles, desc="reading files"):
             print(file)
