@@ -25,6 +25,17 @@ def test_get_corners():
     assert corners == [[[50, 50, 50], [100, 100, 100]]]
 
 
+def test_find_atlas_level_label():
+    region_graph = util._setup_atlas_graph()
+    new_label = util._find_atlas_level_label(
+        label=567,
+        atlas_level_nodes=[1009, 73, 1024, 304325711],
+        atlas_level=1,
+        G=region_graph,
+    )
+    assert new_label == 8
+
+
 def test_download_subvolumes(make_data_dir):
     # Axon
     data_dir = make_data_dir  # tmp_path_factory.mktemp("data")
