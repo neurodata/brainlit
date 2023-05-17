@@ -65,6 +65,7 @@ data/test_upload_segments
 
 # Documentation notebook data
 docs/notebooks/utils/data
+docs/notebooks/pipelines/BrainLine/validation-data/soma/
 
 # PyBuilder
 target/
