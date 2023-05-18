@@ -28,6 +28,10 @@ Obstacles Encountered During downloading_brains Tutorial (macOS)
 
 9. When installing ``brainlit`` on Mac OS BigSur, make sure you are using ``python==3.9.0`` and not ``python==3.9.1``. This is a known `issue <https://github.com/napari/napari/issues/1393#issuecomment-745615931>`. Please report any other Mac OS BigSur compatibility issues.
 
+Linux
+^^^^^
+
+Sometimes there can be issues installing `posix-ipc` on Linux. In the past, we avoided this by installing version 1.0.5 `pip install posix-ipc==1.0.5`.
 
 Windows
 ^^^^^^^
