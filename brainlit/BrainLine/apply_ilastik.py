@@ -6,7 +6,7 @@ from joblib import Parallel, delayed
 import multiprocessing
 from brainlit.BrainLine.util import _find_sample_names, _get_corners
 from datetime import date
-from cloudvolume import CloudVolume, exceptions
+from cloudvolume import CloudVolume, exceptions, Bbox
 import numpy as np
 import h5py
 from skimage import io, measure
@@ -20,6 +20,8 @@ import pandas as pd
 from brainlit.BrainLine.imports import *
 import json
 from typing import Union
+import igneous.task_creation as tc
+from taskqueue import LocalTaskQueue
 
 
 class ApplyIlastik:
@@ -60,16 +62,19 @@ class ApplyIlastik:
                 stderr=subprocess.PIPE,
             )
 
-    def process_subvols(self):
-        """Apply ilastik to all validation subvolumes of the specified brain ids in the specified directory"""
+    def process_subvols(self, ncpu: int = 6):
+        """Apply ilastik to all validation subvolumes of the specified brain ids in the specified directory
+
+        Args:
+            ncpu (int, optional): Number of cpus to use for segmentation. Defaults to 6.
+        """
         items_total = []
         for brain in tqdm(self.brains, desc="Gathering brains..."):
             path = f"{self.brains_path}brain{brain}/val/"
 
             items_total += _find_sample_names(path, dset="", add_dir=True)
 
-        # run all files
-        Parallel(n_jobs=8)(
+        Parallel(n_jobs=ncpu)(
             delayed(self._apply_ilastik)(item)
             for item in tqdm(items_total, desc="running ilastik...")
         )
@@ -443,8 +448,8 @@ class ApplyIlastik_LargeImage:
         threshold: float,
         data_dir: str,
         chunk_size: list,
-        max_coords: list = [-1, -1, -1],
         min_coords: list = [-1, -1, -1],
+        max_coords: list = [-1, -1, -1],
     ):
         """Apply ilastik to large brain, in parallel.
 
@@ -454,8 +459,8 @@ class ApplyIlastik_LargeImage:
             threshold (float): Threshold for the ilastik predictor.
             data_dir (str or Path): Path to directory where downloaded data will be temporarily stored.
             chunk_size (list): Size of chunks to be used for parallel application of ilastik.
+            min_coords (list, optional): Lower bound of bounding box on which to apply ilastk (i.e. does not apply ilastik before these bounds). Defaults to [-1, -1, -1].
             max_coords (list, optional): Upper bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
-            min_coords (list, optional): Lower bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
         """
         results_dir = self.results_dir
         volume_base_dir = self.brain2paths[brain_id]["base"]
@@ -487,13 +492,12 @@ class ApplyIlastik_LargeImage:
             try:
                 CloudVolume(mask_dir)
             except:
-                self._make_mask_info(mask_dir, vol)
+                self._make_mask_info(mask_dir, vol, chunk_size)
 
         corners = _get_corners(
             shape, chunk_size, max_coords=max_coords, min_coords=min_coords
         )
         corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
-
         for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
             Parallel(n_jobs=self.ncpu)(
                 delayed(self._process_chunk)(
@@ -511,7 +515,7 @@ class ApplyIlastik_LargeImage:
             for f in os.listdir(data_dir):
                 os.remove(os.path.join(data_dir, f))
 
-    def _make_mask_info(self, mask_dir: str, vol: CloudVolume):
+    def _make_mask_info(self, mask_dir: str, vol: CloudVolume, chunk_size: list):
         info = CloudVolume.create_new_info(
             num_channels=1,
             layer_type="segmentation",
@@ -522,7 +526,7 @@ class ApplyIlastik_LargeImage:
             # mesh            = 'mesh',
             # Pick a convenient size for your underlying chunk representation
             # Powers of two are recommended, doesn't need to cover image exactly
-            chunk_size=(128, 128, 2),  # units are voxels
+            chunk_size=chunk_size,  # units are voxels
             volume_size=vol.volume_size,  # e.g. a cubic millimeter dataset
         )
         vol_mask = CloudVolume(mask_dir, info=info, compress=False)
@@ -626,6 +630,7 @@ class ApplyIlastik_LargeImage:
             if isfile(join(results_dir, f))
         ]
         onlyfiles = [f for f in onlyfiles if ".txt" in f]
+        onlyfiles = [f for f in onlyfiles if "all_somas" not in f]
         div_factor = [8, 8, 1]
         for file in tqdm(onlyfiles, desc="reading files"):
             print(file)
@@ -711,3 +716,50 @@ class ApplyIlastik_LargeImage:
             ngl_json, neuroglancer_link="https://viz.neurodata.io/?json_url="
         )
         print(f"Viz link with segmentation: {viz_link}")
+
+
+def downsample_mask(brain, data_file, ncpu: int = 1, bounds: list = None):
+    """Use Igneous pipeline to downsample new axon_mask segmentation. Necessary to transform the mask into atlas space.
+
+    Args:
+        brain (str): ID key whose axon_mask will be downsampled.
+        data_file (str): Path to data JSON.
+        ncpu (int, optional): Number of cores to use for downsampling. Defaults to 1.
+        bounds (list, optional): List of two lists of length 3 specifying corners of bounding box to restrict downsampling to. Defaults to None.
+
+    Raises:
+        ValueError: _description_
+    """
+    with open(data_file) as f:
+        data = json.load(f)
+    object_type = data["object_type"]
+    brain2paths = data["brain2paths"]
+    if object_type != "axon":
+        raise ValueError(f"Entered non-axon data file")
+    dir_base = brain2paths[brain]["base"]
+    layer_path = dir_base + "axon_mask"
+
+    tq = LocalTaskQueue(parallel=ncpu)
+
+    if bounds != None:
+        bounds = Bbox(bounds[0], bounds[1])
+
+    tasks = tc.create_downsampling_tasks(
+        layer_path,  # e.g. 'gs://bucket/dataset/layer'
+        mip=0,  # Start downsampling from this mip level (writes to next level up)
+        fill_missing=True,  # Ignore missing chunks and fill them with black
+        axis="z",
+        num_mips=2,  # number of downsamples to produce. Downloaded shape is chunk_size * 2^num_mip
+        chunk_size=None,  # manually set chunk size of next scales, overrides preserve_chunk_size
+        preserve_chunk_size=True,  # use existing chunk size, don't halve to get more downsamples
+        sparse=False,  # for sparse segmentation, allow inflation of pixels against background
+        bounds=bounds,  # mip 0 bounding box to downsample
+        encoding=None,  # e.g. 'raw', 'compressed_segmentation', etc
+        delete_black_uploads=True,  # issue a delete instead of uploading files containing all background
+        background_color=0,  # Designates the background color
+        compress="gzip",  # None, 'gzip', and 'br' (brotli) are options
+        factor=(2, 2, 2),  # common options are (2,2,1) and (2,2,2)
+    )
+
+    tq.insert(tasks)
+    tq.execute()

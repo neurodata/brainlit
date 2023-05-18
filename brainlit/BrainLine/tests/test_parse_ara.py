@@ -95,3 +95,10 @@ def test_get_children_dict(create_json):
 
     assert len(id2child.keys()) == 1
     assert id2child[0] == [1, 2]
+
+
+def test_get_child_nodes_from_ontology(create_tree):
+    root_node = create_tree
+    id2name = parse_ara.get_child_nodes_from_ontology(root_node, {})
+    assert id2name[1] == "Bravo"
+    assert id2name[2] == "Charlie"

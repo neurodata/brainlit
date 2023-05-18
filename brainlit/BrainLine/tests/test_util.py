@@ -18,10 +18,36 @@ def make_data_dir(tmp_path_factory):
 ############################
 
 
+def test_get_corners():
+    corners = util._get_corners([100, 100, 100], [50, 50, 50], max_coords=[50, 50, 50])
+    assert corners == [[[0, 0, 0], [50, 50, 50]]]
+    corners = util._get_corners([100, 100, 100], [50, 50, 50], min_coords=[50, 50, 50])
+    assert corners == [[[50, 50, 50], [100, 100, 100]]]
+
+
+def test_find_atlas_level_label():
+    region_graph = util._setup_atlas_graph()
+    new_label = util._find_atlas_level_label(
+        label=567,
+        atlas_level_nodes=[1009, 73, 1024, 304325711],
+        atlas_level=1,
+        G=region_graph,
+    )
+    assert new_label == 8
+
+
 def test_download_subvolumes(make_data_dir):
+    # Axon
     data_dir = make_data_dir  # tmp_path_factory.mktemp("data")
     layer_names = ["average_10um"] * 3
-    data_file = Path(os.path.abspath(__file__)).parents[1] / "data" / "axon_data.json"
+    data_file = (
+        Path(os.path.abspath(__file__)).parents[3]
+        / "docs"
+        / "notebooks"
+        / "pipelines"
+        / "BrainLine"
+        / "axon_data.json"
+    )
     util.download_subvolumes(
         data_dir=data_dir,
         brain_id="pytest",
@@ -30,6 +56,26 @@ def test_download_subvolumes(make_data_dir):
         data_file=data_file,
     )
     output_dir = data_dir / "brainpytest" / "val"
+    files = os.listdir(output_dir)
+    assert len(files) == 2
+
+    # Soma
+    data_file = (
+        Path(os.path.abspath(__file__)).parents[3]
+        / "docs"
+        / "notebooks"
+        / "pipelines"
+        / "BrainLine"
+        / "soma_data.json"
+    )
+    util.download_subvolumes(
+        data_dir=data_dir,
+        brain_id="pytest_download",
+        layer_names=layer_names,
+        dataset_to_save="val",
+        data_file=data_file,
+    )
+    output_dir = data_dir / "brainpytest_download" / "val"
     files = os.listdir(output_dir)
     assert len(files) == 2
 

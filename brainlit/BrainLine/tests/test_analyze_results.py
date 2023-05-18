@@ -6,7 +6,14 @@ import os
 
 
 def test_SomaDistribution_no_somasatlasurl():
-    data_file = Path(os.path.abspath(__file__)).parents[1] / "data" / "soma_data.json"
+    data_file = (
+        Path(os.path.abspath(__file__)).parents[3]
+        / "docs"
+        / "notebooks"
+        / "pipelines"
+        / "BrainLine"
+        / "soma_data.json"
+    )
 
     with pytest.raises(ValueError):
         SomaDistribution(
@@ -15,7 +22,14 @@ def test_SomaDistribution_no_somasatlasurl():
 
 
 def test_SomaDistribution():
-    data_file = Path(os.path.abspath(__file__)).parents[1] / "data" / "soma_data.json"
+    data_file = (
+        Path(os.path.abspath(__file__)).parents[3]
+        / "docs"
+        / "notebooks"
+        / "pipelines"
+        / "BrainLine"
+        / "soma_data.json"
+    )
 
     sd = SomaDistribution(["pytest", "pytest2"], data_file=data_file, show_plots=False)
     # sd.brainrender_somas(subtype_colors=subtype_colors, brain_region="MOB")
@@ -41,7 +55,14 @@ def test_AxonDistribution(tmp_path):
     outpath = tmp_path / "wholebrain_pytest.pkl"
     with open(outpath, "wb") as f:
         pickle.dump(invalid_volumes, f)
-    data_file = Path(os.path.abspath(__file__)).parents[1] / "data" / "axon_data.json"
+    data_file = (
+        Path(os.path.abspath(__file__)).parents[3]
+        / "docs"
+        / "notebooks"
+        / "pipelines"
+        / "BrainLine"
+        / "axon_data.json"
+    )
     ad = AxonDistribution(
         brain_ids=["pytest"],
         data_file=data_file,

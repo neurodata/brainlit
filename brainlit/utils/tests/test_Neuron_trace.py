@@ -29,6 +29,9 @@ test_swc = NeuronTrace(swc_path, read_offset=True)
 test_swc = NeuronTrace(swc_path)
 test_s3 = NeuronTrace(url_seg, seg_id, mip)
 
+local_swc_shape = (10, 7)
+s3_swc_shape = (1650, 7)
+
 ####################
 ### input checks ###
 ####################
@@ -79,9 +82,8 @@ def test_get_df():
     assert isinstance(test_s3.get_df(), pd.DataFrame)
 
     # test if output is correct shape
-    correct_shape = (1650, 7)
-    assert test_swc.get_df().shape == correct_shape
-    assert test_s3.get_df().shape == correct_shape
+    assert test_swc.get_df().shape == local_swc_shape
+    assert test_s3.get_df().shape == s3_swc_shape
 
     # test if columns are correct"
     col = ["sample", "structure", "x", "y", "z", "r", "parent"]
@@ -125,16 +127,14 @@ def test_get_df_voxel():
         test_swc.get_df_voxel(spacing=np.asarray([1, 2, 3]), origin=np.asarray([0, 1]))
 
     # test if output is correct shape
-    correct_shape = (1650, 7)
     df_voxel_swc = test_swc.get_df_voxel(
         spacing=np.asarray([1, 2, 3]), origin=np.asarray([2, 2, 2])
     )
-    assert df_voxel_swc.shape == correct_shape
-    correct_shape = (1650, 7)
+    assert df_voxel_swc.shape == local_swc_shape
     df_voxel_s3 = test_s3.get_df_voxel(
         spacing=np.asarray([1, 2, 3]), origin=np.asarray([2, 2, 2])
     )
-    assert df_voxel_s3.shape == correct_shape
+    assert df_voxel_s3.shape == s3_swc_shape
 
     # test columns
     col = ["sample", "structure", "x", "y", "z", "r", "parent"]
@@ -306,6 +306,7 @@ def test_generate_df_subset():
 
 
 def test_get_bfs_subgraph():
+    node_id = 2
     # test 'node_id' arg must be type int
     with pytest.raises(TypeError):
         test_swc.get_bfs_subgraph(node_id="asdf", depth=2)
@@ -339,15 +340,15 @@ def test_get_bfs_subgraph():
         )
 
     # test if subgraph matches nodes and edges
-    G_sub, tree, paths = test_swc.get_bfs_subgraph(node_id=100, depth=50)
+    G_sub, tree, paths = test_swc.get_bfs_subgraph(node_id=node_id, depth=50)
     assert set(G_sub.nodes) == set(tree.nodes)
     G_sub, tree, paths = test_swc.get_bfs_subgraph(
-        node_id=100, depth=50, df=test_s3.get_df()
+        node_id=node_id, depth=50, df=test_s3.get_df()
     )
     assert set(G_sub.nodes) == set(tree.nodes)
 
     # test if outputs are directed graphs and paths
-    G_sub_s3, tree_s3, paths_s3 = test_swc.get_bfs_subgraph(100, 50)
+    G_sub_s3, tree_s3, paths_s3 = test_swc.get_bfs_subgraph(node_id=node_id, depth=50)
     assert isinstance(G_sub, nx.DiGraph)
     assert isinstance(tree, nx.DiGraph)
     assert isinstance(G_sub_s3, nx.DiGraph)
@@ -468,8 +469,8 @@ def test_get_sub_neuron_paths():
         )
 
     # test whether voxel conversion option is covered
-    start = np.array([-600.273315, 2171.536082, -1835.069744])
-    end = np.array([-562.945041, 2197.964079, -1819.749479])
+    start = np.array([1.0, 1.0, 3.0])
+    end = np.array([3.0, 3.0, 9.0])
 
     paths1 = test_swc.get_sub_neuron_paths(bounding_box=(start, end))
     paths2 = test_swc.get_sub_neuron_paths(
