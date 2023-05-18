@@ -12,4 +12,4 @@
 Atlas
 -----
 
-Atlas can be downloaded from here: https://neurodata.io/data/allen_atlas/
+If you plan on using BrainLine analysis a lot (in particular, the napari coronal section views), I recommend you download the atlas from [here](https://neurodata.io/data/allen_atlas/).
