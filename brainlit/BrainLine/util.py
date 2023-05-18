@@ -199,7 +199,7 @@ def _find_sample_names(dir, dset="", add_dir=False):
     return items
 
 
-def _setup_atlas_graph():
+def _setup_atlas_graph(ontology_json_path: str):
     """Create networkx graph of regions in allen atlas (from ara_structure_ontology.json). Initially uses vikram's code in build_tree, then converts to networkx.
 
     Returns:

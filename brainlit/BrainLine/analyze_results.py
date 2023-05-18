@@ -40,15 +40,16 @@ class BrainDistribution:
         brain_ids (list): List of brain IDs (keys of data json file).
     """
 
-    def __init__(self, brain_ids: list, data_file: str):
+    def __init__(self, brain_ids: list, data_file: str, ontology_file: str):
         self.brain_ids = brain_ids
         with open(data_file) as f:
             data = json.load(f)
         self.brain2paths = data["brain2paths"]
         self.subtype_counts = self._get_subtype_counts()
+        self.ontology_file = ontology_file
 
     def _slicetolabels(self, slice, fold_on: bool = False, atlas_level: int = 5):
-        region_graph = _setup_atlas_graph()
+        region_graph = _setup_atlas_graph(self.ontology_file)
         atlas_level_nodes = _get_atlas_level_nodes(atlas_level, region_graph)
         newslice = np.copy(slice)
         new_labels = {}
@@ -112,8 +113,14 @@ class SomaDistribution(BrainDistribution):
 
     """
 
-    def __init__(self, brain_ids: list, data_file: str, show_plots: bool = True):
-        super().__init__(brain_ids, data_file)
+    def __init__(
+        self,
+        brain_ids: list,
+        data_file: str,
+        ontology_file: str,
+        show_plots: bool = True,
+    ):
+        super().__init__(brain_ids, data_file, ontology_file)
         self.show_plots = show_plots
 
         atlas_points = self._retrieve_soma_coords(brain_ids)
@@ -410,7 +417,7 @@ class SomaDistribution(BrainDistribution):
     def _setup_regiongraph(self):
         brain_ids = self.brain_ids
         id_to_regioncounts = self.id_to_regioncounts
-        region_graph = _setup_atlas_graph()
+        region_graph = _setup_atlas_graph(self.ontology_file)
         max_level = 0
 
         # set to 0
@@ -760,9 +767,10 @@ class AxonDistribution(BrainDistribution):
         brain_ids: list,
         data_file: str,
         regional_distribution_dir: str,
+        ontology_file: str,
         show_plots: bool = True,
     ):
-        super().__init__(brain_ids, data_file)
+        super().__init__(brain_ids, data_file, ontology_file)
         self.regional_distribution_dir = regional_distribution_dir
         region_graph, total_axon_vols = self._setup_regiongraph(
             regional_distribution_dir
@@ -773,7 +781,7 @@ class AxonDistribution(BrainDistribution):
     def _setup_regiongraph(self, regional_distribution_dir):
         regional_distribution_dir = self.regional_distribution_dir
         brain_ids = self.brain_ids
-        region_graph = _setup_atlas_graph()
+        region_graph = _setup_atlas_graph(self.ontology_file)
         max_level = 0
 
         # set to 0
