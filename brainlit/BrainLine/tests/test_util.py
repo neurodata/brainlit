@@ -13,6 +13,16 @@ def make_data_dir(tmp_path_factory):
     return data_dir
 
 
+@pytest.fixture(scope="session")
+def ontology_path():
+    ontology_json_path = (
+        Path(os.path.abspath(__file__)).parents[1]
+        / "data"
+        / "ara_structure_ontology.json"
+    )
+    return ontology_json_path
+
+
 ############################
 ### functionality checks ###
 ############################
@@ -25,8 +35,8 @@ def test_get_corners():
     assert corners == [[[50, 50, 50], [100, 100, 100]]]
 
 
-def test_find_atlas_level_label():
-    region_graph = util._setup_atlas_graph()
+def test_find_atlas_level_label(ontology_path):
+    region_graph = util._setup_atlas_graph(ontology_json_path=ontology_path)
     new_label = util._find_atlas_level_label(
         label=567,
         atlas_level_nodes=[1009, 73, 1024, 304325711],
@@ -126,8 +136,8 @@ def test_find_sample_names(tmp_path):
     assert test_fnames[0] == true_fname or test_fnames[1] == true_fname
 
 
-def test_setup_atlas_graph():
-    G = util._setup_atlas_graph()
+def test_setup_atlas_graph(ontology_path):
+    G = util._setup_atlas_graph(ontology_json_path=ontology_path)
 
     assert G.nodes[997]["name"] == "root"
     assert G.nodes[997]["st_level"] == 0
@@ -141,8 +151,8 @@ def test_setup_atlas_graph():
     assert len(list(G.successors(872))) == 0
 
 
-def test_get_atlas_level_nodes():
-    G = util._setup_atlas_graph()
+def test_get_atlas_level_nodes(ontology_path):
+    G = util._setup_atlas_graph(ontology_json_path=ontology_path)
     atlas_level_nodes_test = util._get_atlas_level_nodes(0, G)
 
     assert len(atlas_level_nodes_test) == 1
@@ -155,10 +165,10 @@ def test_get_atlas_level_nodes():
         assert atlas_level_nodes_test[idx] == region
 
 
-def test_find_atlas_level_label():
+def test_find_atlas_level_label(ontology_path):
     atlas_level = 1
 
-    G = util._setup_atlas_graph()
+    G = util._setup_atlas_graph(ontology_json_path=ontology_path)
     atlas_level_nodes = util._get_atlas_level_nodes(atlas_level, G)
 
     atlas_level_label_test = util._find_atlas_level_label(
