@@ -53,7 +53,7 @@ class ApplyIlastik:
         if os.path.isfile(fname) and ".h5" in fname:
             subprocess.run(
                 [
-                    "/Applications/ilastik-1.4.0b21-OSX.app/Contents/ilastik-release/run_ilastik.sh",
+                    self.ilastik_path,
                     "--headless",
                     f"--project={self.project_path}",
                     fname,
