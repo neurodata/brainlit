@@ -31,7 +31,7 @@ Obstacles Encountered During downloading_brains Tutorial (macOS)
 Linux
 ^^^^^
 
-Sometimes there can be issues installing `posix-ipc` on Linux. In the past, we avoided this by installing version 1.0.5 `pip install posix-ipc==1.0.5`.
+Sometimes there can be issues installing ``posix-ipc`` on Linux. In the past, we avoided this by installing version 1.0.5 ``pip install posix-ipc==1.0.5``.
 
 Windows
 ^^^^^^^
