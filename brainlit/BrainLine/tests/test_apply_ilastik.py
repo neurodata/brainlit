@@ -49,7 +49,7 @@ def axon_data_dir(tmp_path_factory):
 def test_move_results(axon_data_dir):
     data_dir_str = str(axon_data_dir)
     apl = ApplyIlastik(
-        ilastk_path="test",
+        ilastik_path="test",
         project_path="test",
         brains_path=data_dir_str,
         brains=["test"],
