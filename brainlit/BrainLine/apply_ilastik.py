@@ -42,9 +42,9 @@ class ApplyIlastik:
     """
 
     def __init__(
-        self, ilastk_path: str, project_path: str, brains_path: str, brains: list
+        self, ilastik_path: str, project_path: str, brains_path: str, brains: list
     ):
-        self.ilastk_path = ilastk_path
+        self.ilastik_path = ilastik_path
         self.project_path = project_path
         self.brains_path = brains_path
         self.brains = brains
