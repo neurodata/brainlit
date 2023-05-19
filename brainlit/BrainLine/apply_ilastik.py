@@ -235,7 +235,7 @@ def plot_results(
 
     if show_plot:
         sns.set(font_scale=2)
-        plt.figure(figsize=(8, 8))
+        fig = plt.figure(figsize=(8, 8))
         sns.lineplot(
             data=df, x="Recall", y="Precision", hue="ID", estimator=np.amax, ci=False
         )
@@ -247,7 +247,7 @@ def plot_results(
         plt.ylim([0, 1.1])
         plt.title(f"Brain {brain_id} Validation: {tot_pos}+ {tot_neg}-")
         plt.legend()
-        plt.show()
+        return fig, best_fscore, best_thresh # plt.show()
 
     return best_fscore, best_thresh
 
