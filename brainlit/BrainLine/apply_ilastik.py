@@ -28,7 +28,7 @@ class ApplyIlastik:
     """Applies ilastik to subvolumes for the purpose of validating machine learning algorithms.
 
     Arguments:
-        ilastk_path (str): Path to ilastik executable.
+        ilastik_path (str): Path to ilastik executable.
         project_path (str): Path to ilastik project.
         brains_path (str): Path to directory that contains brain samples subdirectories.
         brains (list): List of brain sample names.
@@ -42,9 +42,9 @@ class ApplyIlastik:
     """
 
     def __init__(
-        self, ilastk_path: str, project_path: str, brains_path: str, brains: list
+        self, ilastik_path: str, project_path: str, brains_path: str, brains: list
     ):
-        self.ilastk_path = ilastk_path
+        self.ilastik_path = ilastik_path
         self.project_path = project_path
         self.brains_path = brains_path
         self.brains = brains
