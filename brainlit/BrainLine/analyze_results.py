@@ -202,6 +202,7 @@ class SomaDistribution(BrainDistribution):
         subtype_colors: dict,
         symbols: list = ["o", "+", "^", "vbar"],
         fold_on: bool = False,
+        plot_type: str = "napari",
     ):
         """Generate napari view with allen atlas and points of soma detections.
 
@@ -209,7 +210,11 @@ class SomaDistribution(BrainDistribution):
             z (int): index of coronal slice in Allen atlas.
             subtype_colors (dict): Mapping of subtypes (in soma_data.py file) to colors for soma plotting.
             symbols (list): Napari point symbols to use for different samples of the same subtype. Defaults to ["o", "+", "^", "vbar"].
-            fold_on (bool, optional): Whether napari views should be a hemisphere, in which case detections from the other side are mirrored. Defaults to False.
+            fold_on (bool, optional): Whether views should be a hemisphere, in which case detections from the other side are mirrored. Defaults to False.
+            plot_type (str, optional): Whether to plot via napari ('napari') or pyplot ('plt').
+
+        Returns:
+            pyplot.figure.Figure: pyplot figure only if plot_type=='plt'.
         """
         brain2paths = self.brain2paths
         atlas_points = self.atlas_points
@@ -225,8 +230,11 @@ class SomaDistribution(BrainDistribution):
         heatmap = np.zeros([borders.shape[0], borders.shape[1], 3])
 
         if self.show_plots:
-            v = napari.Viewer()
-            v.add_labels(newslice, scale=[10, 10])
+            if plot_type == "napari":
+                v = napari.Viewer()
+                v.add_labels(newslice, scale=[10, 10])
+            elif plot_type == "plt":
+                fig = plt.figure()
 
         gtype_counts = {}
         for key in subtype_colors.keys():
@@ -259,26 +267,41 @@ class SomaDistribution(BrainDistribution):
                         int(im_coord[0]), int(im_coord[1]), channel
                     ] += 1  # /subtype_counts[gtype]
             if self.show_plots:
-                v.add_points(
-                    fg_points,
-                    symbol=symbols[gtype_counts[gtype]],
-                    face_color=subtype_colors[gtype],
-                    size=10,
-                    name=f"{key}: {gtype}",
-                    scale=[10, 10],
-                )
+                if plot_type == "napari":
+                    v.add_points(
+                        fg_points,
+                        symbol=symbols[gtype_counts[gtype]],
+                        face_color=subtype_colors[gtype],
+                        size=10,
+                        name=f"{key}: {gtype}",
+                        scale=[10, 10],
+                    )
+                elif plot_type == "plt":
+                    fg_points = np.array(fg_points)
+                    plt.scatter(
+                        fg_points[:, 1],
+                        fg_points[:, 0],
+                        c=subtype_colors[gtype],
+                        marker=symbols[gtype_counts[gtype]],
+                        label=f"{key}: {gtype}",
+                    )
 
             gtype_counts[gtype] = gtype_counts[gtype] + 1
 
         if self.show_plots:
-            for c in range(3):
-                heatmap[:, :, c] = ndi.gaussian_filter(heatmap[:, :, c], sigma=3)
-            v.add_image(heatmap, scale=[10, 10], name=f"Heatmap")  # , rgb=True)
-            v.add_labels(borders * 2, scale=[10, 10], name=f"z={z}")
+            if plot_type == "napari":
+                for c in range(3):
+                    heatmap[:, :, c] = ndi.gaussian_filter(heatmap[:, :, c], sigma=3)
+                v.add_image(heatmap, scale=[10, 10], name=f"Heatmap")  # , rgb=True)
+                v.add_labels(borders * 2, scale=[10, 10], name=f"z={z}")
 
-            v.scale_bar.unit = "um"
-            v.scale_bar.visible = True
-            napari.run()
+                v.scale_bar.unit = "um"
+                v.scale_bar.visible = True
+                napari.run()
+            elif plot_type == "plt":
+                plt.imshow(borders, alpha=borders.astype("float"))
+                plt.legend()
+                return fig
 
     def brainrender_somas(self, subtype_colors: dict, brain_region: str = "DR"):
         """Generate brainrender viewer with soma detections.

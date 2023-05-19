@@ -247,7 +247,7 @@ def plot_results(
         plt.ylim([0, 1.1])
         plt.title(f"Brain {brain_id} Validation: {tot_pos}+ {tot_neg}-")
         plt.legend()
-        return fig, best_fscore, best_thresh # plt.show()
+        return fig, best_fscore, best_thresh  # plt.show()
 
     return best_fscore, best_thresh
 
