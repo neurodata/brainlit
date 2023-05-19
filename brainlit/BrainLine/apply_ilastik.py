@@ -28,7 +28,7 @@ class ApplyIlastik:
     """Applies ilastik to subvolumes for the purpose of validating machine learning algorithms.
 
     Arguments:
-        ilastk_path (str): Path to ilastik executable.
+        ilastik_path (str): Path to ilastik executable.
         project_path (str): Path to ilastik project.
         brains_path (str): Path to directory that contains brain samples subdirectories.
         brains (list): List of brain sample names.
