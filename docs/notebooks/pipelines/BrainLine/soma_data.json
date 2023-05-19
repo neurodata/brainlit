@@ -1,0 +1,45 @@
+{
+    "object_type": "soma",
+    "brain2paths": {
+        "atlas": {
+            "url": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017",
+            "comment": "If you've downloaded the atlas, you can put a file path under the key 'filepath'",
+            "filepath_comment": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/ara/ara_10um.tif"
+        },
+        "test": {
+            "comment": "Sampled used for demos, need to download precomputed data and put in brainlit/BrainLine/data/example. Data should be served via neuroglancer's cors_webserver.py",
+            "base": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/docs/notebooks/pipelines/BrainLine/example-data/",
+            "val_info": {
+                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=yZrOdyWy6ONOXA",
+                "somas_layer": "soma_val",
+                "nonsomas_layer": "nonsoma_val"
+            },
+            "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=iRoE0KP6J0ULDg",
+            "subtype": "test_type"
+        },
+        "biccn": {
+            "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=8VHD-seixZg9pg",
+            "subtype": "test"
+        },
+        "pytest_download": {
+            "base": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/",
+            "val_info": {
+                "url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=X2Mjv5Nm8-JEKQ",
+                "somas_layer": "soma_val",
+                "nonsomas_layer": "nonsoma_val"
+            },
+            "subtype": "test_type"
+        },
+        "pytest": {
+            "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=K0AO1rcfk-TObw",
+            "subtype": "test_type"
+        },
+        "pytest2": {
+            "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=K0AO1rcfk-TObw",
+            "subtype": "test_type"
+        },
+        "pytest_nosomasatlasurl": {
+            "subtype": "test_type"
+        }
+    }
+}

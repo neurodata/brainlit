@@ -106,7 +106,6 @@ class NeuroglancerSession:
         seg = self.cv_segments.skeleton.get(seg_id).vertices
         if v_id < 0 or v_id >= len(seg):
             raise ValueError(f"{v_id} should be between 0 and {len(seg)}.")
-
         vertex = seg[v_id]
         voxel = np.round(
             np.divide(vertex, self.cv_segments.scales[self.mip]["resolution"])
@@ -145,7 +144,6 @@ class NeuroglancerSession:
         Returns:
             G: A networkx subgraph from the specified segment and bounding box.
         """
-
         check_type(seg_id, (int, np.integer))
         check_type(rounding, bool)
         if self.cv_segments is None:
@@ -310,7 +308,7 @@ class NeuroglancerSession:
             raise ValueError(f"Radius of {radius} should be nonnegative.")
 
         voxel = self._get_voxel(seg_id, v_id)
-        bounds = Bbox(voxel, voxel).expand_to_chunk_size(self.chunk_size)
+        bounds = Bbox(voxel, voxel + 1).expand_to_chunk_size(self.chunk_size)
         seed = bounds.to_list()
         shape = [
             self.chunk_size[0] * radius,
@@ -320,7 +318,7 @@ class NeuroglancerSession:
         bounds = Bbox(np.subtract(seed[:3], shape), np.add(seed[3:], shape))
         img = self.pull_bounds_img(bounds)
         vox_in_img = voxel - np.array(bounds.to_list()[:3])
-        return np.squeeze(np.array(img)), bounds, vox_in_img
+        return img, bounds, vox_in_img
 
     def pull_bounds_img(self, bounds: Bounds) -> np.ndarray:
         """Pull a volume around a specified bounding box. Works on image channels.
@@ -337,7 +335,13 @@ class NeuroglancerSession:
         check_iterable_type(bounds, (int, np.integer))
         check_iterable_nonnegative(bounds)
         img = self.cv.download(Bbox(bounds[:3], bounds[3:]), mip=self.mip)
-        return np.squeeze(np.array(img))
+        img = np.squeeze(np.array(img))
+        if len(img.shape) < 3:  # in case a dimension with size 1 got squeezed away
+            sz = np.subtract(bounds[3:], bounds[:3])
+            for i, s in enumerate(sz):
+                if s == 1:
+                    img = np.expand_dims(img, axis=i)
+        return img
 
     def pull_bounds_seg(self, bounds: Bounds) -> np.ndarray:
         """Pull a volume around a specified bounding box.

@@ -28,9 +28,22 @@ Obstacles Encountered During downloading_brains Tutorial (macOS)
 
 9. When installing ``brainlit`` on Mac OS BigSur, make sure you are using ``python==3.9.0`` and not ``python==3.9.1``. This is a known `issue <https://github.com/napari/napari/issues/1393#issuecomment-745615931>`. Please report any other Mac OS BigSur compatibility issues.
 
+Linux
+^^^^^
+
+Sometimes there can be issues installing ``posix-ipc`` on Linux. In the past, we avoided this by installing version 1.0.5 ``pip install posix-ipc==1.0.5``.
 
 Windows
 ^^^^^^^
+
+Importing Brotli and Curses
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When installing from source ``pip install -e .`` on Windows 10 with Python 3.9.0, sometimes brainlit would appear to install but upon importing, there was an issue with ``import _brotli``.
+
+It was fixed according to this `thread <https://github.com/google/brotli/issues/782>`_ where the Visual C++ Redistributable was updated by downloading the x64 version from `here <https://learn.microsoft.com/en-GB/cpp/windows/latest-supported-vc-redist?view=msvc-170>`_.
+
+Also, an import error would occur for ``_curses``. This was fixed by ``pip install windows-curses`` like from this `thread <https://stackoverflow.com/questions/35850362/importerror-no-module-named-curses-when-trying-to-import-blessings>`_.
 
 Napari Display Problem
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -41,7 +54,7 @@ The document includes two sections:
 2. a detailed code history
 
 1. Brief Description of Issue#127:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If your drivers/operating system are out of the date:
 - Windows 7
 - python3.7.9

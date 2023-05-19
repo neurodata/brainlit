@@ -81,7 +81,7 @@ def czi_to_zarr(
             np.arange(i, np.amin([i + chunk_z, sz[0]]))
             for i in range(0, sz[0], chunk_z)
         ]
-        Parallel(n_jobs=parallel)(
+        Parallel(n_jobs=parallel, backend="threading")(
             delayed(_write_zrange_thread)(fg_path, czi_path, channel=fg_channel, zs=zs)
             for zs in tqdm(z_blocks, desc="Saving slices foreground...")
         )
@@ -102,7 +102,7 @@ def czi_to_zarr(
             for z in tqdm(np.arange(Z), desc="Saving slices background..."):
                 zarr_bg[z, :, :] = _read_czi_slice(czi, C=c, Z=z)
         elif parallel > 1:
-            Parallel(n_jobs=parallel)(
+            Parallel(n_jobs=parallel, backend="threading")(
                 delayed(_write_zrange_thread)(bg_path, czi_path, channel=c, zs=zs)
                 for zs in tqdm(z_blocks, desc="Saving slices background...")
             )

@@ -6,7 +6,6 @@ import networkx as nx
 from pathlib import Path
 from brainlit.BrainLine.parse_ara import build_tree
 from tqdm import tqdm
-from brainlit.BrainLine import data
 from brainlit.BrainLine.imports import *
 import json
 
@@ -116,7 +115,7 @@ def download_subvolumes(
 
 
 def _get_corners(
-    shape, chunk_size, max_coords: list = [-1, -1, -1], min_coords: list = [-1, -1, -1]
+    shape, chunk_size, min_coords: list = [-1, -1, -1], max_coords: list = [-1, -1, -1]
 ):
     corners = []
     for i in tqdm(range(0, shape[0], chunk_size[0])):
@@ -200,7 +199,7 @@ def _find_sample_names(dir, dset="", add_dir=False):
     return items
 
 
-def _setup_atlas_graph():
+def _setup_atlas_graph(ontology_json_path: str):
     """Create networkx graph of regions in allen atlas (from ara_structure_ontology.json). Initially uses vikram's code in build_tree, then converts to networkx.
 
     Returns:

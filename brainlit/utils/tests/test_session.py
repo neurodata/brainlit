@@ -1,34 +1,34 @@
 import pytest
 from brainlit.utils.session import NeuroglancerSession
-from brainlit.utils.upload import upload_volumes, upload_segments, upload_annotations
-import SimpleITK as sitk
-import scipy.ndimage
 import numpy as np
-import warnings
 from pathlib import Path
 import networkx as nx
-from cloudvolume import CloudVolume
-from cloudvolume.lib import Bbox
 from cloudvolume.exceptions import InfoUnavailableError, SkeletonDecodeError
 from brainlit.algorithms.generate_fragments.tube_seg import tubes_seg
+from brainlit.utils.tests.test_upload import (
+    create_segmentation_layer,
+    create_image_layer,
+    volume_info,
+    upload_volumes_serial,
+    paths,
+    upload_segmentation,
+)
 
 
-@pytest.fixture
-def vars_local():
-    top_level = Path(__file__).parents[3] / "data"
-    input = (top_level / "data_octree").as_posix()
-    url = (top_level / "test_upload").as_uri()
-    url_segments = url + "_segments"
-    url = url + "/serial"
+@pytest.fixture(scope="session")
+def vars_local(upload_volumes_serial, upload_segmentation):
+    url_segments, _ = upload_segmentation
+    url_segments = url_segments.as_uri()
+    url = upload_volumes_serial.as_uri()
     mip = 0
     seg_id = 2
-    v_id = 300
-    return input, url, url_segments, mip, seg_id, v_id
+    v_id = 2
+    return url, url_segments, mip, seg_id, v_id
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def session(vars_local):  # using local vars
-    _, url, url_seg, mip, seg_id, v_id = vars_local
+    url, url_seg, mip, seg_id, v_id = vars_local
     sess = NeuroglancerSession(url=url, mip=mip, url_segments=url_seg)
     return sess, seg_id, v_id
 
@@ -40,14 +40,13 @@ def session(vars_local):  # using local vars
 
 def test_session_no_urls(vars_local):
     """Tests that initializing a NeuroglancerSession object without passing urls is valid."""
-    _, url, url_seg, mip, _, _ = vars_local
+    url, url_seg, _, _, _ = vars_local
     NeuroglancerSession(url)
     NeuroglancerSession(url, url_segments=url_seg)
 
 
 def test_session_incomplete_urls(vars_local):
     """Tests that initializing a NeuroglancerSession on data without segmentation or annotation channels is valid and raises a warning."""
-    input, url, url_seg, mip, _, _ = vars_local
     path = (
         Path(__file__).parents[3] / "data" / "test_upload" / "serial"
     ).as_uri()  # does not have segments or annotation
@@ -57,7 +56,7 @@ def test_session_incomplete_urls(vars_local):
 
 def test_session_bad_urls(vars_local):
     """Tests that initializing a NeuroglancerSession object by passing bad urls isn't valid."""
-    _, url, url_segments, mip, seg_id, v_id = vars_local
+    url, url_segments, _, _, _ = vars_local
     url_bad = url + "0"  # bad url
     url_segments_bad = url_segments + "0"  # bad url
     with pytest.raises(InfoUnavailableError):
@@ -68,7 +67,7 @@ def test_session_bad_urls(vars_local):
 
 def test_NeuroglancerSession_bad_inputs(vars_local):
     """Tests that errors are raised when bad inputs are given to initializing session.NeuroglancerSession."""
-    _, url, url_seg, mip, seg_id, v_id = vars_local
+    url, _, _, _, _ = vars_local
     with pytest.raises(TypeError):
         NeuroglancerSession(url=0)
     with pytest.raises(NotImplementedError):
@@ -240,7 +239,7 @@ def test_push_bad_inputs(session):
 
 def test_set_url_segments(vars_local):
     """Tests setting a segmentation url ."""
-    _, url, url_segments, mip, seg_id, v_id = vars_local
+    url, url_segments, mip, _, _ = vars_local
     sess = NeuroglancerSession(url=url, mip=mip)
     sess.set_url_segments(url_segments)
     assert sess.url_segments == url_segments
@@ -249,7 +248,7 @@ def test_set_url_segments(vars_local):
 
 def test_get_segments(session):
     """Tests that getting segments returns a valid graph."""
-    sess, seg_id, v_id = session
+    sess, seg_id, _ = session
     G_paths = sess.get_segments(seg_id)
     G = G_paths[0]
     paths = G_paths[1]
@@ -270,7 +269,7 @@ def test_create_tubes(session):
     img, bbox, verts = sess.pull_voxel(
         seg_id,
         v_id,
-        radius=5,
+        radius=1,
     )  # A valid bbox with data.
     tubes = sess.create_tubes(seg_id, bbox)
     assert (tubes != 0).any()
@@ -293,9 +292,7 @@ def test_pull_voxel(session):
 def test_pull_vertex_list(session):
     """Tests that pulling a vertex list returns valid regions."""
     sess, seg_id, v_id = session
-    img, bounds, voxel = sess.pull_vertex_list(
-        seg_id, [100, 101, 102, 103], buffer=[1, 1, 1]
-    )
+    img, bounds, voxel = sess.pull_vertex_list(seg_id, [1, 2, 3, 4], buffer=[1, 1, 1])
     assert len(img.shape) == 3
     assert img.shape == tuple(bounds.size())
     for vox in voxel:

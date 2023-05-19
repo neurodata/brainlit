@@ -1,0 +1,33 @@
+{
+  "data_type": "uint16",
+  "num_channels": 1,
+  "scales": [
+    {
+      "chunk_sizes": [
+        [
+          32,
+          32,
+          32
+        ]
+      ],
+      "encoding": "raw",
+      "key": "10000_10000_10000",
+      "resolution": [
+        10000,
+        10000,
+        10000
+      ],
+      "size": [
+        1320,
+        800,
+        1140
+      ],
+      "voxel_offset": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "type": "image"
+}

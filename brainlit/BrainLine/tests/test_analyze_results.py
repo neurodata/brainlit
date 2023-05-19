@@ -1,23 +1,46 @@
 from brainlit.BrainLine.analyze_results import SomaDistribution, AxonDistribution
+from brainlit.BrainLine.tests.test_util import ontology_path
 import pickle
 import pytest
 from pathlib import Path
 import os
 
 
-def test_SomaDistribution_no_somasatlasurl():
-    data_file = Path(os.path.abspath(__file__)).parents[1] / "data" / "soma_data.json"
+def test_SomaDistribution_no_somasatlasurl(ontology_path):
+    data_file = (
+        Path(os.path.abspath(__file__)).parents[3]
+        / "docs"
+        / "notebooks"
+        / "pipelines"
+        / "BrainLine"
+        / "soma_data.json"
+    )
 
     with pytest.raises(ValueError):
         SomaDistribution(
-            ["pytest_nosomasatlasurl"], data_file=data_file, show_plots=False
+            ["pytest_nosomasatlasurl"],
+            data_file=data_file,
+            ontology_file=ontology_path,
+            show_plots=False,
         )
 
 
-def test_SomaDistribution():
-    data_file = Path(os.path.abspath(__file__)).parents[1] / "data" / "soma_data.json"
+def test_SomaDistribution(ontology_path):
+    data_file = (
+        Path(os.path.abspath(__file__)).parents[3]
+        / "docs"
+        / "notebooks"
+        / "pipelines"
+        / "BrainLine"
+        / "soma_data.json"
+    )
 
-    sd = SomaDistribution(["pytest", "pytest2"], data_file=data_file, show_plots=False)
+    sd = SomaDistribution(
+        ["pytest", "pytest2"],
+        data_file=data_file,
+        ontology_file=ontology_path,
+        show_plots=False,
+    )
     # sd.brainrender_somas(subtype_colors=subtype_colors, brain_region="MOB")
     # sd.napari_coronal_section(z=1000, subtype_colors=subtype_colors, fold_on=True)
     sd.region_barchart(
@@ -34,17 +57,25 @@ def test_collect_regional_segmentation():
     pass  # would need to create axon_mask and atlas_to_target layers
 
 
-def test_AxonDistribution(tmp_path):
+def test_AxonDistribution(tmp_path, ontology_path):
     subtype_colors = {"test_type": "red"}
 
     invalid_volumes = {698: [0, 11], 795: [20, 1]}
     outpath = tmp_path / "wholebrain_pytest.pkl"
     with open(outpath, "wb") as f:
         pickle.dump(invalid_volumes, f)
-    data_file = Path(os.path.abspath(__file__)).parents[1] / "data" / "axon_data.json"
+    data_file = (
+        Path(os.path.abspath(__file__)).parents[3]
+        / "docs"
+        / "notebooks"
+        / "pipelines"
+        / "BrainLine"
+        / "axon_data.json"
+    )
     ad = AxonDistribution(
         brain_ids=["pytest"],
         data_file=data_file,
+        ontology_file=ontology_path,
         regional_distribution_dir=str(tmp_path) + "/",
         show_plots=False,
     )
@@ -60,6 +91,7 @@ def test_AxonDistribution(tmp_path):
     ad = AxonDistribution(
         brain_ids=["pytest"],
         data_file=data_file,
+        ontology_file=ontology_path,
         regional_distribution_dir=str(tmp_path) + "/",
         show_plots=False,
     )
@@ -82,6 +114,7 @@ def test_AxonDistribution(tmp_path):
     ad = AxonDistribution(
         brain_ids=["pytest"],
         data_file=data_file,
+        ontology_file=ontology_path,
         regional_distribution_dir=str(tmp_path) + "/",
         show_plots=False,
     )
