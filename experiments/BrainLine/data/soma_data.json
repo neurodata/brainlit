@@ -233,6 +233,15 @@
                 "nonsomas_layer": "nonsoma_val"
             },
             "subtype": "tph2 gad2"
+        },
+        "MS36": {
+            "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_13/MS36/",
+            "val_info": {
+                "url2": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=T133kAOEQSRTzA",
+                "somas_layer": "soma_val",
+                "nonsomas_layer": "nonsoma_val"
+            },
+            "subtype": "gad2 vgat"
         }
     },
     "brain2centers": {
