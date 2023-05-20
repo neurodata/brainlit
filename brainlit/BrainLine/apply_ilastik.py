@@ -281,7 +281,7 @@ def examine_threshold(
     base_dir = data_dir + f"/brain{brain_id}/val/"
 
     data_files = _find_sample_names(base_dir, dset="", add_dir=True)
-    test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
+    test_files = [file[: file.rfind(".")] + "_Probabilities.h5" for file in data_files]
 
     size_thresh = 500
 
@@ -350,7 +350,7 @@ def examine_threshold(
                             name=f"nonsoma false positive area: {area}",
                         )
         elif object_type == "axon":
-            fname_lab = im_fname.split(".")[0] + "-image_3channel_Labels.h5"
+            fname_lab = im_fname[: im_fname.rfind(".")] + "-image_3channel_Labels.h5"
             f = h5py.File(fname_lab, "r")
             gt = f.get("exported_data")
             gt = gt[0, :, :, :]
@@ -587,7 +587,7 @@ class ApplyIlastik_LargeImage:
         )
         # subprocess.run(["/Applications/ilastik-1.3.3post3-OSX.app/Contents/ilastik-release/run_ilastik.sh", "--headless", "--project=/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain3/matt_benchmark_formal_brain3.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        fname_prob = str(fname).split(".")[0] + "_Probabilities.h5"
+        fname_prob = str(fname)[: str(fname).rfind(".")] + "_Probabilities.h5"
         with h5py.File(fname_prob, "r") as f:
             pred = f.get("exported_data")
             if object_type == "soma":
