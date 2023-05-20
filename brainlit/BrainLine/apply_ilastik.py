@@ -140,7 +140,9 @@ def plot_results(
     for brain_id in tqdm(brain_ids, desc="Processing Brains"):
         base_dir = data_dir + f"/brain{brain_id}/val/"
         data_files = _find_sample_names(base_dir, dset="", add_dir=True)
-        test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
+        test_files = [
+            file[: file.rfind(".")] + "_Probabilities.h5" for file in data_files
+        ]
 
         best_fscore = 0
         best_thresh = -1
