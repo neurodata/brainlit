@@ -49,6 +49,7 @@ commands:
           command: |
             python3 -m venv venv
             . venv/bin/activate
+            pip install --upgrade pip
             pip install pytest pytest-cov black[jupyter]
             pip install -e .
   fork_test:
