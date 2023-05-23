@@ -1,5 +1,6 @@
 TACC Tutorial
 -------------
+
 1. In home directory (`cdh`) make python 3.9 virtual environment: `python3 -m venv venv_39`.
 2. Activate virtual environment: `source venv_39/bin/activate`.
 3. In scratch directory (`cds`), download ilastik (`wget https://files.ilastik.org/ilastik-1.4.0-Linux.tar.bz2`).
