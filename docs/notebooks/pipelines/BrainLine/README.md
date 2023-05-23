@@ -1,6 +1,8 @@
 TACC Tutorial
 -------------
 
+In Jupyter session on Lonestar 6:
+
 1. In home directory (`cdh`) make python 3.9 virtual environment: `python3 -m venv venv_39`.
 2. Activate virtual environment: `source venv_39/bin/activate`.
 3. Update pip `pip install --upgrade pip`
