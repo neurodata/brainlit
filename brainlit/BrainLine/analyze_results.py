@@ -315,6 +315,7 @@ class SomaDistribution(BrainDistribution):
                 v.scale_bar.unit = "um"
                 v.scale_bar.visible = True
                 napari.run()
+                return v
             elif plot_type == "plt":
                 plt.imshow(borders, alpha=borders.astype("float"))
                 plt.legend()
@@ -941,6 +942,7 @@ class AxonDistribution(BrainDistribution):
             v.scale_bar.unit = "um"
             v.scale_bar.visible = True
             napari.run()
+            return v
 
     def brainrender_axons(self, subtype_colors: dict, brain_region: str = "DR"):
         """Generate brainrender view to show axon segmentations.

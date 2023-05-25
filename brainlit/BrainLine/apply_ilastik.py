@@ -70,7 +70,13 @@ class ApplyIlastik:
         """
         items_total = []
         for brain in tqdm(self.brains, desc="Gathering brains..."):
-            path = f"{self.brains_path}brain{brain}/val/"
+            if brain == "8557":
+                brain_name = "r1"
+            elif brain == "8555":
+                brain_name = "r2"
+            else:
+                brain_name = brain
+            path = f"{self.brains_path}brain{brain_name}/val/"
 
             items_total += _find_sample_names(path, dset="", add_dir=True)
 
@@ -138,7 +144,13 @@ def plot_results(
 
     thresholds = list(np.arange(0.0, 1.0, 0.02))
     for brain_id in tqdm(brain_ids, desc="Processing Brains"):
-        base_dir = data_dir + f"/brain{brain_id}/val/"
+        if brain_id == "8557":
+            brain_name = "r1"
+        elif brain_id == "8555":
+            brain_name = "r2"
+        else:
+            brain_name = brain_id
+        base_dir = data_dir + f"/brain{brain_name}/val/"
         data_files = _find_sample_names(base_dir, dset="", add_dir=True)
         test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
 
@@ -221,7 +233,7 @@ def plot_results(
     for i, brain_id in enumerate(brain_ids_data):
         brain_ids_data[i] = (
             brain_id
-            + f" - MaxFS: {best_fscores[brain_id][0]:.2f} @thresh: {best_fscores[brain_id][1]}"
+            + f" - FS: {best_fscores[brain_id][0]:.2f} @ {best_fscores[brain_id][1]:.2f}"
         )
 
     dict = {
@@ -245,7 +257,7 @@ def plot_results(
         )
         plt.xlim([0, 1.1])
         plt.ylim([0, 1.1])
-        plt.title(f"Brain {brain_id} Validation: {tot_pos}+ {tot_neg}-")
+        print(f"Brain {brain_id} Validation: {tot_pos}+ {tot_neg}-")
         plt.legend()
         return fig, best_fscore, best_thresh  # plt.show()
 

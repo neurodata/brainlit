@@ -237,7 +237,7 @@
         "MS36": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_13/MS36/",
             "val_info": {
-                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=T133kAOEQSRTzA",
+                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=4Rn1qGxuWuVl5A",
                 "somas_layer": "soma_val",
                 "nonsomas_layer": "nonsoma_val"
             },
