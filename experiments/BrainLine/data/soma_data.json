@@ -232,7 +232,9 @@
                 "somas_layer": "soma_val",
                 "nonsomas_layer": "nonsoma_val"
             },
-            "subtype": "tph2 gad2"
+            "subtype": "tph2 gad2",
+            "somas_atlas_path": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/wholebrain_results/atlas_somas_MS25/",
+            "somas_atlas_url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=weCcwDSc3h1H2g"
         },
         "MS36": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_13/MS36/",
@@ -241,7 +243,8 @@
                 "somas_layer": "soma_val",
                 "nonsomas_layer": "nonsoma_val"
             },
-            "subtype": "gad2 vgat"
+            "subtype": "gad2 vgat",
+            "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=LQlB_2tJGgxGHw"
         }
     },
     "brain2centers": {
