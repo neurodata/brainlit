@@ -9,12 +9,12 @@ Inputs
 # -dir_base
 # data_dir and results_dir ARE CLEAR
 # threshold IS CORRECT
-brain = "MS25"
+brain = "MS22"
 antibody_layer = "Ch_647"
 background_layer = "Ch_561"
 endogenous_layer = "Ch_488"
 
-threshold = 0.8  # threshold to use for ilastik
+threshold = 0.72  # threshold to use for ilastik
 brainline_exp_dir = Path(os.getcwd()) / Path(__file__).parents[1]
 data_dir = (
     brainline_exp_dir / "data" / "brainr_temp"
@@ -32,17 +32,17 @@ ilastik_project = "/home/user/misc_tommy/ilastik/models/soma/matt_soma_rabies_pi
 
 
 min_coords = [
-    551,
-    1538,
+    901,
+    600,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
 max_coords = [
-    6515,
+    6834,
     -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
-ncpu = 1  # 16  # number of cores to use for detection
-chunk_size = [512, 512, 2560]  # [256, 256, 300]
+ncpu = 2  # 16  # number of cores to use for detection
+chunk_size = [512, 1024, 2048]  # [256, 256, 300]
 
 """ 
 Detect Somas
