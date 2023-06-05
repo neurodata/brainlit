@@ -404,6 +404,8 @@ class SomaDistribution(BrainDistribution):
             "y": "Region",
             "hue": "Subtype",
             "data": df,
+            "jitter": False,
+            "dodge": True
         }
 
         sns.set(font_scale=2)
@@ -421,6 +423,8 @@ class SomaDistribution(BrainDistribution):
             "y": "Region",
             "hue": "Subtype",
             "data": df,
+            "jitter": False,
+            "dodge": True
         }
 
         bplot = sns.stripplot(ax=axes[1], orient="h", **fig_args)
@@ -440,6 +444,8 @@ class SomaDistribution(BrainDistribution):
                 "y": "Region",
                 "hue": "Subtype",
                 "data": df,
+                "jitter": False,
+                "dodge": True
             }
 
             sns.set(font_scale=2)
@@ -618,6 +624,8 @@ class SomaDistribution(BrainDistribution):
             "x": "Region",
             "hue": "Subtype",
             "data": df,
+            "jitter": False,
+            "dodge": True
         }
 
         annotator = Annotator(axis, pairs, **fig_args)
@@ -1021,6 +1029,8 @@ class AxonDistribution(BrainDistribution):
             "y": "Region",
             "hue": "Subtype",
             "data": df,
+            "jitter": False,
+            "dodge": True
         }
 
         sns.set(font_scale=2)
@@ -1038,6 +1048,8 @@ class AxonDistribution(BrainDistribution):
             "y": "Region",
             "hue": "Subtype",
             "data": df,
+            "jitter": False,
+            "dodge": True
         }
 
         bplot = sns.stripplot(ax=axes[1], orient="h", **fig_args)
@@ -1057,6 +1069,8 @@ class AxonDistribution(BrainDistribution):
                 "y": "Region",
                 "hue": "Subtype",
                 "data": df,
+                "jitter": False,
+                "dodge": True
             }
 
             sns.set(font_scale=2)
