@@ -33,7 +33,7 @@ from joblib import Parallel, delayed
 from math import sqrt
 
 # INPUTS
-spacings = [3.0, 6.0, 12.0, 24.0]
+max_rs = [25, 50, 100, 200]
 sampling = 2
 ds_factors = [1, 2, 4, 8, 16]
 swc_dir = Path("/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/mouselight-swcs")
@@ -42,17 +42,19 @@ swcs = os.listdir(swc_dir)
 swcs = [swc for swc in swcs if "swc" in swc]
 
 print(
-    f"Processing {len(swcs)} neurons with a sampling rate of {sampling} and downsampling factor {ds_factors} with spacings of {spacings} "
+    f"Processing {len(swcs)} neurons with a sampling rate of {sampling} and downsampling factor {ds_factors} with max vs of {max_rs} "
 )
 
 
-def process_swc(spacing, ct, swc):
+def process_swc(max_r, ct, swc):
     res_ds_factors = []
     res_methods = []
     res_errors = []
     res_av_sample_distances = []
     res_neurons = []
     res_spacings = []
+
+    spacing = 2.
 
     nid = swc.split(".")[0]
     swc_path = swc_dir / swc
@@ -205,7 +207,7 @@ def process_swc(spacing, ct, swc):
                     res_spacings.append(spacing)
 
 
-    fname = f"/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/mouselight-swcs/spac{spacing}_{nid}neurons_sample{sampling}.pickle"
+    fname = f"/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/mouselight-swcs/maxr{max_r}_{nid}neurons_sample{sampling}.pickle"
     data = {
         "Method": res_methods,
         "Frechet Error (microns)": res_errors,
@@ -217,23 +219,21 @@ def process_swc(spacing, ct, swc):
     with open(fname, "wb") as handle:
         pickle.dump(data, handle)
 
-for spacing in spacings:
+for max_r in max_rs:
     """
     CREATE DIFFEOMORPHISM
     """
     # a domain for sampling your velocity and deformatoin
-    dv = np.array([spacing]*3)
+    dv = np.array([5.0, 5.0, 5.0])
     nv = np.array([132,80,114])
     xv = [np.arange(n)*d - (n-1)*d/2 for n,d in zip(nv,dv)]
-    levels = np.linspace(-40*int(spacing),40*int(spacing),10)
-
 
     XV = torch.stack(torch.meshgrid([torch.as_tensor(x) for x in xv],indexing='ij'),-1)
 
     # a frequency domain
     fv = [np.arange(n)/n/d for n,d in zip(nv,dv)]
     FV = np.stack(np.meshgrid(*fv,indexing='ij'),-1)
-    a = spacing
+    a = 5.0
     p = 2.0
     LL = (1.0 - 2.0*a**2*np.sum(((np.cos(2.0*np.pi*FV*dv)   - 1))/dv**2,-1))**(2*p)
     K = 1.0/LL
@@ -244,7 +244,7 @@ for spacing in spacings:
 
     # lets make a new p which is really simple for testing
     # sample white noise
-    Lm = np.random.randn(*FV.shape)*200
+    Lm = np.random.randn(*FV.shape)*max_r
 
     # smooth it with sqrt(K) (here I smoothed with K to be a bit smoother)
     v = np.fft.ifftn(np.fft.fftn(Lm,axes=(0,1,2))*K[...,None],axes=(0,1,2)).real
@@ -256,7 +256,7 @@ for spacing in spacings:
     ct = Diffeomorphism_Transform(xv, phii)
 
     transform_data = {"xv": xv, "phii": phii}
-    transform_fname = swc_dir.parents[0] / f"{spacing}.pickle"
+    transform_fname = swc_dir.parents[0] / f"{max_r}.pickle"
     with open(transform_fname, "wb") as handle:
         pickle.dump(transform_data, handle)
 
@@ -265,7 +265,7 @@ for spacing in spacings:
     MAP NEURONS
     """
 
-    Parallel(n_jobs=7)(
-        delayed(process_swc)(spacing, ct, swc)
-        for swc in tqdm(swcs, desc=f"mapping neurons at spacing {spacing}...")
+    Parallel(n_jobs=2)(
+        delayed(process_swc)(max_r, ct, swc)
+        for swc in tqdm(swcs, desc=f"mapping neurons at spacing {max_r}...")
     )
