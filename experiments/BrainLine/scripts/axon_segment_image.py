@@ -19,12 +19,12 @@ from brainlit.BrainLine.data.axon_data import brain2paths
 Inputs
 """
 
-brain = "test"
+brain = "MS12"
 antibody_layer = "antibody"
 background_layer = "background"
 endogenous_layer = "endogenous"
 
-threshold = 0.12  # threshold to use for ilastik
+threshold = 0.54  # threshold to use for ilastik
 data_dir = (
     str(Path.cwd().parents[0]) + "/brain_temp/"
 )  # data_dir = "/data/tathey1/matt_wright/brain_temp/"  # directory to store temporary subvolumes for segmentation
@@ -34,13 +34,18 @@ ilastik_path = "/Applications/ilastik-1.4.0b21-OSX.app/Contents/ilastik-release/
 ilastik_project = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/axon_segmentation.ilp"  # "/data/tathey1/matt_wright/ilastik/model1/axon_segmentation.ilp"  # path to ilastik project
 
 
-max_coords = [
-    3072,
-    4352,
-    1792,
+min_coords = [
+    -1,
+    1024,
+    -1,
 ]  # max coords or -1 if you want to process everything along that dimension
-ncpu = 1  # 16  # number of cores to use for detection
-chunk_size = [256, 256, 256]  # [256, 256, 300]
+max_coords = [
+    6129,
+    -1,
+    -1,
+]  # max coords or -1 if you want to process everything along that dimension
+ncpu = 2  # 16  # number of cores to use for detection
+chunk_size = [512, 1024, 2048]  # [256, 256, 300]
 
 
 print(f"Number cpus available: {multiprocessing.cpu_count()}")
@@ -100,27 +105,27 @@ if downsample_ask == "y":
     tq.insert(tasks)
     tq.execute()
 
-"""
-Making info files for transformed images
-"""
-make_trans_layers = input(
-    f"Will you be transforming axon_mask into atlas space? (should relevant info files be made) (y/n)"
-)
-if make_trans_layers == "y":
-    atlas_vol = CloudVolume(
-        "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017"
-    )
-    layer_path = brain2paths[brain]["base"] + "axon_mask_transformed"
-    print(f"Writing info file at {layer_path}")
-    info = CloudVolume.create_new_info(
-        num_channels=1,
-        layer_type="image",
-        data_type="uint16",  # Channel images might be 'uint8'
-        encoding="raw",  # raw, jpeg, compressed_segmentation, fpzip, kempressed
-        resolution=atlas_vol.resolution,  # Voxel scaling, units are in nanometers
-        voxel_offset=atlas_vol.voxel_offset,
-        chunk_size=[32, 32, 32],  # units are voxels
-        volume_size=atlas_vol.volume_size,  # e.g. a cubic millimeter dataset
-    )
-    vol_mask = CloudVolume(layer_path, info=info)
-    vol_mask.commit_info()
+# """
+# Making info files for transformed images
+# """
+# make_trans_layers = input(
+#     f"Will you be transforming axon_mask into atlas space? (should relevant info files be made) (y/n)"
+# )
+# if make_trans_layers == "y":
+#     atlas_vol = CloudVolume(
+#         "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017"
+#     )
+#     layer_path = brain2paths[brain]["base"] + "axon_mask_transformed"
+#     print(f"Writing info file at {layer_path}")
+#     info = CloudVolume.create_new_info(
+#         num_channels=1,
+#         layer_type="image",
+#         data_type="uint16",  # Channel images might be 'uint8'
+#         encoding="raw",  # raw, jpeg, compressed_segmentation, fpzip, kempressed
+#         resolution=atlas_vol.resolution,  # Voxel scaling, units are in nanometers
+#         voxel_offset=atlas_vol.voxel_offset,
+#         chunk_size=[32, 32, 32],  # units are voxels
+#         volume_size=atlas_vol.volume_size,  # e.g. a cubic millimeter dataset
+#     )
+#     vol_mask = CloudVolume(layer_path, info=info)
+#     vol_mask.commit_info()
