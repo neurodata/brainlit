@@ -24,9 +24,11 @@ background_layer = "background"
 endogenous_layer = "endogenous"
 
 threshold = 0.54  # threshold to use for ilastik
+brainline_exp_dir = Path(os.getcwd()) / Path(__file__).parents[1]
 data_dir = (
-    str(Path.cwd().parents[0]) + "/brain_temp/"
+    brainline_exp_dir / "brain_temp"
 )  # data_dir = "/data/tathey1/matt_wright/brain_temp/"  # directory to store temporary subvolumes for segmentation
+data_file = brainline_exp_dir / "data" / "axon_data.json"
 
 # Ilastik will run in "headless mode", and the following paths are needed to do so:
 ilastik_path = "/Applications/ilastik-1.4.0b21-OSX.app/Contents/ilastik-release/run_ilastik.sh"  # "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh"  # path to ilastik executable
@@ -57,7 +59,7 @@ alli = ApplyIlastik_LargeImage(
     ilastik_path=ilastik_path,
     ilastik_project=ilastik_project,
     ncpu=ncpu,
-    object_type="axon",
+    data_file=data_file
 )
 alli.apply_ilastik_parallel(
     brain_id=brain,
@@ -65,9 +67,10 @@ alli.apply_ilastik_parallel(
     threshold=threshold,
     data_dir=data_dir,
     chunk_size=chunk_size,
+    min_coords=min_coords,
     max_coords=max_coords,
 )
-alli.collect_axon_results(brain_id=brain, ng_layer_name="127.0.0.1:9010")
+alli.collect_axon_results(brain_id=brain, ng_layer_name="Ch_647")
 
 
 """
