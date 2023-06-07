@@ -26,7 +26,7 @@ endogenous_layer = "Ch_488"
 threshold = 0.54  # threshold to use for ilastik
 brainline_exp_dir = Path(os.getcwd()) / Path(__file__).parents[1]
 data_dir = (
-    brainline_exp_dir / "brain_temp"
+    brainline_exp_dir / "data" / "brain_temp"
 )  # data_dir = "/data/tathey1/matt_wright/brain_temp/"  # directory to store temporary subvolumes for segmentation
 data_file = brainline_exp_dir / "data" / "axon_data.json"
 
