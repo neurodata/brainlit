@@ -12,8 +12,7 @@ import os
 import igneous.task_creation as tc
 from taskqueue import LocalTaskQueue
 from pathlib import Path
-from brainlit.BrainLine.apply_ilastik import ApplyIlastik_LargeImage
-from brainlit.BrainLine.data.axon_data import brain2paths
+from brainlit.BrainLine.apply_ilastik import ApplyIlastik_LargeImage]
 
 """
 Inputs
