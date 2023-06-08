@@ -143,13 +143,13 @@ class ViterBrain:
         pt3 = G.nodes[state2]["point1"]
         dif = np.multiply(np.subtract(pt3, pt2), res)
         dist2 = np.linalg.norm(dif)
-        if dist2 > 25:
+        if dist2 > 20:
             return np.inf
 
         dif = np.multiply(np.subtract(pt2, pt1), res)
         dist1 = np.linalg.norm(dif)
 
-        return dist1 + 2 * dist2
+        return dist1 + dist2**2
 
     def frag_soma_dist(
         self,

@@ -850,11 +850,11 @@ class state_generation:
         )
 
         viterbrain.compute_all_costs_dist(
-            frag_frag_func=viterbrain.frag_frag_dist_simple,
+            frag_frag_func=viterbrain.frag_frag_dist,
             frag_soma_func=viterbrain.frag_soma_dist,
         )
 
-        viterbrain.compute_all_costs_int(frag_frag_func=viterbrain._line_int_zero)
+        viterbrain.compute_all_costs_int(frag_frag_func=viterbrain._line_int)
 
         print(f"# Edges: {viterbrain.nxGraph.number_of_edges()}")
 
