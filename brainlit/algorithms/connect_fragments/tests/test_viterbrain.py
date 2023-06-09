@@ -12,6 +12,7 @@ import networkx as nx
 from numpy.testing import (
     assert_array_equal,
 )
+import copy
 
 
 @pytest.fixture(scope="session")
@@ -53,7 +54,7 @@ def create_vb(tmp_path_factory):
         1,
         type="fragment",
         fragment=1,
-        point1=[52, 25, 0],
+        point1=[52, 24, 0],
         point2=[52, 0, 0],
         orientation1=[0, -1, 0],
         orientation2=[0, -1, 0],
@@ -147,45 +148,48 @@ def create_vb(tmp_path_factory):
 
 
 def test_frag_frag_dist_bad_input(create_vb):
-    vb = create_vb
+    vb_og = create_vb
+    vb = copy.deepcopy(vb_og)
 
+    vb.nxGraph.nodes[0]["point2"] = [0, 0, 0]
+    vb.nxGraph.nodes[0]["orientation2"] = [1, 1, 0]
+    vb.nxGraph.nodes[1]["point1"] = [1, 0, 0]
+    vb.nxGraph.nodes[1]["orientation1"] = [1, 0, 0]
     with pytest.raises(ValueError):
-        vb.frag_frag_dist(
-            pt1=[0, 0, 0], orientation1=[1, 1, 0], pt2=[1, 0, 0], orientation2=[1, 0, 0]
-        )
+        vb.frag_frag_dist(state1=0, state2=1)
+    vb.nxGraph.nodes[0]["point2"] = [0, 0, 0]
+    vb.nxGraph.nodes[0]["orientation2"] = [1, 0, 0]
+    vb.nxGraph.nodes[1]["point1"] = [1, 0, 0]
+    vb.nxGraph.nodes[1]["orientation1"] = [1, 1, 0]
     with pytest.raises(ValueError):
-        vb.frag_frag_dist(
-            pt1=[0, 0, 0], orientation1=[1, 0, 0], pt2=[1, 0, 0], orientation2=[1, 1, 0]
-        )
+        vb.frag_frag_dist(state1=0, state2=1)
+    vb.nxGraph.nodes[0]["point2"] = [0, 0, 0]
+    vb.nxGraph.nodes[0]["orientation2"] = [np.nan, 0, 0]
+    vb.nxGraph.nodes[1]["point1"] = [1, 0, 0]
+    vb.nxGraph.nodes[1]["orientation1"] = [1, 0, 0]
     with pytest.raises(ValueError):
-        vb.frag_frag_dist(
-            pt1=[0, 0, 0],
-            orientation1=[np.nan, 0, 0],
-            pt2=[1, 0, 0],
-            orientation2=[1, 1, 0],
-        )
+        vb.frag_frag_dist(state1=0, state2=1)
+    vb.nxGraph.nodes[0]["point2"] = [0, 0, 0]
+    vb.nxGraph.nodes[0]["orientation2"] = [1, 0, 0]
+    vb.nxGraph.nodes[1]["point1"] = [0, 0, 0]
+    vb.nxGraph.nodes[1]["orientation1"] = [1, 0, 0]
     with pytest.raises(ValueError):
-        vb.frag_frag_dist(
-            pt1=[0, 0, 0],
-            orientation1=[np.nan, 0, 0],
-            pt2=[1, 0, 0],
-            orientation2=[np.nan, 1, 0],
-        )
+        vb.frag_frag_dist(state1=0, state2=1)
 
 
 def test_explain_viterbrain(create_vb):
     vb = create_vb
 
     vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
-    vb.compute_all_costs_int()
-    explain_viterbrain(vb, c1=[52, 0, 0], c2=[50, 90, 0], frag_seq=[])
+    vb.compute_all_costs_int(vb._line_int)
+    explain_viterbrain(vb, c1=[52, 0, 0], c2=[50, 90, 0])
 
 
 def test_shortest_path(create_vb):
     vb = create_vb
 
     vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
-    vb.compute_all_costs_int()
+    vb.compute_all_costs_int(vb._line_int)
     vb.shortest_path([52, 0, 0], [50, 90, 0])
 
 
@@ -197,27 +201,27 @@ def test_shortest_path(create_vb):
 def test_frag_frag_dist(create_vb):
     vb = create_vb
 
-    cost = vb.frag_frag_dist(
+    cost = vb.frag_frag_dist_coord(
         pt1=[0, 0, 0], orientation1=[1, 0, 0], pt2=[1, 0, 0], orientation2=[1, 0, 0]
     )
     assert cost == 1.0
 
-    cost = vb.frag_frag_dist(
+    cost = vb.frag_frag_dist_coord(
         pt1=[0, 0, 0], orientation1=[1, 0, 0], pt2=[2, 0, 0], orientation2=[1, 0, 0]
     )
     assert cost == 4.0
 
-    cost = vb.frag_frag_dist(
+    cost = vb.frag_frag_dist_coord(
         pt1=[0, 0, 0], orientation1=[1, 0, 0], pt2=[1, 0, 0], orientation2=[0, 1, 0]
     )
     assert cost == 1.5
 
-    cost = vb.frag_frag_dist(
+    cost = vb.frag_frag_dist_coord(
         pt1=[0, 0, 0], orientation1=[0, 1, 0], pt2=[1, 0, 0], orientation2=[0, 1, 0]
     )
     assert cost == 2.0
 
-    cost = vb.frag_frag_dist(
+    cost = vb.frag_frag_dist_coord(
         pt1=[0, 0, 0], orientation1=[1, 0, 0], pt2=[2, 0, 0], orientation2=[-1, 0, 0]
     )
     assert cost == np.inf
@@ -227,6 +231,6 @@ def test_viterbrain(create_vb):
     vb = create_vb
 
     vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
-    vb.compute_all_costs_int()
+    vb.compute_all_costs_int(vb._line_int)
     assert_array_equal(nx.shortest_path(vb.nxGraph, source=0, target=8), [0, 2, 4, 8])
     assert len(vb.shortest_path([49, 10, 0], [44, 90, 0])) == 8
