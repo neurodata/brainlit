@@ -8,7 +8,7 @@ from cloudvolume.lib import Bbox
 NUM_RES = 1
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def volume_info(num_res=NUM_RES, channel=0):
     """Pytest fixture that gets parameters that many upload.py methods use."""
     top_level = Path(__file__).parents[3] / "data"
@@ -29,12 +29,73 @@ def volume_info(num_res=NUM_RES, channel=0):
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def paths():
     """Gets common paths for tests running uploads"""
     top_level = Path(__file__).parents[3] / "data"
     input = top_level / "data_octree"
     return top_level, input
+
+
+@pytest.fixture(scope="session")
+def create_image_layer(volume_info):
+    _, b, vox_size, tiff_dims, _, top_level = volume_info
+    dir = top_level / "test_upload"
+    vols = upload.create_cloud_volume(
+        dir.as_uri(),
+        tiff_dims,
+        vox_size,
+        num_resolutions=NUM_RES,
+        layer_type="image",
+    )
+    return dir, vols
+
+
+@pytest.fixture(scope="session")
+def upload_volumes_serial(paths):
+    top_level, input = paths
+    dir = top_level / "test_upload" / "serial"
+    upload.upload_volumes(input.as_posix(), dir.as_uri(), NUM_RES)
+    return dir
+
+
+@pytest.fixture(scope="session")
+def create_segmentation_layer(volume_info):
+    _, b, vox_size, tiff_dims, _, top_level = volume_info
+    dir_segments = top_level / "test_upload_segments"
+    vols = upload.create_cloud_volume(
+        dir_segments.as_uri(),
+        tiff_dims,
+        vox_size,
+        num_resolutions=NUM_RES,
+        layer_type="segmentation",
+    )
+
+    return dir_segments, vols
+
+
+@pytest.fixture(scope="session")
+def upload_segmentation(paths):
+    top_level, input = paths
+    dir_segments = top_level / "test_upload_segments"
+    upload.upload_segments(input.as_posix(), dir_segments.as_uri(), NUM_RES)
+    dir_skel = dir_segments / "skeletons"
+    return dir_segments, dir_skel
+
+
+@pytest.fixture
+def create_annotation_layer(volume_info):
+    _, b, vox_size, tiff_dims, _, top_level = volume_info
+    dir_annotation = top_level / "test_upload_annotations"
+    vols = upload.create_cloud_volume(
+        dir_annotation.as_uri(),
+        tiff_dims,
+        vox_size,
+        num_resolutions=NUM_RES,
+        layer_type="annotation",
+    )
+
+    return dir_annotation, vols
 
 
 ####################
@@ -225,17 +286,10 @@ def test_get_volume_info(volume_info):
     assert len(origin) == 3
 
 
-def test_create_image_layer(volume_info):
+def test_create_image_layer(volume_info, create_image_layer):
     """Tests that create_image_layer returns valid CloudVolumePrecomputed object for image data."""
     _, b, vox_size, tiff_dims, _, top_level = volume_info
-    dir = top_level / "test_upload"
-    vols = upload.create_cloud_volume(
-        dir.as_uri(),
-        tiff_dims,
-        vox_size,
-        num_resolutions=NUM_RES,
-        layer_type="image",
-    )
+    dir, vols = create_image_layer
 
     assert len(vols) == NUM_RES  # one vol for each resolution
     for i, vol in enumerate(vols):
@@ -243,17 +297,10 @@ def test_create_image_layer(volume_info):
     assert (dir / "info").is_file()  # contains info file
 
 
-def test_create_segmentation_layer(volume_info):
+def test_create_segmentation_layer(volume_info, create_segmentation_layer):
     """Tests that create_cloud_volume returns valid CloudVolumePrecomputed object for segmentation data."""
     _, b, vox_size, tiff_dims, _, top_level = volume_info
-    dir_segments = top_level / "test_upload_segments"
-    vols = upload.create_cloud_volume(
-        dir_segments.as_uri(),
-        tiff_dims,
-        vox_size,
-        num_resolutions=NUM_RES,
-        layer_type="segmentation",
-    )
+    dir_segments, vols = create_segmentation_layer
 
     assert len(vols) == 1  # always 1 for segementation
     for i, vol in enumerate(vols):
@@ -261,17 +308,10 @@ def test_create_segmentation_layer(volume_info):
     assert (dir_segments / "info").is_file()  # contains info file
 
 
-def test_create_annotation_layer(volume_info):
+def test_create_annotation_layer(volume_info, create_annotation_layer):
     """Tests that create_cloud_volume returns valid CloudVolumePrecomputed object for annotation data."""
     _, b, vox_size, tiff_dims, _, top_level = volume_info
-    dir_annotation = top_level / "test_upload_annotations"
-    vols = upload.create_cloud_volume(
-        dir_annotation.as_uri(),
-        tiff_dims,
-        vox_size,
-        num_resolutions=NUM_RES,
-        layer_type="annotation",
-    )
+    dir_annotation, vols = create_annotation_layer
 
     assert len(vols) == 1  # always 1 for segementation
     for i, vol in enumerate(vols):
@@ -282,22 +322,27 @@ def test_create_annotation_layer(volume_info):
 def test_get_data_ranges(volume_info):
     """Tests that get_data_ranges returns valid ranges."""
     _, bin_paths, _, tiff_dims, _, _ = volume_info
+    true_tif_size = (12, 8, 4)  # in zyx
     for res_bins in bin_paths:
         for bin in res_bins:
             x_curr, y_curr, z_curr = 0, 0, 0
             tree_level = len(bin)
             ranges = upload.get_data_ranges(bin, tiff_dims)
             if tree_level == 0:
-                assert ranges == ([0, 528], [0, 400], [0, 208])
+                assert ranges == (
+                    [0, true_tif_size[0]],
+                    [0, true_tif_size[1]],
+                    [0, true_tif_size[2]],
+                )
             else:
                 bin = bin[0]
                 scale_factor = 1
-                x_curr += int(bin[2]) * 528 * scale_factor
-                y_curr += int(bin[1]) * 400 * scale_factor
-                z_curr += int(bin[0]) * 208 * scale_factor
-                assert ranges[0] == [x_curr, x_curr + 528]  # valid x range
-                assert ranges[1] == [y_curr, y_curr + 400]  # valid y range
-                assert ranges[2] == [z_curr, z_curr + 208]  # valid z range
+                x_curr += int(bin[2]) * true_tif_size[0] * scale_factor
+                y_curr += int(bin[1]) * true_tif_size[1] * scale_factor
+                z_curr += int(bin[0]) * true_tif_size[2] * scale_factor
+                assert ranges[0] == [x_curr, x_curr + true_tif_size[0]]  # valid x range
+                assert ranges[1] == [y_curr, y_curr + true_tif_size[1]]  # valid y range
+                assert ranges[2] == [z_curr, z_curr + true_tif_size[2]]  # valid z range
 
 
 def test_create_skel_segids(volume_info):
@@ -314,22 +359,17 @@ def test_create_skel_segids(volume_info):
 #################
 
 
-def test_upload_segmentation(paths):
+def test_upload_segmentation(upload_segmentation):
     """Ensures that upload_segmentation runs without errors."""
-    top_level, input = paths
-    dir_segments = top_level / "test_upload_segments"
-    upload.upload_segments(input.as_posix(), dir_segments.as_uri(), NUM_RES)
-    dir_skel = dir_segments / "skeletons"
+    dir_segments, dir_skel = upload_segmentation
     assert (dir_segments / "info").is_file()  # contains info file
     assert (dir_skel / "info").is_file()  # contains skeleton info file
     assert len(sorted(dir_skel.glob("*.gz"))) > 0  # contains uploaded data
 
 
-def test_upload_volumes_serial(paths):
+def test_upload_volumes_serial(upload_volumes_serial):
     """Ensures that upload_volumes runs without errors when `parallel` is False."""
-    top_level, input = paths
-    dir = top_level / "test_upload" / "serial"
-    upload.upload_volumes(input.as_posix(), dir.as_uri(), NUM_RES)
+    dir = upload_volumes_serial
     assert (dir / "info").is_file()  # contains info file
     assert len(sorted(dir.glob("*_*"))) > 0  # contains uploaded data
 
@@ -369,10 +409,10 @@ def test_upload_volumes_parallel(paths):
 ##################
 
 
-def test_serial_download(paths):
+def test_serial_download(paths, upload_volumes_serial):
     """Tests that downloaded (uploaded serially) data matches original data."""
     top_level, input = paths
-    dir = top_level / "test_upload" / "serial"
+    dir = upload_volumes_serial
     dir_segments = top_level / "test_upload_segments"
     ngl_sess = session.NeuroglancerSession(
         url=dir.as_uri(), url_segments=dir_segments.as_uri(), mip=NUM_RES - 1

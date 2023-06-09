@@ -1,34 +1,39 @@
 import pytest
-from brainlit.utils.session import NeuroglancerSession
-from brainlit.utils.upload import upload_volumes, upload_segments
 from brainlit.feature_extraction import neighborhood as nbrhood
-import numpy as np
-import pandas as pd
-from cloudvolume import CloudVolume
+from brainlit.utils.tests.test_upload import (
+    create_segmentation_layer,
+    create_image_layer,
+    volume_info,
+    upload_volumes_serial,
+    paths,
+    upload_segmentation,
+)
 import cloudvolume
-from cloudvolume.lib import Bbox
 import glob
 import os
 from pathlib import Path
 
 
-top_level = Path(__file__).parents[3] / "data"
-input = (top_level / "data_octree").as_posix()
-url = (top_level / "test_upload").as_uri()
-url_seg = url + "_segments"
-url = url + "/serial"
+@pytest.fixture(scope="session")
+def vars_local(upload_volumes_serial, upload_segmentation):
+    url = upload_volumes_serial.as_uri()
+    url_segments, _ = upload_segmentation
+    url_segments = url_segments.as_uri()
+    return url, url_segments
+
 
 SIZE = 2
 SEGLIST = [2]
-OFF = [15, 15, 15]
+OFF = [1, 1, 0]
 
 ##############
 ### inputs ###
 ##############
 
 
-def test_init_bad_inputs():
+def test_init_bad_inputs(vars_local):
     """Tests that proper errors are raised when bad inputs are given to __init__ method."""
+    url, url_seg = vars_local
     with pytest.raises(TypeError):
         nbrhood.NeighborhoodFeatures(url=0, radius=SIZE, offset=OFF)
     with pytest.raises(NotImplementedError):
@@ -51,8 +56,9 @@ def test_init_bad_inputs():
         )
 
 
-def test_fit_bad_inputs():
+def test_fit_bad_inputs(vars_local):
     """Tests that proper errors are raised when bad inputs are given to fit method."""
+    url, url_seg = vars_local
     nbr = nbrhood.NeighborhoodFeatures(
         url=url, radius=SIZE, offset=[15, 15, 15], segment_url=url_seg
     )
@@ -67,10 +73,11 @@ def test_fit_bad_inputs():
 ##################
 
 
-def test_neighborhood():
+def test_neighborhood(vars_local):
     """Tests that neighborhood data is generated correctly."""
+    url, url_seg = vars_local
     nbr = nbrhood.NeighborhoodFeatures(
-        url=url, radius=1, offset=[15, 15, 15], segment_url=url_seg
+        url=url, radius=1, offset=OFF, segment_url=url_seg
     )
     df_nbr = nbr.fit([2], 5)
     assert df_nbr.shape == (10, 30)  # 5on, 5off for each swc
@@ -101,14 +108,15 @@ def test_neighborhood():
 #     assert df_lin.shape == (20, 7)
 
 
-def test_file_write():
+def test_file_write(vars_local):
     """Tests that files are written correctly."""
+    url, url_seg = vars_local
     files = sorted(glob.glob("*.feather"))
     for f in sorted(files):
         os.remove(f)
 
     nbr = nbrhood.NeighborhoodFeatures(
-        url=url, radius=1, offset=[15, 15, 15], segment_url=url_seg
+        url=url, radius=1, offset=OFF, segment_url=url_seg
     )
     nbr.fit([2], 5, file_path="test", batch_size=10)
 

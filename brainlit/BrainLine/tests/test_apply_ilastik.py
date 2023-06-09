@@ -1,9 +1,15 @@
 import h5py
 import numpy as np
-from brainlit.BrainLine.apply_ilastik import plot_results, examine_threshold
+from brainlit.BrainLine.apply_ilastik import (
+    plot_results,
+    examine_threshold,
+    ApplyIlastik,
+    ApplyIlastik_LargeImage,
+)
 import os
 import pytest
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 
 def test_ApplyIlastik():
@@ -40,16 +46,26 @@ def axon_data_dir(tmp_path_factory):
     return data_dir
 
 
+def test_move_results(axon_data_dir):
+    data_dir_str = str(axon_data_dir)
+    apl = ApplyIlastik(
+        ilastik_path="test",
+        project_path="test",
+        brains_path=data_dir_str,
+        brains=["test"],
+    )
+    apl.move_results()
+
+
 def test_plot_results_axon(axon_data_dir):
     data_dir_str = str(axon_data_dir)
     test_max_fscore, test_best_threshold = plot_results(
         data_dir=data_dir_str,
-        brain_id="test",
+        brain_ids=["test"],
         object_type="axon",
         positive_channel=0,
         show_plot=False,
     )
-    plt.close("all")
 
     true_prec = 1
     true_rec = 0.5
@@ -100,7 +116,7 @@ def test_plot_results_soma(soma_data_dir):
     data_dir_str = str(soma_data_dir)
     test_max_fscore, test_best_threshold = plot_results(
         data_dir=data_dir_str,
-        brain_id="test",
+        brain_ids=["test"],
         object_type="soma",
         positive_channel=1,
         show_plot=False,
@@ -130,4 +146,15 @@ def test_examine_threshold_soma(soma_data_dir):
 
 
 def test_ApplyIlastik_LargeImage():
-    pass  # could do a partial test by creating local cloudvolume then just making max_coords so there are no chunks to be processed
+    data_file = (
+        Path(os.path.abspath(__file__)).parents[3]
+        / "docs"
+        / "notebooks"
+        / "pipelines"
+        / "BrainLine"
+        / "axon_data.json"
+    )
+    aili = ApplyIlastik_LargeImage(
+        ilastik_path="", ilastik_project="", ncpu=1, data_file=data_file
+    )
+    # Sample data is there but file path in data json is specific to thomastathey
