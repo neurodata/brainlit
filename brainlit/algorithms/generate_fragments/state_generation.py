@@ -275,7 +275,7 @@ class state_generation:
                     for soma_coord in soma_coords:
                         if (
                             np.less_equal([x, y, z], soma_coord).all()
-                            and np.less_equal(
+                            and np.less(
                                 soma_coord,
                                 [x2, y2, z2],
                             ).all()

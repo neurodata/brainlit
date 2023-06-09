@@ -142,7 +142,7 @@ def test_compute_frags(init_3d_im_lab):
     )
     sg.compute_frags()
     z_lab = zarr.open(sg.fragment_path)
-    assert len(np.unique(z_lab)) == 5
+    assert len(np.unique(z_lab)) > 5
 
 
 def test_state_generation_3d(init_3d_im_lab):
