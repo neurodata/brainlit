@@ -53,7 +53,7 @@ print(f"Valid IDs: {valid_ids}")
 
 spacing = 0.1
 inter = -1
-ds_factors = [1]#[10, 1]
+ds_factors = [1]  # [10, 1]
 
 print(
     f"Processing neurons starting with {inter} with a spacing {spacing} and downsampling factor {ds_factors}"
@@ -63,7 +63,10 @@ print(
 #     "/cis/home/tathey/projects/mouselight/axon_mapping/low_res/2018-12-01/precomputed_ch1_otsu_iso_registration/downloop_1_v.mat",
 #     "/cis/home/tathey/projects/mouselight/axon_mapping/low_res/2018-12-01/precomputed_ch1_otsu_iso_registration/downloop_1_A.mat",
 # )
-with open('/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/random-diffeo.pickle', 'rb') as handle:
+with open(
+    "/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/random-diffeo.pickle",
+    "rb",
+) as handle:
     ct = pickle.load(handle)
 
 for ds_factor in ds_factors:
@@ -79,8 +82,8 @@ for ds_factor in ds_factors:
         coords = skel.vertices / 1000 - origin_im
 
         # apply affine transform
-        #coords = ct.apply_affine(coords)
-        coords = (coords - np.mean(coords, axis=0))/20
+        # coords = ct.apply_affine(coords)
+        coords = (coords - np.mean(coords, axis=0)) / 20
 
         G_neuron = GeometricGraph()
         for node_id, coord in enumerate(coords):

@@ -46,26 +46,38 @@ class DiffeomorphismAction:
         """
         pass
 
+
 class Diffeomorphism_Transform(DiffeomorphismAction):
     def __init__(self, points, values):
         self.scale_factor = 6550 / points[0][-1]
         points_scaled = [self.scale_factor * p for p in points]
 
         self.og_coords = np.meshgrid(*points_scaled)
-        self.F = RegularGridInterpolator([points[0],points[1],points[2]], values)
+        self.F = RegularGridInterpolator([points[0], points[1], points[2]], values)
+
     def evaluate(self, position):
         position = position / self.scale_factor
-        return self.F(position)*self.scale_factor
+        return self.F(position) * self.scale_factor
+
     def Jacobian(self, pos: np.array) -> np.array:
         step = 1
 
         J = np.zeros((3, 3))
-        J[:,0] = (self.evaluate([pos[0] + step, pos[1], pos[2]])-self.evaluate([pos[0], pos[1], pos[2]]))/step
-        J[:,1] = (self.evaluate([pos[0], pos[1] + step, pos[2]])-self.evaluate([pos[0], pos[1], pos[2]]))/step
-        J[:,2] = (self.evaluate([pos[0], pos[1], pos[2] + step])-self.evaluate([pos[0], pos[1], pos[2]]))/step
+        J[:, 0] = (
+            self.evaluate([pos[0] + step, pos[1], pos[2]])
+            - self.evaluate([pos[0], pos[1], pos[2]])
+        ) / step
+        J[:, 1] = (
+            self.evaluate([pos[0], pos[1] + step, pos[2]])
+            - self.evaluate([pos[0], pos[1], pos[2]])
+        ) / step
+        J[:, 2] = (
+            self.evaluate([pos[0], pos[1], pos[2] + step])
+            - self.evaluate([pos[0], pos[1], pos[2]])
+        ) / step
 
         return J
-    
+
     def D(self, position: np.array, deriv: np.array, order: int = 1) -> np.array:
         """Compute transformed derivatives of mapping at given positions. Only for the non-affine component.
 

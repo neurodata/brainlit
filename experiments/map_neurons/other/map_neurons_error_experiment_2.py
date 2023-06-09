@@ -1,5 +1,5 @@
 from brainlit.map_neurons.diffeo_gen import expR
-import numpy as np 
+import numpy as np
 import matplotlib.pyplot as plt
 import torch
 
@@ -11,9 +11,9 @@ from brainlit.map_neurons.map_neurons import (
     compute_derivs,
     CloudReg_Transform,
 )
-import pandas as pd 
+import pandas as pd
 import seaborn as sns
-import os 
+import os
 from cloudvolume import CloudVolume
 from pathlib import Path
 from brainlit.algorithms.trace_analysis.fit_spline import (
@@ -36,7 +36,9 @@ from math import sqrt
 max_rs = [25, 50, 100, 200]
 sampling = 2
 ds_factors = [1, 2, 4, 8, 16]
-swc_dir = Path("/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/mouselight-swcs")
+swc_dir = Path(
+    "/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/mouselight-swcs"
+)
 
 swcs = os.listdir(swc_dir)
 swcs = [swc for swc in swcs if "swc" in swc]
@@ -54,7 +56,7 @@ def process_swc(max_r, ct, swc):
     res_neurons = []
     res_spacings = []
 
-    spacing = 2.
+    spacing = 2.0
 
     nid = swc.split(".")[0]
     swc_path = swc_dir / swc
@@ -63,9 +65,8 @@ def process_swc(max_r, ct, swc):
 
     coords = []
     for n in g.nodes:
-        coords.append([g.nodes[n][i] for i in ['x','y','z']])
+        coords.append([g.nodes[n][i] for i in ["x", "y", "z"]])
 
-    
     dupes = []
     seen = set()
     for coord in coords:
@@ -76,21 +77,24 @@ def process_swc(max_r, ct, swc):
             seen.add(coord)
     if len(dupes) > 0:
         raise ValueError(f"Duplicate nodes in {swc}")
-        
 
     coords = np.array(coords)
     mx = np.amax(coords, axis=0)
     mn = np.amin(coords, axis=0)
-    center = np.mean(np.array([mx,mn]), axis=0)
+    center = np.mean(np.array([mx, mn]), axis=0)
     # center = np.mean(coords,axis=0)
 
     G_neuron = GeometricGraph()
     for n in g.nodes:
-        G_neuron.add_node(n, loc = np.array([g.nodes[n][i] for i in ['x','y','z']]) - center)
+        G_neuron.add_node(
+            n, loc=np.array([g.nodes[n][i] for i in ["x", "y", "z"]]) - center
+        )
     for e in g.edges:
         G_neuron.add_edge(e[0], e[1])
     spline_tree = G_neuron.fit_spline_tree_invariant()
-    for ds_factor in tqdm(ds_factors, desc="downsample factors...", leave=False, disable=True):
+    for ds_factor in tqdm(
+        ds_factors, desc="downsample factors...", leave=False, disable=True
+    ):
         for branch_id in tqdm(
             spline_tree.nodes, desc="Processing branches...", leave=False, disable=True
         ):
@@ -191,12 +195,17 @@ def process_swc(max_r, ct, swc):
             # print("1st order mapping...")
             first_order_pts = chspline(u_first_order)
 
-            for method, method_pts in tqdm(zip(
-                ["Zeroth Order", "First Order"], [zero_order_pts, first_order_pts]
-            ), total=2, leave=False, disable=True):
+            for method, method_pts in tqdm(
+                zip(["Zeroth Order", "First Order"], [zero_order_pts, first_order_pts]),
+                total=2,
+                leave=False,
+                disable=True,
+            ):
                 if len(dense_line_pts) < np.inf:
                     if dense_line_pts.shape[0] > 1000 or method_pts.shape[0] > 1000:
-                        print(f"{nid} comparing {dense_line_pts.shape[0]} with {method_pts.shape[0]}")
+                        print(
+                            f"{nid} comparing {dense_line_pts.shape[0]} with {method_pts.shape[0]}"
+                        )
                     error = frechet_dist(dense_line_pts, method_pts)
 
                     res_ds_factors.append(ds_factor)
@@ -206,7 +215,6 @@ def process_swc(max_r, ct, swc):
                     res_neurons.append(swc)
                     res_spacings.append(spacing)
 
-
     fname = f"/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/mouselight-swcs/maxr{max_r}_{nid}neurons_sample{sampling}.pickle"
     data = {
         "Method": res_methods,
@@ -214,10 +222,11 @@ def process_swc(max_r, ct, swc):
         "Average Sampling (microns)": res_av_sample_distances,
         "Downsample factor": res_ds_factors,
         "Sample": res_neurons,
-        "Spacing": res_spacings
+        "Spacing": res_spacings,
     }
     with open(fname, "wb") as handle:
         pickle.dump(data, handle)
+
 
 for max_r in max_rs:
     """
@@ -225,32 +234,37 @@ for max_r in max_rs:
     """
     # a domain for sampling your velocity and deformatoin
     dv = np.array([5.0, 5.0, 5.0])
-    nv = np.array([132,80,114])
-    xv = [np.arange(n)*d - (n-1)*d/2 for n,d in zip(nv,dv)]
+    nv = np.array([132, 80, 114])
+    xv = [np.arange(n) * d - (n - 1) * d / 2 for n, d in zip(nv, dv)]
 
-    XV = torch.stack(torch.meshgrid([torch.as_tensor(x) for x in xv],indexing='ij'),-1)
+    XV = torch.stack(
+        torch.meshgrid([torch.as_tensor(x) for x in xv], indexing="ij"), -1
+    )
 
     # a frequency domain
-    fv = [np.arange(n)/n/d for n,d in zip(nv,dv)]
-    FV = np.stack(np.meshgrid(*fv,indexing='ij'),-1)
+    fv = [np.arange(n) / n / d for n, d in zip(nv, dv)]
+    FV = np.stack(np.meshgrid(*fv, indexing="ij"), -1)
     a = 5.0
     p = 2.0
-    LL = (1.0 - 2.0*a**2*np.sum(((np.cos(2.0*np.pi*FV*dv)   - 1))/dv**2,-1))**(2*p)
-    K = 1.0/LL
-    fig,ax = plt.subplots()
+    LL = (
+        1.0 - 2.0 * a**2 * np.sum(((np.cos(2.0 * np.pi * FV * dv) - 1)) / dv**2, -1)
+    ) ** (2 * p)
+    K = 1.0 / LL
+    fig, ax = plt.subplots()
     ax.imshow(np.fft.ifftshift(K[0]))
-    ax.set_title('smoothing kernel')
-
+    ax.set_title("smoothing kernel")
 
     # lets make a new p which is really simple for testing
     # sample white noise
-    Lm = np.random.randn(*FV.shape)*max_r
+    Lm = np.random.randn(*FV.shape) * max_r
 
     # smooth it with sqrt(K) (here I smoothed with K to be a bit smoother)
-    v = np.fft.ifftn(np.fft.fftn(Lm,axes=(0,1,2))*K[...,None],axes=(0,1,2)).real
+    v = np.fft.ifftn(
+        np.fft.fftn(Lm, axes=(0, 1, 2)) * K[..., None], axes=(0, 1, 2)
+    ).real
 
-    #shoot it with remannian exponential
-    phii = expR([torch.tensor(x) for x in xv],torch.tensor(v),K,n=10)
+    # shoot it with remannian exponential
+    phii = expR([torch.tensor(x) for x in xv], torch.tensor(v), K, n=10)
     phii = phii.detach().cpu().numpy()
 
     ct = Diffeomorphism_Transform(xv, phii)
@@ -259,7 +273,6 @@ for max_r in max_rs:
     transform_fname = swc_dir.parents[0] / f"{max_r}.pickle"
     with open(transform_fname, "wb") as handle:
         pickle.dump(transform_data, handle)
-
 
     """
     MAP NEURONS
