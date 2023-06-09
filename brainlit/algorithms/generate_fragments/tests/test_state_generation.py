@@ -127,7 +127,7 @@ test_coords = np.hstack(
 )
 
 
-def test_state_generation_3d(init_3d_im_lab):
+def test_compute_frags(init_3d_im_lab):
     data_dir, im_file, lab_file = init_3d_im_lab
 
     sg = state_generation(
