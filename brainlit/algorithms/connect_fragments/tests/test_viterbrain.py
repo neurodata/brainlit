@@ -227,6 +227,22 @@ def test_frag_frag_dist(create_vb):
     assert cost == np.inf
 
 
+def test_frag_frag_dist_simple(create_vb):
+    vb = create_vb
+    cost = vb.frag_frag_dist_simple(state1=0, state2=2)
+    assert cost == 24 + 6**2
+
+    cost = vb.frag_frag_dist_simple(state1=0, state2=6)
+    assert cost == np.inf
+
+
+def test_line_int_zero(create_vb):
+    vb = create_vb
+
+    cost = vb._line_int_zero(state1=0, state2=6)
+    assert cost == 0
+
+
 def test_viterbrain(create_vb):
     vb = create_vb
 

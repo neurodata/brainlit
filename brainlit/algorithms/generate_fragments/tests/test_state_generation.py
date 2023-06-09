@@ -139,6 +139,24 @@ def test_state_generation_3d(init_3d_im_lab):
         soma_coords=soma_coords,
         resolution=res,
         prob_path=im_file,
+    )
+    sg.compute_frags()
+    z_lab = zarr.open(sg.fragment_path)
+    assert len(np.unique(z_lab)) == 5
+
+
+def test_state_generation_3d(init_3d_im_lab):
+    data_dir, im_file, lab_file = init_3d_im_lab
+
+    sg = state_generation(
+        image_path=im_file,
+        new_layers_dir=data_dir,
+        ilastik_program_path=None,
+        ilastik_project_path=None,
+        chunk_size=[50, 50, 1],
+        soma_coords=soma_coords,
+        resolution=res,
+        prob_path=im_file,
         fragment_path=lab_file,
     )
 
