@@ -275,7 +275,7 @@ class state_generation:
                     for soma_coord in soma_coords:
                         if (
                             np.less_equal([x, y, z], soma_coord).all()
-                            and np.less_equal(
+                            and np.less(
                                 soma_coord,
                                 [x2, y2, z2],
                             ).all()
@@ -828,17 +828,20 @@ class state_generation:
 
         self.states_path = states_fname
 
-    def compute_edge_weights(self) -> None:
+    def compute_edge_weights(self, frag_path=None) -> None:
         """Create viterbrain object and compute edge weights"""
         viterbrain_fname = str(Path(self.new_layers_dir) / "viterbrain.pickle")
 
         with open(self.states_path, "rb") as handle:
             G = pickle.load(handle)
 
+        if frag_path is None:
+            frag_path = self.fragment_path
+
         viterbrain = ViterBrain(
             G,
             self.tiered_path,
-            fragment_path=self.fragment_path,
+            fragment_path=frag_path,
             resolution=self.resolution,
             coef_curv=1000,
             coef_dist=10,
@@ -851,7 +854,7 @@ class state_generation:
             frag_soma_func=viterbrain.frag_soma_dist,
         )
 
-        viterbrain.compute_all_costs_int()
+        viterbrain.compute_all_costs_int(frag_frag_func=viterbrain._line_int)
 
         print(f"# Edges: {viterbrain.nxGraph.number_of_edges()}")
 
