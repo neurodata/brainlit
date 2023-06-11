@@ -39,11 +39,11 @@ ilastik_project = str(brainline_exp_dir / "data" / "models" / "axon" / "axon_seg
 
 min_coords = [
     -1,
-    1024,
+    512,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
 max_coords = [
-    6129,
+    6656,
     -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
