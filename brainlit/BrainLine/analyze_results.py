@@ -677,7 +677,7 @@ def _get_corners_collection(
     return new_corners
 
 
-def _compute_composition_corner(corners, outdir, dir_base):
+def _compute_composition_corner(corners, outdir, dir_base_mask, dir_base_s3):
     l_c1 = corners[0]
     l_c2 = corners[1]
     m_c1 = corners[2]
@@ -688,10 +688,10 @@ def _compute_composition_corner(corners, outdir, dir_base):
     if os.path.exists(fname):
         return
 
-    dir = dir_base + "axon_mask"
+    dir = dir_base_mask + "axon_mask"
     vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=False)
 
-    dir = dir_base + "atlas_to_target"
+    dir = dir_base_s3 + "atlas_to_target"
     vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 
     try:
@@ -763,18 +763,18 @@ def collect_regional_segmentation(
     with open(data_file) as f:
         data = json.load(f)
     brain2paths = data["brain2paths"]
-    dir_base = brain2paths[brain_id]["base"]
-
-    dir = os.path.join(dir_base, "axon_mask")
-    vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
-    print(f"Mask shape: {vol_mask.shape}")
+    dir_base_mask = brain2paths[brain_id]["base"]
 
     if s3_reg:
         dir_base_s3 = brain2paths[brain_id]["base_s3"]
-        dir = os.path.join(dir_base_s3, "atlas_to_target")
     else:
-        dir = os.path.join(dir_base, "atlas_to_target")
+        dir_base_s3=dir_base_mask
 
+    dir = os.path.join(dir_base_mask, "axon_mask")
+    vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
+    print(f"Mask shape: {vol_mask.shape}")
+
+    dir = os.path.join(dir_base_s3, "atlas_to_target")
     vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
     print(f"Atlas shape: {vol_reg.shape}")
 
@@ -786,7 +786,7 @@ def collect_regional_segmentation(
         min_coords=min_coords,
     )
     Parallel(n_jobs=ncpu)(
-        delayed(_compute_composition_corner)(corner, outdir, dir_base)
+        delayed(_compute_composition_corner)(corner, outdir, dir_base_mask, dir_base_s3)
         for corner in tqdm(corners, desc="Finding labels")
     )
 
