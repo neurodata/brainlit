@@ -1,3 +1,6 @@
+from brainlit.BrainLine.analyze_results import collect_regional_segmentation
+from pathlib import Path
+
 """
 Inputs
 """
@@ -26,7 +29,7 @@ s3_reg = True
 """
 Collect results
 """
-from brainlit.BrainLine.analyze_results import collect_regional_segmentation
+
 
 collect_regional_segmentation(
     brain_id=brain,
