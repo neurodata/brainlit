@@ -780,7 +780,7 @@ def collect_regional_segmentation(
     corners = _get_corners_collection(
         vol_mask,
         vol_reg,
-        block_size=[100, 100, 100],
+        block_size=[512, 512, 512],
         max_coords=max_coords,
         min_coords=min_coords,
     )
