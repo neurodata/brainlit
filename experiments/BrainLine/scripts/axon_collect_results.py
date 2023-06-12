@@ -22,7 +22,7 @@ max_coords = [
     -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
-ncpu = 12  # number of cores to use for detection
+ncpu = 1  # number of cores to use for detection
 chunk_size = [512, 1024, 2048]  # [256, 256, 300]
 s3_reg = True
 
