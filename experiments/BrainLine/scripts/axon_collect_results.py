@@ -1,5 +1,6 @@
 from brainlit.BrainLine.analyze_results import collect_regional_segmentation
 from pathlib import Path
+import os
 
 """
 Inputs
