@@ -683,7 +683,8 @@ def _compute_composition_corner(corners, outdir, dir_base):
     m_c1 = corners[2]
     m_c2 = corners[3]
 
-    fname = outdir + str(l_c1[0]) + "_" + str(l_c1[1]) + "_" + str(l_c1[2]) + ".pickle"
+    fname = str(l_c1[0]) + "_" + str(l_c1[1]) + "_" + str(l_c1[2]) + ".pickle"
+    fname = outdir / fname
     if os.path.exists(fname):
         return
 
