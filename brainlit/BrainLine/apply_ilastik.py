@@ -510,21 +510,24 @@ class ApplyIlastik_LargeImage:
             shape, chunk_size, max_coords=max_coords, min_coords=min_coords
         )
         chunk_interval = 6
-        corners_chunks = [corners[i : i + chunk_interval] for i in range(0, len(corners), chunk_interval)]
+        corners_chunks = [
+            corners[i : i + chunk_interval]
+            for i in range(0, len(corners), chunk_interval)
+        ]
 
         for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
             if self.ncpu == 1:
                 for corner in tqdm(corners_chunk, leave=False):
                     self._process_chunk(
-                    corner[0],
-                    corner[1],
-                    volume_base_dir,
-                    layer_names,
-                    threshold,
-                    data_dir,
-                    self.object_type,
-                    results_dir,
-                )
+                        corner[0],
+                        corner[1],
+                        volume_base_dir,
+                        layer_names,
+                        threshold,
+                        data_dir,
+                        self.object_type,
+                        results_dir,
+                    )
             else:
                 Parallel(n_jobs=self.ncpu)(
                     delayed(self._process_chunk)(
@@ -630,7 +633,7 @@ class ApplyIlastik_LargeImage:
                 if os.path.isfile(fname_prob):
                     os.remove(fname_prob)
                 continue
-            
+
         if object_type == "soma":
             fname_results = f"image_{c1[0]}_{c1[1]}_{c1[2]}_somas.txt"
             fname_results = results_dir / fname_results

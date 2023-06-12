@@ -126,7 +126,6 @@ class SomaDistribution(BrainDistribution):
         atlas_points = self._retrieve_soma_coords(brain_ids)
         self.atlas_points = atlas_points
 
-
         id_to_regioncounts_l = self._get_regions(atlas_points, side="l")
         self.id_to_regioncounts = id_to_regioncounts_l
         region_graph_l = self._setup_regiongraph()
@@ -140,8 +139,6 @@ class SomaDistribution(BrainDistribution):
         self.id_to_regioncounts = id_to_regioncounts
         region_graph = self._setup_regiongraph()
         self.region_graph = region_graph
-
-
 
     def _retrieve_soma_coords(self, brain_ids: list):
         brain2paths = self.brain2paths
@@ -405,7 +402,7 @@ class SomaDistribution(BrainDistribution):
             "hue": "Subtype",
             "data": df,
             # "jitter": False,
-            "dodge": True
+            "dodge": True,
         }
 
         sns.set(font_scale=2)
@@ -424,7 +421,7 @@ class SomaDistribution(BrainDistribution):
             "hue": "Subtype",
             "data": df,
             # "jitter": False,
-            "dodge": True
+            "dodge": True,
         }
 
         bplot = sns.barplot(ax=axes[1], orient="h", **fig_args)
@@ -445,7 +442,7 @@ class SomaDistribution(BrainDistribution):
                 "hue": "Subtype",
                 "data": df,
                 # "jitter": False,
-                "dodge": True
+                "dodge": True,
             }
 
             sns.set(font_scale=2)
@@ -625,7 +622,7 @@ class SomaDistribution(BrainDistribution):
             "hue": "Subtype",
             "data": df,
             # "jitter": False,
-            "dodge": True
+            "dodge": True,
         }
 
         annotator = Annotator(axis, pairs, **fig_args)
@@ -750,6 +747,7 @@ def collect_regional_segmentation(
     ncpu: int = 1,
     min_coords: list = [-1, -1, -1],
     max_coords: list = [-1, -1, -1],
+    s3_reg: bool = False,
 ):
     """Combine segmentation and registration to generate counts of axon voxels across brain regions. Note this scripts writes a file for every chunk, which might be many.
 
@@ -770,7 +768,12 @@ def collect_regional_segmentation(
     vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
     print(f"Mask shape: {vol_mask.shape}")
 
-    dir = os.path.join(dir_base, "atlas_to_target")
+    if s3_reg:
+        dir_base_s3 = brain2paths[brain_id]["base_s3"]
+        dir = os.path.join(dir_base_s3, "atlas_to_target")
+    else:
+        dir = os.path.join(dir_base, "atlas_to_target")
+
     vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
     print(f"Atlas shape: {vol_reg.shape}")
 
@@ -1030,7 +1033,7 @@ class AxonDistribution(BrainDistribution):
             "hue": "Subtype",
             "data": df,
             # "jitter": False,
-            "dodge": True
+            "dodge": True,
         }
 
         sns.set(font_scale=2)
@@ -1049,7 +1052,7 @@ class AxonDistribution(BrainDistribution):
             "hue": "Subtype",
             "data": df,
             # "jitter": False,
-            "dodge": True
+            "dodge": True,
         }
 
         bplot = sns.barplot(ax=axes[1], orient="h", **fig_args)
@@ -1070,7 +1073,7 @@ class AxonDistribution(BrainDistribution):
                 "hue": "Subtype",
                 "data": df,
                 # "jitter": False,
-                "dodge": True
+                "dodge": True,
             }
 
             sns.set(font_scale=2)
