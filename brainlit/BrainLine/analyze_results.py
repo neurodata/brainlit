@@ -720,8 +720,6 @@ def _compute_composition_corner(corners, outdir, dir_base_mask, dir_base_s3):
 
 
 def _combine_regional_segmentations(outdir):
-    outdir = Path(outdir)
-
     files = os.listdir(outdir)
     volumes = {}
     for file in tqdm(files, desc="Assembling results"):
@@ -763,6 +761,7 @@ def collect_regional_segmentation(
         min_coords (list, optional): Lower limits of brain to complete processing, -1 will lead to processing from the beginning of the axis. Defaults to [-1, -1, -1].
         max_coords (list, optional): Upper limits of brain to complete processing, -1 will lead to processing to the end of the axis. Defaults to [-1, -1, -1].
     """
+    outdir = Path(outdir)
     with open(data_file) as f:
         data = json.load(f)
     brain2paths = data["brain2paths"]
@@ -795,7 +794,8 @@ def collect_regional_segmentation(
 
     volumes = _combine_regional_segmentations(outdir)
 
-    outpath = outdir + "wholebrain_" + brain_id + ".pkl"
+    fname = f"wholebrain_{brain_id}.pkl"
+    outpath = outdir / fname
     with open(outpath, "wb") as f:
         pickle.dump(volumes, f)
 
