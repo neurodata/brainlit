@@ -20,6 +20,7 @@ import pickle
 import networkx as nx
 from typing import List, Tuple, Union
 from pathlib import Path
+import time
 
 # import pcurve.pcurve as pcurve
 
@@ -139,7 +140,7 @@ class state_generation:
             [prob_path, fragment_path, tiered_path], ["prob", "frag", "tiered"]
         ):
             if other_im is not None:
-                other_image = zarr.open(other_im, mode="r")
+                other_image = zarr.open_array(other_im, mode="r")
                 if (self.ndims == 4 and other_image.shape != self.image_shape[1:]) or (
                     self.ndims == 3 and other_image.shape != self.image_shape
                 ):
@@ -828,6 +829,36 @@ class state_generation:
 
         self.states_path = states_fname
 
+    def time_edges(self, frag_path=None):
+        viterbrain_fname = str(Path(self.new_layers_dir) / "viterbrain.pickle")
+
+        with open(self.states_path, "rb") as handle:
+            G = pickle.load(handle)
+
+        if frag_path is None:
+            frag_path = self.fragment_path
+
+        viterbrain = ViterBrain(
+            G,
+            self.tiered_path,
+            fragment_path=frag_path,
+            resolution=self.resolution,
+            coef_curv=1000,
+            coef_dist=10,
+            coef_int=1,
+            parallel=self.parallel,
+        )
+        t0 = time.time()
+        viterbrain.frag_frag_dist(0, 10)
+        t1 = time.time()
+
+        total = t1-t0
+        print(total)
+
+        viterbrain._compute_out_costs_dist(states=[0],
+            frag_frag_func=viterbrain.frag_frag_dist,
+            frag_soma_func=viterbrain.frag_soma_dist,)
+
     def compute_edge_weights(self, frag_path=None) -> None:
         """Create viterbrain object and compute edge weights"""
         viterbrain_fname = str(Path(self.new_layers_dir) / "viterbrain.pickle")
@@ -850,11 +881,10 @@ class state_generation:
         )
 
         viterbrain.compute_all_costs_dist(
-            frag_frag_func=viterbrain.frag_frag_dist,
-            frag_soma_func=viterbrain.frag_soma_dist,
+            data_dir=Path(self.new_layers_dir) / "data_temp"
         )
 
-        viterbrain.compute_all_costs_int(frag_frag_func=viterbrain._line_int)
+        viterbrain.compute_all_costs_int()
 
         print(f"# Edges: {viterbrain.nxGraph.number_of_edges()}")
 
