@@ -28,6 +28,7 @@ from brainrender import Scene
 from brainrender.actors import Points, Volume
 import json
 from cloudvolume.exceptions import OutOfBoundsError
+from pathlib import Path
 
 
 class BrainDistribution:
@@ -719,11 +720,13 @@ def _compute_composition_corner(corners, outdir, dir_base_mask, dir_base_s3):
 
 
 def _combine_regional_segmentations(outdir):
+    outdir = Path(outdir)
+
     files = os.listdir(outdir)
     volumes = {}
     for file in tqdm(files, desc="Assembling results"):
         if "pickle" in file:
-            filename = outdir + file
+            filename = outdir / file
             with open(filename, "rb") as f:
                 result = pickle.load(f)
             for key in result.keys():
