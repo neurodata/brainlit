@@ -153,20 +153,13 @@ def process_swc(max_r, ct, swc):
             if len(spline_tree_transformed_ds.nodes) != 1:
                 raise ValueError("transformed spline tree does not have 1 branch")
 
-            # Compute sampling length from downsampled branch
+            # Access original knots and compute sampling length from downsampled branch
             spline = spline_tree_branch_ds.nodes[0]["spline"]
             u = spline[1]
             tck = spline[0]
             pts = splev(u, tck)
             pts = np.stack(pts, axis=1)
             av_sample_distance = np.mean(np.linalg.norm(np.diff(pts, axis=0), axis=1))
-
-            # Access original knots and compute sample distance
-            spline = spline_tree_branch_ds.nodes[0]["spline"]
-            u = spline[1]
-            tck = spline[0]
-            pts = splev(u, tck)
-            pts = np.stack(pts, axis=1)
 
             # Find dense line points
             tck_line, _ = splprep(pts.T, k=1, s=0, u=u)
