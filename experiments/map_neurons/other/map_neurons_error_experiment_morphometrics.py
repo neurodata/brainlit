@@ -11,6 +11,7 @@ from brainlit.map_neurons.map_neurons import (
     compute_derivs,
     CloudReg_Transform,
 )
+from brainlit.map_neurons.utils import resample_neuron, replace_root, zeroth_order_map_neuron, ZerothFirstOrderNeuron
 import pandas as pd
 import seaborn as sns
 import os
@@ -53,12 +54,20 @@ print(
     f"Processing {len(swc_paths)} neurons with a sampling rate of {sampling} and downsampling factor {ds_factors} with max vs of {sigmas} "
 )
 
-def check_duplicates_get_center(ntrace):
-    g = ntrace.get_graph()
-    coords = []
-    for n in g.nodes:
-        coords.append([g.nodes[n][i] for i in ["x", "y", "z"]])
+def check_duplicates_center(neuron):
+    assert len(neuron.branches) == 1
 
+    stack = []
+    stack += neuron.branches[0]
+    coords = []
+
+    while len(stack) > 0:
+        child = stack.pop()
+        stack += child.children
+        coords.append([child.x, child.y, child.z])
+
+    
+    # look for duplicates
     dupes = []
     seen = set()
     for coord in coords:
@@ -67,6 +76,8 @@ def check_duplicates_get_center(ntrace):
             dupes.append(coord)
         else:
             seen.add(coord)
+
+    # center coordinates
     if len(dupes) > 0:
         raise ValueError(f"Duplicate nodes")
     else:
@@ -74,91 +85,17 @@ def check_duplicates_get_center(ntrace):
         mx = np.amax(coords, axis=0)
         mn = np.amin(coords, axis=0)
         center = np.mean(np.array([mx, mn]), axis=0)
-        return center
+        stack = [neuron.branches[0]]
 
+        while len(stack) > 0:
+            child = stack.pop()
+            stack += child.children
 
-def resample_write_swc(neuron, sampling):
-    resample_fname = swc_path.stem + f"_resampled{sampling}.swc"
-    resample_path = swc_path.parent / resample_fname
-
-    neuron = ngauge.Neuron.from_swc(swc_path)
-    neuron = replace_root(neuron)
-    
-    stack = neuron.branches[0].children
-
-    while len(stack) > 0:
-        child = stack.pop()
-        stack += child.children
-
-        parent = child.parent
-        parents_children = parent.children
-        for idx, c in enumerate(parents_children):
-            if c == child:
-                child_idx = idx
-                break
-
-        pt1 = np.array([parent.x, parent.y, parent.z])
-        pt2 = np.array([child.x, child.y, child.z])
-
-        dist = np.linalg.norm(pt2-pt1)
-
-        if dist > sampling:
-            samples = np.arange(sampling, dist, sampling)
-            
-            for n_sample, sample in enumerate(samples):
-                loc = (pt2-pt1)/dist*sample+pt1
-                new_pt = ngauge.TracingPoint(x=loc[0], y=loc[1], z=loc[2], r=1, t=child.t)
-                if n_sample == 0:
-                    first_pt = new_pt
-                else:
-                    new_pt.parent = prev_pt
-                    prev_pt.child = new_pt
-
-                prev_pt = new_pt
-            
-            child.parent = new_pt
-            parents_children.pop(child_idx)
-            parents_children.append(first_pt)
-            parent.children = parents_children
-
+            child.x -= center[0]
+            child.y -= center[1]
+            child.z -= center[2]
+        
     return neuron
-            
-
-
-
-
-
-
-    # ntrace = NeuronTrace(str(swc_path), rounding=False)
-    # g = ntrace.get_graph()
-    # next_id = np.amax(np.unique(list(g.nodes)))+1
-
-    # edges_to_remove = []
-    # for e in g.edges():
-    #     pt1 = [g.nodes[e[0]][coord] for coord in ['x','y','z']]
-
-    #     pt2 = [g.nodes[e[1]][coord] for coord in ['x','y','z']]
-    #     dist = np.linalg.norm(pt2-pt1)
-
-    #     if dist > sampling:
-    #         samples = np.arange(sampling, dist, sampling)
-    #         for n_sample, sample in enumerate(samples):
-    #             loc = (pt2-pt1)*sample/dist+pt1
-    #             g.add_node(next_id, x=loc[0], y=loc[1], z=loc[2])
-    #             if n_sample == 0:
-    #                 g.add_edge(e[0], next_id)
-    #             else:
-    #                 g.add_edge(next_id, next_id-1)
-
-    #             if n_sample == len(samples):
-    #                 g.add_edge(next_id, e[1])
-    #         edges_to_remove.append(e)
-
-    # g.remove_edges_from(edges_to_remove)
-
-    # with open(resample_path, 'wb') as f:
-
-
 
 
 
@@ -166,134 +103,35 @@ def resample_write_swc(neuron, sampling):
 
 
 def process_swc(max_r, ct, swc_path):
-    ntrace = NeuronTrace(str(swc_path), rounding=False)
+    neuron = ngauge.Neuron.from_swc(swc_path)
+    neuron = replace_root(neuron)
+    neuron = check_duplicates_center(neuron)
 
-    center = check_duplicates_get_center(ntrace=ntrace)
+    # neuron_us = resample_neuron(neuron, sampling=2)
+    # neuron_us = zeroth_order_map_neuron(neuron_us, ct)
+    # neuron_us.to_swc(dir / "results"  / f"{stem}-gt.swc")
 
-    resample_write_swc(swc_path, sampling=sampling)
+    # # Zeroth order mapping
+    # neuron = ngauge.Neuron.from_swc(swc_path)
+    # neuron = replace_root(neuron)
+    # neuron = check_duplicates_center(neuron)
 
-    # g = ntrace.get_graph()
-    # G_neuron = GeometricGraph()
-    # for n in g.nodes:
-    #     G_neuron.add_node(
-    #         n, loc=np.array([g.nodes[n][i] for i in ["x", "y", "z"]]) - center
-    #     )
-    # for e in g.edges:
-    #     G_neuron.add_edge(e[0], e[1])
-    # spline_tree = G_neuron.fit_spline_tree_invariant()
+    # neuron = zeroth_order_map_neuron(neuron, ct)
+    # neuron.to_swc(dir / "results"  / f"{stem}-0.swc")
 
-    # for ds_factor in tqdm(
-    #     ds_factors, desc="downsample factors...", leave=False, disable=True
-    # ):
-    #     for branch_id in tqdm(
-    #         spline_tree.nodes, desc="Processing branches...", leave=False, disable=True
-    #     ):
-    #         # Create geometric graph for the branch
-    #         path = spline_tree.nodes[branch_id]["path"]
-    #         x = []
-    #         y = []
-    #         z = []
-    #         s = []
-    #         p = [-1]
+    n = ZerothFirstOrderNeuron(neuron, ct, sampling=2)
 
-    
-    #         for point_num, point_id in enumerate(path):
-    #             loc = G_neuron.nodes[point_id]["loc"]
-    #             x.append(loc[0])
-    #             y.append(loc[1])
-    #             z.append(loc[2])
-    #             s.append(point_num)
-    #             if point_num > 0:
-    #                 p.append(point_num - 1)
+    dir = swc_path.parent
+    stem = swc_path.stem
+    fname = str(dir / "results" / stem)
+    neuron_gt = n.get_gt()
+    neuron_gt.to_swc(str(fname) + "-gt.swc")
 
-    #         dict = {"x": x, "y": y, "z": z, "sample": s, "parent": p}
-    #         df = pd.DataFrame(data=dict)
-    #         G_branch = GeometricGraph(df=df, root=s[0])
-    #         G_branch.fit_spline_tree_invariant()
-    #         spline_tree_branch = G_branch.spline_tree
+    neuron_0, neuron_1 = n.get_transforms()
+    neuron_0.to_swc(str(fname) + "-0.swc")
+    neuron_1.to_swc(str(fname) + "-1.swc")
 
-    #         # downsample
-    #         nodes2keep = [node_i for node_i in range(0, len(s), ds_factor)]
-    #         if s[-1] not in nodes2keep:
-    #             nodes2keep += [s[-1]]
-    #         nodes2remove = [node_i for node_i in s if node_i not in nodes2keep]
-
-    #         G_branch_ds = deepcopy(G_branch)
-    #         G_branch_ds.remove_nodes_from(nodes2remove)
-    #         G_branch_ds.remove_edges_from(list(G_branch.edges))
-    #         for node1, node2 in zip(nodes2keep[:-1], nodes2keep[1:]):
-    #             G_branch_ds.add_edge(node1, node2)
-    #         G_branch_ds.fit_spline_tree_invariant(k=1)
-    #         spline_tree_branch_ds = G_branch_ds.spline_tree
-
-    #         # Compute sampling length from downsampled branch
-    #         spline = spline_tree_branch_ds.nodes[0]["spline"]
-    #         u = spline[1]
-    #         tck = spline[0]
-    #         pts = splev(u, tck)
-    #         pts = np.stack(pts, axis=1)
-    #         av_sample_distance = np.mean(np.linalg.norm(np.diff(pts, axis=0), axis=1))
-
-    #         # Find dense line points
-    #         tck_line, _ = splprep(pts.T, k=1, s=0, u=u)
-    #         u_dense = np.arange(u[0], u[-1], sampling)
-    #         u_dense = np.append(u_dense, u[-1])
-    #         pts_line = splev(u_dense, tck_line)
-    #         pts_line = np.stack(pts_line, axis=1)
-    #         dense_line_pts = ct.evaluate(pts_line)
-
-
-    #         # transform the branch
-    #         G_branch_ds_transformed = deepcopy(G_branch_ds)
-    #         G_branch_ds_transformed = transform_geometricgraph(
-    #             G_branch_ds_transformed, ct, deriv_method="two-sided"
-    #         )
-    #         spline_tree_transformed_ds = G_branch_ds_transformed.spline_tree
-
-
-    #         if len(spline_tree_transformed_ds.nodes) != 1:
-    #             raise ValueError("transformed spline tree does not have 1 branch")
-            
-
-    #         # Find transformed knots
-    #         spline = spline_tree_transformed_ds.nodes[0]["spline"]
-    #         chspline = spline[0]
-    #         u = spline[1]
-    #         u_first_order = np.arange(u[0], u[-1], sampling)
-    #         u_first_order = np.append(u_first_order, u[-1])
-    #         trans_pts = chspline(u)
-
-
-    #         # print("0th Order Mapping...")
-    #         u_line = compute_parameterization(trans_pts)
-    #         tck_line, u_line = splprep(trans_pts.T, k=1, s=0, u=u_line)
-    #         u_line = np.arange(u_line[0], u_line[-1], sampling)
-    #         u_line = np.append(u_line, u[-1])
-    #         zero_order_pts = splev(u_line, tck_line)
-    #         zero_order_pts = np.stack(zero_order_pts, axis=1)
-
-    #         # print("1st order mapping...")
-    #         first_order_pts = chspline(u_first_order)
-
-    #         for method, method_pts in tqdm(
-    #             zip(["Zeroth Order", "First Order"], [zero_order_pts, first_order_pts]),
-    #             total=2,
-    #             leave=False,
-    #             disable=True,
-    #         ):
-    #             if len(dense_line_pts) < np.inf:
-    #                 if dense_line_pts.shape[0] > 1000 or method_pts.shape[0] > 1000:
-    #                     print(
-    #                         f"{nid} comparing {dense_line_pts.shape[0]} with {method_pts.shape[0]}"
-    #                     )
-    #                 error = frechet_dist(dense_line_pts, method_pts)
-
-    #                 res_ds_factors.append(ds_factor)
-    #                 res_methods.append(method)
-    #                 res_errors.append(error)
-    #                 res_av_sample_distances.append(av_sample_distance)
-    #                 res_neurons.append(swc)
-    #                 res_spacings.append(spacing)
+    raise ValueError()
             
 
 
