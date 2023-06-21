@@ -254,6 +254,8 @@ class ZerothFirstOrderNeuron:
 
             coords_us = splev(us_us, tck)
             coords_us = np.stack(coords_us, axis=1)
+            if not resample:
+                assert np.allclose(coords_us, coords)
 
             new_coords = da.evaluate(coords_us)
             spline = splprep([new_coords[:,i] for i in range(new_coords.shape[1])], k=1, u=us_us, s=0)
@@ -372,8 +374,9 @@ class ZerothFirstOrderNeuron:
 
                         node_loc = np.array([node.x, node.y, node.z])
                         if np.linalg.norm(proot_loc - node_loc) < 1e-6:
-                            proot.children[0].parent = node
-                            node.children += [proot]
+                            attach_pt = proot.children[0]
+                            attach_pt.parent = node
+                            node.children += [attach_pt]
                             proots_0.pop(pr_idx)
                             break
                 if len(proots_0) == start_len:
@@ -385,26 +388,27 @@ class ZerothFirstOrderNeuron:
         neuron_0.add_branch(root_0)
 
         with tqdm(total=len(proots_1), desc="joining branches 1", leave=False) as pbar:
-            while len(proots_0) > 0:
-                start_len = len(proots_0)
-                for pr_idx, proot in enumerate(proots_0):
+            while len(proots_1) > 0:
+                start_len = len(proots_1)
+                for pr_idx, proot in enumerate(proots_1):
                     proot_loc = np.array([proot.x, proot.y, proot.z])
                     stack = []
-                    stack += [root_0]
+                    stack += [root_1]
                     while len(stack) > 0:
                         node = stack.pop()
                         stack += node.children
 
                         node_loc = np.array([node.x, node.y, node.z])
                         if np.linalg.norm(proot_loc - node_loc) < 1e-6:
-                            proot.children[0].parent = node
-                            node.children += [proot]
-                            proots_0.pop(pr_idx)
+                            attach_pt = proot.children[0]
+                            attach_pt.parent = node
+                            node.children += [attach_pt]
+                            proots_1.pop(pr_idx)
                             break
-                if len(proots_0) == start_len:
+                if len(proots_1) == start_len:
                     raise ValueError(f"No branches were joined")
                 else:
-                    pbar.update(start_len-len(proots_0))
+                    pbar.update(start_len-len(proots_1))
 
         neuron_1 = ngauge.Neuron()
         neuron_1.add_branch(root_1)
@@ -455,8 +459,9 @@ class ZerothFirstOrderNeuron:
 
                         node_loc = np.array([node.x, node.y, node.z])
                         if np.linalg.norm(proot_loc - node_loc) < 1e-6:
-                            proot.children[0].parent = node
-                            node.children += [proot]
+                            attach_pt = proot.children[0]
+                            attach_pt.parent = node
+                            node.children += [attach_pt]
                             proots.pop(pr_idx)
                             break
                 if len(proots) == start_len:
