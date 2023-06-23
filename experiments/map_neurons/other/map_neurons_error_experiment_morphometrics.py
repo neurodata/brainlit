@@ -15,7 +15,7 @@ from joblib import Parallel, delayed
 import ngauge
 
 # INPUTS
-sigmas = [320] #[40, 80, 160, 320]
+sigmas = [40, 80, 160, 320]
 sampling = 2.0
 ds_factors = [1, 2, 4, 8, 16]
 swc_dir = Path(
@@ -81,33 +81,49 @@ def check_duplicates_center(neuron):
 
 
 def process_swc(sigma, ct, swc_path):
+
+    dir = swc_path.parent
+    stem = swc_path.stem
+    fname = str(dir / "results" / stem)
+    fname_gt = str(fname) + f"-sig-{sigma}-gt.swc"
+    fname_0 = str(fname) + f"-sig-{sigma}-0.swc"
+    fname_1 = str(fname) + f"-sig-{sigma}-1.swc"
+
     neuron = ngauge.Neuron.from_swc(swc_path)
     neuron = replace_root(neuron)
     neuron = check_duplicates_center(neuron)
 
     n = ZerothFirstOrderNeuron(neuron, ct, sampling=2)
 
-    dir = swc_path.parent
-    stem = swc_path.stem
-    fname = str(dir / "results" / stem)
-    neuron_gt = n.get_gt()
-    neuron_gt.to_swc(str(fname) + f"-sig-{sigma}-gt.swc")
+    if not os.path.exists(fname_gt):
+        neuron_gt = n.get_gt()
+        neuron_gt.to_swc(fname_gt)
 
-    neuron_0, neuron_1 = n.get_transforms()
-    neuron_0.to_swc(str(fname) + f"-sig-{sigma}-0.swc")
-    neuron_1.to_swc(str(fname) + f"-sig-{sigma}-1.swc")
+    if not os.path.exists(fname_0) or not os.path.exists(fname_1):
+        neuron_0, neuron_1 = n.get_transforms()
+        neuron_0.to_swc(fname_0)
+        neuron_1.to_swc(fname_1)
 
             
 
 
 for sigma in sigmas:
-    xv, phii = diffeo_gen_ara(sigma)
+    transform_fname = swc_dir.parents[0] / f"exp-morpho-diffeo-{sigma}.pickle"
+    if os.path.exists(transform_fname):
+        with open(transform_fname, "rb") as handle:
+            transform_data = pickle.load(handle)
+            xv = transform_data["xv"]
+            phii = transform_data["phii"]
+    else:
+        xv, phii = diffeo_gen_ara(sigma)
+        transform_data = {"xv": xv, "phii": phii}
+        transform_fname = swc_dir.parents[0] / f"exp-morpho-diffeo-{sigma}.pickle"
+        with open(transform_fname, "wb") as handle:
+            pickle.dump(transform_data, handle)
+
+
     ct = Diffeomorphism_Transform(xv, phii)
 
-    transform_data = {"xv": xv, "phii": phii}
-    transform_fname = swc_dir.parents[0] / f"exp-morpho-diffeo-{sigma}.pickle"
-    with open(transform_fname, "wb") as handle:
-        pickle.dump(transform_data, handle)
 
 
     Parallel(n_jobs=4)(
