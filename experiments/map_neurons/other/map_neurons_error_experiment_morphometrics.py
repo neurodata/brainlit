@@ -1,41 +1,21 @@
-from brainlit.map_neurons.diffeo_gen import expR, diffeo_gen_ara
+from brainlit.map_neurons.diffeo_gen import diffeo_gen_ara
 import numpy as np
-import matplotlib.pyplot as plt
-import torch
-
 from scipy.spatial.distance import cosine
 from brainlit.map_neurons.map_neurons import (
-    DiffeomorphismAction,
     Diffeomorphism_Transform,
-    transform_geometricgraph,
-    compute_derivs,
-    CloudReg_Transform,
 )
-from brainlit.map_neurons.utils import resample_neuron, replace_root, zeroth_order_map_neuron, ZerothFirstOrderNeuron
-import pandas as pd
-import seaborn as sns
+from brainlit.map_neurons.utils import replace_root, ZerothFirstOrderNeuron
 import os
-from cloudvolume import CloudVolume
 from pathlib import Path
-from brainlit.algorithms.trace_analysis.fit_spline import (
-    GeometricGraph,
-    compute_parameterization,
-    CubicHermiteChain,
-)
-from brainlit.utils.Neuron_trace import NeuronTrace
-from copy import deepcopy
 from tqdm import tqdm
-from scipy.interpolate import splev, splprep, CubicHermiteSpline
-from similaritymeasures import frechet_dist
 import os
 import pickle
 from tqdm import tqdm
 from joblib import Parallel, delayed
-from math import sqrt
 import ngauge
 
 # INPUTS
-sigmas = [40, 80, 160, 320]
+sigmas = [320] #[40, 80, 160, 320]
 sampling = 2.0
 ds_factors = [1, 2, 4, 8, 16]
 swc_dir = Path(
@@ -100,24 +80,10 @@ def check_duplicates_center(neuron):
 
 
 
-
-
-def process_swc(max_r, ct, swc_path):
+def process_swc(sigma, ct, swc_path):
     neuron = ngauge.Neuron.from_swc(swc_path)
     neuron = replace_root(neuron)
     neuron = check_duplicates_center(neuron)
-
-    # neuron_us = resample_neuron(neuron, sampling=2)
-    # neuron_us = zeroth_order_map_neuron(neuron_us, ct)
-    # neuron_us.to_swc(dir / "results"  / f"{stem}-gt.swc")
-
-    # # Zeroth order mapping
-    # neuron = ngauge.Neuron.from_swc(swc_path)
-    # neuron = replace_root(neuron)
-    # neuron = check_duplicates_center(neuron)
-
-    # neuron = zeroth_order_map_neuron(neuron, ct)
-    # neuron.to_swc(dir / "results"  / f"{stem}-0.swc")
 
     n = ZerothFirstOrderNeuron(neuron, ct, sampling=2)
 
@@ -125,13 +91,12 @@ def process_swc(max_r, ct, swc_path):
     stem = swc_path.stem
     fname = str(dir / "results" / stem)
     neuron_gt = n.get_gt()
-    neuron_gt.to_swc(str(fname) + "-gt.swc")
+    neuron_gt.to_swc(str(fname) + f"-sig-{sigma}-gt.swc")
 
     neuron_0, neuron_1 = n.get_transforms()
-    neuron_0.to_swc(str(fname) + "-0.swc")
-    neuron_1.to_swc(str(fname) + "-1.swc")
+    neuron_0.to_swc(str(fname) + f"-sig-{sigma}-0.swc")
+    neuron_1.to_swc(str(fname) + f"-sig-{sigma}-1.swc")
 
-    raise ValueError()
             
 
 
@@ -144,7 +109,8 @@ for sigma in sigmas:
     with open(transform_fname, "wb") as handle:
         pickle.dump(transform_data, handle)
 
-    Parallel(n_jobs=1)(
+
+    Parallel(n_jobs=4)(
         delayed(process_swc)(sigma, ct, swc_path)
         for swc_path in tqdm(swc_paths, desc=f"mapping neurons at spacing {sigma}...")
     )

@@ -191,7 +191,7 @@ def remove_path(path):
 
 
 class ZerothFirstOrderNeuron:
-    def __init__(self, neuron, da, sampling):
+    def __init__(self, neuron, da, sampling=None):
         self.sampling = sampling
 
         neuron = replace_root(neuron)
@@ -237,7 +237,7 @@ class ZerothFirstOrderNeuron:
         assert nx.number_of_nodes(DG) == nx.number_of_edges(DG)+1
         return DG
     
-    def ground_truth(self, DG, da, resample=False):
+    def ground_truth(self, DG, da):
         sampling = self.sampling
         for path_node in DG.nodes:
             coords = DG.nodes[path_node]["coords"]
@@ -248,13 +248,13 @@ class ZerothFirstOrderNeuron:
 
             us_us = [us[0]]
             for u1, u2 in zip(us[:-1], us[1:]):
-                if resample and u2 - u1 > sampling:
+                if sampling is not None and u2 - u1 > sampling:
                     us_us += list(np.arange(u1+sampling, u2, sampling))
                 us_us += [u2]
 
             coords_us = splev(us_us, tck)
             coords_us = np.stack(coords_us, axis=1)
-            if not resample:
+            if sampling is None:
                 assert np.allclose(coords_us, coords)
 
             new_coords = da.evaluate(coords_us)
@@ -295,52 +295,59 @@ class ZerothFirstOrderNeuron:
 
         return DG
     
-    def make_path_pts(self, path_node, resample=False):
+    def make_path_pts(self, path_node, root=False):
         DG = self.DG
         sampling = self.sampling
 
         us = DG.nodes[path_node]["u"]
         tck, _ = DG.nodes[path_node]["spline_0"]
 
+
+
+        if root:
+            t1 = 1
+        else:
+            t1 = 2
+
         pt = splev(us[0], tck)
         pt = [float(p) for p in pt]
-        cur_pt_0 = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=1)
+        cur_pt_0 = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=t1)
         root_0 = cur_pt_0
 
         spline1 = DG.nodes[path_node]["spline_1"]
         pt = spline1(us[0])
         pt = [float(p) for p in pt]
-        cur_pt_1 = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=1)
+        cur_pt_1 = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=t1)
         root_1 = cur_pt_1
 
 
         for u1, u2 in zip(us[:-1], us[1:]):
-            if resample and u2 - u1 > sampling:
+            if sampling is not None and u2 - u1 > sampling:
                 us_inter = np.arange(u1+sampling, u2, sampling)
 
                 for u_inter in us_inter:
                     pt = splev(u_inter, tck)
                     pt = [float(p) for p in pt]
-                    new_pt_0 = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=1, parent = cur_pt_0)
+                    new_pt_0 = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=2, parent = cur_pt_0)
                     cur_pt_0.children = [new_pt_0]
                     cur_pt_0 = new_pt_0
 
                     pt = spline1(u_inter)
                     pt = [float(p) for p in pt]
-                    new_pt_1 = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=1, parent = cur_pt_1)
+                    new_pt_1 = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=2, parent = cur_pt_1)
                     cur_pt_1.children = [new_pt_1]
                     cur_pt_1 = new_pt_1
             
 
             pt = splev(u2, tck)
             pt = [float(p) for p in pt]
-            new_pt_0 = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=1, parent = cur_pt_0)
+            new_pt_0 = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=2, parent = cur_pt_0)
             cur_pt_0.children = [new_pt_0]
             cur_pt_0 = new_pt_0
 
             pt = spline1(u2)
             pt = [float(p) for p in pt]
-            new_pt_1 = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=1, parent = cur_pt_1)
+            new_pt_1 = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=2, parent = cur_pt_1)
             cur_pt_1.children = [new_pt_1]
             cur_pt_1 = new_pt_1
 
@@ -354,7 +361,7 @@ class ZerothFirstOrderNeuron:
         proots_1 = []
         for p_idx, path_node in enumerate(DG.nodes): 
             if p_idx == 0: # assumes first path has root
-                root_0, root_1 = self.make_path_pts(path_node)
+                root_0, root_1 = self.make_path_pts(path_node, root=True)
             else: #find path and add to tree
                 proot_0, proot_1 = self.make_path_pts(path_node)
                 proots_0.append(proot_0)
@@ -415,7 +422,7 @@ class ZerothFirstOrderNeuron:
 
         return neuron_0, neuron_1
 
-    def make_paths_pts_gt(self, path_node):
+    def make_paths_pts_gt(self, path_node, root=False):
         DG = self.DG
 
         tck, u = DG.nodes[path_node]["gt"]
@@ -423,12 +430,18 @@ class ZerothFirstOrderNeuron:
         pts = np.stack(pts, axis=1)
         pt = pts[0,:]
         pt = [float(p) for p in pt]
-        cur_pt = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=1)
+
+        if root:
+            t1 = 1
+        else:
+            t1 = 2
+
+        cur_pt = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=t1)
         root = cur_pt
 
         for pt in pts[1:,:]:
             pt = [float(p) for p in pt]
-            new_pt = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=1, parent = cur_pt)
+            new_pt = ngauge.TracingPoint(x = pt[0], y=pt[1], z=pt[2], r=1, t=2, parent = cur_pt)
             cur_pt.children = [new_pt]
             cur_pt = new_pt
 
@@ -441,7 +454,7 @@ class ZerothFirstOrderNeuron:
         proots = []
         for p_idx, path_node in enumerate(DG.nodes): 
             if p_idx == 0: # assumes first path has root
-                root = self.make_paths_pts_gt(path_node)
+                root = self.make_paths_pts_gt(path_node, root=True)
             else: #find path and add to tree
                 proot = self.make_paths_pts_gt(path_node)
                 proots.append(proot)
