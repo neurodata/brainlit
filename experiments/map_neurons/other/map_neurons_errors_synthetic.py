@@ -76,6 +76,7 @@ def check_duplicates_center(neuron):
 
 def process_swc(sigma, ct, swc_path):
     stem = swc_path.stem
+    dir = swc_path.parent
     fname = dir / "results" / stem / f"-sigma-{sigma}.pickle"
 
     neuron = ngauge.Neuron.from_swc(swc_path)
