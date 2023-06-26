@@ -80,13 +80,13 @@ def process_swc(sigma, ct, swc_path):
     fname = dir / "results" / stem / f"-sigma-{sigma}.pickle"
 
     neuron = ngauge.Neuron.from_swc(swc_path)
+    av_seg_len = np.mean(neuron.all_segment_lengths())
     neuron = replace_root(neuron)
     neuron = check_duplicates_center(neuron)
 
     n = ZerothFirstOrderNeuron(neuron, ct, sampling=2)
 
     max_zero_error, max_first_error = n.frechet_errors()
-    av_seg_len = np.mean(n.all_segment_lengths())
 
     methods = ["Zeroth Order", "First Order"]
     errors = [max_zero_error, max_first_error]
@@ -114,7 +114,7 @@ for sigma in sigmas:
 
     ct = Diffeomorphism_Transform(xv, phii)
 
-    Parallel(n_jobs=10)(
+    Parallel(n_jobs=7)(
         delayed(process_swc)(sigma, ct, swc_path)
         for swc_path in tqdm(swc_paths, desc=f"mapping neurons at spacing {sigma}...")
     )
