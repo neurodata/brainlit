@@ -390,7 +390,7 @@ class ZerothFirstOrderNeuron:
         DG = self.DG
         max_zero_error = 0
         max_first_error = 0
-        for path_node in tqdm(DG.nodes, desc="iterating through branches..."):
+        for path_node in tqdm(DG.nodes, desc="iterating through branches...", leave=False):
             zero_error, first_error = self.frechet_errors_path(path_node)
 
             if zero_error > max_zero_error:
