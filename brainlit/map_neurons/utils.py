@@ -4,6 +4,7 @@ import networkx as nx
 from brainlit.algorithms.trace_analysis.fit_spline import CubicHermiteChain
 from scipy.interpolate import splprep, splev
 from tqdm import tqdm
+from similaritymeasures import frechet_dist
 
 def replace_root(neuron):
 
@@ -302,8 +303,6 @@ class ZerothFirstOrderNeuron:
         us = DG.nodes[path_node]["u"]
         tck, _ = DG.nodes[path_node]["spline_0"]
 
-
-
         if root:
             t1 = 1
         else:
@@ -352,6 +351,54 @@ class ZerothFirstOrderNeuron:
             cur_pt_1 = new_pt_1
 
         return root_0, root_1
+
+    def frechet_errors_path(self, path_node):
+        DG = self.DG
+        root_0, root_1 = self.make_path_pts(path_node)
+        tck, u = DG.nodes[path_node]["gt"]
+        coords = splev(u, tck)
+        gt_coords = np.stack(coords, axis=1)
+
+        zero_coords = []
+        stack = []
+        stack += root_0
+        while stack:
+            child = stack.pop()
+            stack += child.children
+            zero_coords.append([child.x, child.y, child.z])
+
+        zero_coords =  np.array(zero_coords)
+
+        first_coords = []
+        stack = []
+        stack += root_1
+        while stack:
+            child = stack.pop()
+            stack += child.children
+            first_coords.append([child.x, child.y, child.z])
+
+        first_coords =  np.array(zero_coords)
+
+        zero_error = frechet_dist(gt_coords, zero_coords)
+        first_error = frechet_dist(gt_coords, first_coords)
+
+        return zero_error, first_error
+
+
+
+    def frechet_errors(self):
+        DG = self.DG
+        max_zero_error = 0
+        max_first_error = 0
+        for path_node in DG.nodes:
+            zero_error, first_error = self.frechet_errors_path(path_node)
+
+            if zero_error > max_zero_error:
+                max_zero_error = zero_error
+            if first_error > max_first_error:
+                max_first_error = first_error
+
+        return max_zero_error, max_first_error
 
 
     def get_transforms(self):
