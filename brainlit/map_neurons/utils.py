@@ -377,7 +377,7 @@ class ZerothFirstOrderNeuron:
             stack += child.children
             first_coords.append([child.x, child.y, child.z])
 
-        first_coords =  np.array(zero_coords)
+        first_coords =  np.array(first_coords)
 
         zero_error = frechet_dist(gt_coords, zero_coords)
         first_error = frechet_dist(gt_coords, first_coords)

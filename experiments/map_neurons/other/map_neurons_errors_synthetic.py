@@ -76,8 +76,9 @@ def check_duplicates_center(neuron):
 
 def process_swc(sigma, ct, swc_path):
     stem = swc_path.stem
+    fname = str(stem) + f"-sigma-{sigma}.pickle"
     dir = swc_path.parent
-    fname = dir / "results" / stem / f"-sigma-{sigma}.pickle"
+    fname = dir / "results" / fname  
 
     neuron = ngauge.Neuron.from_swc(swc_path)
     av_seg_len = np.mean(neuron.all_segment_lengths())
