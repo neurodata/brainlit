@@ -192,15 +192,16 @@ def remove_path(path):
 
 
 class ZerothFirstOrderNeuron:
-    def __init__(self, neuron, da, sampling=None):
+    def __init__(self, neuron, da=None, sampling=None):
         self.sampling = sampling
 
         neuron = replace_root(neuron)
         DG = self.create_path_graph(neuron)
 
-        DG = self.ground_truth(DG, da)
-        DG = self.zeroth_order(DG, da)
-        DG = self.first_order(DG, da)
+        if da is not None:
+            DG = self.ground_truth(DG, da)
+            DG = self.zeroth_order(DG, da)
+            DG = self.first_order(DG, da)
 
         self.DG = DG
 
