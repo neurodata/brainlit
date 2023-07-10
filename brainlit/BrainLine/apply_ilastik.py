@@ -62,7 +62,7 @@ class ApplyIlastik:
                 stderr=subprocess.PIPE,
             )
 
-    def process_subvols(self, ncpu: int = 6):
+    def process_subvols(self, dset: str = 'val', ncpu: int = 6):
         """Apply ilastik to all validation subvolumes of the specified brain ids in the specified directory
 
         Args:
@@ -76,7 +76,7 @@ class ApplyIlastik:
                 brain_name = "r2"
             else:
                 brain_name = brain
-            path = f"{self.brains_path}brain{brain_name}/val/"
+            path = f"{self.brains_path}brain{brain_name}/{dset}/"
 
             items_total += _find_sample_names(path, dset="", add_dir=True)
 
@@ -113,6 +113,7 @@ def plot_results(
     brain_ids: list,
     object_type: str,
     positive_channel: int,
+    dset: str = "val",
     doubles: list = [],
     show_plot: bool = True,
 ):
@@ -150,7 +151,7 @@ def plot_results(
             brain_name = "r2"
         else:
             brain_name = brain_id
-        base_dir = data_dir + f"/brain{brain_name}/val/"
+        base_dir = data_dir + f"/brain{brain_name}/{dset}/"
         data_files = _find_sample_names(base_dir, dset="", add_dir=True)
         test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
 
@@ -166,6 +167,7 @@ def plot_results(
                 pred = f.get("exported_data")
                 pred = pred[positive_channel, :, :, :]
                 mask = pred > threshold
+                cntr = [s // 2 for s in mask.shape]
 
                 if object_type == "soma":
                     if filename.split("/")[-1] in doubles:
@@ -178,9 +180,14 @@ def plot_results(
                     if "pos" in filename:
                         num_detected = 0
                         tot_pos += newpos
+                        no_cntr_yet = True
                         for prop in props:
                             if prop["area"] > size_thresh:
-                                if num_detected < newpos:
+                                if labels[cntr[0], cntr[1], cntr[2]] == prop["label"]:
+                                    true_pos += 1
+                                    num_detected += 1
+                                    no_cntr_yet = False
+                                elif num_detected < newpos - no_cntr_yet:
                                     true_pos += 1
                                     num_detected += 1
                                 else:
@@ -270,6 +277,7 @@ def examine_threshold(
     threshold: float,
     object_type: str,
     positive_channel: int,
+    dset: str = "val",
     doubles: list = [],
     show_plot: bool = True,
 ):
@@ -288,7 +296,7 @@ def examine_threshold(
         ValueError: If object_type is neither axon nor soma
         ValueError: If positive_channel is not 0 or 1.
     """
-    base_dir = data_dir + f"/brain{brain_id}/val/"
+    base_dir = data_dir + f"/brain{brain_id}/{dset}/"
 
     data_files = _find_sample_names(base_dir, dset="", add_dir=True)
     test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
@@ -303,6 +311,7 @@ def examine_threshold(
         pred = f.get("exported_data")
         pred = pred[positive_channel, :, :, :]
         mask = pred > threshold
+        cntr = [s // 2 for s in mask.shape]
 
         if object_type == "soma":
             if filename.split("/")[-1] in doubles:
@@ -313,18 +322,22 @@ def examine_threshold(
             labels = measure.label(mask)
             props = measure.regionprops(labels)
             if "pos" in filename:
+                no_cntr_yet = True
                 num_detected = 0
                 for prop in props:
                     area = prop["area"]
                     if area > size_thresh:
-                        num_detected += 1
                         print(f"area of detected object: {area}")
-                        if num_detected > newpos and show_plot:
+                        if labels[cntr[0], cntr[1], cntr[2]] == prop["label"]:
+                            num_detected += 1
+                        elif num_detected < newpos - no_cntr_yet:
+                            num_detected += 1
+                        elif show_plot:
                             print(f"Soma false positive Area: {area}")
                             f = h5py.File(im_fname, "r")
                             im = f.get("image_3channel")
                             viewer = napari.Viewer(ndisplay=3)
-                            viewer.add_image(im[0, :, :, :], name=filename)
+                            viewer.add_image(im[0, :, :, :], name=filename.split("/")[-1])
                             viewer.add_image(im[1, :, :, :], name="bg")
                             viewer.add_image(im[2, :, :, :], name="endo")
                             viewer.add_labels(mask)
@@ -333,12 +346,12 @@ def examine_threshold(
                                 name=f"soma false positive area: {area}",
                             )
 
-                if num_detected == 0 and show_plot:
+                if num_detected < newpos and show_plot:
                     print(f"Soma false negative")
                     f = h5py.File(im_fname, "r")
                     im = f.get("image_3channel")
                     viewer = napari.Viewer(ndisplay=3)
-                    viewer.add_image(im[0, :, :, :], name=filename)
+                    viewer.add_image(im[0, :, :, :], name=filename.split("/")[-1])
                     viewer.add_image(im[1, :, :, :], name="bg")
                     viewer.add_image(im[2, :, :, :], name="endo")
                     viewer.add_labels(mask, name="Soma false negative")
@@ -351,7 +364,7 @@ def examine_threshold(
                         f = h5py.File(im_fname, "r")
                         im = f.get("image_3channel")
                         viewer = napari.Viewer(ndisplay=3)
-                        viewer.add_image(im[0, :, :, :], name=filename)
+                        viewer.add_image(im[0, :, :, :], name=filename.split("/")[-1])
                         viewer.add_image(im[1, :, :, :], name="bg")
                         viewer.add_image(im[2, :, :, :], name="endo")
                         viewer.add_labels(mask)

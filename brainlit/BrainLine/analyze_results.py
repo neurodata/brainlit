@@ -403,11 +403,12 @@ class SomaDistribution(BrainDistribution):
             "hue": "Subtype",
             "data": df,
             # "jitter": False,
-            "dodge": True,
+            "dodge": True
         }
 
         sns.set(font_scale=2)
-        bplot = sns.barplot(ax=axes[0], orient="h", **fig_args)
+        bplot = sns.boxplot(ax=axes[0], orient="h", **fig_args)
+        bplot = sns.stripplot(ax=axes[0], orient="h", **fig_args)
         bplot.set_xscale("log")
 
         if len(subtypes) > 1:
@@ -425,14 +426,15 @@ class SomaDistribution(BrainDistribution):
             "dodge": True,
         }
 
-        bplot = sns.barplot(ax=axes[1], orient="h", **fig_args)
+        bplot = sns.boxplot(ax=axes[1], orient="h", **fig_args)
+        bplot = sns.stripplot(ax=axes[1], orient="h", **fig_args)
         bplot.set_xscale("log")
 
         if len(subtypes) > 1:
             annotator = self._configure_annotator(
                 df, axes[1], "Percent of Total Somas (%)"
             )
-            annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+            annotator.new_plot(bplot, orient="h", plot="boxplot", **fig_args)
             annotator.apply_and_annotate()
 
         # third panel
@@ -447,7 +449,8 @@ class SomaDistribution(BrainDistribution):
             }
 
             sns.set(font_scale=2)
-            bplot = sns.barplot(ax=axes[2], orient="h", **fig_args)
+            bplot = sns.boxplot(ax=axes[2], orient="h", **fig_args)
+            bplot = sns.stripplot(ax=axes[2], orient="h", **fig_args)
             bplot.set_xscale("log")
 
             if len(subtypes) > 1:
@@ -577,18 +580,18 @@ class SomaDistribution(BrainDistribution):
                 region_name.append(region_component_name)
                 brain_ids_data.append(brain_id)
 
-            d = {
-                "Somas (#)": somas,
-                "Percent of Total Somas (%)": somas_pct,
-                "Subtype": subtypes,
-                "Region": region_name,
-                "Brain ID": brain_ids_data,
-            }
-            if normalize_region >= 0:
-                d["Normalized Somas"] = somas_norm
+        d = {
+            "Somas (#)": somas,
+            "Percent of Total Somas (%)": somas_pct,
+            "Subtype": subtypes,
+            "Region": region_name,
+            "Brain ID": brain_ids_data,
+        }
+        if normalize_region >= 0:
+            d["Normalized Somas"] = somas_norm
 
-            df = pd.DataFrame(data=d)
-            return df
+        df = pd.DataFrame(data=d)
+        return df
 
     def _configure_annotator(self, df, axis, ind_variable: str):
         subtype_counts = self._get_subtype_counts()

@@ -243,6 +243,17 @@
                 "somas_layer": "soma_val",
                 "nonsomas_layer": "nonsoma_val"
             },
+            "starter_train_info": {
+                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=VtRhZ5QnhI8zwg",
+                "somas_layer": "start_train",
+                "nonsomas_layer": "nonstart_train"
+            },
+            "starter_val_info": {
+                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=gsyqncI0pPKP8g",
+                "somas_layer": "start_val",
+                "nonsomas_layer": "nonstart_val",
+                "bounds": [[2100,5500,1100], [3100, 6500, 2000]]
+            },
             "subtype": "gad2 vgat",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=LQlB_2tJGgxGHw"
         },
