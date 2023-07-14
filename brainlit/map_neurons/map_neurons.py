@@ -99,7 +99,7 @@ class Diffeomorphism_Transform(DiffeomorphismAction):
         transformed_deriv = deriv.copy()
         for i, (pos, d) in enumerate(tqdm(zip(position, deriv), desc="Computing transformed derivatives...", disable=not verbose, total=len(position))):
             J = self.Jacobian(pos),
-            transformed_deriv[i, :] = np.matmul(J, d).T
+            transformed_deriv[i, :] = np.squeeze(np.matmul(J, d).T)
 
         return transformed_deriv
 

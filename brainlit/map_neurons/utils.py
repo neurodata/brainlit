@@ -286,7 +286,7 @@ class ZerothFirstOrderNeuron:
             diffs /= np.repeat(np.linalg.norm(diffs, axis=1)[:, np.newaxis], 3, axis=1)
             left_dydx = diffs
             right_dydx = diffs
-
+            
             new_left_dydx = da.D(y[:-1,:], left_dydx)
             new_right_dydx = da.D(y[1:,:], right_dydx)
             new_y = da.evaluate(y)
