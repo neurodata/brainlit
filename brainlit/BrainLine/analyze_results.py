@@ -29,6 +29,7 @@ from brainrender.actors import Points, Volume
 import json
 from cloudvolume.exceptions import OutOfBoundsError
 from pathlib import Path
+import dcor
 
 
 class BrainDistribution:
@@ -407,13 +408,14 @@ class SomaDistribution(BrainDistribution):
         }
 
         sns.set(font_scale=2)
+        bplot = sns.stripplot(ax=axes[0], orient="h", legend=False, **fig_args)
+        fig_args["boxprops"] = {'facecolor':'none'}
         bplot = sns.boxplot(ax=axes[0], orient="h", **fig_args)
-        bplot = sns.stripplot(ax=axes[0], orient="h", **fig_args)
         bplot.set_xscale("log")
 
         if len(subtypes) > 1:
             annotator = self._configure_annotator(df, axes[0], "Somas (#)")
-            annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+            annotator.new_plot(bplot, orient="h", plot="boxplot", **fig_args)
             annotator.apply_and_annotate()
 
         # second panel
@@ -426,8 +428,9 @@ class SomaDistribution(BrainDistribution):
             "dodge": True,
         }
 
+        bplot = sns.stripplot(ax=axes[1], orient="h", legend=False, **fig_args)
+        fig_args["boxprops"] = {'facecolor':'none'}
         bplot = sns.boxplot(ax=axes[1], orient="h", **fig_args)
-        bplot = sns.stripplot(ax=axes[1], orient="h", **fig_args)
         bplot.set_xscale("log")
 
         if len(subtypes) > 1:
@@ -449,13 +452,14 @@ class SomaDistribution(BrainDistribution):
             }
 
             sns.set(font_scale=2)
+            bplot = sns.stripplot(ax=axes[2], orient="h", legend=False, **fig_args)
+            fig_args["boxprops"] = {'facecolor':'none'}
             bplot = sns.boxplot(ax=axes[2], orient="h", **fig_args)
-            bplot = sns.stripplot(ax=axes[2], orient="h", **fig_args)
             bplot.set_xscale("log")
 
             if len(subtypes) > 1:
                 annotator = self._configure_annotator(df, axes[2], "Normalized Somas")
-                annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+                annotator.new_plot(bplot, orient="h", plot="boxplot", **fig_args)
                 annotator.apply_and_annotate()
 
         fig.tight_layout()
@@ -638,6 +642,62 @@ class SomaDistribution(BrainDistribution):
         )
 
         return annotator
+
+    def dcorr_test(self, subtype1, subtype2, bin_size = [2000,2000,2000]):
+        brain2paths = self.brain2paths
+        brain_ids = self.brain_ids
+        atlas_points = self.atlas_points
+
+        bin_size = np.array(bin_size)
+        atlas_vol = CloudVolume(brain2paths["atlas"]["url"])
+        shp = np.array(atlas_vol.shape[:3])
+        res = np.array(atlas_vol.resolution) / 1000
+        bin_size_vox = np.divide(bin_size, res)
+
+        subtypes = []
+        vectors = []
+        for brain_id in tqdm(brain_ids, desc="Building feature vectors..."):
+            if brain2paths[brain_id]["subtype"] == subtype1:
+                subtypes.append(0)
+            elif brain2paths[brain_id]["subtype"] == subtype2:
+                subtypes.append(1)
+            else:
+                continue
+
+            blocks = np.zeros([int(s / b) + 1 for s,b in zip(shp, bin_size_vox)])
+            points = atlas_points[brain_id]
+            for xi, x in enumerate(np.arange(0, shp[0], bin_size_vox[0])):
+                for yi, y in enumerate(np.arange(0, shp[1], bin_size_vox[1])):
+                    for zi, z in enumerate(np.arange(0, shp[2], bin_size_vox[2])):
+                        bin_points = points[(points[:,0] >= x) & (points[:,0] < x+bin_size_vox[0]) & (points[:,1] >= y) & (points[:,1] < y+bin_size_vox[1]) & (points[:,2] >= z) & (points[:,2] < z+bin_size_vox[2]),:]
+                        blocks[xi, yi, zi] = bin_points.shape[0]
+                        # raise ValueError()
+            vector = np.array(blocks.flatten(), dtype='float')
+            vector /= np.sum(vector)
+
+            vectors.append(vector)
+        subtypes = np.array(subtypes)
+        vectors = np.array(vectors)
+
+
+        print(dcor.independence.distance_covariance_test(subtypes, vectors))
+
+
+        z = 800
+        if "filepath" in brain2paths["atlas"].keys():
+            vol_atlas = io.imread(brain2paths["atlas"]["filepath"])
+        else:
+            vol_atlas = CloudVolume(brain2paths["atlas"]["url"])
+
+        slice = np.squeeze(vol_atlas[z, :, :])
+        newslice, borders, half_width = self._slicetolabels(slice, fold_on=False)
+        v = napari.Viewer()
+        v.add_image(np.squeeze(blocks[int(10*z / bin_size[0]),:,:]), scale=[bin_size[1], bin_size[2]], name="block")
+        v.add_labels(borders * 2, scale=[10, 10], name=f"z={z}")
+
+        v.scale_bar.unit = "um"
+        v.scale_bar.visible = True
+        napari.run()
 
 
 def _log_ttest_ind(group_data1, group_data2, verbose=1, **stats_params):
@@ -1044,12 +1104,14 @@ class AxonDistribution(BrainDistribution):
         }
 
         sns.set(font_scale=2)
-        bplot = sns.barplot(ax=axes[0], orient="h", **fig_args)
+        bplot = sns.stripplot(ax=axes[0], orient="h", legend=False, **fig_args)
+        fig_args["boxprops"] = {'facecolor':'none'}
+        bplot = sns.boxplot(ax=axes[0], orient="h", **fig_args)
         bplot.set_xscale("log")
 
         if len(subtypes) > 1:
             annotator = self._configure_annotator(df, axes[0], "Axon Density (%)")
-            annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+            annotator.new_plot(bplot, orient="h", plot="boxplot", **fig_args)
             annotator.apply_and_annotate()
 
         # second panel
@@ -1062,14 +1124,16 @@ class AxonDistribution(BrainDistribution):
             "dodge": True,
         }
 
-        bplot = sns.barplot(ax=axes[1], orient="h", **fig_args)
+        bplot = sns.stripplot(ax=axes[1], orient="h", legend=False, **fig_args)
+        fig_args["boxprops"] = {'facecolor':'none'}
+        bplot = sns.boxplot(ax=axes[1], orient="h", **fig_args)
         bplot.set_xscale("log")
 
         if len(subtypes) > 1:
             annotator = self._configure_annotator(
                 df, axes[1], "Percent Total Axon Volume (%)"
             )
-            annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+            annotator.new_plot(bplot, orient="h", plot="boxplot", **fig_args)
             annotator.apply_and_annotate()
 
         if normalize_region >= 0:
@@ -1084,14 +1148,16 @@ class AxonDistribution(BrainDistribution):
             }
 
             sns.set(font_scale=2)
-            bplot = sns.barplot(ax=axes[2], orient="h", **fig_args)
+            bplot = sns.stripplot(ax=axes[2], orient="h", legend=False, **fig_args)
+            fig_args["boxprops"] = {'facecolor':'none'}
+            bplot = sns.boxplot(ax=axes[2], orient="h", **fig_args)
             bplot.set_xscale("log")
 
             if len(subtypes) > 1:
                 annotator = self._configure_annotator(
                     df, axes[2], "Normalized Axon Density"
                 )
-                annotator.new_plot(bplot, orient="h", plot="barplot", **fig_args)
+                annotator.new_plot(bplot, orient="h", plot="boxplot", **fig_args)
                 annotator.apply_and_annotate()
 
         fig.tight_layout()
