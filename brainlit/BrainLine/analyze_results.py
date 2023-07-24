@@ -30,6 +30,7 @@ import json
 from cloudvolume.exceptions import OutOfBoundsError
 from pathlib import Path
 import dcor
+import random
 
 
 class BrainDistribution:
@@ -121,12 +122,40 @@ class SomaDistribution(BrainDistribution):
         data_file: str,
         ontology_file: str,
         show_plots: bool = True,
+        bootstrap: int = 0,
+        shuffle: bool = False
     ):
         super().__init__(brain_ids, data_file, ontology_file)
         self.show_plots = show_plots
 
         atlas_points = self._retrieve_soma_coords(brain_ids)
         self.atlas_points = atlas_points
+
+        if shuffle:
+            subtypes = []
+            for brain_id in brain_ids:
+                subtypes.append(self.brain2paths[brain_id]["subtype"])
+            random.shuffle(subtypes)
+            for subtype, brain_id in zip(subtypes,brain_ids):
+                self.brain2paths[brain_id]["subtype"] = subtype
+
+
+        if bootstrap > 0:
+            new_ids = []
+            for brain_id in tqdm(brain_ids, desc="bootstrapping..."):
+                subtype = self.brain2paths[brain_id]["subtype"]
+                for bootstrap_iter in range(bootstrap):
+                    name = f"{brain_id}-{bootstrap_iter}"
+                    n = atlas_points[brain_id].shape[0]
+                    sample = np.random.randint(0, n, size=n)
+                    pts = atlas_points[brain_id][sample,:]
+
+                    self.atlas_points[name] = pts
+                    new_ids.append(name)
+                    self.subtype_counts[subtype] += 1
+                    self.brain2paths[name] = {"subtype": subtype}
+            self.brain_ids += new_ids
+
 
         id_to_regioncounts_l = self._get_regions(atlas_points, side="l")
         self.id_to_regioncounts = id_to_regioncounts_l
@@ -391,9 +420,9 @@ class SomaDistribution(BrainDistribution):
         subtypes = df["Subtype"].unique()
 
         if normalize_region >= 0:
-            fig, axes = plt.subplots(1, 3, figsize=(39, 20))
+            fig, axes = plt.subplots(2, 3, figsize=(39, 40), dpi=300)
         else:
-            fig, axes = plt.subplots(1, 2, figsize=(26, 20))
+            fig, axes = plt.subplots(2, 2, figsize=(26, 40), dpi=300)
 
         sns.set(font_scale=2)
 
@@ -408,57 +437,66 @@ class SomaDistribution(BrainDistribution):
         }
 
         sns.set(font_scale=2)
-        bplot = sns.stripplot(ax=axes[0], orient="h", legend=False, **fig_args)
+        bplot = sns.stripplot(ax=axes[0,0], orient="h", legend=False, **fig_args)
         fig_args["boxprops"] = {'facecolor':'none'}
-        bplot = sns.boxplot(ax=axes[0], orient="h", **fig_args)
+        bplot = sns.boxplot(ax=axes[0,0], orient="h", **fig_args)
         bplot.set_xscale("log")
 
+        fig_args.pop("dodge")
+        fig_args.pop("boxprops")
+        fig_args["style"] = "Brain ID"
+        sns.scatterplot(ax=axes[1,0], **fig_args)
+        bplot.set_xscale("log")
+        fig_args.pop("style")
+
         if len(subtypes) > 1:
-            annotator = self._configure_annotator(df, axes[0], "Somas (#)")
+            annotator = self._configure_annotator(df, axes[0,0], "Somas (#)")
             annotator.new_plot(bplot, orient="h", plot="boxplot", **fig_args)
             annotator.apply_and_annotate()
 
         # second panel
-        fig_args = {
-            "x": "Percent of Total Somas (%)",
-            "y": "Region",
-            "hue": "Subtype",
-            "data": df,
-            # "jitter": False,
-            "dodge": True,
-        }
+        fig_args["x"] = "Percent of Total Somas (%)"
+        fig_args["dodge"] = True
 
-        bplot = sns.stripplot(ax=axes[1], orient="h", legend=False, **fig_args)
+        bplot = sns.stripplot(ax=axes[0,1], orient="h", legend=False, **fig_args)
         fig_args["boxprops"] = {'facecolor':'none'}
-        bplot = sns.boxplot(ax=axes[1], orient="h", **fig_args)
+        bplot = sns.boxplot(ax=axes[0,1], orient="h", **fig_args)
         bplot.set_xscale("log")
+
+        fig_args.pop("dodge")
+        fig_args.pop("boxprops")
+        fig_args["style"] = "Brain ID"
+        sns.scatterplot(ax=axes[1,1], **fig_args)
+        bplot.set_xscale("log")
+        fig_args.pop("style")
 
         if len(subtypes) > 1:
             annotator = self._configure_annotator(
-                df, axes[1], "Percent of Total Somas (%)"
+                df, axes[0,1], "Percent of Total Somas (%)"
             )
             annotator.new_plot(bplot, orient="h", plot="boxplot", **fig_args)
             annotator.apply_and_annotate()
 
         # third panel
         if normalize_region >= 0:
-            fig_args = {
-                "x": "Normalized Somas",
-                "y": "Region",
-                "hue": "Subtype",
-                "data": df,
-                # "jitter": False,
-                "dodge": True,
-            }
+            fig_args["x"]= "Normalized Somas"
+            fig_args["dodge"] = True
 
             sns.set(font_scale=2)
-            bplot = sns.stripplot(ax=axes[2], orient="h", legend=False, **fig_args)
+            bplot = sns.stripplot(ax=axes[0,2], orient="h", legend=False, **fig_args)
             fig_args["boxprops"] = {'facecolor':'none'}
-            bplot = sns.boxplot(ax=axes[2], orient="h", **fig_args)
+            bplot = sns.boxplot(ax=axes[0,2], orient="h", **fig_args)
             bplot.set_xscale("log")
 
+            fig_args.pop("dodge")
+            fig_args.pop("boxprops")
+            fig_args["style"] = "Brain ID"
+            sns.scatterplot(ax=axes[1,2], **fig_args)
+            bplot.set_xscale("log")
+            fig_args.pop("style")
+
             if len(subtypes) > 1:
-                annotator = self._configure_annotator(df, axes[2], "Normalized Somas")
+                annotator = self._configure_annotator(df, axes[0,2], "Normalized Somas")
                 annotator.new_plot(bplot, orient="h", plot="boxplot", **fig_args)
                 annotator.apply_and_annotate()
 
