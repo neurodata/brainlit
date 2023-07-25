@@ -364,6 +364,8 @@ class SomaDistribution(BrainDistribution):
         scene.add_brain_region(brain_region, alpha=0.15)
 
         for brain_id in brain_ids:
+            if "somas_atlas_path" in brain2paths[brain_id].keys():
+                continue
             viz_link = brain2paths[brain_id]["somas_atlas_url"]
             viz_link = NGLink(viz_link.split("json_url=")[-1])
             ngl_json = viz_link._json
