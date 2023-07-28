@@ -35,6 +35,9 @@ REQUIRED_PACKAGES = [
     "similaritymeasures>=0.4.4",
     "statannotations>=0.4.4",
     "igneous-pipeline",
+    "torch",
+    "torchvision",
+    "torchaudio"
 ]
 
 # Find savanna version.
