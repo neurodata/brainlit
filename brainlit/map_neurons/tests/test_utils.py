@@ -1,9 +1,17 @@
-from brainlit.map_neurons.utils import replace_root, resample_neuron, split_paths, find_longest_path, remove_path, ZerothFirstOrderNeuron
+from brainlit.map_neurons.utils import (
+    replace_root,
+    resample_neuron,
+    split_paths,
+    find_longest_path,
+    remove_path,
+    ZerothFirstOrderNeuron,
+)
 from brainlit.map_neurons.map_neurons import DiffeomorphismAction
 import ngauge
-import pytest 
+import pytest
 import numpy as np
 from scipy.interpolate import splprep, splev
+
 
 @pytest.fixture(scope="session")
 def init_swc_text():
@@ -15,7 +23,7 @@ def init_swc_text():
     for branch_idx, idx in enumerate(range(2, 5)):
         node = f"{idx} 2 {spac*(branch_idx+1)+1} 0 0 1 {idx-1}"
         text.append(node)
-    
+
     new_branch = f"5 3 0 {spac+1} 0 1 1"
     text.append(new_branch)
     for branch_idx, idx in enumerate(range(6, 9)):
@@ -24,12 +32,14 @@ def init_swc_text():
 
     return text
 
+
 class IdentityAction(DiffeomorphismAction):
     def evaluate(self, position: np.array) -> np.array:
         return position
-    
+
     def D(self, position, deriv, order=1):
         return deriv
+
 
 def check_single_child(start_nodes):
     stack = []
@@ -39,6 +49,7 @@ def check_single_child(start_nodes):
         stack += child.children
 
         assert len(child.children) <= 1
+
 
 def test_replace_root(init_swc_text):
     text = init_swc_text
@@ -62,11 +73,12 @@ def test_replace_root(init_swc_text):
     # new root has correct children
     assert len(root.children) == 2
     a_child = root.children[1]
-    assert np.isclose(np.linalg.norm([a_child.x,a_child.y,a_child.z]), 5)
+    assert np.isclose(np.linalg.norm([a_child.x, a_child.y, a_child.z]), 5)
 
     # new root's children has correct parent
     for child in root.children:
         assert child.parent == root
+
 
 def test_resample_neuron(init_swc_text):
     text = init_swc_text
@@ -75,12 +87,12 @@ def test_resample_neuron(init_swc_text):
     # original child if root is 5 away from origin
     a_root = neuron.branches[0]
     a_child = a_root.children[0]
-    assert np.isclose(np.linalg.norm([a_child.x,a_child.y,a_child.z]), 5)
+    assert np.isclose(np.linalg.norm([a_child.x, a_child.y, a_child.z]), 5)
 
     neuron = replace_root(neuron)
     og_root = neuron.branches[0]
 
-    neuron = resample_neuron(neuron, sampling = 1.)
+    neuron = resample_neuron(neuron, sampling=1.0)
     assert og_root == neuron.branches[0]
 
     root = neuron.branches[0]
@@ -95,13 +107,13 @@ def test_resample_neuron(init_swc_text):
         stack += child.children
         parent = child.parent
 
-
         pt1 = [parent.x, parent.y, parent.z]
         pt2 = [child.x, child.y, child.z]
 
-        assert np.linalg.norm(np.subtract(pt2, pt1)) <= 1.
+        assert np.linalg.norm(np.subtract(pt2, pt1)) <= 1.0
 
     assert counter == 30
+
 
 def test_find_longest_path(init_swc_text):
     text = init_swc_text
@@ -138,8 +150,7 @@ def test_remove_path(init_swc_text):
 
     assert len(subtrees) == 1
     assert subtrees[0][0].parent == subtrees[0][1]
-    assert np.linalg.norm([subtrees[0][0].x,subtrees[0][0].y,subtrees[0][0].z]) == 5
-
+    assert np.linalg.norm([subtrees[0][0].x, subtrees[0][0].y, subtrees[0][0].z]) == 5
 
 
 def test_split_paths(init_swc_text):
@@ -149,7 +160,6 @@ def test_split_paths(init_swc_text):
 
     paths = split_paths(neuron.branches[0])
 
-
     assert len(paths) == 2
 
     assert len(paths[0]) == 5
@@ -157,6 +167,7 @@ def test_split_paths(init_swc_text):
 
     assert len(paths[1]) == 4
     assert paths[1][-1].x == 13
+
 
 def test_ZerothFirstOrderNeuron(init_swc_text):
     sampling = 1
@@ -175,23 +186,22 @@ def test_ZerothFirstOrderNeuron(init_swc_text):
     assert len(DG.nodes[1]["path"]) == 4
     assert DG.nodes[1]["path"][-1].x == 13
 
-
     # check gt
     tck, u = DG.nodes[0]["gt"]
     dists = np.diff(u)
     assert np.amax(dists) < sampling
     pt = splev(u[0], tck)
-    assert np.isclose(pt, [0,0,0]).all()
+    assert np.isclose(pt, [0, 0, 0]).all()
     pt = splev(u[-1], tck)
-    assert np.isclose(pt, [0,17,0]).all()
+    assert np.isclose(pt, [0, 17, 0]).all()
 
     tck, u = DG.nodes[1]["gt"]
     dists = np.diff(u)
     assert np.amax(dists) < sampling
     pt = splev(u[0], tck)
-    assert np.isclose(pt, [0,0,0]).all()
+    assert np.isclose(pt, [0, 0, 0]).all()
     pt = splev(u[-1], tck)
-    assert np.isclose(pt, [13,0,0]).all()
+    assert np.isclose(pt, [13, 0, 0]).all()
 
     neuron = zon.get_gt()
     assert neuron.total_tip_nodes() == 2
@@ -199,5 +209,3 @@ def test_ZerothFirstOrderNeuron(init_swc_text):
     neuron_0, neuron_1 = zon.get_transforms()
     assert neuron_0.total_tip_nodes() == 2
     assert neuron_1.total_tip_nodes() == 2
-
-

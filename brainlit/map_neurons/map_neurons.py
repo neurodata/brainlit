@@ -78,7 +78,9 @@ class Diffeomorphism_Transform(DiffeomorphismAction):
 
         return J
 
-    def D(self, position: np.array, deriv: np.array, order: int = 1, verbose=False) -> np.array:
+    def D(
+        self, position: np.array, deriv: np.array, order: int = 1, verbose=False
+    ) -> np.array:
         """Compute transformed derivatives of mapping at given positions. Only for the non-affine component.
 
         Args:
@@ -97,8 +99,15 @@ class Diffeomorphism_Transform(DiffeomorphismAction):
             raise ValueError(f"Argument order must be 1, not {order}")
 
         transformed_deriv = deriv.copy()
-        for i, (pos, d) in enumerate(tqdm(zip(position, deriv), desc="Computing transformed derivatives...", disable=not verbose, total=len(position))):
-            J = self.Jacobian(pos),
+        for i, (pos, d) in enumerate(
+            tqdm(
+                zip(position, deriv),
+                desc="Computing transformed derivatives...",
+                disable=not verbose,
+                total=len(position),
+            )
+        ):
+            J = (self.Jacobian(pos),)
             transformed_deriv[i, :] = np.squeeze(np.matmul(J, d).T)
 
         return transformed_deriv

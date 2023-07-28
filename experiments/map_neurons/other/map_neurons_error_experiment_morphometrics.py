@@ -34,6 +34,7 @@ print(
     f"Processing {len(swc_paths)} neurons with a sampling rate of {sampling} and downsampling factor {ds_factors} with max vs of {sigmas} "
 )
 
+
 def check_duplicates_center(neuron):
     assert len(neuron.branches) == 1
 
@@ -46,7 +47,6 @@ def check_duplicates_center(neuron):
         stack += child.children
         coords.append([child.x, child.y, child.z])
 
-    
     # look for duplicates
     dupes = []
     seen = set()
@@ -74,14 +74,11 @@ def check_duplicates_center(neuron):
             child.x -= center[0]
             child.y -= center[1]
             child.z -= center[2]
-        
+
     return neuron
 
 
-
-
 def process_swc(sigma, ct, swc_path):
-
     dir = swc_path.parent
     stem = swc_path.stem
     fname = str(dir / "results" / stem)
@@ -104,8 +101,6 @@ def process_swc(sigma, ct, swc_path):
         neuron_0.to_swc(fname_0)
         neuron_1.to_swc(fname_1)
 
-            
-
 
 for sigma in sigmas:
     transform_fname = swc_dir.parents[0] / f"exp-morpho-diffeo-{sigma}.pickle"
@@ -121,13 +116,9 @@ for sigma in sigmas:
         with open(transform_fname, "wb") as handle:
             pickle.dump(transform_data, handle)
 
-
     ct = Diffeomorphism_Transform(xv, phii)
-
-
 
     Parallel(n_jobs=4)(
         delayed(process_swc)(sigma, ct, swc_path)
         for swc_path in tqdm(swc_paths, desc=f"mapping neurons at spacing {sigma}...")
     )
-

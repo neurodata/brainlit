@@ -43,7 +43,6 @@ def check_duplicates_center(neuron):
         stack += child.children
         coords.append([child.x, child.y, child.z])
 
-    
     # look for duplicates
     dupes = []
     seen = set()
@@ -71,14 +70,15 @@ def check_duplicates_center(neuron):
             child.x -= center[0]
             child.y -= center[1]
             child.z -= center[2]
-        
+
     return neuron
+
 
 def process_swc(sigma, ct, swc_path):
     stem = swc_path.stem
     fname = str(stem) + f"-sigma-{sigma}.pickle"
     dir = swc_path.parent
-    fname = dir / "results" / fname  
+    fname = dir / "results" / fname
 
     neuron = ngauge.Neuron.from_swc(swc_path)
     av_seg_len = np.mean(neuron.all_segment_lengths())
@@ -93,10 +93,15 @@ def process_swc(sigma, ct, swc_path):
     errors = [max_zero_error, max_first_error]
     pds = [av_seg_len, av_seg_len]
 
-    data = {"Mapping Method": methods, "Discrete Frechet Error (microns)": errors, "Sampling Period (microns)": pds}
+    data = {
+        "Mapping Method": methods,
+        "Discrete Frechet Error (microns)": errors,
+        "Sampling Period (microns)": pds,
+    }
 
-    with open(fname, 'wb') as handle:
+    with open(fname, "wb") as handle:
         pickle.dump(data, handle)
+
 
 for sigma in sigmas:
     transform_fname = swc_dir.parents[0] / f"exp-morpho-diffeo-{sigma}.pickle"
@@ -111,7 +116,6 @@ for sigma in sigmas:
         transform_fname = swc_dir.parents[0] / f"exp-morpho-diffeo-{sigma}.pickle"
         with open(transform_fname, "wb") as handle:
             pickle.dump(transform_data, handle)
-
 
     ct = Diffeomorphism_Transform(xv, phii)
 
