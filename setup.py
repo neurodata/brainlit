@@ -37,7 +37,7 @@ REQUIRED_PACKAGES = [
     "igneous-pipeline",
     "torch",
     "torchvision",
-    "torchaudio"
+    "torchaudio",
 ]
 
 # Find savanna version.
