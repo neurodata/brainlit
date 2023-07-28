@@ -640,8 +640,8 @@ class SomaDistribution(BrainDistribution):
     def _configure_annotator(self, df, axis, ind_variable: str):
         subtype_counts = self._get_subtype_counts()
         test = "Mann-Whitney"
-        # my_logttest = StatTest(self._log_ttest_ind, test_long_name='Log t-test_ind', test_short_name='log-t')
-        # test = "t-test_ind"
+        #test = StatTest(self._log_ttest_ind, test_long_name='Log t-test_ind', test_short_name='log-t')
+        #test = "t-test_ind"
         correction = "fdr_by"
 
         pairs = []
