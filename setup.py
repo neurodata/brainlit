@@ -38,6 +38,7 @@ REQUIRED_PACKAGES = [
     "torch",
     "torchvision",
     "torchaudio",
+    "ngauge",
 ]
 
 # Find savanna version.
