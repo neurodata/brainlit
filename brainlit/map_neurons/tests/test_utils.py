@@ -1,6 +1,5 @@
 from brainlit.map_neurons.utils import (
     replace_root,
-    resample_neuron,
     split_paths,
     find_longest_path,
     remove_path,
@@ -78,41 +77,6 @@ def test_replace_root(init_swc_text):
     # new root's children has correct parent
     for child in root.children:
         assert child.parent == root
-
-
-def test_resample_neuron(init_swc_text):
-    text = init_swc_text
-    neuron = ngauge.Neuron.from_swc_text(text)
-
-    # original child if root is 5 away from origin
-    a_root = neuron.branches[0]
-    a_child = a_root.children[0]
-    assert np.isclose(np.linalg.norm([a_child.x, a_child.y, a_child.z]), 5)
-
-    neuron = replace_root(neuron)
-    og_root = neuron.branches[0]
-
-    neuron = resample_neuron(neuron, sampling=1.0)
-    assert og_root == neuron.branches[0]
-
-    root = neuron.branches[0]
-    stack = []
-    stack += root.children
-    check_single_child(stack)
-
-    counter = 0
-    while len(stack) > 0:
-        counter += 1
-        child = stack.pop()
-        stack += child.children
-        parent = child.parent
-
-        pt1 = [parent.x, parent.y, parent.z]
-        pt2 = [child.x, child.y, child.z]
-
-        assert np.linalg.norm(np.subtract(pt2, pt1)) <= 1.0
-
-    assert counter == 30
 
 
 def test_find_longest_path(init_swc_text):

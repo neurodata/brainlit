@@ -34,57 +34,6 @@ def replace_root(neuron):
     return neuron
 
 
-def resample_neuron(neuron, sampling):
-    neuron = replace_root(neuron)
-
-    stack = []
-    stack += neuron.branches[0].children
-
-    while len(stack) > 0:
-        child = stack.pop()
-        stack += child.children
-
-        parent = child.parent
-        parents_children = parent.children
-        for idx, c in enumerate(parents_children):
-            if c == child:
-                child_idx = idx
-                break
-
-        pt1 = np.array([parent.x, parent.y, parent.z])
-        pt2 = np.array([child.x, child.y, child.z])
-
-        dist = np.linalg.norm(pt2 - pt1)
-
-        if dist > sampling:
-            samples = np.arange(sampling, dist, sampling)
-
-            for n_sample, sample in enumerate(samples):
-                loc = (pt2 - pt1) / dist * sample + pt1
-                loc = [float(l) for l in loc]
-                new_pt = ngauge.TracingPoint(
-                    x=loc[0], y=loc[1], z=loc[2], r=1, t=child.t
-                )
-                if n_sample == 0:  # beginning of chain is loose
-                    first_pt = new_pt
-                else:  # add link to chain
-                    new_pt.parent = prev_pt
-                    prev_pt.children = [new_pt]
-
-                prev_pt = new_pt
-
-            # attach end to child
-            child.parent = new_pt
-            new_pt.children = [child]
-
-            # attach beginning of chain to parent
-            first_pt.parent = parent
-            parents_children.pop(child_idx)
-            parents_children.append(first_pt)
-
-    return neuron
-
-
 def split_paths(node):
     stack = [(node, None)]
 

@@ -57,31 +57,18 @@ def interp(x, I, phii, **kwargs):
 
 
 def expR(xv, v0, K, n=10, visualize=False, return_forward=True):
-    """
-    Riemannian exponential, todo
+    """Riemannian exponential
 
-    Parameters
-    ----------
-    xv : list of arrays
-        Location of pixels in v.
-    v : velocity at time 0
-        Recall shape is rowxcolxsicex3
-    K : array
-        kernel in fft domain
-    n : int
-        number of timesteps
+    Args:
+        xv (list of arrays): Location of pixels in v.
+        v0 (array): velocity at time 0. Recall shape is rowxcolxsicex3.
+        K (array): kernel in fft domain
+        n (int, optional): number of timesteps. Defaults to 10.
+        visualize (bool, optional): Whether to plot the output. Defaults to False.
+        return_forward (bool, optional): Direction of exponential. Defaults to True.
 
-    visualie : bool
-        only supported with no batch
-
-    Returns
-    -------
-    phii : array
-        inverse deformation used to transform images
-    Notes
-    -----
-    pt = Dphi^{-T}(phi_t^{-1}) p0(phi_t^{-1})|Dphii^{-1}|
-       = Dphii^{T} p0(phii)|Dphii^{-1}|
+    Returns:
+        torch.tensor: Generated diffeomorphism.
     """
 
     use_batch = v0.ndim == 5
