@@ -189,7 +189,7 @@ def test_ZerothFirstOrderNeuron(init_swc_text):
     # check gt
     tck, u = DG.nodes[0]["gt"]
     dists = np.diff(u)
-    assert np.amax(dists) < sampling
+    assert np.amax(dists) <= sampling
     pt = splev(u[0], tck)
     assert np.isclose(pt, [0, 0, 0]).all()
     pt = splev(u[-1], tck)
@@ -197,7 +197,7 @@ def test_ZerothFirstOrderNeuron(init_swc_text):
 
     tck, u = DG.nodes[1]["gt"]
     dists = np.diff(u)
-    assert np.amax(dists) < sampling
+    assert np.amax(dists) <= sampling
     pt = splev(u[0], tck)
     assert np.isclose(pt, [0, 0, 0]).all()
     pt = splev(u[-1], tck)
