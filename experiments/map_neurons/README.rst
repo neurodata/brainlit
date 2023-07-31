@@ -8,11 +8,19 @@ Neuron Mapping
 
 * First, make sure that you have installed the ``brainlit`` package [`Documentation <https://brainlit.netlify.app/readme#installation>`_].
 
-* Second, uncompress the data ``brainlit/experiments/map_neurons/data/mapping-files.zip``.
+* As a general rule, figures were made in the notebooks in ``brainlit/experiments/map_neurons/`` and, when necessary, heavy computations were done using scripts in ``brainlit/experiments/map_neurons/other``
 
-* Then, you can run the notebook that generates figures: ``brainlit/experiments/map_neurons/map_neurons.ipynb``
+* The notebooks that made the specific figures in the current version of the manuscript are:
 
-* The files in the ``other`` are more for scratch work, and are unlikely to be useful to new users.
+* ``map_neurons.ipynb``: Fig. 1a-b, 2.
+
+* ``motivating-example.ipynb``: Fig. 1e-f.
+
+* ``morphometrics-compare.ipynb``: Fig. 3, 4.
+
+* ``straight-downsample.ipynb``: Fig. 5.
+
+* Other files are more for scratch work, and are unlikely to be useful to new users.
 
 Poster
 ------
