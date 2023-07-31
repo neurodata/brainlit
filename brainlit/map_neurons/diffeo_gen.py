@@ -3,8 +3,20 @@ import torch
 import matplotlib.pyplot as plt
 
 
-# an interp function
 def interp(x, I, phii, **kwargs):
+    """Interpolate a function given original and transformed coordinates.
+
+    Args:
+        x (list): Original pixel locations of image.
+        I (torch.tensor): Function to be interpolated.
+        phii (torch.tensor): Transformed coordinates.
+
+    Raises:
+        Exception: Function should be four or five dimensional.
+
+    Returns:
+        torch.tensor: Interpolated function.
+    """
     # note I want components of phi to be at the end
     # components of I should be at the beginning
     # this does make composing two transformations a bit weird
