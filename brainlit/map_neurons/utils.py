@@ -8,6 +8,14 @@ from similaritymeasures import frechet_dist
 
 
 def replace_root(neuron):
+    """nGauge neurons have a distinct branch for every dendrite/axon that emanates from the soma. Since we only work with axon traces, this function combines all branches into one.
+
+    Args:
+        neuron (ngauge.Neuron): nGaguge neuron whose branches will be combined.
+
+    Returns:
+        ngauge.Neuron: nGaguge neuron with a single branch.
+    """
     # assert all branch heads have the same data
     for branch_n, branch_head in enumerate(neuron.branches):
         if branch_n == 0:
@@ -35,6 +43,14 @@ def replace_root(neuron):
 
 
 def split_paths(node):
+    """Split the subtree under an nGauge trace point into paths by recursively identifying the longest root to leaf path.
+
+    Args:
+        node (ngauge.TracingPoint): nGauge trace point that defines the subtree that will be split.
+
+    Returns:
+        list: set of paths that compose the subtree.
+    """
     stack = [(node, None)]
 
     paths = []
@@ -52,6 +68,15 @@ def split_paths(node):
 
 
 def find_longest_path(node):
+    """Find longest path that reaches a leaf.
+
+    Args:
+        node (ngauge.TracingPoint): nGauge trace point from which this method will look for descending paths.
+
+    Returns:
+        float: Path length of longest node to leaf path.
+        list: Longest node to leaf path.
+    """
     if len(node.children) == 0:
         return 0, [node]
     else:
@@ -66,10 +91,21 @@ def find_longest_path(node):
                 longest_path = [node] + path
                 longest_dist = new_dist
 
-        return new_dist, longest_path
+        return longest_dist, longest_path
 
 
 def remove_path(path):
+    """Remove a path from a tree, by collecting all remaining subtrees in a list.
+
+    Args:
+        path (list): List of nGauge TracingPoints which identifies the path to be removed. Built to work with find_longest_path within the split_paths method.
+
+    Raises:
+        ValueError: Two consecutive nodes in the path do not have a parent-child connection.
+
+    Returns:
+        list: List of remaining subtrees (ngauge TracingPoints).
+    """
     subtrees = []
     for p, p_next in zip(path[:-1], path[1:]):
         if len(p.children) > 1:
@@ -86,20 +122,29 @@ def remove_path(path):
 
 
 class ZerothFirstOrderNeuron:
+    """Class used to combine a Diffeomorphic Action with an nGauge Neuron."""
+
     def __init__(self, neuron, da=None, sampling=None):
+        """Apply a diffeomorphis action to an nGauge Neuron trace.
+
+        Args:
+            neuron (ngauge.Neuron): Neuron trace.
+            da (DiffeomorphismAction, optional): Action to be applied to the neuron trace. Defaults to None.
+            sampling (float, optional): Sampling distance of the ground truth and discrete mappings, in microns. Defaults to None.
+        """
         self.sampling = sampling
 
         neuron = replace_root(neuron)
-        DG = self.create_path_graph(neuron)
+        DG = self._create_path_graph(neuron)
 
         if da is not None:
-            DG = self.ground_truth(DG, da)
-            DG = self.zeroth_order(DG, da)
-            DG = self.first_order(DG, da)
+            DG = self._ground_truth(DG, da)
+            DG = self._zeroth_order(DG, da)
+            DG = self._first_order(DG, da)
 
         self.DG = DG
 
-    def create_path_graph(self, neuron):
+    def _create_path_graph(self, neuron):
         paths = split_paths(neuron.branches[0])  # assumes first path is the longest
         root = paths[0][0]
 
@@ -133,7 +178,7 @@ class ZerothFirstOrderNeuron:
         assert nx.number_of_nodes(DG) == nx.number_of_edges(DG) + 1
         return DG
 
-    def ground_truth(self, DG, da):
+    def _ground_truth(self, DG, da):
         sampling = self.sampling
         for path_node in DG.nodes:
             coords = DG.nodes[path_node]["coords"]
@@ -166,7 +211,7 @@ class ZerothFirstOrderNeuron:
             DG.nodes[path_node]["gt"] = spline
         return DG
 
-    def zeroth_order(self, DG, da):
+    def _zeroth_order(self, DG, da):
         for path_node in DG.nodes:
             coords = DG.nodes[path_node]["coords"]
             us = DG.nodes[path_node]["u"]
@@ -180,7 +225,7 @@ class ZerothFirstOrderNeuron:
 
         return DG
 
-    def first_order(self, DG, da):
+    def _first_order(self, DG, da):
         for path_node in DG.nodes:
             x = DG.nodes[path_node]["u"]
             y = DG.nodes[path_node]["coords"]
@@ -201,7 +246,7 @@ class ZerothFirstOrderNeuron:
 
         return DG
 
-    def make_path_pts(self, path_node, root=False):
+    def _make_path_pts(self, path_node, root=False):
         DG = self.DG
         sampling = self.sampling
 
@@ -265,7 +310,7 @@ class ZerothFirstOrderNeuron:
 
     def frechet_errors_path(self, path_node):
         DG = self.DG
-        root_0, root_1 = self.make_path_pts(path_node)
+        root_0, root_1 = self._make_path_pts(path_node)
         tck, u = DG.nodes[path_node]["gt"]
         coords = splev(u, tck)
         gt_coords = np.stack(coords, axis=1)
@@ -296,6 +341,12 @@ class ZerothFirstOrderNeuron:
         return zero_error, first_error
 
     def frechet_errors(self):
+        """Compute frechet errors between ground truth and both zeroth and first order mapping.
+
+        Returns:
+            float: Frechet error between zeroth order mapping and ground truth.
+            float: Frechet error between first order mapping and ground truth.
+        """
         DG = self.DG
         max_zero_error = 0
         max_first_error = 0
@@ -312,15 +363,25 @@ class ZerothFirstOrderNeuron:
         return max_zero_error, max_first_error
 
     def get_transforms(self):
+        """Get zeroth and first order mapped neurons in ngauge form. Action is done on each branch, then branches are reattached by looking at coordinate positions.
+
+        Raises:
+            ValueError: Some branches were not reattached.
+            ValueError: Some branches were not reattached.
+
+        Returns:
+            ngauge.Neuron: Transformed neuron trace via zeroth order mapping.
+            ngauge.Neuron: Transformed neuron trace via first order mapping.
+        """
         DG = self.DG
 
         proots_0 = []
         proots_1 = []
         for p_idx, path_node in enumerate(DG.nodes):
             if p_idx == 0:  # assumes first path has root
-                root_0, root_1 = self.make_path_pts(path_node, root=True)
+                root_0, root_1 = self._make_path_pts(path_node, root=True)
             else:  # find path and add to tree
-                proot_0, proot_1 = self.make_path_pts(path_node)
+                proot_0, proot_1 = self._make_path_pts(path_node)
                 proots_0.append(proot_0)
                 proots_1.append(proot_1)
 
@@ -378,7 +439,7 @@ class ZerothFirstOrderNeuron:
 
         return neuron_0, neuron_1
 
-    def make_paths_pts_gt(self, path_node, root=False):
+    def _make_paths_pts_gt(self, path_node, root=False):
         DG = self.DG
 
         tck, u = DG.nodes[path_node]["gt"]
@@ -406,14 +467,22 @@ class ZerothFirstOrderNeuron:
         return root
 
     def get_gt(self):
+        """Get the ground truth mapping in ngauge Neuron form. Ground truth mapping is defined as upsampling the original trace (linear interpolation), the zeroth order mapping of these points.
+
+        Raises:
+            ValueError: Some branches were not reattached.
+
+        Returns:
+            ngauge.Neuron: Ground truth mapping.
+        """
         DG = self.DG
 
         proots = []
         for p_idx, path_node in enumerate(DG.nodes):
             if p_idx == 0:  # assumes first path has root
-                root = self.make_paths_pts_gt(path_node, root=True)
+                root = self._make_paths_pts_gt(path_node, root=True)
             else:  # find path and add to tree
-                proot = self.make_paths_pts_gt(path_node)
+                proot = self._make_paths_pts_gt(path_node)
                 proots.append(proot)
 
         with tqdm(total=len(proots), desc="joining branches gt", leave=False) as pbar:
