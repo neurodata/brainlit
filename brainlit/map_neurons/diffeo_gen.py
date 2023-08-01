@@ -189,4 +189,4 @@ def diffeo_gen_ara(sigma):
     phii = expR([torch.tensor(x) for x in xv], torch.tensor(v), K, n=10)
     phii = phii.detach().cpu().numpy()
 
-    return xv, phii, K
+    return xv, phii
