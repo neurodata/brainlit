@@ -1,14 +1,33 @@
-from brainlit.map_neurons.map_neurons import *
-from brainlit.algorithms.trace_analysis.fit_spline import CubicHermiteChain
+from brainlit.map_neurons.map_neurons import (
+    DiffeomorphismAction,
+    CloudReg_Transform,
+    Diffeomorphism_Transform,
+    compute_derivs,
+    transform_geometricgraph,
+)
+from brainlit.algorithms.trace_analysis.fit_spline import (
+    CubicHermiteChain,
+    GeometricGraph,
+)
 from pathlib import Path
 import os
 import numpy as np
 import h5py
 from scipy.io import savemat
-from scipy.interpolate import splprep, CubicHermiteSpline
+from scipy.interpolate import splprep, CubicHermiteSpline, splev
 import pytest
 import pandas as pd
 from copy import deepcopy
+
+
+@pytest.fixture(scope="session")
+def init_dt():
+    points = [np.arange(-1 * l, l + 1) for l in [132, 80, 114]]
+    meshs = np.meshgrid(*points, indexing="ij")
+    values = np.stack(meshs, axis=-1)
+    dt = Diffeomorphism_Transform(points, values)
+
+    return dt
 
 
 @pytest.fixture(scope="session")
@@ -68,6 +87,20 @@ def init_gg() -> GeometricGraph:
 ##############
 ### inputs ###
 ##############
+
+
+def test_dt(init_dt):
+    dt = init_dt
+
+    pt = np.array([1, 2, 3.5])
+    assert np.allclose(dt.evaluate(pt), pt)
+    assert np.allclose(dt.Jacobian(pt), np.eye(3))
+
+    pts = np.array([[1, 2, 3.5], [2, 3, 4]])
+    assert np.allclose(dt.D(pts, pts), pts)
+
+    with pytest.raises(ValueError, match="Argument order must be 1, not 2"):
+        dt.D(pt, pt, order=2)
 
 
 def test_D_order(init_crt):

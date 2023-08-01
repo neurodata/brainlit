@@ -35,7 +35,12 @@ REQUIRED_PACKAGES = [
     # "pcurvepy @ git+https://git@github.com/CaseyWeiner/pcurvepy@master#egg=pcurvepy",
     "similaritymeasures>=0.4.4",
     "statannotations>=0.4.4",
+    "trimesh==3.21.7",  # newer versions of this use embreex which is not found on netlify's pip. This is a requirement of igenous-pipeline.
     "igneous-pipeline",
+    "torch",
+    "torchvision",
+    "torchaudio",
+    "ngauge",
 ]
 
 # Find savanna version.

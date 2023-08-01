@@ -8,7 +8,10 @@ Fragment Generation
 
 .. autoapiclass:: DiffeomorphismAction
 	:members:
+.. autoapiclass:: Diffeomorphism_Transform
+	:members:
 .. autoapiclass:: CloudReg_Transform
 	:members:
-.. autoapifunction:: compute_derivs
-.. autoapifunction:: transform_GeometricGraph
+.. autoapiclass:: ZerothFirstOrderNeuron
+	:members:
+.. autoapifunction:: diffeo_gen_ara
