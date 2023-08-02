@@ -264,6 +264,7 @@ class SomaDistribution(BrainDistribution):
         brain2paths = self.brain2paths
         atlas_points = self.atlas_points
         subtype_counts = self._get_subtype_counts()
+        depth_radius = 10
 
         if "filepath" in brain2paths["atlas"].keys():
             vol_atlas = io.imread(brain2paths["atlas"]["filepath"])
@@ -272,7 +273,7 @@ class SomaDistribution(BrainDistribution):
 
         slice = np.squeeze(vol_atlas[z, :, :])
         newslice, borders, half_width = self._slicetolabels(slice, fold_on=fold_on)
-        heatmap = np.zeros([borders.shape[0], borders.shape[1], 3])
+        heatmap = np.zeros([borders.shape[0], borders.shape[1], depth_radius*2+1, 3])
 
         if self.show_plots:
             if plot_type == "napari":
@@ -290,13 +291,14 @@ class SomaDistribution(BrainDistribution):
             gtype = brain2paths[key]["subtype"]
 
             ra = atlas_points[key]
-            points = ra[(ra[:, 0] < z + 10) & (ra[:, 0] > z - 10)]
+            points = ra[(ra[:, 0] <= z + depth_radius) & (ra[:, 0] >= z - depth_radius)]
 
             # only select points that fall on an ROI
             fg_points = []
             channel_map = {"red": 0, "green": 1, "blue": 2}
             channel = channel_map[subtype_colors[gtype]]
             for point in points:
+                depth = int(point[0]) - z + depth_radius
                 im_coord = [int(point[1]), int(point[2])]
 
                 if (
@@ -309,8 +311,8 @@ class SomaDistribution(BrainDistribution):
 
                     fg_points.append([im_coord[0], im_coord[1]])
                     heatmap[
-                        int(im_coord[0]), int(im_coord[1]), channel
-                    ] += 1  # /subtype_counts[gtype]
+                        int(im_coord[0]), int(im_coord[1]), depth, channel
+                    ] += 1 /subtype_counts[gtype]
             if self.show_plots:
                 if plot_type == "napari":
                     v.add_points(
@@ -336,8 +338,20 @@ class SomaDistribution(BrainDistribution):
         if self.show_plots:
             if plot_type == "napari":
                 for c in range(3):
-                    heatmap[:, :, c] = ndi.gaussian_filter(heatmap[:, :, c], sigma=3)
-                v.add_image(heatmap, scale=[10, 10], name=f"Heatmap")  # , rgb=True)
+                    heatmap[:, :, :, c] = ndi.gaussian_filter(heatmap[:, :, :, c], sigma=3)
+                v.add_image(heatmap[:,:,depth_radius,:], scale=[10, 10], name=f"Heatmap")  # , rgb=True)
+
+                
+                for subtype1, subtype2 in zip(["tph2 gad2", "tph2 gad2", "tph2 vglut3"], ["tph2 vglut3", "gad2 vgat", "gad2 vgat"]):
+                    diffpos = heatmap[:,:,depth_radius,channel_map[subtype_colors[subtype1]]] - heatmap[:,:,depth_radius,channel_map[subtype_colors[subtype2]]]
+                    diffneg = np.copy(diffpos)
+                    diffpos[diffpos<0] = 0
+                    diffneg[diffneg>0] = 0
+                    diffneg = np.abs(diffneg)
+                    heatdiff = 0*heatmap
+                    heatdiff[:,:,depth_radius, channel_map[subtype_colors[subtype1]]] = diffpos
+                    heatdiff[:,:,depth_radius, channel_map[subtype_colors[subtype2]]] = diffneg
+                    v.add_image(heatdiff[:,:,depth_radius,:], scale=[10, 10], name=f"{subtype1} - {subtype2}")  # , rgb=True)
                 v.add_labels(borders * 2, scale=[10, 10], name=f"z={z}")
 
                 v.scale_bar.unit = "um"
@@ -733,7 +747,7 @@ class SomaDistribution(BrainDistribution):
         newslice, borders, half_width = self._slicetolabels(slice, fold_on=False)
         v = napari.Viewer()
         v.add_image(np.squeeze(blocks[int(10*z / bin_size[0]),:,:]), scale=[bin_size[1], bin_size[2]], name="block")
-        v.add_labels(borders * 2, scale=[10, 10], name=f"z={z}")
+        v.add_labels(borders * 2, scale=[10, 10], name=f"{subtype1} vs {subtype2} z={z}")
 
         v.scale_bar.unit = "um"
         v.scale_bar.visible = True
