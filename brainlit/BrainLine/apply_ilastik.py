@@ -28,7 +28,7 @@ class ApplyIlastik:
     """Applies ilastik to subvolumes for the purpose of validating machine learning algorithms.
 
     Arguments:
-        ilastk_path (str): Path to ilastik executable.
+        ilastik_path (str): Path to ilastik executable.
         project_path (str): Path to ilastik project.
         brains_path (str): Path to directory that contains brain samples subdirectories.
         brains (list): List of brain sample names.
@@ -42,9 +42,9 @@ class ApplyIlastik:
     """
 
     def __init__(
-        self, ilastk_path: str, project_path: str, brains_path: str, brains: list
+        self, ilastik_path: str, project_path: str, brains_path: str, brains: list
     ):
-        self.ilastk_path = ilastk_path
+        self.ilastik_path = ilastik_path
         self.project_path = project_path
         self.brains_path = brains_path
         self.brains = brains
@@ -53,7 +53,7 @@ class ApplyIlastik:
         if os.path.isfile(fname) and ".h5" in fname:
             subprocess.run(
                 [
-                    "/Applications/ilastik-1.4.0b21-OSX.app/Contents/ilastik-release/run_ilastik.sh",
+                    self.ilastik_path,
                     "--headless",
                     f"--project={self.project_path}",
                     fname,
@@ -140,7 +140,9 @@ def plot_results(
     for brain_id in tqdm(brain_ids, desc="Processing Brains"):
         base_dir = data_dir + f"/brain{brain_id}/val/"
         data_files = _find_sample_names(base_dir, dset="", add_dir=True)
-        test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
+        test_files = [
+            file[: file.rfind(".")] + "_Probabilities.h5" for file in data_files
+        ]
 
         best_fscore = 0
         best_thresh = -1
@@ -235,7 +237,7 @@ def plot_results(
 
     if show_plot:
         sns.set(font_scale=2)
-        plt.figure(figsize=(8, 8))
+        fig = plt.figure(figsize=(8, 8))
         sns.lineplot(
             data=df, x="Recall", y="Precision", hue="ID", estimator=np.amax, ci=False
         )
@@ -247,7 +249,7 @@ def plot_results(
         plt.ylim([0, 1.1])
         plt.title(f"Brain {brain_id} Validation: {tot_pos}+ {tot_neg}-")
         plt.legend()
-        plt.show()
+        return fig, best_fscore, best_thresh  # plt.show()
 
     return best_fscore, best_thresh
 
@@ -279,7 +281,7 @@ def examine_threshold(
     base_dir = data_dir + f"/brain{brain_id}/val/"
 
     data_files = _find_sample_names(base_dir, dset="", add_dir=True)
-    test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
+    test_files = [file[: file.rfind(".")] + "_Probabilities.h5" for file in data_files]
 
     size_thresh = 500
 
@@ -348,7 +350,7 @@ def examine_threshold(
                             name=f"nonsoma false positive area: {area}",
                         )
         elif object_type == "axon":
-            fname_lab = im_fname.split(".")[0] + "-image_3channel_Labels.h5"
+            fname_lab = im_fname[: im_fname.rfind(".")] + "-image_3channel_Labels.h5"
             f = h5py.File(fname_lab, "r")
             gt = f.get("exported_data")
             gt = gt[0, :, :, :]
@@ -585,7 +587,7 @@ class ApplyIlastik_LargeImage:
         )
         # subprocess.run(["/Applications/ilastik-1.3.3post3-OSX.app/Contents/ilastik-release/run_ilastik.sh", "--headless", "--project=/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain3/matt_benchmark_formal_brain3.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        fname_prob = str(fname).split(".")[0] + "_Probabilities.h5"
+        fname_prob = str(fname)[: str(fname).rfind(".")] + "_Probabilities.h5"
         with h5py.File(fname_prob, "r") as f:
             pred = f.get("exported_data")
             if object_type == "soma":

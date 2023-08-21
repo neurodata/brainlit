@@ -47,6 +47,98 @@ class DiffeomorphismAction:
         pass
 
 
+class Diffeomorphism_Transform(DiffeomorphismAction):
+    """Object that takes a discrete vector field and creates a continuous one which can also give derivative (Jacobian) information.
+    Implements DiffeomorphismAction which is an interface to transform points and tangent vectors.
+    """
+
+    def __init__(self, points, values):
+        """Create diffeomorphism from a set of coordinates and vectors at those coordinate positions.
+
+        Args:
+            points (list): 1-D arrays representing the cooridates of a regular grid with shapes (m1,),(m2,)(m3,). Should be symmetrical around zero and have length ratios equal to that of the 10um ARA: m1:m2:m3=132:80:114
+            values (np.array): Vector field values at grid, shape (m1,m2,m3,3).
+        """
+        self.scale_factor = 6550 / points[0][-1]
+        points_scaled = [self.scale_factor * p for p in points]
+
+        self.og_coords = np.meshgrid(*points_scaled)
+        self.F = RegularGridInterpolator([points[0], points[1], points[2]], values)
+
+    def evaluate(self, position):
+        """Evaluate the new coordinate at the given position.
+
+        Args:
+            position (np.array): Original coordinate location. Shape (3,).
+
+        Returns:
+            np.array: New coordinate location under diffeomorphism. Shape (3,).
+        """
+        position = position / self.scale_factor
+        return self.F(position) * self.scale_factor
+
+    def Jacobian(self, pos: np.array) -> np.array:
+        """Evaluate the diffeomorphism's Jacobian at the given position.
+
+        Args:
+            position (np.array): Coordinate location. Shape (3,).
+
+        Returns:
+            np.array: Jacobian matrix of diffeomorphism at given location. Shape (3,3,).
+        """
+        step = 1
+
+        J = np.zeros((3, 3))
+        J[:, 0] = (
+            self.evaluate([pos[0] + step, pos[1], pos[2]])
+            - self.evaluate([pos[0], pos[1], pos[2]])
+        ) / step
+        J[:, 1] = (
+            self.evaluate([pos[0], pos[1] + step, pos[2]])
+            - self.evaluate([pos[0], pos[1], pos[2]])
+        ) / step
+        J[:, 2] = (
+            self.evaluate([pos[0], pos[1], pos[2] + step])
+            - self.evaluate([pos[0], pos[1], pos[2]])
+        ) / step
+
+        return J
+
+    def D(
+        self, positions: np.array, derivs: np.array, order: int = 1, verbose=False
+    ) -> np.array:
+        """Compute transformed derivatives of mapping at given positions. Only for the non-affine component.
+
+        Args:
+            position (np.array): nx3 positions at which to compute derivatives.
+            deriv (np.array): nx3 derivatives at the respective positions.
+            order (int, optional): Order of derivative (must be 1). Defaults to 1.
+
+        Raises:
+            ValueError: Only derivative order 1 is allowed here.
+
+        Returns:
+            np.array: Transformed derivatives
+        """
+
+        if order != 1:
+            raise ValueError(f"Argument order must be 1, not {order}")
+
+        transformed_deriv = derivs.copy()
+        for i, (pos, d) in enumerate(
+            tqdm(
+                zip(positions, derivs),
+                desc="Computing transformed derivatives...",
+                disable=not verbose,
+                total=len(positions),
+            )
+        ):
+            J = (self.Jacobian(pos),)
+            transformed_deriv[i, :] = np.squeeze(np.matmul(J, d).T)
+
+        return transformed_deriv
+
+
 class CloudReg_Transform(DiffeomorphismAction):
     """Object that can read mat files from CloudReg, and compute transformations on points and Jacobians.
     Implements DiffeomorphismAction which is an interface to transform points and tangent vectors.

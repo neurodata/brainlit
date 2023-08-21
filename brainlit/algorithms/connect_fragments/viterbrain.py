@@ -63,14 +63,14 @@ class ViterBrain:
                 comp_to_states[frag] = [node]
         self.comp_to_states = comp_to_states
 
-    def frag_frag_dist(
+    def frag_frag_dist_coord(
         self,
-        pt1: List[float],
-        orientation1: List[float],
-        pt2: List[float],
-        orientation2: List[float],
+        pt1: List[int],
+        orientation1: List[int],
+        pt2: List[int],
+        orientation2: List[int],
         verbose: bool = False,
-    ) -> float:
+    ):
         """Compute cost of transition between two fragment states
 
         Args:
@@ -125,6 +125,58 @@ class ViterBrain:
 
         return cost
 
+    def frag_frag_dist(
+        self,
+        state1: int,
+        state2: int,
+        verbose: bool = False,
+    ) -> float:
+        """Compute cost of transition between two fragment states
+
+        Args:
+            state1 (int): first state ID.
+            loc2 (int): second state ID.
+            verbose (bool, optional): Print transition cost information. Defaults to False.
+
+        Returns:
+            [float]: cost of transition
+        """
+        G = self.nxGraph
+        pt1 = G.nodes[state1]["point2"]
+        orientation1 = G.nodes[state1]["orientation2"]
+        pt2 = G.nodes[state2]["point1"]
+        orientation2 = G.nodes[state2]["orientation1"]
+
+        return self.frag_frag_dist_coord(
+            pt1=pt1,
+            orientation1=orientation1,
+            pt2=pt2,
+            orientation2=orientation2,
+            verbose=verbose,
+        )
+
+    def frag_frag_dist_simple(
+        self,
+        state1: int,
+        state2: int,
+        verbose: bool = False,
+    ) -> float:
+        G = self.nxGraph
+        res = self.resolution
+
+        pt1 = G.nodes[state1]["point1"]
+        pt2 = G.nodes[state1]["point2"]
+        pt3 = G.nodes[state2]["point1"]
+        dif = np.multiply(np.subtract(pt3, pt2), res)
+        dist2 = np.linalg.norm(dif)
+        if dist2 > 20:
+            return np.inf
+
+        dif = np.multiply(np.subtract(pt2, pt1), res)
+        dist1 = np.linalg.norm(dif)
+
+        return dist1 + dist2**2
+
     def frag_soma_dist(
         self,
         point: List[float],
@@ -149,7 +201,7 @@ class ViterBrain:
             [list of floats]: closest soma coordinate
         """
         coords = self.soma_fragment2coords[soma_lbl]
-        image_fragment = zarr.open(self.fragment_path, mode="r")
+        image_fragment = zarr.open_array(self.fragment_path, mode="r")
 
         difs = np.multiply(np.subtract(coords, point), self.resolution)
         dists = np.linalg.norm(difs, axis=1)
@@ -221,10 +273,8 @@ class ViterBrain:
                 ):
                     try:
                         dist_cost = frag_frag_func(
-                            G.nodes[state1]["point2"],
-                            G.nodes[state1]["orientation2"],
-                            G.nodes[state2]["point1"],
-                            G.nodes[state2]["orientation1"],
+                            state1,
+                            state2,
                         )
                     except:
                         raise ValueError(
@@ -273,7 +323,10 @@ class ViterBrain:
             if soma_pt is not None:
                 G.nodes[state1]["soma_pt"] = soma_pt
 
-    def _line_int(self, loc1: List[int], loc2: List[int]) -> float:
+    def _line_int_zero(self, state1: int, state2: int):
+        return 0
+
+    def _line_int_coord(self, loc1: List[int], loc2: List[int]):
         """Compute line integral of image likelihood costs between two coordinates
 
         Args:
@@ -283,6 +336,7 @@ class ViterBrain:
         Returns:
             [float]: sum of image likelihood costs
         """
+        G = self.nxGraph
         image_tiered = zarr.open(self.tiered_path, mode="r")
         corner1 = [np.amin([loc1[i], loc2[i]]) for i in range(len(loc1))]
         corner2 = [np.amax([loc1[i], loc2[i]]) for i in range(len(loc1))]
@@ -313,7 +367,25 @@ class ViterBrain:
 
         return sum
 
-    def _compute_out_int_costs(self, states: List[int]) -> List[tuple]:
+    def _line_int(self, state1: int, state2: int = None, pt2: List = None) -> float:
+        """Compute line integral of image likelihood costs between two coordinates
+
+        Args:
+            state1 (int): first state ID.
+            loc2 (int): second state ID.
+
+        Returns:
+            [float]: sum of image likelihood costs
+        """
+        G = self.nxGraph
+        loc1 = G.nodes[state1]["point2"]
+        loc2 = G.nodes[state2]["point1"]
+
+        return self._line_int_coord(loc1, loc2) + G.nodes[state2]["image_cost"]
+
+    def _compute_out_int_costs(
+        self, states: List[int], frag_frag_func: Callable
+    ) -> List[tuple]:
         """Compute pairwise image likelihood costs.
 
         Args:
@@ -327,7 +399,6 @@ class ViterBrain:
         """
         num_states = self.num_states
         G = self.nxGraph
-
         results = []
         for state1 in tqdm(states, desc="Computing state costs (intensity)"):
             for state2 in range(num_states):
@@ -341,16 +412,13 @@ class ViterBrain:
                     G.nodes[state1]["type"] == "fragment"
                     and G.nodes[state2]["type"] == "fragment"
                 ):
-                    line_int_cost = self._line_int(
-                        G.nodes[state1]["point2"], G.nodes[state2]["point1"]
-                    )
-                    int_cost = line_int_cost + G.nodes[state2]["image_cost"]
+                    int_cost = frag_frag_func(state1, state2)
                     results.append((state1, state2, int_cost))
                 elif (
                     G.nodes[state1]["type"] == "fragment"
                     and G.nodes[state2]["type"] == "soma"
                 ):
-                    line_int_cost = self._line_int(
+                    line_int_cost = self._line_int_coord(
                         G.nodes[state1]["point2"], G.nodes[state1]["soma_pt"]
                     )
                     results.append((state1, state2, line_int_cost))
@@ -359,15 +427,15 @@ class ViterBrain:
 
         return results
 
-    def compute_all_costs_int(self) -> None:
+    def compute_all_costs_int(self, frag_frag_func: Callable) -> None:
         """Splits up transition computation tasks then assembles them into networkx graph"""
         parallel = self.parallel
         G = self.nxGraph
 
         state_sets = np.array_split(np.arange(self.num_states), parallel)
-
         results_tuple = Parallel(n_jobs=parallel, backend="threading")(
-            delayed(self._compute_out_int_costs)(states) for states in state_sets
+            delayed(self._compute_out_int_costs)(states, frag_frag_func)
+            for states in state_sets
         )
 
         results = [item for result in results_tuple for item in result]
@@ -393,11 +461,10 @@ class ViterBrain:
         Returns:
             list: list of voxel coordinates of path
         """
-        fragments = zarr.open(self.fragment_path, mode="r")
+        fragments = zarr.open_array(self.fragment_path, mode="r")
 
         # Compute labels of coordinates
         labels = []
-        radius = 20
         for coord in [coord1, coord2]:
             local_labels, new_coord = get_valid_bbox(fragments, coord, radius=20)
             label = image_process.label_points(
@@ -446,11 +513,11 @@ class ViterBrain:
         return coords
 
 
-def explain_viterbrain(vb, c1, c2, frag_seq):
+def explain_viterbrain(vb, c1, c2):
     # assume c1,c2 fall on a fragment
     path_coords = vb.shortest_path(c1, c2)
     comp_to_states = vb.comp_to_states
-    z_frags = zarr.open(vb.fragment_path)
+    z_frags = zarr.open_array(vb.fragment_path)
 
     states1 = comp_to_states[z_frags[c1[0], c1[1], c1[2]]]
     states2 = comp_to_states[z_frags[c2[0], c2[1], c2[2]]]
@@ -472,22 +539,18 @@ def explain_viterbrain(vb, c1, c2, frag_seq):
 
     print(f"{len(states)} states")
     print(f"{len(path_coords)} coordinates")
-    print(f"0: {path_coords[0]} f{z_frags[c1[0],c1[1],c1[2]]} ")
 
-    coord_idx = 1
-    for i, state in enumerate(states):
-        if i > 0:
-            e = vb.nxGraph.edges(states[i - 1], state)
-            print(f"Transition: {states[i-1]}->{state}: {e}")
-        c = path_coords[coord_idx]
-        print(f"{coord_idx}: {c} f{z_frags[c[0],c[1],c[2]]} s{state}")
-        coord_idx += 1
-        c = path_coords[coord_idx]
-        print(f"{coord_idx}: {c} f{z_frags[c[0],c[1],c[2]]} s{state}")
+    coord_idx = 0
+    for coord_idx, c in enumerate(path_coords[:-1]):
+        state_idx = coord_idx // 2
+        state = states[state_idx]
+        if coord_idx > 0:
+            prev_c = path_coords[coord_idx - 1]
+            if z_frags[c[0], c[1], c[2]] != z_frags[prev_c[0], prev_c[1], prev_c[2]]:
+                e = vb.nxGraph.edges[states[state_idx - 1], state]
+                print(f"Transition: {states[state_idx-1]}->{state}: {e}")
 
-    coord_idx += 1
-    c = path_coords[coord_idx]
-    print(f"{coord_idx}: {c} f{z_frags[c[0],c[1],c[2]]} s{state}")
+        print(f"{coord_idx}: {c} f{z_frags[c[0],c[1],c[2]]} s{state}")
 
 
 def get_valid_bbox(array, coord, radius):

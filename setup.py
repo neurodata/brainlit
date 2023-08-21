@@ -14,6 +14,7 @@ AUTHOR_EMAIL = "tathey1@jhu.edu"
 URL = "https://github.com/neurodata/brainlit"
 MINIMUM_PYTHON_VERSION = 3, 7  # Minimum of Python 3.7
 REQUIRED_PACKAGES = [
+    "numpy==1.23.2",
     "CloudReg",
     "aicspylibczi>=3.0.5",
     "brainrender",
@@ -22,7 +23,7 @@ REQUIRED_PACKAGES = [
     "networkx>=2.1",
     "scikit-learn==1.1.2",  # issues with pairwise_distances_argmin_min (e.g. used in NeuronTrace) on other versions
     "scipy>=1.1.0",
-    "seaborn>=0.9.0",
+    "seaborn>=0.12.2",
     "tifffile>=2020.7.17",
     "napari[pyqt5]>=0.2.11",
     "PyQt5<=5.15.7",  # bc there was an error with 5.15.8, can remove once that's resolved
@@ -34,7 +35,12 @@ REQUIRED_PACKAGES = [
     # "pcurvepy @ git+https://git@github.com/CaseyWeiner/pcurvepy@master#egg=pcurvepy",
     "similaritymeasures>=0.4.4",
     "statannotations>=0.4.4",
+    "trimesh==3.21.7",  # newer versions of this use embreex which is not found on netlify's pip. This is a requirement of igenous-pipeline.
     "igneous-pipeline",
+    "torch",
+    "torchvision",
+    "torchaudio",
+    "ngauge",
 ]
 
 # Find savanna version.
