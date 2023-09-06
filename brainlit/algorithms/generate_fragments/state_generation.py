@@ -379,18 +379,18 @@ class state_generation:
 
         specifications = self._get_frag_specifications()
 
-        set_size = int(np.ceil(np.product([200,200,1000])/np.product(self.chunk_size)))
+        set_size = int(np.ceil(np.product([200,200,10000])/np.product(self.chunk_size)))
         specification_sets = [specifications[i:i+set_size] for i in np.arange(0, len(specifications), set_size)]
         max_label = 0
 
-        for specifications in specification_sets:
+        for specifications in tqdm(specification_sets, desc="Chunking fragment generation..."):
             results = Parallel(n_jobs=self.parallel, backend="threading")(
                 delayed(self._split_frags_thread)(
                     specification["corner1"],
                     specification["corner2"],
                     specification["soma_coords"],
                 )
-                for specification in tqdm(specifications, desc="Splitting fragments...")
+                for specification in tqdm(specifications, desc="Splitting fragments...", leave=False)
             )
 
             for result in tqdm(results, desc="Renaming fragments..."):
