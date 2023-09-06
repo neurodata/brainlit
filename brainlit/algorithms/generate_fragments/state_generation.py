@@ -262,7 +262,7 @@ class state_generation:
 
         self.prob_path = prob_fname
 
-    def _get_frag_specifications(self) -> list:
+    def _get_frag_specifications(self, chunk_vol: int = None) -> list:
         image = zarr.open(self.image_path, mode="r")
         chunk_size = self.chunk_size
         soma_coords = self.soma_coords
@@ -293,6 +293,10 @@ class state_generation:
                             "soma_coords": soma_coords_new,
                         }
                     )
+        
+        if chunk_vol is not None:
+            set_size = int(np.ceil(chunk_vol/np.product(chunk_size)))
+            specifications = [specifications[i:i+set_size] for i in np.arange(0, len(specifications), set_size)]
 
         return specifications
 
@@ -377,10 +381,7 @@ class state_generation:
 
         print(f"Constructing fragment image {frag_fname} of shape {fragments.shape}")
 
-        specifications = self._get_frag_specifications()
-
-        set_size = int(np.ceil(np.product([200,200,100000])/np.product(self.chunk_size)))
-        specification_sets = [specifications[i:i+set_size] for i in np.arange(0, len(specifications), set_size)]
+        specification_sets = self._get_frag_specifications(chunk_vol=np.product([200,200,100000]))
         max_label = 0
 
         for specifications in tqdm(specification_sets, desc="Chunking fragment generation..."):
@@ -519,23 +520,24 @@ class state_generation:
 
         self.kde = kde
 
-        specifications = self._get_frag_specifications()
+        specification_sets = self._get_frag_specifications(chunk_vol=np.product([200,200,100000]))
 
-        results = Parallel(n_jobs=self.parallel, backend="threading")(
-            delayed(self._compute_image_tiered_thread)(
-                specification["corner1"],
-                specification["corner2"],
+        for specifications in tqdm(specification_sets, desc="Chunking tiered image generation..."):
+            results = Parallel(n_jobs=self.parallel, backend="threading")(
+                delayed(self._compute_image_tiered_thread)(
+                    specification["corner1"],
+                    specification["corner2"],
+                )
+                for specification in tqdm(specifications, desc="Computing tiered image...", leave=False)
             )
-            for specification in tqdm(specifications, desc="Computing tiered image...")
-        )
 
-        for result in results:
-            corner1, corner2, image_tiered = result
-            tiered[
-                corner1[0] : corner2[0],
-                corner1[1] : corner2[1],
-                corner1[2] : corner2[2],
-            ] = image_tiered
+            for result in results:
+                corner1, corner2, image_tiered = result
+                tiered[
+                    corner1[0] : corner2[0],
+                    corner1[1] : corner2[1],
+                    corner1[2] : corner2[2],
+                ] = image_tiered
 
         self.tiered_path = tiered_fname
 
