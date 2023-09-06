@@ -379,7 +379,7 @@ class state_generation:
 
         specifications = self._get_frag_specifications()
 
-        set_size = int(np.ceil(np.product([200,200,10000])/np.product(self.chunk_size)))
+        set_size = int(np.ceil(np.product([200,200,100000])/np.product(self.chunk_size)))
         specification_sets = [specifications[i:i+set_size] for i in np.arange(0, len(specifications), set_size)]
         max_label = 0
 
