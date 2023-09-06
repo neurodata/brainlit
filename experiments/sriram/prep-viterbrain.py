@@ -6,6 +6,7 @@ from pathlib import Path
 import time
 from brainlit.algorithms.generate_fragments.state_generation import state_generation
 import numpy as np
+import pickle
 
 project_path = "/cis/project/sriram/ng_data/sriram-adipo-brain1-im3-timing" 
 project_path = Path(project_path)
@@ -68,7 +69,7 @@ sg = state_generation(
         resolution[1] / 1000,
     ],  # ome zarr is zxy, in microns
     prob_path=prob_path,
-    # fragment_path=fragment_path,
+    fragment_path=fragment_path,
     # tiered_path=tiered_path,
     # states_path=states_path,
 )
@@ -79,16 +80,16 @@ sg = state_generation(
 # times["Run ilastik"]= time.time() - start
 # print([f"{key}:{times[key]}" for key in times.keys()])
 
-start = time.time()
-sg.compute_frags()
-times["Compute Fragments"]= time.time() - start
-print([f"{key}:{times[key]}" for key in times.keys()])
+# start = time.time()
+# sg.compute_frags()
+# times["Compute Fragments"]= time.time() - start
+# print([f"{key}:{times[key]}" for key in times.keys()])
 
 
-start = time.time()
-zarr_to_omezarr(zarr_path=fragment_path, out_path=ome_path_lbl, res=resolution)
-times["Convert fragments to ZARR"]= time.time() - start
-print([f"{key}:{times[key]}" for key in times.keys()])
+# start = time.time()
+# zarr_to_omezarr(zarr_path=fragment_path, out_path=ome_path_lbl, res=resolution)
+# times["Convert fragments to ZARR"]= time.time() - start
+# print([f"{key}:{times[key]}" for key in times.keys()])
 
 
 sg.compute_soma_lbls()
