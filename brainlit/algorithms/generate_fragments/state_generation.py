@@ -208,7 +208,7 @@ class state_generation:
             prob_fname,
             mode="w",
             shape=image.shape[-3:],
-            chunks=image.chunks[1:],
+            chunks=image.chunks[-3:],
             dtype="float64",
         )
         chunk_size = self.chunk_size
@@ -250,7 +250,10 @@ class state_generation:
                     else:
                         pred = np.squeeze(pred[:, :, :, 1])
 
-                    probabilities[x:x2, y:y2, z:z2] = pred
+                    try:
+                        probabilities[x:x2, y:y2, z:z2] = pred
+                    except: 
+                        raise ValueError(f"predict has size: {pred.shape}*{pred.itemsize}={pred.itemsize*pred.size}")
 
             for f in os.listdir(data_bin):
                 fname = os.path.join(data_bin, f)
@@ -376,25 +379,30 @@ class state_generation:
 
         specifications = self._get_frag_specifications()
 
-        results = Parallel(n_jobs=self.parallel, backend="threading")(
-            delayed(self._split_frags_thread)(
-                specification["corner1"],
-                specification["corner2"],
-                specification["soma_coords"],
-            )
-            for specification in tqdm(specifications, desc="Splitting fragments...")
-        )
-
+        set_size = int(np.ceil(np.product([200,200,1000])/np.product(self.chunk_size)))
+        specification_sets = [specifications[i:i+set_size] for i in np.arange(0, len(specifications), set_size)]
         max_label = 0
-        for result in tqdm(results, desc="Renaming fragments..."):
-            corner1, corner2, labels = result
-            labels[labels > 0] += max_label
-            max_label = np.amax([max_label, np.amax(labels)])
-            fragments[
-                corner1[0] : corner2[0],
-                corner1[1] : corner2[1],
-                corner1[2] : corner2[2],
-            ] = labels
+
+        for specifications in specification_sets:
+            results = Parallel(n_jobs=self.parallel, backend="threading")(
+                delayed(self._split_frags_thread)(
+                    specification["corner1"],
+                    specification["corner2"],
+                    specification["soma_coords"],
+                )
+                for specification in tqdm(specifications, desc="Splitting fragments...")
+            )
+
+            for result in tqdm(results, desc="Renaming fragments..."):
+                corner1, corner2, labels = result
+                labels[labels > 0] += max_label
+                max_label = np.amax([max_label, np.amax(labels)])
+                fragments[
+                    corner1[0] : corner2[0],
+                    corner1[1] : corner2[1],
+                    corner1[2] : corner2[2],
+                ] = labels
+        
         print(f"*****************Number of components: {max_label}*******************")
 
         self.fragment_path = frag_fname
