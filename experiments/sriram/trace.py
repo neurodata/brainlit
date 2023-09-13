@@ -39,18 +39,20 @@ a soma - 5346, 14801, 330
 """
 
 sriram_exp_data_dir = Path(os.path.abspath(__file__)).parents[0] / "data" / "test-czi"
+cis_data_dir = Path("/cis/project/sriram/ng_data/sriram-adipo-brain1-im3-timing/")
+
 im_path_local = str(
     sriram_exp_data_dir / "fg_ome.zarr" / "0"
 )  # E:\\Projects\\KolodkinLab\\Sriram\\brainlit-tracing\\brainlit\\experiments\\sriram\\data\\
-im_path_cis = "/cis/project/sriram/ng_data/sriram-adipo-brain1-im3/fg_ome.zarr/0/"
+im_path_cis = str(cis_data_dir / "fg_ome.zarr/0/")
 
 trace_path_local = f"precomputed://file://{str(sriram_exp_data_dir / 'traces')}"
 trace_path_cis = (
-    "precomputed://file:///cis/project/sriram/ng_data/sriram-adipo-brain1-im3/traces"
+    f"precomputed://file://{str(cis_data_dir)}/traces"
 )
 
 vb_path_local = str(sriram_exp_data_dir / "viterbrain.pickle")
-vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pickle"
+vb_path_cis = str(cis_data_dir / "viterbrain.pickle")
 
 ######################
 # Enter inputs below #
@@ -58,17 +60,17 @@ vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pick
 
 
 port = "9010"
-trace_path = trace_path_local  # cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
-im_path = im_path_local  # ckloudvolume compatible path or path to local zarr
-im_url = f"zarr://http://127.0.0.1:{port}/test-czi/fg_ome.zarr"  # ng compatible url
+trace_path = trace_path_cis  # cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
+im_path = im_path_cis  # ckloudvolume compatible path or path to local zarr
+im_url = f"zarr://http://127.0.0.1:{port}/fg_ome.zarr"  # ng compatible url
 trace_url = (
-    f"precomputed://http://127.0.0.1:{port}/test-czi/traces"  # ng compatible url
+    f"precomputed://http://127.0.0.1:{port}/traces"  # ng compatible url
 )
 assisted_tracing = True
 
 if assisted_tracing:
-    vb_path = vb_path_local
-    frag_layer = f"zarr://http://127.0.0.1:{port}/test-czi/labels_ome.zarr"
+    vb_path = vb_path_cis
+    frag_layer = f"zarr://http://127.0.0.1:{port}/labels_ome.zarr"
 else:
     vb_path = None
     frag_layer = None
@@ -156,6 +158,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
         if vb_path:
             with open(vb_path, "rb") as handle:
                 self.vb = pickle.load(handle)
+                print(f"Fragment path: {self.vb.fragment_path}")
         else:
             self.vb = None
 
@@ -308,12 +311,13 @@ class ViterBrainViewer(neuroglancer.Viewer):
             print(f"Tracing path from {self.start_pt} to {self.end_pt}")
 
             try:
+                dim_order = [2,0,1]
                 start_coord = [
-                    self.start_pt[i] for i in [2, 0, 1]
+                    self.start_pt[i] for i in dim_order
                 ]  # correct dimension swap (originiating during ome-zarr conversion)
-                end_coord = [self.end_pt[i] for i in [2, 0, 1]]
+                end_coord = [self.end_pt[i] for i in dim_order]
                 path = self.vb.shortest_path(coord1=start_coord, coord2=end_coord)
-                path = [[pt[1], pt[2], pt[0]] for pt in path]
+                path = [[pt[dim_order.index(i)] for i in range(len(dim_order))] for pt in path]
                 print(path)
                 self.render_line(path)
                 with self.txn() as vs:  # trace
