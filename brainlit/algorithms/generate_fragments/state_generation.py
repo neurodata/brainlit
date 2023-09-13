@@ -376,7 +376,7 @@ class state_generation:
             mode="w",
             shape=probs.shape,
             chunks=probs.chunks,
-            dtype="uint16",
+            dtype="uint32",
         )
 
         print(f"Constructing fragment image {frag_fname} of shape {fragments.shape}")
