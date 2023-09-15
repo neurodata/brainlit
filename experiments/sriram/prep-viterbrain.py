@@ -88,7 +88,7 @@ print([f"{key}:{times[key]}" for key in times.keys()])
 
 start = time.time()
 zarr_to_omezarr(zarr_path=fragment_path, out_path=ome_path_lbl, res=resolution)
-times["Convert fragments to ZARR"]= time.time() - start
+times["Convert fragments to OME-ZARR"]= time.time() - start
 print([f"{key}:{times[key]}" for key in times.keys()])
 
 
