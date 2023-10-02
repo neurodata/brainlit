@@ -18,12 +18,12 @@ from brainlit.BrainLine.apply_ilastik import ApplyIlastik_LargeImage
 Inputs
 """
 
-brain = "MS10"
+brain = "MS33"
 antibody_layer = "Ch_647"
 background_layer = "Ch_561"
 endogenous_layer = "Ch_488"
 
-threshold = 0.28  # threshold to use for ilastik
+threshold = 0.06  # threshold to use for ilastik
 brainline_exp_dir = Path(os.getcwd()) / Path(__file__).parents[1]
 data_dir = (
     brainline_exp_dir / "data" / "brain_temp"
@@ -32,20 +32,18 @@ data_file = brainline_exp_dir / "data" / "axon_data.json"
 
 # Ilastik will run in "headless mode", and the following paths are needed to do so:
 ilastik_path = "/Applications/ilastik-1.4.0b21-OSX.app/Contents/ilastik-release/run_ilastik.sh"  # "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh"  # path to ilastik executable
-ilastik_project = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/axon_segmentation.ilp"  # "/data/tathey1/matt_wright/ilastik/model1/axon_segmentation.ilp"  # path to ilastik
+ilastik_project = brainline_exp_dir / "data" / "models" / "axon" / "axon_segmentation.ilp"  # "/data/tathey1/matt_wright/ilastik/model1/axon_segmentation.ilp"  # path to ilastik
 ilastik_path = "/home/user/Documents/ilastik-1.4.0-Linux/run_ilastik.sh"
-ilastik_project = str(
-    brainline_exp_dir / "data" / "models" / "axon" / "axon_segmentation.ilp"
-)
+
 
 
 min_coords = [
-    -1,
-    512,
+    697,
+    877,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
 max_coords = [
-    6656,
+    6654,
     -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension

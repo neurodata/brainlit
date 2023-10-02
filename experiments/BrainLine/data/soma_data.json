@@ -25,6 +25,7 @@
         },
         "8557": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2021_10_06/8557/",
+            "base2": "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_488",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=3p4kSvgMMFl61Q",
                 "somas_layer": "<unknown>",
@@ -109,7 +110,7 @@
         "8608": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2022_04_13/8608/",
             "val_info": {
-                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=NRFI2aWmv3d0Ww",
+                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=oKEqGlEJ1ymoMw",
                 "somas_layer": "soma_val",
                 "nonsomas_layer": "nonsoma_val"
             },

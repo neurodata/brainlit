@@ -227,6 +227,14 @@
             },
             "subtype": "gad2 vgat"
         },
+        "MS33": {
+            "base": "precomputed://s3://smartspim-precomputed-volumes/2023_09_18/MS33/",
+            "val_info": {
+                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=H3idZ1oxxfEWdg",
+                "layer": "val"
+            },
+            "subtype": "tph2 gad2"
+        },
         "pytest": {
             "subtype": "test_type"
         }
