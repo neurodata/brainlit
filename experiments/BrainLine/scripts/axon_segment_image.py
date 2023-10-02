@@ -47,7 +47,7 @@ max_coords = [
     -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
-ncpu = 16  # number of cores to use for detection
+ncpu = 6  # number of cores to use for detection
 chunk_size = [512, 1024, 2048]  # [256, 256, 300]
 
 
@@ -109,12 +109,13 @@ if downsample_ask == "y":
     tq.insert(tasks)
     tq.execute()
 
-# """
-# Making info files for transformed images
-# """
+"""
+Making info files for transformed images
+"""
 # make_trans_layers = input(
 #     f"Will you be transforming axon_mask into atlas space? (should relevant info files be made) (y/n)"
 # )
+
 # if make_trans_layers == "y":
 #     atlas_vol = CloudVolume(
 #         "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017"
