@@ -41,6 +41,7 @@
                 "somas_layer": "<unknown>",
                 "nonsomas_layer": "<unknown>"
             },
+            "somas_atlas_path": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/wholebrain_results/atlas_somas_8555/",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=qmoYCOl5qUBzkQ",
             "subtype": "tph2 vglut3"
         },
@@ -177,6 +178,7 @@
                 "nonsomas_layer": "nonsoma_train"
             },
             "subtype": "tph2 gad2",
+            "somas_atlas_path": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/wholebrain_results/atlas_somas_8606/",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=6O1ufCnHBBeK8Q",
             "somas_atlas_url_partial": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=iiX4cb9vLbHLXQ"
         },

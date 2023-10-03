@@ -517,7 +517,8 @@ class ApplyIlastik_LargeImage:
             try:
                 CloudVolume(mask_dir)
             except:
-                self._make_mask_info(mask_dir, vol, chunk_size)
+                assert np.all([c_ilastik % c_vol == 0 for c_ilastik, c_vol in zip(chunk_size, [128, 128, 2])])
+                self._make_mask_info(mask_dir, vol, [128, 128, 2])
 
         corners = _get_corners(
             shape, chunk_size, max_coords=max_coords, min_coords=min_coords

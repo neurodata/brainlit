@@ -1,0 +1,68 @@
+{
+  "dimensions": {
+    "x": [
+      0.00001,
+      "m"
+    ],
+    "y": [
+      0.00001,
+      "m"
+    ],
+    "z": [
+      0.00001,
+      "m"
+    ]
+  },
+  "position": [
+    696.1801147460938,
+    414.9307556152344,
+    512
+  ],
+  "crossSectionScale": 1.822118800390506,
+  "projectionScale": 2048,
+  "layers": [
+    {
+      "type": "image",
+      "source": {
+        "url": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/nissl_10um"
+      },
+      "shaderControls": {
+        "color": "#ef3030",
+        "max": 0.31
+      },
+      "opacity": 1,
+      "blend": "additive",
+      "name": "nissl_10um",
+      "visible": false
+    },
+    {
+      "type": "image",
+      "source": {
+        "url": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/average_10um"
+      },
+      "shaderControls": {
+        "max": 0.007
+      },
+      "opacity": 1,
+      "blend": "additive",
+      "name": "average_10um"
+    },
+    {
+      "type": "segmentation",
+      "source": {
+        "url": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017"
+      },
+      "selectedAlpha": 0.3,
+      "skeletonRendering": {
+        "mode2d": "lines_and_points",
+        "mode3d": "lines"
+      },
+      "name": "annotation_10um_2017"
+    }
+  ],
+  "selectedLayer": {
+    "layer": "nissl_10um",
+    "visible": true
+  },
+  "layout": "xy"
+}
