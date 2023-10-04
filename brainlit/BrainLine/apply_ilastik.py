@@ -165,7 +165,14 @@ def plot_results(
             for filename in tqdm(test_files, disable=True):
                 f = h5py.File(filename, "r")
                 pred = f.get("exported_data")
-                pred = pred[positive_channel, :, :, :]
+                channel_dim = np.argmin(pred.shape)
+                if channel_dim == 0:
+                    pred = pred[positive_channel, :, :, :]
+                elif channel_dim == 3:
+                    pred = pred[:, :, :, positive_channel]
+                else:
+                    raise ValueError(f"Channel dimension should be first or last, not {channel_dim}")
+                
                 mask = pred > threshold
                 cntr = [s // 2 for s in mask.shape]
 
@@ -201,7 +208,10 @@ def plot_results(
                     filename_lab = filename[:-17] + "-image_3channel_Labels.h5"
                     f = h5py.File(filename_lab, "r")
                     gt = f.get("exported_data")
-                    gt = gt[0, :, :, :]
+                    if channel_dim == 0:
+                        gt = gt[0, :, :, :]
+                    elif channel_dim == 3:
+                        gt = gt[:, :, :, 0]
                     pos_labels = gt == 2
                     neg_labels = gt == 1
 
@@ -309,7 +319,14 @@ def examine_threshold(
         print(f"*************File: {im_fname}*********")
         f = h5py.File(filename, "r")
         pred = f.get("exported_data")
-        pred = pred[positive_channel, :, :, :]
+        channel_dim = np.argmin(pred.shape)
+        if channel_dim == 0:
+            pred = pred[positive_channel, :, :, :]
+        elif channel_dim == 3:
+            pred = pred[:, :, :, positive_channel]
+        else:
+            raise ValueError(f"Channel dimension should be first or last, not {channel_dim}")
+        
         mask = pred > threshold
         cntr = [s // 2 for s in mask.shape]
 
@@ -376,7 +393,11 @@ def examine_threshold(
             fname_lab = im_fname.split(".")[0] + "-image_3channel_Labels.h5"
             f = h5py.File(fname_lab, "r")
             gt = f.get("exported_data")
-            gt = gt[0, :, :, :]
+            if channel_dim == 0:
+                gt = gt[0, :, :, :]
+            elif channel_dim == 3:
+                gt = gt[:, :, :, 0]
+            
             if positive_channel == 1:
                 pos_labels = gt == 2
                 neg_labels = gt == 1
@@ -402,16 +423,20 @@ def examine_threshold(
             else:
                 precision = true_pos / (true_pos + false_pos)
 
-            if (precision < 0.8 or recall) < 0.8 and show_plot:
+            if (precision < 0.8 or recall < 0.8) and show_plot:
                 f = h5py.File(im_fname, "r")
                 im = f.get("image_3channel")
                 print(f"prec{precision} recall: {recall}")
                 viewer = napari.Viewer(ndisplay=3)
-                viewer.add_image(im[0, :, :, :], name=f"{im_fname}")
-                viewer.add_image(im[1, :, :, :], name="bg")
-                viewer.add_image(im[2, :, :, :], name="endo")
+                if len(im.shape) == 3:
+                    viewer.add_image(im, name=f"{im_fname}")
+                else:
+                    for layer in range(im.shape[0]):
+                        viewer.add_image(im[layer, :, :, :], name=f"{layer}-{im_fname}")
                 viewer.add_labels(mask, name="mask")
                 viewer.add_labels(pos_labels + 2 * neg_labels, name="pos labels")
+            else:
+                print(f"Precision: {precision}, recall: {recall}")
 
         else:
             raise ValueError(f"object_type must be axon or soma, not {object_type}")

@@ -233,6 +233,10 @@
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=H3idZ1oxxfEWdg",
                 "layer": "val"
             },
+            "train_info": {
+                "url": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/brainMS33/train.json",
+                "layer": "train"
+            },
             "subtype": "tph2 gad2"
         },
         "pytest": {

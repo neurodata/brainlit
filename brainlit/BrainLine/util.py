@@ -148,16 +148,20 @@ def json_to_points(url, round=False) -> dict:
     Returns:
         dict: Keys are names of point layers and values are lists of points from that layer.
     """
-    pattern = "json_url="
-    idx = url.find(pattern) + len(pattern)
+    if url[-5:] == ".json":
+        with open(url) as f:
+            js = json.load(f)
+    else:
+        pattern = "json_url="
+        idx = url.find(pattern) + len(pattern)
 
-    json_url = url[idx:]
+        json_url = url[idx:]
 
-    data = urllib.request.urlopen(json_url)
+        data = urllib.request.urlopen(json_url)
 
-    string = data.readlines()[0].decode("utf-8")
+        string = data.readlines()[0].decode("utf-8")
 
-    js = json.loads(string)
+        js = json.loads(string)
 
     point_layers = {}
 
