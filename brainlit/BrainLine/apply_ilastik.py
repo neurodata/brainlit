@@ -711,7 +711,7 @@ class ApplyIlastik_LargeImage:
             vol_mask[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]] = mask
         
         os.remove(fname)
-        os.remove(fname[-3:]+"_Probabilities.h5")
+        os.remove(str(fname.stem) +"_Probabilities.h5")
 
     def collect_soma_results(self, brain_id: str):
         """Combine all soma detections and post to neuroglancer. Intended for use after apply_ilastik_parallel.
