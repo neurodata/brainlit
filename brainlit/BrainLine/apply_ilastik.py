@@ -548,41 +548,56 @@ class ApplyIlastik_LargeImage:
         corners = _get_corners(
             shape, chunk_size, max_coords=max_coords, min_coords=min_coords
         )
-        chunk_interval = 6
-        corners_chunks = [
-            corners[i : i + chunk_interval]
-            for i in range(0, len(corners), chunk_interval)
-        ]
 
-        for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
-            if self.ncpu == 1:
-                for corner in tqdm(corners_chunk, leave=False):
-                    self._process_chunk(
-                        corner[0],
-                        corner[1],
-                        volume_base_dir,
-                        layer_names,
-                        threshold,
-                        data_dir,
-                        self.object_type,
-                        results_dir,
-                    )
-            else:
-                Parallel(n_jobs=self.ncpu)(
-                    delayed(self._process_chunk)(
-                        corner[0],
-                        corner[1],
-                        volume_base_dir,
-                        layer_names,
-                        threshold,
-                        data_dir,
-                        self.object_type,
-                        results_dir,
-                    )
-                    for corner in tqdm(corners_chunk, leave=False)
-                )
-            for f in os.listdir(data_dir):
-                os.remove(os.path.join(data_dir, f))
+        Parallel(n_jobs=self.ncpu)(
+            delayed(self._process_chunk)(
+                corner[0],
+                corner[1],
+                volume_base_dir,
+                layer_names,
+                threshold,
+                data_dir,
+                self.object_type,
+                results_dir,
+            )
+            for corner in tqdm(corners, leave=False)
+        )
+
+        # chunk_interval = 6
+        # corners_chunks = [
+        #     corners[i : i + chunk_interval]
+        #     for i in range(0, len(corners), chunk_interval)
+        # ]
+
+        # for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
+        #     if self.ncpu == 1:
+        #         for corner in tqdm(corners_chunk, leave=False):
+        #             self._process_chunk(
+        #                 corner[0],
+        #                 corner[1],
+        #                 volume_base_dir,
+        #                 layer_names,
+        #                 threshold,
+        #                 data_dir,
+        #                 self.object_type,
+        #                 results_dir,
+        #             )
+        #     else:
+        #         Parallel(n_jobs=self.ncpu)(
+        #             delayed(self._process_chunk)(
+        #                 corner[0],
+        #                 corner[1],
+        #                 volume_base_dir,
+        #                 layer_names,
+        #                 threshold,
+        #                 data_dir,
+        #                 self.object_type,
+        #                 results_dir,
+        #             )
+        #             for corner in tqdm(corners_chunk, leave=False)
+        #         )
+        #     for f in os.listdir(data_dir):
+        #         os.remove(os.path.join(data_dir, f))
 
     def _make_mask_info(self, mask_dir: str, vol: CloudVolume, chunk_size: list):
         info = CloudVolume.create_new_info(
@@ -600,6 +615,7 @@ class ApplyIlastik_LargeImage:
         )
         vol_mask = CloudVolume(mask_dir, info=info, compress=False)
         vol_mask.commit_info()
+
 
     def _process_chunk(
         self,
@@ -693,6 +709,9 @@ class ApplyIlastik_LargeImage:
                 dir_mask, parallel=1, mip=mip, fill_missing=True, compress=False
             )
             vol_mask[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]] = mask
+        
+        os.remove(fname)
+        os.remove(fname[-3:]+"_Probabilities.h5")
 
     def collect_soma_results(self, brain_id: str):
         """Combine all soma detections and post to neuroglancer. Intended for use after apply_ilastik_parallel.
