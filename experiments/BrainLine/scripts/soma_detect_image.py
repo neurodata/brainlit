@@ -9,12 +9,12 @@ Inputs
 # -dir_base
 # data_dir and results_dir ARE CLEAR
 # threshold IS CORRECT
-brain = "MS22"
+brain = "8557"
 antibody_layer = "Ch_647"
 background_layer = "Ch_561"
 endogenous_layer = "Ch_488"
 
-threshold = 0.72  # threshold to use for ilastik
+threshold = 0.18  # threshold to use for ilastik
 brainline_exp_dir = Path(os.getcwd()) / Path(__file__).parents[1]
 data_dir = (
     brainline_exp_dir / "data" / "brainr_temp"
@@ -28,18 +28,16 @@ data_file = brainline_exp_dir / "data" / "soma_data.json"
 ilastik_path = "/Applications/ilastik-1.4.0b21-OSX.app/Contents/ilastik-release/run_ilastik.sh"  # "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh"  # path to ilastik executable
 ilastik_project = "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/matt_soma_rabies_pix_3ch.ilp"  # "/data/tathey1/matt_wright/ilastik/soma_model/matt_soma_rabies_pix_3ch.ilp"  # path to ilastik project
 ilastik_path = "/home/user/Documents/ilastik-1.4.0-Linux/run_ilastik.sh"
-ilastik_project = (
-    "/home/user/misc_tommy/ilastik/models/soma/matt_soma_rabies_pix_3ch.ilp"
-)
+ilastik_project = brainline_exp_dir / "data" / "models" / "soma" / "matt_soma_rabies_pix_3ch.ilp" 
 
 
 min_coords = [
-    901,
-    600,
+    -1,
+    -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
 max_coords = [
-    6834,
+    4658,
     -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension

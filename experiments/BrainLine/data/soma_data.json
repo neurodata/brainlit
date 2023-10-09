@@ -115,6 +115,7 @@
                 "somas_layer": "soma_val",
                 "nonsomas_layer": "nonsoma_val"
             },
+            "somas_atlas_path": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/wholebrain_results/atlas_somas_8608/",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=mfHtdMvFZcYSiw",
             "subtype": "tph2 gad2"
         },
@@ -190,6 +191,7 @@
                 "nonsomas_layer": "nonsoma_val"
             },
             "subtype": "tph2 gad2",
+            "somas_atlas_path": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/wholebrain_results/atlas_somas_969/",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=tYjwxkvRGgMd5g"
         },
         "910": {
@@ -225,6 +227,7 @@
                 "nonsomas_layer": "nonsoma_val"
             },
             "subtype": "gad2 vgat",
+            "somas_atlas_path": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/wholebrain_results/atlas_somas_MS37/",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=0ODrFAwgltkRuQ"
         },
         "MS25": {
@@ -258,6 +261,7 @@
                 "bounds": [[2100,5500,1100], [3100, 6500, 2000]]
             },
             "subtype": "gad2 vgat",
+            "somas_atlas_path": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/wholebrain_results/atlas_somas_MS36/",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=LQlB_2tJGgxGHw"
         },
         "MS23": {
@@ -268,6 +272,7 @@
                 "nonsomas_layer": "nonsoma_val"
             },
             "subtype": "tph2 gad2",
+            "somas_atlas_path": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/wholebrain_results/atlas_somas_MS23/",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=haZlIiduEDJlOA"
         },
         "MS22": {
