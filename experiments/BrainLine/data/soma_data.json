@@ -31,6 +31,7 @@
                 "somas_layer": "<unknown>",
                 "nonsomas_layer": "<unknown>"
             },
+            "somas_atlas_path": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/wholebrain_results/atlas_somas_8557/",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=4M6ppFjZAUijkg",
             "subtype": "tph2 vglut3"
         },
