@@ -5,7 +5,7 @@ import os
 """
 Inputs
 """
-brain = "MS10"
+brain = "MS33"
 brainline_exp_dir = Path(os.getcwd()) / Path(__file__).parents[1]
 data_dir = (
     brainline_exp_dir / "data" / "brain_temp"
@@ -14,16 +14,16 @@ data_file = brainline_exp_dir / "data" / "axon_data.json"
 
 
 min_coords = [
-    -1,
-    512,
+    690,
+    3200,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
 max_coords = [
-    6656,
+    6572,
     -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
-ncpu = 12  # number of cores to use for detection
+ncpu = 12  # number of cores to use for collection
 chunk_size = [512, 1024, 2048]  # [256, 256, 300]
 s3_reg = True
 
