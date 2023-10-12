@@ -784,7 +784,7 @@ def _get_corners_collection(
         y = corner[0][1]
         y2 = corner[1][1]
         y_reg = int(y / 8)
-        y2_reg = np.amin([int(y2 / 8), vol_reg.shape[0]])
+        y2_reg = np.amin([int(y2 / 8), vol_reg.shape[1]])
         z = corner[0][2]
         z2 = corner[1][2]
 
@@ -906,13 +906,14 @@ def collect_regional_segmentation(
         max_coords=max_coords,
         min_coords=min_coords,
     )
+
     for corner in corners:
-        if corner[0][0] == 576 and corner[0][0] == 1152 and corner[0][0] == 1536:
-            print(corner)
-            raise ValueError()
+        if corner[0][0] == 576 and corner[0][1] == 1152 and corner[0][2] == 1536:
+            corners2 = [corner]
+
     Parallel(n_jobs=ncpu)(
         delayed(_compute_composition_corner)(corner, outdir, dir_base_mask, dir_base_s3)
-        for corner in tqdm(corners, desc="Finding labels")
+        for corner in tqdm(corners2, desc="Finding labels")
     )
 
     volumes = _combine_regional_segmentations(outdir)
