@@ -907,10 +907,6 @@ def collect_regional_segmentation(
         min_coords=min_coords,
     )
 
-    for corner in corners:
-        if corner[0][0] == 576 and corner[0][1] == 1152 and corner[0][2] == 1536:
-            corners2 = [corner]
-
     Parallel(n_jobs=ncpu)(
         delayed(_compute_composition_corner)(corner, outdir, dir_base_mask, dir_base_s3)
         for corner in tqdm(corners2, desc="Finding labels")
