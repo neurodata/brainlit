@@ -536,7 +536,7 @@ class ApplyIlastik_LargeImage:
                 print(f"Creating directory: {results_dir}")
                 os.makedirs(results_dir)
             else:
-                print(f"Downloaded data will be stored in {results_dir}")
+                print(f"Soma detections data will be stored in {results_dir}")
         elif self.object_type == "axon":
             mask_dir = volume_base_dir + "axon_mask"
             try:
