@@ -880,6 +880,13 @@ def collect_regional_segmentation(
         min_coords (list, optional): Lower limits of brain to complete processing, -1 will lead to processing from the beginning of the axis. Defaults to [-1, -1, -1].
         max_coords (list, optional): Upper limits of brain to complete processing, -1 will lead to processing to the end of the axis. Defaults to [-1, -1, -1].
     """
+    isExist = os.path.exists(outdir)
+    if not isExist:
+        print(f"Creating directory: {outdir}")
+        os.makedirs(outdir)
+    else:
+        print(f"Downloaded data will be stored in {outdir}")
+        
     outdir = Path(outdir)
     with open(data_file) as f:
         data = json.load(f)
