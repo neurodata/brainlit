@@ -20,12 +20,12 @@ brain_ids = [
     # "8786",
     # # "11537", # transformed mask not found
     # "8790",
-    # "MS32",
-    # "MS29",
-    # "MS11",
-    # "MS15",
+    "MS32",
+    "MS29",
+    "MS11",
+    "MS15",
     # # "MS12" # no transformed mask yet
-    "MS33",
+    # "MS33",
 ]  # list of sample IDs to be shown
 
 

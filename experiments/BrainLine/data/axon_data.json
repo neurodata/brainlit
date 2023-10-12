@@ -161,6 +161,7 @@
         },
         "MS32": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_03/MS32/",
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_04_03/MS32/",
             "val_info": {
                 "url": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/brainMS32/val.json",
                 "url2": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=pLly3GdAcihxZg",
@@ -175,6 +176,7 @@
         },
         "MS15": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_03/MS15/",
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_04_03/MS15/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=uN171hvFEvDw-Q",
                 "layer": "val"
@@ -184,6 +186,7 @@
         },
         "MS29": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_07/MS29/",
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_04_07/MS29/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=gf8YOhsEvdGXgQ",
                 "layer": "val"
@@ -197,6 +200,7 @@
         },
         "MS11": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_10/MS11/",
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_04_10/MS11/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=kcPAtNm-SdK2IQ",
                 "layer": "val"
