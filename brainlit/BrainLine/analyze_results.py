@@ -909,7 +909,7 @@ def collect_regional_segmentation(
 
     Parallel(n_jobs=ncpu)(
         delayed(_compute_composition_corner)(corner, outdir, dir_base_mask, dir_base_s3)
-        for corner in tqdm(corners2, desc="Finding labels")
+        for corner in tqdm(corners, desc="Finding labels")
     )
 
     volumes = _combine_regional_segmentations(outdir)
@@ -917,9 +917,7 @@ def collect_regional_segmentation(
     fname = f"wholebrain_{brain_id}.pkl"
     outpath = outdir / fname
     with open(outpath, "wb") as f:
-        pickle.dump(volumes, f)
-
-
+        
 class AxonDistribution(BrainDistribution):
     """Generates visualizations of results of axon segmentations of a set of brains. Implements BrainDistribution.
 
