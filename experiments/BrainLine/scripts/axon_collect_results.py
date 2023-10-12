@@ -64,6 +64,6 @@ for brain in brain_ids:
             max_coords=max_coords,
             s3_reg=s3_reg,
         )
-    except:
-        print(f"Could not reprocess: {brain}")
+    except Exception as e:
+        print(f"Could not reprocess: {brain}: {e}")
 
