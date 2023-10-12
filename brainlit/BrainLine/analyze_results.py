@@ -815,6 +815,8 @@ def _compute_composition_corner(corners, outdir, dir_base_mask, dir_base_s3):
     try:
         labels = vol_reg[l_c1[0] : l_c2[0], l_c1[1] : l_c2[1], l_c1[2] : l_c2[2]]
         labels = np.repeat(np.repeat(labels, 8, axis=0), 8, axis=1)
+        if np.all(labels == 0):
+            return
         mask = vol_mask[m_c1[0] : m_c2[0], m_c1[1] : m_c2[1], m_c1[2] : m_c2[2]]
     except exceptions.EmptyVolumeException:
         return

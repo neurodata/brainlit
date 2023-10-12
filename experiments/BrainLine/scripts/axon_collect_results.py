@@ -23,8 +23,7 @@ max_coords = [
     -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
-ncpu = 12  # number of cores to use for collection
-chunk_size = [512, 1024, 2048]  # [256, 256, 300]
+ncpu = 8  # number of cores to use for collection
 s3_reg = True
 
 
