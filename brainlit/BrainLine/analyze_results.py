@@ -917,7 +917,8 @@ def collect_regional_segmentation(
     fname = f"wholebrain_{brain_id}.pkl"
     outpath = outdir / fname
     with open(outpath, "wb") as f:
-        
+        pickle.dump(volumes, f)
+
 class AxonDistribution(BrainDistribution):
     """Generates visualizations of results of axon segmentations of a set of brains. Implements BrainDistribution.
 
