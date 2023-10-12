@@ -8,23 +8,23 @@ Inputs
 brain = "MS33"
 
 brain_ids = [
-    # "3",
-    # "4",
-    "8613",
-    # "8604",
-    "8650",
-    "8589",
-    # "8590",
-    # "8649",
-    "8788",
-    "8786",
-    # "11537", # transformed mask not found
-    "8790",
-    "MS32",
-    "MS29",
-    "MS11",
-    "MS15",
-    # "MS12" # no transformed mask yet
+    # # "3",
+    # # "4",
+    # "8613",
+    # # "8604",
+    # "8650",
+    # "8589",
+    # # "8590",
+    # # "8649",
+    # "8788",
+    # "8786",
+    # # "11537", # transformed mask not found
+    # "8790",
+    # "MS32",
+    # "MS29",
+    # "MS11",
+    # "MS15",
+    # # "MS12" # no transformed mask yet
     "MS33",
 ]  # list of sample IDs to be shown
 
@@ -54,16 +54,13 @@ for brain in brain_ids:
     Collect results
     """
 
-    try:
-        collect_regional_segmentation(
-            brain_id=brain,
-            data_file=data_file,
-            outdir=data_dir,
-            ncpu=ncpu,
-            min_coords=min_coords,
-            max_coords=max_coords,
-            s3_reg=s3_reg,
-        )
-    except Exception as e:
-        print(f"Could not reprocess: {brain}: {e}")
+    collect_regional_segmentation(
+        brain_id=brain,
+        data_file=data_file,
+        outdir=data_dir,
+        ncpu=ncpu,
+        min_coords=min_coords,
+        max_coords=max_coords,
+        s3_reg=s3_reg,
+    )
 
