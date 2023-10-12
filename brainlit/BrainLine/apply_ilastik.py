@@ -628,10 +628,6 @@ class ApplyIlastik_LargeImage:
         object_type: str,
         results_dir: str = None,
     ):
-        
-        if c1[0] == 6144 and c1[1] <= 4096:
-            return
-        print(f"{c1}-{c2}")
         mip = 0
         area_threshold = 500
 
