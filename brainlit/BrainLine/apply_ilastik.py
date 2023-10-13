@@ -605,8 +605,11 @@ class ApplyIlastik_LargeImage:
         results_dir: str = None,
     ):
         
-        if c1[0] == 6144 and c1[1] < 4096:
-            return
+        # if c1[0] == 6144 and c1[1] <= 4096:
+        #     return
+        # # elif c1[0] == 6144 and c1[1] == 4096 and c1[2] == 0:
+        # #     return
+        
         mip = 0
         area_threshold = 500
 
