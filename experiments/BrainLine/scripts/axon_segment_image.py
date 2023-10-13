@@ -18,12 +18,12 @@ from brainlit.BrainLine.apply_ilastik import ApplyIlastik_LargeImage
 Inputs
 """
 
-brain = "MS33"
+brain = "MS9"
 antibody_layer = "Ch_647"
 background_layer = "Ch_561"
 endogenous_layer = "Ch_488"
 
-threshold = 0.18  # threshold to use for ilastik
+threshold = 0.22  # threshold to use for ilastik
 brainline_exp_dir = Path(os.getcwd()) / Path(__file__).parents[1]
 data_dir = (
     brainline_exp_dir / "data" / "brain_temp"
@@ -38,16 +38,16 @@ ilastik_path = "/home/user/Documents/ilastik-1.4.0-Linux/run_ilastik.sh"
 
 
 min_coords = [
-    697,
-    877,
+    836,
+    -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
 max_coords = [
-    6654,
+    6635,
     -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
-ncpu = 3  # number of cores to use for detection
+ncpu = 2  # number of cores to use for detection
 chunk_size = [512, 1024, 2048]  # [256, 256, 300]
 
 
@@ -84,7 +84,10 @@ downsample_ask = input(
 )
 if downsample_ask == "y":
     print("Downsampling...")
-    dir_base = brain2paths[brain]["base"]
+    with open(data_file) as f:
+        js = json.open(f)
+        dir_base = js["brain2paths"][brain]["base"]
+
     layer_path = dir_base + "axon_mask"
 
     tq = LocalTaskQueue(parallel=16)
