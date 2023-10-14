@@ -609,7 +609,7 @@ class ApplyIlastik_LargeImage:
         area_threshold = 500
 
         dir_fg = volume_base_dir + layer_names[0]
-        vol_fg = CloudVolume(dir_fg, parallel=1, mip=mip, fill_missing=False)
+        vol_fg = CloudVolume(dir_fg, parallel=1, mip=mip, fill_missing=True)
         dir_bg = volume_base_dir + layer_names[1]
         vol_bg = CloudVolume(dir_bg, parallel=1, mip=mip, fill_missing=True)
         dir_endo = volume_base_dir + layer_names[2]
