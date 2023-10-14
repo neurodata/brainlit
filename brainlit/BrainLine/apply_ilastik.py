@@ -549,30 +549,31 @@ class ApplyIlastik_LargeImage:
             shape, chunk_size, max_coords=max_coords, min_coords=min_coords
         )
 
-        for corner in corners:
-            print(corner)
-            self._process_chunk(corner[0],
-                corner[1],
-                volume_base_dir,
-                layer_names,
-                threshold,
-                data_dir,
-                self.object_type,
-                results_dir,)
 
-        # Parallel(n_jobs=self.ncpu)(
-        #     delayed(self._process_chunk)(
-        #         corner[0],
-        #         corner[1],
-        #         volume_base_dir,
-        #         layer_names,
-        #         threshold,
-        #         data_dir,
-        #         self.object_type,
-        #         results_dir,
-        #     )
-        #     for corner in tqdm(corners, leave=False)
-        # )
+        if self.ncpu == 1:
+            for corner in tqdm(corners):
+                self._process_chunk(corner[0],
+                    corner[1],
+                    volume_base_dir,
+                    layer_names,
+                    threshold,
+                    data_dir,
+                    self.object_type,
+                    results_dir,)
+        else:
+            Parallel(n_jobs=self.ncpu)(
+                delayed(self._process_chunk)(
+                    corner[0],
+                    corner[1],
+                    volume_base_dir,
+                    layer_names,
+                    threshold,
+                    data_dir,
+                    self.object_type,
+                    results_dir,
+                )
+                for corner in tqdm(corners, leave=False)
+            )
 
 
     def _make_mask_info(self, mask_dir: str, vol: CloudVolume, chunk_size: list):
