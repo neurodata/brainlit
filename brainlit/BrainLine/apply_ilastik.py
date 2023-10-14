@@ -626,7 +626,7 @@ class ApplyIlastik_LargeImage:
                     axis=0,
                 )
             )
-        except exceptions.EmptyVolumeException or exceptions.ValueError:
+        except exceptions.EmptyVolumeException or ValueError:
             print(f"File read error at: {c1}")
             return
 
