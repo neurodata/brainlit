@@ -539,7 +539,7 @@ class ApplyIlastik_LargeImage:
             else:
                 print(f"Soma detections data will be stored in {results_dir}")
         elif self.object_type == "axon":
-            mask_dir = volume_base_dir_read + "axon_mask"
+            mask_dir = volume_base_dir_write + "axon_mask"
             try:
                 CloudVolume(mask_dir)
             except:
