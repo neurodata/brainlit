@@ -513,8 +513,9 @@ class ApplyIlastik_LargeImage:
             max_coords (list, optional): Upper bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
         """
         results_dir = self.results_dir
-        volume_base_dir = self.brain2paths[brain_id]["base"]
-        sample_path = volume_base_dir + layer_names[0]
+        volume_base_dir_read = self.brain2paths[brain_id]["base"]
+        volume_base_dir_write = self.brain2paths[brain_id]["base_s3"]
+        sample_path = volume_base_dir_read + layer_names[0]
         vol = CloudVolume(sample_path, parallel=True, mip=0, fill_missing=True)
         shape = vol.shape
         print(f"Processing: {sample_path} with shape {shape} at threshold {threshold}")
@@ -538,7 +539,7 @@ class ApplyIlastik_LargeImage:
             else:
                 print(f"Soma detections data will be stored in {results_dir}")
         elif self.object_type == "axon":
-            mask_dir = volume_base_dir + "axon_mask"
+            mask_dir = volume_base_dir_read + "axon_mask"
             try:
                 CloudVolume(mask_dir)
             except:
@@ -554,7 +555,8 @@ class ApplyIlastik_LargeImage:
             for corner in tqdm(corners):
                 self._process_chunk(corner[0],
                     corner[1],
-                    volume_base_dir,
+                    volume_base_dir_read,
+                    volume_base_dir_write,
                     layer_names,
                     threshold,
                     data_dir,
@@ -565,7 +567,8 @@ class ApplyIlastik_LargeImage:
                 delayed(self._process_chunk)(
                     corner[0],
                     corner[1],
-                    volume_base_dir,
+                    volume_base_dir_read,
+                    volume_base_dir_write,
                     layer_names,
                     threshold,
                     data_dir,
@@ -598,7 +601,8 @@ class ApplyIlastik_LargeImage:
         self,
         c1: list,
         c2: list,
-        volume_base_dir: str,
+        volume_base_dir_read: str,
+        volume_base_dir_write: str,
         layer_names: list,
         threshold: float,
         data_dir: Path,
@@ -608,11 +612,11 @@ class ApplyIlastik_LargeImage:
         mip = 0
         area_threshold = 500
 
-        dir_fg = volume_base_dir + layer_names[0]
+        dir_fg = volume_base_dir_read + layer_names[0]
         vol_fg = CloudVolume(dir_fg, parallel=1, mip=mip, fill_missing=True)
-        dir_bg = volume_base_dir + layer_names[1]
+        dir_bg = volume_base_dir_read + layer_names[1]
         vol_bg = CloudVolume(dir_bg, parallel=1, mip=mip, fill_missing=True)
-        dir_endo = volume_base_dir + layer_names[2]
+        dir_endo = volume_base_dir_read + layer_names[2]
         vol_endo = CloudVolume(dir_endo, parallel=1, mip=mip, fill_missing=True)
 
         try:
@@ -682,7 +686,7 @@ class ApplyIlastik_LargeImage:
                         f2.write(str(location))
                         f2.write("\n")
         elif object_type == "axon":
-            dir_mask = volume_base_dir + "axon_mask"
+            dir_mask = volume_base_dir_write + "axon_mask"
             vol_mask = CloudVolume(
                 dir_mask, parallel=1, mip=mip, fill_missing=True, compress=False
             )
