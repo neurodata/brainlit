@@ -18,12 +18,12 @@ from brainlit.BrainLine.apply_ilastik import ApplyIlastik_LargeImage
 Inputs
 """
 
-brain = "MS9"
+brain = "MS32"
 antibody_layer = "Ch_647"
 background_layer = "Ch_561"
 endogenous_layer = "Ch_488"
 
-threshold = 0.22  # threshold to use for ilastik
+threshold = 0.36  # threshold to use for ilastik
 brainline_exp_dir = Path(os.getcwd()) / Path(__file__).parents[1]
 data_dir = (
     brainline_exp_dir / "data" / "brain_temp"
@@ -38,12 +38,12 @@ ilastik_path = "/home/user/Documents/ilastik-1.4.0-Linux/run_ilastik.sh"
 
 
 min_coords = [
-    836,
     -1,
+    1025,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
 max_coords = [
-    6635,
+    6036,
     -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
