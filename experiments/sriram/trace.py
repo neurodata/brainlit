@@ -291,7 +291,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
         _, kdtree, ids_total = self.build_kdtree()
         cur_pt = [int(p) for p in s.mouse_voxel_coordinates]
 
-        _, closest_idx = kdtree.query(s.mouse_voxel_coordinates)
+        _, closest_idx = kdtree.query(cur_pt)
         self.start_pt = [int(p) for p in s.mouse_voxel_coordinates]
         self.cur_skel = ids_total[closest_idx][0]
         self.cur_skel_head = ids_total[closest_idx][1]
@@ -356,7 +356,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
         with self.txn() as vs:  # trace
             layer_names = [l.name for l in vs.layers]
 
-        if "start" in layer_names
+        if "start" in layer_names:
             if "end" in layer_names:
                 with self.txn() as vs:
                     del vs.layers["start"]
@@ -426,7 +426,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 del vs.layers[trace_layer_name]
 
             coords_list = [inner for outer in self.cur_skel_coords for inner in outer]
-            
+
             skel_source = self.SkeletonSource(self.dimensions)
             skel_source.add_skeleton(coords_list=coords_list)
             vs.layers.append(
