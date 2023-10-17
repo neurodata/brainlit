@@ -8,6 +8,7 @@ from brainlit.BrainLine.parse_ara import build_tree
 from tqdm import tqdm
 from brainlit.BrainLine.imports import *
 import json
+import zarr
 
 
 def download_subvolumes(
@@ -45,21 +46,19 @@ def download_subvolumes(
         data_dir = Path(data_dir)
 
     base_dir = data_dir / f"brain{brain_id}" / dataset_to_save
-    antibody_layer, background_layer, endogenous_layer = layer_names
 
     if "base" in brain2paths[brain_id].keys():
-        base_dir_s3 = brain2paths[brain_id]["base"]
-        dir = base_dir_s3 + antibody_layer
-        vol_fg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
-        print(f"fg shape: {vol_fg.shape} at {vol_fg.resolution}")
-
-        dir = base_dir_s3 + background_layer
-        vol_bg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
-        print(f"bg shape: {vol_bg.shape} at {vol_bg.resolution}")
-
-        dir = base_dir_s3 + endogenous_layer
-        vol_endo = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
-        print(f"endo shape: {vol_endo.shape} at {vol_endo.resolution}")
+        base_dir_im = brain2paths[brain_id]["base"]
+        vols = []
+        for layer_name in layer_names:
+            dir = base_dir_im + layer_name
+            if dir[-5:] == ".zarr":
+                vol = zarr.open_array(dir + "/0/")
+                print(f"zarr {layer_name}: {vol.shape}")
+            else:
+                vol = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
+                print(f"layer {layer_name}: {vol.shape} at {vol.resolution}")
+            vols.append(vol)
 
     dataset_title = dataset_to_save + "_info"
     url = brain2paths[brain_id][dataset_title]["url"]
@@ -85,26 +84,20 @@ def download_subvolumes(
 
     for suffix, centers in zip(suffixes, centers_groups):
         for i, center in enumerate(tqdm(centers, desc="Saving samples")):
-            image_fg = vol_fg[
-                center[0] - radius + 1 : center[0] + radius,
-                center[1] - radius + 1 : center[1] + radius,
-                center[2] - radius + 1 : center[2] + radius,
-            ]
-            image_fg = image_fg[:, :, :, 0]
-            image_bg = vol_bg[
-                center[0] - radius + 1 : center[0] + radius,
-                center[1] - radius + 1 : center[1] + radius,
-                center[2] - radius + 1 : center[2] + radius,
-            ]
-            image_bg = image_bg[:, :, :, 0]
-            image_endo = vol_endo[
-                center[0] - radius + 1 : center[0] + radius,
-                center[1] - radius + 1 : center[1] + radius,
-                center[2] - radius + 1 : center[2] + radius,
-            ]
-            image_endo = image_endo[:, :, :, 0]
+            center = [int(c) for c in center]
+            images = []
+            for vol in vols:
+                print(center)
+                print(radius)
+                image = vol[
+                    center[0] - radius + 1 : center[0] + radius,
+                    center[1] - radius + 1 : center[1] + radius,
+                    center[2] - radius + 1 : center[2] + radius,
+                ]
+                image = np.squeeze(image)
+                images.append(image)
 
-            image = np.squeeze(np.stack([image_fg, image_bg, image_endo], axis=0))
+            image = np.squeeze(np.stack(images, axis=0))
 
             fname = (
                 base_dir
@@ -148,16 +141,20 @@ def json_to_points(url, round=False) -> dict:
     Returns:
         dict: Keys are names of point layers and values are lists of points from that layer.
     """
-    pattern = "json_url="
-    idx = url.find(pattern) + len(pattern)
+    if url[-5:] == ".json":
+        with open(url) as f:
+            js = json.load(f)
+    else:
+        pattern = "json_url="
+        idx = url.find(pattern) + len(pattern)
 
-    json_url = url[idx:]
+        json_url = url[idx:]
 
-    data = urllib.request.urlopen(json_url)
+        data = urllib.request.urlopen(json_url)
 
-    string = data.readlines()[0].decode("utf-8")
+        string = data.readlines()[0].decode("utf-8")
 
-    js = json.loads(string)
+        js = json.loads(string)
 
     point_layers = {}
 

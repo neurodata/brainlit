@@ -71,7 +71,6 @@ class state_generation:
         ilastik_program_path: str,
         ilastik_project_path: str,
         fg_channel: int = 0,
-        chunk_size: List[float] = [375, 375, 125],
         soma_coords: List[list] = [],
         resolution: List[float] = [0.3, 0.3, 1],
         parallel: int = 1,
@@ -114,24 +113,19 @@ class state_generation:
         self.states_path = states_path
 
         image = zarr.open(image_path, mode="r")
-        if len(image.shape) == 4:
+        if len(image.shape) == 4 and image.shape[0] <= 3:
             self.ndims = 4
         elif len(image.shape) == 3:
             self.ndims = 3
         else:
             raise ValueError(
-                f"Image must be 3D (xyz) or 4D (cxyz), rather than shape: {image.shape}"
+                f"Image must be 3D (xyz) or 4D (cxyz) with at most 3 channels, rather than shape: {image.shape}"
             )
 
         self.fg_channel = fg_channel
         self.image_shape = image.shape
+        self.image_chunks = image.chunks
 
-        if len(chunk_size) == 4 and chunk_size[0] != self.image_shape[0]:
-            raise ValueError(
-                f"Chunk size must include all channels and be 4D (cxyz), not {chunk_size}"
-            )
-
-        self.chunk_size = chunk_size
         self.soma_coords = soma_coords
         self.resolution = resolution
         self.parallel = parallel
@@ -191,6 +185,25 @@ class state_generation:
             stderr=subprocess.PIPE,
         )
 
+        # probs_fname = str(fname.with_suffix("")) + "_Probabilities.h5"
+
+        # with h5py.File(probs_fname, "r") as f:
+        #     pred = f.get("exported_data")
+
+        #     if self.ndims == 4:
+        #         pred = np.squeeze(pred[1, :, :, :])
+        #     else:
+        #         pred = np.squeeze(pred[:, :, :, 1])
+
+        #     probabilities[corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]] = pred
+
+
+        # if os.path.isfile(probs_fname) and os.path.isfile(fname):
+        #     os.remove(fname)
+        #     os.remove(probs_fname)
+        # else:
+        #     print(f"file(s) not found {probs_fname}, {fname}")
+
     def predict(self, data_bin: str) -> None:
         """Run ilastik on zarr image
 
@@ -203,6 +216,7 @@ class state_generation:
 
         image = zarr.open(self.image_path, mode="r")
         prob_fname = str(Path(self.new_layers_dir) / "probs.zarr")
+        self.prob_path = prob_fname
 
         probabilities = zarr.open(
             prob_fname,
@@ -211,14 +225,17 @@ class state_generation:
             chunks=image.chunks[-3:],
             dtype="float64",
         )
-        chunk_size = self.chunk_size
 
-        corners = _get_corners(image.shape[-3:], chunk_size)
-        corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
+        chunk_size = [c * np.amax([1, int(np.ceil((2000/c)*(4/self.parallel)**(1/3)))]) for c in self.image_chunks[-3:]]
 
         print(
             f"Processing image of shape {image.shape} with chunks {image.chunks} into probability image {prob_fname} of shape {probabilities.shape}"
         )
+
+        corners = _get_corners(image.shape[-3:], chunk_size)
+
+        chunk_count = 6
+        corners_chunks = [corners[i : i + chunk_count] for i in range(0, len(corners), chunk_count)]
 
         for corner_chunk in tqdm(corners_chunks, desc="Computing Ilastik Predictions"):
             Parallel(n_jobs=self.parallel, backend="threading")(
@@ -260,11 +277,9 @@ class state_generation:
                 if "image" in f or "Probabilities" in f:
                     os.remove(fname)
 
-        self.prob_path = prob_fname
-
     def _get_frag_specifications(self, chunk_vol: int = None) -> list:
         image = zarr.open(self.image_path, mode="r")
-        chunk_size = self.chunk_size
+        chunk_size = [c * np.amax([1, int(np.ceil(200/c))]) for c in self.image_chunks[-3:]]
         soma_coords = self.soma_coords
 
         specifications = []
@@ -313,7 +328,7 @@ class state_generation:
         Returns:
             tuple: tuple containing corner coordinates and fragment image
         """
-        threshold = 0.9
+        threshold = 0.5
 
         prob = zarr.open(self.prob_path, mode="r")
 
@@ -856,7 +871,7 @@ class state_generation:
             coef_curv=1000,
             coef_dist=10,
             coef_int=1,
-            parallel=self.parallel,
+            parallel=1,
         )
         t0 = time.time()
         viterbrain.frag_frag_dist(0, 10)

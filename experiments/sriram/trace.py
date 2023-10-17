@@ -31,15 +31,15 @@ use env_39 on local
 
 cis:
 use env_38 on dwalin
-- python cors_webserver.py -d "/cis/project/sriram/ng_data/sriram-adipo-brain1-im3-timing/" -p 9010
+- python cors_webserver.py -d "/cis/project/sriram/ng_data/sriram-220-p29-brain2/" -p 9010
 
 url:
-zarr://http://127.0.0.1:9010/exp227/fg_ome.zarr
+zarr://http://127.0.0.1:9010/fg_ome.zarr
 a soma - 5346, 14801, 330
 """
 
 sriram_exp_data_dir = Path(os.path.abspath(__file__)).parents[0] / "data" / "test-czi"
-cis_data_dir = Path("/cis/project/sriram/ng_data/sriram-adipo-brain1-im3-timing/")
+cis_data_dir = Path("/cis/project/sriram/ng_data/sriram-adipo-brain1-im3-timing/") #Path("/cis/project/sriram/ng_data/sriram-220-p29-brain2/")
 
 im_path_local = str(
     sriram_exp_data_dir / "fg_ome.zarr" / "0"
@@ -289,6 +289,8 @@ class ViterBrainViewer(neuroglancer.Viewer):
 
     def hook(self, s):
         _, kdtree, ids_total = self.build_kdtree()
+        cur_pt = [int(p) for p in s.mouse_voxel_coordinates]
+
         _, closest_idx = kdtree.query(s.mouse_voxel_coordinates)
         self.start_pt = [int(p) for p in s.mouse_voxel_coordinates]
         self.cur_skel = ids_total[closest_idx][0]
@@ -354,9 +356,17 @@ class ViterBrainViewer(neuroglancer.Viewer):
         with self.txn() as vs:  # trace
             layer_names = [l.name for l in vs.layers]
 
-        if "start" in layer_names:
-            if "end" not in layer_names:
+        if "start" in layer_names
+            if "end" in layer_names:
+                with self.txn() as vs:
+                    del vs.layers["start"]
+                    vs.layers["end"].name = "start"
+            else:
                 self.end_pt = [int(p) for p in s.mouse_voxel_coordinates]
+                with self.txn() as vs:
+                    del vs.layers["start"]
+                self.add_point("start", "#0f0", s.mouse_voxel_coordinates) 
+
             print(f"Tracing path from {self.start_pt} to {self.end_pt}")
 
             try:
@@ -365,21 +375,15 @@ class ViterBrainViewer(neuroglancer.Viewer):
                     self.start_pt[i] for i in dim_order
                 ]  # correct dimension swap (originiating during ome-zarr conversion)
                 end_coord = [self.end_pt[i] for i in dim_order]
+
                 path = self.vb.shortest_path(coord1=start_coord, coord2=end_coord)
                 path = [[pt[dim_order.index(i)] for i in range(len(dim_order))] for pt in path]
-                print(path)
-                self.render_line(path)
-                with self.txn() as vs:  # trace
-                    del vs.layers["start"]
-                    if "end" in layer_names:
-                        vs.layers["end"].name = "start"
-                    else:
-                        self.add_point(
-                            "start", "#0f0", end_coord
-                        )  # might need to be outside txn context
 
-                    self.start_pt = self.end_pt
-                    self.end_pt = None
+                print(path)
+
+                self.render_line(path)
+                self.start_pt = self.end_pt
+                self.end_pt = None
             except nx.NetworkXNoPath:
                 print("No path found")
                 return
@@ -416,12 +420,13 @@ class ViterBrainViewer(neuroglancer.Viewer):
     def render_line(self, path):
         with self.txn() as vs:  # trace
             layer_names = [l.name for l in vs.layers]
-            self.cur_skel_coords.append(path)
+            self.cur_skel_coords.append([node for node in path])
             trace_layer_name = f"vb_traces_{self.cur_skel}"
             if trace_layer_name in layer_names:
                 del vs.layers[trace_layer_name]
 
             coords_list = [inner for outer in self.cur_skel_coords for inner in outer]
+            
             skel_source = self.SkeletonSource(self.dimensions)
             skel_source.add_skeleton(coords_list=coords_list)
             vs.layers.append(

@@ -12,9 +12,10 @@ project_path = "/cis/project/sriram/ng_data/sriram-220-p29-brain2/"
 project_path = Path(project_path)
 czi_path = project_path.parents[1] / "Sriram" / "SS IUE 175 SNOVA RFP single channel AdipoClear Brain 1 full Image 3.czi"  # path to czi image
 
+resolution = [510, 510, 3250]  # xyz resolution in nm
 fg_channel = 0
 ilastik_program_path = "/cis/home/tathey/ilastik-1.4.0-Linux/run_ilastik.sh"   # path to ilastik executable e.g. for windows something like "\Program Files\ilastik-1.3.2\ilastik.exe"
-parallel = 10
+parallel = 4
 
 brainlit_path = Path(__file__).parents[2]
 
@@ -36,7 +37,6 @@ zarr_paths = ["/cis/project/sriram/ng_data/sriram-220-p29-brain2/fg.zarr", ""] #
 
 ## Convert to OME zarr
 ome_path = project_path / "fg_ome.zarr"  # path of ome zarr to be made
-resolution = [510, 510, 3250]  # xyz resolution in nm
 
 start = time.time()
 zarr_to_omezarr(zarr_path=zarr_paths[0], out_path=ome_path, res=resolution)
@@ -53,7 +53,6 @@ print([f"{key}:{times[key]}" for key in times.keys()])
 image_path = project_path / "fg_ome.zarr" / "0"
 z_im = zarr.open_array(image_path)
 ilastik_project_path = brainlit_path / "experiments/sriram/data/axon_segmentation.ilp"
-chunk_size = [c * np.amax([1, int(np.ceil(100/c))]) for c in z_im.chunks]
 data_bin = project_path / "data_bin/"
 
 prob_path = project_path / "probs.zarr"
