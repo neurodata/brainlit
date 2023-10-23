@@ -5,27 +5,8 @@ import os
 """
 Inputs
 """
-brain = "MS33"
-
 brain_ids = [
-    # # "3",
-    # # "4",
-    # "8613",
-    # # "8604",
-    # "8650",
-    # "8589",
-    # # "8590",
-    # # "8649",
-    # "8788",
-    # "8786",
-    # # "11537", # transformed mask not found
-    # "8790",
-    # "MS32",
-    # "MS29",
-    # "MS11",
-    # "MS15",
-    "MS12", # no transformed mask yet
-    # "MS33",
+    "MS32"
 ]  # list of sample IDs to be shown
 
 
@@ -35,11 +16,11 @@ data_file = brainline_exp_dir / "data" / "axon_data.json"
 
 min_coords = [
     -1,
-    -1,
+    1025,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
 max_coords = [
-    -1,
+    6036,
     -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
