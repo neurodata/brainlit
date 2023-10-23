@@ -86,7 +86,7 @@ downsample_ask = input(
 if downsample_ask == "y":
     print("Downsampling...")
     with open(data_file) as f:
-        js = json.open(f)
+        js = json.load(f)
         dir_base = js["brain2paths"][brain]["base"]
 
     layer_path = dir_base + "axon_mask"
