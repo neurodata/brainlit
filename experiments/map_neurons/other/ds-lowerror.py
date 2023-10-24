@@ -14,9 +14,12 @@ from brainlit.map_neurons.map_neurons import (
 import pickle
 from tqdm import tqdm
 import pandas as pd
+from joblib import Parallel, delayed
 
+
+ncpu = 2
 swc_dir = (
-    "/cis/home/tathey1/projects/mouselight/axon_mapping.ds_experiment/mouselight-swcs"
+    "/Users/thomasathey/Documents/mimlab/mouselight/axon_mapping/mouselight-swcs/swcs-1" # "/cis/home/tathey1/projects/mouselight/axon_mapping.ds_experiment/mouselight-swcs"
 )
 swc_dir = Path(swc_dir)
 
@@ -228,7 +231,7 @@ def compute_error(node, da, plot=False):
         ax1.legend(fontsize=16)
         fig.tight_layout()
 
-    ds_zeroth_error = frechet_dist(gt_coords, first_coords)
+    ds_zeroth_error = frechet_dist(gt_coords, zeroth_coords)
     ds_first_error = frechet_dist(gt_coords, first_coords)
 
     return ds_zeroth_error, ds_first_error
@@ -275,6 +278,24 @@ def compute_dist(neuron, da, plot=False):
 
     return projection_dists_0, projection_dists_1, total
 
+def process(swc_file, da):
+    neuron = ngauge.Neuron.from_swc(swc_file)
+    neuron = replace_root(neuron)
+    neuron = check_duplicates_center(neuron)
+
+    projection_dists_0, projection_dists_1, total = compute_dist(neuron, da=ct)
+    projection_dists_0 = np.array(projection_dists_0)
+    projection_dists_1 = np.array(projection_dists_1)
+
+    small_count_0 = np.sum(projection_dists_0 <= 1)
+    small_count_1 = np.sum(projection_dists_1 <= 1)
+
+    rate_0 = small_count_0 / total * 100
+    rate_1 = small_count_1 / total * 100
+
+    return rate_0, rate_1
+
+
 rates = []
 sigmas = []
 methods = []
@@ -289,25 +310,17 @@ for sigma in tqdm([40, 80, 160, 320]):
 
     ct = Diffeomorphism_Transform(xv, phii)
 
-    for swc_file in tqdm(swc_files, leave=False):
-        neuron = ngauge.Neuron.from_swc(swc_file)
-        neuron = replace_root(neuron)
-        neuron = check_duplicates_center(neuron)
 
-        projection_dists_0, projection_dists_1, total = compute_dist(neuron, da=ct)
-        projection_dists_0 = np.array(projection_dists_0)
-        projection_dists_1 = np.array(projection_dists_1)
+    rate_pairs = Parallel(n_jobs=ncpu)(delayed(process)(swc_file, ct) for swc_file in tqdm(swc_files, leave=False))
 
-        small_count_0 = np.sum(projection_dists_0 <= 1)
-        small_count_1 = np.sum(projection_dists_1 <= 1)
-
-        rates.append(small_count_0 / total * 100)
+    for rate_pair in rate_pairs:
+        rates.append(rate_pair[0])
         sigmas.append(sigma)
         methods.append("Zeroth Order Mapping")
-        rates.append(small_count_1 / total * 100)
+        rates.append(rate_pair[1])
         sigmas.append(sigma)
         methods.append("First Order Mapping")
-        print(f"{swc_file}: {[small_count_0, small_count_1]} out of {total} = {[small_count_0/total*100, small_count_1/total*100]}%")
+
 
 data = {"Nodes with Submicron Error (%)": rates, "Sigma": sigmas, "Mapping Method": methods}
 
