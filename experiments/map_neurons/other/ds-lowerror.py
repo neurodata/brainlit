@@ -19,7 +19,7 @@ from joblib import Parallel, delayed
 
 ncpu = 2
 swc_dir = (
-    "/Users/thomasathey/Documents/mimlab/mouselight/axon_mapping/mouselight-swcs/swcs-1" # "/cis/home/tathey1/projects/mouselight/axon_mapping.ds_experiment/mouselight-swcs"
+    "/Users/thomasathey/Documents/mimlab/mouselight/axon_mapping/mouselight-swcs/swcs-1" # "/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/mouselight-swcs"
 )
 swc_dir = Path(swc_dir)
 
