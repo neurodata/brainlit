@@ -46,7 +46,7 @@ min_coords = [
 max_coords = [
     6036,
     -1,
-    -1,
+    1024, # abbreviated
 ]  # max coords or -1 if you want to process everything along that dimension
 ncpu = 2  # number of cores to use for detection
 chunk_size = [1024, 1024, 1024]  # [256, 256, 300]
@@ -64,15 +64,15 @@ alli = ApplyIlastik_LargeImage(
     ncpu=ncpu,
     data_file=data_file,
 )
-# alli.apply_ilastik_parallel(
-#     brain_id=brain,
-#     layer_names=layer_names,
-#     threshold=threshold,
-#     data_dir=data_dir,
-#     chunk_size=chunk_size,
-#     min_coords=min_coords,
-#     max_coords=max_coords,
-# )
+alli.apply_ilastik_parallel(
+    brain_id=brain,
+    layer_names=layer_names,
+    threshold=threshold,
+    data_dir=data_dir,
+    chunk_size=chunk_size,
+    min_coords=min_coords,
+    max_coords=max_coords,
+)
 # alli.collect_axon_results(brain_id=brain, ng_layer_name="Ch_647")
 
 
