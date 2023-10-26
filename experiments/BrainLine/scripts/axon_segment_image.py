@@ -19,12 +19,12 @@ import json
 Inputs
 """
 
-brain = "MS32"
+brain = "MS9"
 antibody_layer = "Ch_647"
 background_layer = "Ch_561"
 endogenous_layer = "Ch_488"
 
-threshold = 0.36  # threshold to use for ilastik
+threshold = 0.22  # threshold to use for ilastik
 brainline_exp_dir = Path(os.getcwd()) / Path(__file__).parents[1]
 data_dir = (
     brainline_exp_dir / "data" / "brain_temp"
