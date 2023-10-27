@@ -6,7 +6,7 @@ import os
 Inputs
 """
 brain_ids = [
-    "MS32"
+    "MS9"
 ]  # list of sample IDs to be shown
 
 
@@ -16,11 +16,11 @@ data_file = brainline_exp_dir / "data" / "axon_data.json"
 
 min_coords = [
     -1,
-    1025,
+    -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
 max_coords = [
-    6036,
+    6620,
     -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
