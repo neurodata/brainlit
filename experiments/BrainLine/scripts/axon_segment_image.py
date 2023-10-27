@@ -39,14 +39,14 @@ ilastik_path = "/home/user/Documents/ilastik-1.4.0-Linux/run_ilastik.sh"
 
 
 min_coords = [
-    6619,
-    1399,
     -1,
+    -1,
+    1025,
 ]  # max coords or -1 if you want to process everything along that dimension
 max_coords = [
     6620,
-    8004,
-    1024, # abbreviated
+    -1,
+    -1, # abbreviated
 ]  # max coords or -1 if you want to process everything along that dimension
 ncpu = 2  # number of cores to use for detection
 chunk_size = [1024, 1024, 1024]  # [256, 256, 300]
