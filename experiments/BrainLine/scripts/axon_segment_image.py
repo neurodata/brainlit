@@ -84,7 +84,7 @@ downsample_ask = input(
     f"Do you want to downsample the axon_mask for brain {brain}? (y/n)"
 )
 if downsample_ask == "y":
-    downsample_mask(brain, data_file=data_file, ncpu=16, bounds=None\)
+    downsample_mask(brain, data_file=data_file, ncpu=16, bounds=None)
     
 
 """
