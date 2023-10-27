@@ -12,7 +12,7 @@ import os
 import igneous.task_creation as tc
 from taskqueue import LocalTaskQueue
 from pathlib import Path
-from brainlit.BrainLine.apply_ilastik import ApplyIlastik_LargeImage
+from brainlit.BrainLine.apply_ilastik import ApplyIlastik_LargeImage, downsample_mask
 import json
 
 """
@@ -64,15 +64,15 @@ alli = ApplyIlastik_LargeImage(
     ncpu=ncpu,
     data_file=data_file,
 )
-alli.apply_ilastik_parallel(
-    brain_id=brain,
-    layer_names=layer_names,
-    threshold=threshold,
-    data_dir=data_dir,
-    chunk_size=chunk_size,
-    min_coords=min_coords,
-    max_coords=max_coords,
-)
+# alli.apply_ilastik_parallel(
+#     brain_id=brain,
+#     layer_names=layer_names,
+#     threshold=threshold,
+#     data_dir=data_dir,
+#     chunk_size=chunk_size,
+#     min_coords=min_coords,
+#     max_coords=max_coords,
+# )
 # alli.collect_axon_results(brain_id=brain, ng_layer_name="Ch_647")
 
 
@@ -84,34 +84,8 @@ downsample_ask = input(
     f"Do you want to downsample the axon_mask for brain {brain}? (y/n)"
 )
 if downsample_ask == "y":
-    print("Downsampling...")
-    with open(data_file) as f:
-        js = json.load(f)
-        dir_base = js["brain2paths"][brain]["base"]
-
-    layer_path = dir_base + "axon_mask"
-
-    tq = LocalTaskQueue(parallel=16)
-
-    tasks = tc.create_downsampling_tasks(
-        layer_path,  # e.g. 'gs://bucket/dataset/layer'
-        mip=0,  # Start downsampling from this mip level (writes to next level up)
-        fill_missing=True,  # Ignore missing chunks and fill them with black
-        axis="z",
-        num_mips=5,  # number of downsamples to produce. Downloaded shape is chunk_size * 2^num_mip
-        chunk_size=None,  # manually set chunk size of next scales, overrides preserve_chunk_size
-        preserve_chunk_size=True,  # use existing chunk size, don't halve to get more downsamples
-        sparse=False,  # for sparse segmentation, allow inflation of pixels against background
-        bounds=None,  # mip 0 bounding box to downsample
-        encoding=None,  # e.g. 'raw', 'compressed_segmentation', etc
-        delete_black_uploads=False,  # issue a delete instead of uploading files containing all background
-        background_color=0,  # Designates the background color
-        compress="gzip",  # None, 'gzip', and 'br' (brotli) are options
-        factor=(2, 2, 2),  # common options are (2,2,1) and (2,2,2)
-    )
-
-    tq.insert(tasks)
-    tq.execute()
+    downsample_mask(brain, data_file=data_file, ncpu=16, bounds=None\)
+    
 
 """
 Making info files for transformed images

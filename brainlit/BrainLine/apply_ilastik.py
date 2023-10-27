@@ -816,7 +816,7 @@ def downsample_mask(brain, data_file, ncpu: int = 1, bounds: list = None):
     brain2paths = data["brain2paths"]
     if object_type != "axon":
         raise ValueError(f"Entered non-axon data file")
-    dir_base = brain2paths[brain]["base"]
+    dir_base = brain2paths[brain]["base_s3"]
     layer_path = dir_base + "axon_mask"
 
     tq = LocalTaskQueue(parallel=ncpu)
