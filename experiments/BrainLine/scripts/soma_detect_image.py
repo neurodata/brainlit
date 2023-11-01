@@ -10,7 +10,7 @@ Inputs
 # data_dir and results_dir ARE CLEAR
 # threshold IS CORRECT
 brain = "MS50"
-antibody_layer = "Ch_647"
+antibody_layer = "zero"
 background_layer = "Ch_561"
 endogenous_layer = "Ch_488"
 
