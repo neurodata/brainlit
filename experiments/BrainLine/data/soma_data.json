@@ -285,6 +285,15 @@
             },
             "subtype": "tph2 gad2",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=GARK_nAwpm9gAA"
+        },
+        "MS50": {
+            "base": "precomputed://s3://smartspim-precomputed-volumes/2023_10_16/MS50/",
+            "val_info": {
+                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=YUS1mc8leP9rbg",
+                "somas_layer": "soma_val",
+                "nonsomas_layer": "nonsoma_val"
+            },
+            "subtype": "gad2 vgat"
         }
     },
     "brain2centers": {

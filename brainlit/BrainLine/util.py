@@ -47,19 +47,18 @@ def download_subvolumes(
     base_dir = data_dir / f"brain{brain_id}" / dataset_to_save
     antibody_layer, background_layer, endogenous_layer = layer_names
 
+    vols = []
     if "base" in brain2paths[brain_id].keys():
         base_dir_s3 = brain2paths[brain_id]["base"]
-        dir = base_dir_s3 + antibody_layer
-        vol_fg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
-        print(f"fg shape: {vol_fg.shape} at {vol_fg.resolution}")
-
-        dir = base_dir_s3 + background_layer
-        vol_bg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
-        print(f"bg shape: {vol_bg.shape} at {vol_bg.resolution}")
-
-        dir = base_dir_s3 + endogenous_layer
-        vol_endo = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
-        print(f"endo shape: {vol_endo.shape} at {vol_endo.resolution}")
+        for layer in [antibody_layer, background_layer, endogenous_layer]:
+            if layer == "zero":
+                vol = "zero"
+            else:
+                dir = base_dir_s3 + layer
+                vol = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
+                print(f"{layer} shape: {vol.shape} at {vol.resolution}")
+                dtype = vol.dtype
+            vols.append(vol)
 
     dataset_title = dataset_to_save + "_info"
     url = brain2paths[brain_id][dataset_title]["url"]
@@ -85,26 +84,20 @@ def download_subvolumes(
 
     for suffix, centers in zip(suffixes, centers_groups):
         for i, center in enumerate(tqdm(centers, desc="Saving samples")):
-            image_fg = vol_fg[
-                center[0] - radius + 1 : center[0] + radius,
-                center[1] - radius + 1 : center[1] + radius,
-                center[2] - radius + 1 : center[2] + radius,
-            ]
-            image_fg = image_fg[:, :, :, 0]
-            image_bg = vol_bg[
-                center[0] - radius + 1 : center[0] + radius,
-                center[1] - radius + 1 : center[1] + radius,
-                center[2] - radius + 1 : center[2] + radius,
-            ]
-            image_bg = image_bg[:, :, :, 0]
-            image_endo = vol_endo[
-                center[0] - radius + 1 : center[0] + radius,
-                center[1] - radius + 1 : center[1] + radius,
-                center[2] - radius + 1 : center[2] + radius,
-            ]
-            image_endo = image_endo[:, :, :, 0]
-
-            image = np.squeeze(np.stack([image_fg, image_bg, image_endo], axis=0))
+            images = []
+            for vol in vols:
+                if vol == "zero":
+                    image = np.zeros([2*radius-1 for k in range(3)], dtype=dtype)
+                else: 
+                    image = vol[
+                        center[0] - radius + 1 : center[0] + radius,
+                        center[1] - radius + 1 : center[1] + radius,
+                        center[2] - radius + 1 : center[2] + radius,
+                    ]
+                    image = image[:, :, :, 0]
+                images.append(image)
+           
+            image = np.squeeze(np.stack(images, axis=0))
 
             fname = (
                 base_dir

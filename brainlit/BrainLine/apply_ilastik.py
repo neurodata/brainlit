@@ -79,6 +79,7 @@ class ApplyIlastik:
             path = f"{self.brains_path}brain{brain_name}/{dset}/"
 
             items_total += _find_sample_names(path, dset="", add_dir=True)
+            print(f"Applying ilastik to {items_total}")
 
         Parallel(n_jobs=ncpu)(
             delayed(self._apply_ilastik)(item)
@@ -515,7 +516,7 @@ class ApplyIlastik_LargeImage:
         results_dir = self.results_dir
         volume_base_dir_read = self.brain2paths[brain_id]["base"]
         volume_base_dir_write = self.brain2paths[brain_id]["base_s3"]
-        sample_path = volume_base_dir_read + layer_names[0]
+        sample_path = volume_base_dir_read + layer_names[1]
         vol = CloudVolume(sample_path, parallel=True, mip=0, fill_missing=True)
         shape = vol.shape
         print(f"Processing: {sample_path} with shape {shape} at threshold {threshold}")
@@ -612,23 +613,27 @@ class ApplyIlastik_LargeImage:
         mip = 0
         area_threshold = 500
 
-        dir_fg = volume_base_dir_read + layer_names[0]
-        vol_fg = CloudVolume(dir_fg, parallel=1, mip=mip, fill_missing=True)
-        dir_bg = volume_base_dir_read + layer_names[1]
-        vol_bg = CloudVolume(dir_bg, parallel=1, mip=mip, fill_missing=True)
-        dir_endo = volume_base_dir_read + layer_names[2]
-        vol_endo = CloudVolume(dir_endo, parallel=1, mip=mip, fill_missing=True)
+        vols = []
+        for layer_name in layer_names:
+            if layer_name == "zero":
+                vol = "zero"
+            else:
+                dir = volume_base_dir_read + layer_name
+                vol = CloudVolume(dir, parallel=1, mip=mip, fill_missing=True)
+                dtype = vol.dtype
+            vols.append(vol)
 
         try:
+            ims = []
+            for vol in vols:
+                if vol == "zero":
+                    im = np.zeros([c2[i]-c1[i] for i in range(3)], dtype = dtype)
+                else:
+                    im = np.squeeze(vol[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]])
+                ims.append(im)
+
             image_3channel = np.squeeze(
-                np.stack(
-                    [
-                        vol_fg[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]],
-                        vol_bg[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]],
-                        vol_endo[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]],
-                    ],
-                    axis=0,
-                )
+                np.stack(ims, axis=0)
             )
         except:
             print(f"File read error at: {c1}")
