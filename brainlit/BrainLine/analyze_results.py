@@ -891,7 +891,7 @@ def collect_regional_segmentation(
     with open(data_file) as f:
         data = json.load(f)
     brain2paths = data["brain2paths"]
-    dir_base_mask = brain2paths[brain_id]["base"]
+    dir_base_mask = brain2paths[brain_id]["base_s3"]
 
     if s3_reg:
         dir_base_s3 = brain2paths[brain_id]["base_s3"]
