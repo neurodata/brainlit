@@ -298,7 +298,7 @@
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=WKud4lZHk6AKRw"
         },
         "MS39": {
-            "base": "precomputed://file:///mnt/data/Neuroglancer_Data/2023_07_28/MS39/",
+            "base_local": "precomputed://file:///mnt/data/Neuroglancer_Data/2023_07_28/MS39/",
             "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_07_28/MS39/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=KQWxroY4GEXBXg",
