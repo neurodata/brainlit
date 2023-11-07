@@ -64,16 +64,18 @@ alli = ApplyIlastik_LargeImage(
     ncpu=ncpu,
     data_file=data_file,
 )
-alli.apply_ilastik_parallel(
-    brain_id=brain,
-    layer_names=layer_names,
-    threshold=threshold,
-    data_dir=data_dir,
-    chunk_size=chunk_size,
-    min_coords=min_coords,
-    max_coords=max_coords,
-)
-# alli.collect_axon_results(brain_id=brain, ng_layer_name="Ch_647")
+segment_ask = input(f"Do you want to segment brain {brain}? (y/n)")
+if segment_ask == "y":
+    alli.apply_ilastik_parallel(
+        brain_id=brain,
+        layer_names=layer_names,
+        threshold=threshold,
+        data_dir=data_dir,
+        chunk_size=chunk_size,
+        min_coords=min_coords,
+        max_coords=max_coords,
+    )
+    # alli.collect_axon_results(brain_id=brain, ng_layer_name="Ch_647")
 
 
 """
@@ -90,25 +92,25 @@ if downsample_ask == "y":
 """
 Making info files for transformed images
 """
-# make_trans_layers = input(
-#     f"Will you be transforming axon_mask into atlas space? (should relevant info files be made) (y/n)"
-# )
+make_trans_layers = input(
+    f"Will you be transforming axon_mask into atlas space? (should relevant info files be made) (y/n)"
+)
 
-# if make_trans_layers == "y":
-#     atlas_vol = CloudVolume(
-#         "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017"
-#     )
-#     layer_path = brain2paths[brain]["base"] + "axon_mask_transformed"
-#     print(f"Writing info file at {layer_path}")
-#     info = CloudVolume.create_new_info(
-#         num_channels=1,
-#         layer_type="image",
-#         data_type="uint16",  # Channel images might be 'uint8'
-#         encoding="raw",  # raw, jpeg, compressed_segmentation, fpzip, kempressed
-#         resolution=atlas_vol.resolution,  # Voxel scaling, units are in nanometers
-#         voxel_offset=atlas_vol.voxel_offset,
-#         chunk_size=[32, 32, 32],  # units are voxels
-#         volume_size=atlas_vol.volume_size,  # e.g. a cubic millimeter dataset
-#     )
-#     vol_mask = CloudVolume(layer_path, info=info)
-#     vol_mask.commit_info()
+if make_trans_layers == "y":
+    atlas_vol = CloudVolume(
+        "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017"
+    )
+    layer_path = brain2paths[brain]["base"] + "axon_mask_transformed"
+    print(f"Writing info file at {layer_path}")
+    info = CloudVolume.create_new_info(
+        num_channels=1,
+        layer_type="image",
+        data_type="uint16",  # Channel images might be 'uint8'
+        encoding="raw",  # raw, jpeg, compressed_segmentation, fpzip, kempressed
+        resolution=atlas_vol.resolution,  # Voxel scaling, units are in nanometers
+        voxel_offset=atlas_vol.voxel_offset,
+        chunk_size=[32, 32, 32],  # units are voxels
+        volume_size=atlas_vol.volume_size,  # e.g. a cubic millimeter dataset
+    )
+    vol_mask = CloudVolume(layer_path, info=info)
+    vol_mask.commit_info()
