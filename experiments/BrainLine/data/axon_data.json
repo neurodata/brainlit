@@ -232,7 +232,8 @@
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=30O_uxkW67rv2Q",
                 "layer": "val"
             },
-            "subtype": "gad2 vgat"
+            "subtype": "gad2 vgat",
+            "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2023_05_24/MS9/axon_mask_transformed"
         },
         "MS33": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2023_09_18/MS33/",
@@ -245,7 +246,8 @@
                 "url": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/brainMS33/train.json",
                 "layer": "train"
             },
-            "subtype": "tph2 gad2"
+            "subtype": "tph2 gad2",
+            "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2023_09_18/MS33/axon_mask_transformed"
         },
         "pytest": {
             "subtype": "test_type"
