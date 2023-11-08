@@ -58,7 +58,7 @@ except:
 
 s3_vol = CloudVolume(mask_dir)
 
-corners = _get_corners(local_vol.shape, local_vol.chunks)
+corners = _get_corners(local_vol.shape, local_vol.chunk_size)
 
 for corner in tqdm(corners):
     s3_vol[corner[0][0]:corner[1][0],corner[0][1]:corner[1][1],corner[0][2]:corner[1][2]] = local_vol[corner[0][0]:corner[1][0],corner[0][1]:corner[1][1],corner[0][2]:corner[1][2]]
