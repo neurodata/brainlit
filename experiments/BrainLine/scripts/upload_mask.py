@@ -6,6 +6,7 @@ import numpy as np
 from pathlib import Path
 import os
 from tqdm import tqdm
+from cloudvolume import EmptyVolumeException
 
 local_vol = CloudVolume("precomputed://file:///mnt/data/Neuroglancer_Data/2023_04_10/MS12/axon_mask")
 
@@ -61,6 +62,9 @@ s3_vol = CloudVolume(mask_dir)
 corners = _get_corners(local_vol.shape, local_vol.chunk_size)
 
 for corner in tqdm(corners):
-    s3_vol[corner[0][0]:corner[1][0],corner[0][1]:corner[1][1],corner[0][2]:corner[1][2]] = local_vol[corner[0][0]:corner[1][0],corner[0][1]:corner[1][1],corner[0][2]:corner[1][2]]
+    try:
+        s3_vol[corner[0][0]:corner[1][0],corner[0][1]:corner[1][1],corner[0][2]:corner[1][2]] = local_vol[corner[0][0]:corner[1][0],corner[0][1]:corner[1][1],corner[0][2]:corner[1][2]]
+    except EmptyVolumeException:
+        pass
 
 
