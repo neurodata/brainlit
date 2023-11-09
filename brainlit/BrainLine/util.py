@@ -48,8 +48,8 @@ def download_subvolumes(
     antibody_layer, background_layer, endogenous_layer = layer_names
 
     vols = []
-    if "base" in brain2paths[brain_id].keys():
-        base_dir_s3 = brain2paths[brain_id]["base"]
+    if "base_s3" in brain2paths[brain_id].keys():
+        base_dir_s3 = brain2paths[brain_id]["base_s3"]
         for layer in [antibody_layer, background_layer, endogenous_layer]:
             if layer == "zero":
                 vol = "zero"
@@ -59,6 +59,8 @@ def download_subvolumes(
                 print(f"{layer} shape: {vol.shape} at {vol.resolution}")
                 dtype = vol.dtype
             vols.append(vol)
+    else:
+        raise ValueError(f"base_s3 not an entry in brain2paths for brain {brain_id}")
 
     dataset_title = dataset_to_save + "_info"
     url = brain2paths[brain_id][dataset_title]["url"]

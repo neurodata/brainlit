@@ -348,6 +348,7 @@ def examine_threshold(
                         print(f"area of detected object: {area}")
                         if labels[cntr[0], cntr[1], cntr[2]] == prop["label"]:
                             num_detected += 1
+                            no_cntr_yet = False
                         elif num_detected < newpos - no_cntr_yet:
                             num_detected += 1
                         elif show_plot:
