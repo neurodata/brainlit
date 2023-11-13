@@ -130,10 +130,7 @@
             "subtype": "tph2 vglut3"
         },
         "11537": {
-            "ab": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/Ch_647",
-            "bg": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/Ch_561",
-            "endo": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/Ch_488",
-            "mask": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/axon_mask",
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=9MCP5DRs2D32Bg",
                 "layer": "val"

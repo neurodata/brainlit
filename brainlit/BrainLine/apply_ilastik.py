@@ -531,7 +531,7 @@ class ApplyIlastik_LargeImage:
             max_coords (list, optional): Upper bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
         """
         results_dir = self.results_dir
-        volume_base_dir_read = self.brain2paths[brain_id]["base_local"]
+        volume_base_dir_read = self.brain2paths[brain_id]["base_s3"]
         volume_base_dir_write = self.brain2paths[brain_id]["base_s3"]
         sample_path = volume_base_dir_read + layer_names[1]
         vol = CloudVolume(sample_path, parallel=True, mip=0, fill_missing=True)
