@@ -316,7 +316,8 @@
                 "somas_layer": "soma_val",
                 "nonsomas_layer": "nonsoma_val"
             },
-            "subtype": "tph2 gad2"
+            "subtype": "tph2 gad2",
+            "somas_atlas_path": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/wholebrain_results/atlas_somas_MS21/"
         }
     },
     "brain2centers": {

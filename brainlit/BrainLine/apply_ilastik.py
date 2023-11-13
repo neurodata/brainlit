@@ -206,7 +206,13 @@ def plot_results(
                             if prop["area"] > size_thresh:
                                 false_pos += 1
                 elif object_type == "axon":
-                    filename_lab = filename[:-17] + "-image_3channel_Labels.h5"
+                    filename_lab_3 = filename[:-17] + "-image_3channel_Labels.h5"
+                    filename_lab_2 = filename[:-17] + "-image_2channel_Labels.h5" #backward compatibility
+                    if os.path.isfile(filename_lab_3):
+                        filename_lab = filename_lab_3
+                    elif os.path.isfile(filename_lab_2):
+                        filename_lab = filename_lab_2
+
                     f = h5py.File(filename_lab, "r")
                     gt = f.get("exported_data")
                     if channel_dim == 0:
@@ -392,7 +398,12 @@ def examine_threshold(
                             name=f"nonsoma false positive area: {area}",
                         )
         elif object_type == "axon":
-            fname_lab = im_fname.split(".")[0] + "-image_3channel_Labels.h5"
+            filename_lab_3 = filename[:-17] + "-image_3channel_Labels.h5"
+            filename_lab_2 = filename[:-17] + "-image_2channel_Labels.h5" #backward compatibility
+            if os.path.isfile(filename_lab_3):
+                fname_lab = filename_lab_3
+            elif os.path.isfile(filename_lab_2):
+                fname_lab = filename_lab_2
             f = h5py.File(fname_lab, "r")
             gt = f.get("exported_data")
             if channel_dim == 0:
@@ -427,7 +438,12 @@ def examine_threshold(
 
             if (precision < 0.8 or recall < 0.8) and show_plot:
                 f = h5py.File(im_fname, "r")
-                im = f.get("image_3channel")
+                keys = list(f.keys())
+                if len(keys) > 1:
+                    raise ValueError(f"Multiple keys in image file: {keys}")
+                else:
+                    key = keys[0]
+                im = f.get(key)
                 print(f"prec{precision} recall: {recall}")
                 viewer = napari.Viewer(ndisplay=3)
                 if len(im.shape) == 3:

@@ -178,6 +178,7 @@ class SomaDistribution(BrainDistribution):
             if "somas_atlas_path" in brain2paths[brain_id].keys():
                 json_dir = brain2paths[brain_id]["somas_atlas_path"]
                 jsons = os.listdir(json_dir)
+                jsons = [json for json in jsons if ".json" in json]
                 points = []
                 for json_file in jsons:
                     json_path = json_dir + json_file
