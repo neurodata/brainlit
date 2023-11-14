@@ -212,7 +212,8 @@
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=QmrdQs4M76y5sg",
                 "layer": "val"
             },
-            "subtype": "gad2 vgat"
+            "subtype": "gad2 vgat",
+            "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2023_04_10/MS12/axon_mask_transformed"
         },
         "MS10": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_28/MS10/",
