@@ -18,14 +18,13 @@ from joblib import Parallel, delayed
 
 
 ncpu = 2
-swc_dir = (
-    "/Users/thomasathey/Documents/mimlab/mouselight/axon_mapping/mouselight-swcs/swcs-1" # "/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/mouselight-swcs"
-)
+swc_dir = "/Users/thomasathey/Documents/mimlab/mouselight/axon_mapping/mouselight-swcs/swcs-1"  # "/cis/home/tathey/projects/mouselight/axon_mapping/ds_experiment/mouselight-swcs"
 swc_dir = Path(swc_dir)
 
 
 swc_files = os.listdir(swc_dir)
 swc_files = [swc_dir / f for f in swc_files if ".swc" in f]
+
 
 def check_duplicates_center(neuron):
     """Check if neuron has multiple nodes with same coordinate location, and shifts the neuron so the bounding box around the neuron is at the origin.
@@ -79,6 +78,7 @@ def check_duplicates_center(neuron):
             child.z -= center[2]
 
     return neuron
+
 
 def compute_error(node, da, plot=False):
     parent = node.parent
@@ -237,7 +237,6 @@ def compute_error(node, da, plot=False):
     return ds_zeroth_error, ds_first_error
 
 
-
 def compute_dist(neuron, da, plot=False):
     def node_dist(i, j):
         p = i.parent
@@ -256,11 +255,11 @@ def compute_dist(neuron, da, plot=False):
     projection_dists_1 = []
     total = 0
 
-    while stack: 
+    while stack:
         total += 1
         i = stack.pop()
         stack += i.children
-        if len(i.children) > 1: # branching node
+        if len(i.children) > 1:  # branching node
             pass
             # for j in range(len(i.children)):
             #     dist, s3 = nod e_dist(i, j)
@@ -277,6 +276,7 @@ def compute_dist(neuron, da, plot=False):
                 projection_dists_1.append(error_1)
 
     return projection_dists_0, projection_dists_1, total
+
 
 def process(swc_file, da):
     neuron = ngauge.Neuron.from_swc(swc_file)
@@ -310,8 +310,9 @@ for sigma in tqdm([40, 80, 160, 320]):
 
     ct = Diffeomorphism_Transform(xv, phii)
 
-
-    rate_pairs = Parallel(n_jobs=ncpu)(delayed(process)(swc_file, ct) for swc_file in tqdm(swc_files, leave=False))
+    rate_pairs = Parallel(n_jobs=ncpu)(
+        delayed(process)(swc_file, ct) for swc_file in tqdm(swc_files, leave=False)
+    )
 
     for rate_pair in rate_pairs:
         rates.append(rate_pair[0])
@@ -322,7 +323,11 @@ for sigma in tqdm([40, 80, 160, 320]):
         methods.append("First Order Mapping")
 
 
-data = {"Nodes with Submicron Error (%)": rates, "Sigma": sigmas, "Mapping Method": methods}
+data = {
+    "Nodes with Submicron Error (%)": rates,
+    "Sigma": sigmas,
+    "Mapping Method": methods,
+}
 
 pct_fname = swc_dir.parents[0] / f"pct-submicron.pickle"
 if os.path.exists(pct_fname):
