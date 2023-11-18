@@ -6,7 +6,7 @@ import os
 Inputs
 """
 brain_ids = [
-    "MS12"
+    "11537"
 ]  # list of sample IDs to be shown
 
 
@@ -16,13 +16,13 @@ data_file = brainline_exp_dir / "data" / "axon_data.json"
 
 min_coords = [
     -1,
-    1030,
+    -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
 max_coords = [
-    6100,
-    10200,
-    -1,
+    7167,
+    10237,
+    -1, # abbreviated
 ]  # max coords or -1 if you want to process everything along that dimension
 ncpu = 11  # number of cores to use for collection
 s3_reg = True
