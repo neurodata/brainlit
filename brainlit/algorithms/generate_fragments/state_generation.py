@@ -861,38 +861,6 @@ class state_generation:
 
         self.states_path = states_fname
 
-    def time_edges(self, frag_path=None):
-        viterbrain_fname = str(Path(self.new_layers_dir) / "viterbrain.pickle")
-
-        with open(self.states_path, "rb") as handle:
-            G = pickle.load(handle)
-
-        if frag_path is None:
-            frag_path = self.fragment_path
-
-        viterbrain = ViterBrain(
-            G,
-            self.tiered_path,
-            fragment_path=frag_path,
-            resolution=self.resolution,
-            coef_curv=1000,
-            coef_dist=10,
-            coef_int=1,
-            parallel=1,
-        )
-        t0 = time.time()
-        viterbrain.frag_frag_dist(0, 10)
-        t1 = time.time()
-
-        total = t1 - t0
-        print(total)
-
-        viterbrain._compute_out_costs_dist(
-            states=[0],
-            frag_frag_func=viterbrain.frag_frag_dist,
-            frag_soma_func=viterbrain.frag_soma_dist,
-        )
-
     def compute_edge_weights(self, frag_path=None) -> None:
         """Create viterbrain object and compute edge weights"""
         viterbrain_fname = str(Path(self.new_layers_dir) / "viterbrain.pickle")

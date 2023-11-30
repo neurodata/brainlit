@@ -4,12 +4,15 @@ from pathlib import Path
 from brainlit.algorithms.generate_fragments.state_generation import state_generation
 import networkx as nx
 import pickle
+from numpy.testing import (
+    assert_array_equal,
+)
 import pytest
 import os
 import shutil
 
 
-soma_coords = []
+soma_coords = [[50, 90, 0]]
 
 res = [0.1, 0.1, 0.1]
 
@@ -153,7 +156,7 @@ def test_state_generation_3d(init_3d_im_lab):
         new_layers_dir=str(data_dir),
         ilastik_program_path=None,
         ilastik_project_path=None,
-        soma_coords=soma_coords,
+        soma_coords=[],
         resolution=res,
         prob_path=str(im_file),
         fragment_path=str(lab_file),
@@ -184,7 +187,7 @@ def test_state_generation_4d(init_4d_im_probs_lab):
         new_layers_dir=str(data_dir),
         ilastik_program_path=None,
         ilastik_project_path=None,
-        soma_coords=soma_coords,
+        soma_coords=[],
         fg_channel=0,
         resolution=res,
         prob_path=str(probs_file),
@@ -202,7 +205,37 @@ def test_state_generation_4d(init_4d_im_probs_lab):
         G = pickle.load(handle)
     for node in G.nodes:
         print(G.nodes[node])
-    assert len(G.nodes) == 10  # 2 states per fragment
+    assert len(G.nodes) == 10  # 2 states per fragment =
 
     sg.compute_edge_weights()
     sg.compute_bfs()
+
+
+def test_state_generation_4d_soma(init_4d_im_probs_lab):
+    data_dir, im_file, probs_file, lab_file = init_4d_im_probs_lab
+
+    sg = state_generation(
+        image_path=str(im_file),
+        new_layers_dir=str(data_dir),
+        ilastik_program_path=None,
+        ilastik_project_path=None,
+        soma_coords=soma_coords,
+        fg_channel=0,
+        resolution=res,
+        prob_path=str(probs_file),
+        fragment_path=str(lab_file),
+    )
+
+    sg.compute_image_tiered()
+    sg.compute_soma_lbls()
+    assert_array_equal(sg.soma_lbls, [5])
+
+    sg.compute_states("nb")
+    with pytest.raises(NotImplementedError):
+        sg.compute_states("pc")
+
+    with open(sg.states_path, "rb") as handle:
+        G = pickle.load(handle)
+    for node in G.nodes:
+        print(G.nodes[node])
+    assert len(G.nodes) == 9  # 2 states per fragment plus one soma state
