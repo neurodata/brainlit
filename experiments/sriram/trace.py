@@ -39,7 +39,9 @@ a soma - 5346, 14801, 330
 """
 
 sriram_exp_data_dir = Path(os.path.abspath(__file__)).parents[0] / "data" / "test-czi"
-cis_data_dir = Path("/cis/project/sriram/ng_data/sriram-adipo-brain1-im3-timing/") #Path("/cis/project/sriram/ng_data/sriram-220-p29-brain2/")
+cis_data_dir = Path(
+    "/cis/project/sriram/ng_data/sriram-adipo-brain1-im3-timing/"
+)  # Path("/cis/project/sriram/ng_data/sriram-220-p29-brain2/")
 
 im_path_local = str(
     sriram_exp_data_dir / "fg_ome.zarr" / "0"
@@ -47,9 +49,7 @@ im_path_local = str(
 im_path_cis = str(cis_data_dir / "fg_ome.zarr/0/")
 
 trace_path_local = f"precomputed://file://{str(sriram_exp_data_dir / 'traces')}"
-trace_path_cis = (
-    f"precomputed://file://{str(cis_data_dir)}/traces"
-)
+trace_path_cis = f"precomputed://file://{str(cis_data_dir)}/traces"
 
 vb_path_local = str(sriram_exp_data_dir / "viterbrain.pickle")
 vb_path_cis = str(cis_data_dir / "viterbrain.pickle")
@@ -63,9 +63,7 @@ port = "9010"
 trace_path = trace_path_cis  # cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
 im_path = im_path_cis  # ckloudvolume compatible path or path to local zarr
 im_url = f"zarr://http://127.0.0.1:{port}/fg_ome.zarr"  # ng compatible url
-trace_url = (
-    f"precomputed://http://127.0.0.1:{port}/traces"  # ng compatible url
-)
+trace_url = f"precomputed://http://127.0.0.1:{port}/traces"  # ng compatible url
 assisted_tracing = True
 
 if assisted_tracing:
@@ -79,8 +77,8 @@ else:
 data = np.random.random((10, 10, 10)) * 255
 viewer = napari.Viewer()
 layer = viewer.add_image(data)
-pts_layer = viewer.add_points([[-1, -1, -1]], size=1, face_color='red', symbol='disc')
-path_layer = viewer.add_shapes([[[-1,-1,-1], [-2,-2,-2]]], shape_type='path')
+pts_layer = viewer.add_points([[-1, -1, -1]], size=1, face_color="red", symbol="disc")
+path_layer = viewer.add_shapes([[[-1, -1, -1], [-2, -2, -2]]], shape_type="path")
 
 
 def show_napari(subvol):
@@ -164,7 +162,6 @@ class ViterBrainViewer(neuroglancer.Viewer):
         else:
             self.vb = None
 
-
         # set useful object attributtes
         self.start_pt = None
         self.end_pt = None
@@ -188,7 +185,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
         Returns:
             int: lowest integer for which there does not exist a skeleton with that ID.
             scipy.spatial.KDTree: kdtree of skeleton vertices (of all skeletons with ID < skel_num)
-            list: list of 2-tuples associated with points that generated KDTree. First element is skeleton number, second is vertex number. 
+            list: list of 2-tuples associated with points that generated KDTree. First element is skeleton number, second is vertex number.
         """
         vol = self.cv_dict["traces"]
         skel_num = 0
@@ -307,22 +304,26 @@ class ViterBrainViewer(neuroglancer.Viewer):
 
         G = nx.Graph()
         for n in range(skel.vertices.shape[0]):
-            G.add_node(n, pos=skel.vertices[n,:])
+            G.add_node(n, pos=skel.vertices[n, :])
         G.add_edges_from(skel.edges)
 
         ccs = [cc for cc in nx.connected_components(G)]
         if len(ccs) != 1:
-            raise ValueError(f"{len(ccs)} connected components in skeleton {self.cur_skel}")
+            raise ValueError(
+                f"{len(ccs)} connected components in skeleton {self.cur_skel}"
+            )
 
         if G.degree[self.cur_skel_head] > 1:
             G.remove_edges_from(list(G.edges(self.cur_skel_head)))
             components = sorted(nx.connected_components(G), key=len)
-            print(f"Removing component with {len(components[1])} nodes out of {len(components)} components")
+            print(
+                f"Removing component with {len(components[1])} nodes out of {len(components)} components"
+            )
             G.remove_nodes_from(components[0])
             G.remove_nodes_from(components[1])
             G = nx.relabel.convert_node_labels_to_integers(G, first_label=0)
 
-            vertices = np.array([G.nodes[i]['pos'] for i in G.nodes])
+            vertices = np.array([G.nodes[i]["pos"] for i in G.nodes])
             edges = np.array([e for e in G.edges])
 
             skel = Skeleton(
@@ -343,9 +344,9 @@ class ViterBrainViewer(neuroglancer.Viewer):
             self.start_pt = None
             self.end_pt = None
         else:
-            raise ValueError(f"Trying to split skel {self.cur_skel} and node {self.cur_skel_head} which has degree {G.degree[self.cur_skel_head]} (<1)")
-
-
+            raise ValueError(
+                f"Trying to split skel {self.cur_skel} and node {self.cur_skel_head} which has degree {G.degree[self.cur_skel_head]} (<1)"
+            )
 
     def trace(self, s):
         if not self.vb:
@@ -365,19 +366,22 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 self.end_pt = [int(p) for p in s.mouse_voxel_coordinates]
                 with self.txn() as vs:
                     del vs.layers["start"]
-                self.add_point("start", "#0f0", s.mouse_voxel_coordinates) 
+                self.add_point("start", "#0f0", s.mouse_voxel_coordinates)
 
             print(f"Tracing path from {self.start_pt} to {self.end_pt}")
 
             try:
-                dim_order = [2,0,1]
+                dim_order = [2, 0, 1]
                 start_coord = [
                     self.start_pt[i] for i in dim_order
                 ]  # correct dimension swap (originiating during ome-zarr conversion)
                 end_coord = [self.end_pt[i] for i in dim_order]
 
                 path = self.vb.shortest_path(coord1=start_coord, coord2=end_coord)
-                path = [[pt[dim_order.index(i)] for i in range(len(dim_order))] for pt in path]
+                path = [
+                    [pt[dim_order.index(i)] for i in range(len(dim_order))]
+                    for pt in path
+                ]
 
                 print(path)
 
@@ -434,7 +438,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 layer=neuroglancer.SegmentationLayer(
                     source=[
                         neuroglancer.LocalVolume(
-                            data=np.zeros([10,10,10], dtype=np.uint32),
+                            data=np.zeros([10, 10, 10], dtype=np.uint32),
                             dimensions=self.dimensions,
                         ),
                         skel_source,
@@ -481,7 +485,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
                         layer=neuroglancer.SegmentationLayer(
                             source=[
                                 neuroglancer.LocalVolume(
-                                    data=np.zeros([10,10,10], dtype=np.uint32),
+                                    data=np.zeros([10, 10, 10], dtype=np.uint32),
                                     dimensions=self.dimensions,
                                 ),
                                 skel_source,

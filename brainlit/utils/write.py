@@ -31,8 +31,10 @@ def _read_czi_slice(czi, C, Z):
         slice = np.squeeze(slice)
     return slice
 
+
 def _write_zrange_thread(zarr_path, czi_path, channel, zs):
     czi = aicspylibczi.CziFile(czi_path)
+
 
 def _write_zrange_thread(zarr_path, czi_path, channel, zs):
     czi = aicspylibczi.CziFile(czi_path)
@@ -42,7 +44,9 @@ def _write_zrange_thread(zarr_path, czi_path, channel, zs):
         zarr_fg[z, :, :] = _read_czi_slice(czi, C=channel, Z=z)
 
 
-def czi_to_zarr(czi_path: str, out_dir: str, fg_channel: int = 0, parallel: int = 1) -> List[str]:
+def czi_to_zarr(
+    czi_path: str, out_dir: str, fg_channel: int = 0, parallel: int = 1
+) -> List[str]:
     """Convert  4D czi image to a zarr file(s) at a given directory. Single channel image will produce a single zarr, two channels will produce two.
 
     Args:

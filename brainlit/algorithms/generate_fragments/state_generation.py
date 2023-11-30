@@ -197,7 +197,6 @@ class state_generation:
 
         #     probabilities[corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]] = pred
 
-
         # if os.path.isfile(probs_fname) and os.path.isfile(fname):
         #     os.remove(fname)
         #     os.remove(probs_fname)
@@ -226,7 +225,10 @@ class state_generation:
             dtype="float64",
         )
 
-        chunk_size = [c * np.amax([1, int(np.ceil((2000/c)*(4/self.parallel)**(1/3)))]) for c in self.image_chunks[-3:]]
+        chunk_size = [
+            c * np.amax([1, int(np.ceil((2000 / c) * (4 / self.parallel) ** (1 / 3)))])
+            for c in self.image_chunks[-3:]
+        ]
 
         print(
             f"Processing image of shape {image.shape} with chunks {image.chunks} into probability image {prob_fname} of shape {probabilities.shape}"
@@ -235,7 +237,9 @@ class state_generation:
         corners = _get_corners(image.shape[-3:], chunk_size)
 
         chunk_count = 6
-        corners_chunks = [corners[i : i + chunk_count] for i in range(0, len(corners), chunk_count)]
+        corners_chunks = [
+            corners[i : i + chunk_count] for i in range(0, len(corners), chunk_count)
+        ]
 
         for corner_chunk in tqdm(corners_chunks, desc="Computing Ilastik Predictions"):
             Parallel(n_jobs=self.parallel, backend="threading")(
@@ -269,8 +273,10 @@ class state_generation:
 
                     try:
                         probabilities[x:x2, y:y2, z:z2] = pred
-                    except: 
-                        raise ValueError(f"predict has size: {pred.shape}*{pred.itemsize}={pred.itemsize*pred.size}")
+                    except:
+                        raise ValueError(
+                            f"predict has size: {pred.shape}*{pred.itemsize}={pred.itemsize*pred.size}"
+                        )
 
             for f in os.listdir(data_bin):
                 fname = os.path.join(data_bin, f)
@@ -279,7 +285,9 @@ class state_generation:
 
     def _get_frag_specifications(self, chunk_vol: int = None) -> list:
         image = zarr.open(self.image_path, mode="r")
-        chunk_size = [c * np.amax([1, int(np.ceil(200/c))]) for c in self.image_chunks[-3:]]
+        chunk_size = [
+            c * np.amax([1, int(np.ceil(200 / c))]) for c in self.image_chunks[-3:]
+        ]
         soma_coords = self.soma_coords
 
         specifications = []
@@ -308,10 +316,13 @@ class state_generation:
                             "soma_coords": soma_coords_new,
                         }
                     )
-        
+
         if chunk_vol is not None:
-            set_size = int(np.ceil(chunk_vol/np.product(chunk_size)))
-            specifications = [specifications[i:i+set_size] for i in np.arange(0, len(specifications), set_size)]
+            set_size = int(np.ceil(chunk_vol / np.product(chunk_size)))
+            specifications = [
+                specifications[i : i + set_size]
+                for i in np.arange(0, len(specifications), set_size)
+            ]
 
         return specifications
 
@@ -396,17 +407,23 @@ class state_generation:
 
         print(f"Constructing fragment image {frag_fname} of shape {fragments.shape}")
 
-        specification_sets = self._get_frag_specifications(chunk_vol=np.product([200,200,100000]))
+        specification_sets = self._get_frag_specifications(
+            chunk_vol=np.product([200, 200, 100000])
+        )
         max_label = 0
 
-        for specifications in tqdm(specification_sets, desc="Chunking fragment generation..."):
+        for specifications in tqdm(
+            specification_sets, desc="Chunking fragment generation..."
+        ):
             results = Parallel(n_jobs=self.parallel, backend="threading")(
                 delayed(self._split_frags_thread)(
                     specification["corner1"],
                     specification["corner2"],
                     specification["soma_coords"],
                 )
-                for specification in tqdm(specifications, desc="Splitting fragments...", leave=False)
+                for specification in tqdm(
+                    specifications, desc="Splitting fragments...", leave=False
+                )
             )
 
             for result in tqdm(results, desc="Renaming fragments..."):
@@ -418,7 +435,7 @@ class state_generation:
                     corner1[1] : corner2[1],
                     corner1[2] : corner2[2],
                 ] = labels
-        
+
         print(f"*****************Number of components: {max_label}*******************")
 
         self.fragment_path = frag_fname
@@ -535,15 +552,21 @@ class state_generation:
 
         self.kde = kde
 
-        specification_sets = self._get_frag_specifications(chunk_vol=np.product([200,200,100000]))
+        specification_sets = self._get_frag_specifications(
+            chunk_vol=np.product([200, 200, 100000])
+        )
 
-        for specifications in tqdm(specification_sets, desc="Chunking tiered image generation..."):
+        for specifications in tqdm(
+            specification_sets, desc="Chunking tiered image generation..."
+        ):
             results = Parallel(n_jobs=self.parallel, backend="threading")(
                 delayed(self._compute_image_tiered_thread)(
                     specification["corner1"],
                     specification["corner2"],
                 )
-                for specification in tqdm(specifications, desc="Computing tiered image...", leave=False)
+                for specification in tqdm(
+                    specifications, desc="Computing tiered image...", leave=False
+                )
             )
 
             for result in results:
@@ -877,12 +900,14 @@ class state_generation:
         viterbrain.frag_frag_dist(0, 10)
         t1 = time.time()
 
-        total = t1-t0
+        total = t1 - t0
         print(total)
 
-        viterbrain._compute_out_costs_dist(states=[0],
+        viterbrain._compute_out_costs_dist(
+            states=[0],
             frag_frag_func=viterbrain.frag_frag_dist,
-            frag_soma_func=viterbrain.frag_soma_dist,)
+            frag_soma_func=viterbrain.frag_soma_dist,
+        )
 
     def compute_edge_weights(self, frag_path=None) -> None:
         """Create viterbrain object and compute edge weights"""

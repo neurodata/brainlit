@@ -14,57 +14,60 @@ import copy
 import itertools
 from scipy.spatial import cKDTree
 
+
 def _curv_dist(
-        res: List[float],
-        pt1: List[int],
-        orientation1: List[int],
-        pt2: List[int],
-        orientation2: List[int],):
-        """Compute components of transition cost between two fragment states
+    res: List[float],
+    pt1: List[int],
+    orientation1: List[int],
+    pt2: List[int],
+    orientation2: List[int],
+):
+    """Compute components of transition cost between two fragment states
 
-        Args:
-            res (list of floats): resolution of image
-            pt1 (list of ints): first coordinate
-            orientation1 (list of ints): orientation at first coordinate
-            pt2 (list of ints): second coordinate
-            orientation2 (list of ints): orientation at second coordinate
+    Args:
+        res (list of floats): resolution of image
+        pt1 (list of ints): first coordinate
+        orientation1 (list of ints): orientation at first coordinate
+        pt2 (list of ints): second coordinate
+        orientation2 (list of ints): orientation at second coordinate
 
-        Raises:
-            ValueError: if an orientation is not unit length
-            ValueError: if distance or curvature cost is nan
+    Raises:
+        ValueError: if an orientation is not unit length
+        ValueError: if distance or curvature cost is nan
 
-        Returns:
-            [float]: cost of transition
-        """
-        dif = np.multiply(np.subtract(pt2, pt1), res)
+    Returns:
+        [float]: cost of transition
+    """
+    dif = np.multiply(np.subtract(pt2, pt1), res)
 
-        dist = np.linalg.norm(dif)
+    dist = np.linalg.norm(dif)
 
-        if dist > 15:
-            return np.inf, np.inf
+    if dist > 15:
+        return np.inf, np.inf
 
-        if (
-            dist == 0
-            or not math.isclose(np.linalg.norm(orientation1), 1, abs_tol=1e-5)
-            or not math.isclose(np.linalg.norm(orientation2), 1, abs_tol=1e-5)
-        ):
-            raise ValueError(
-                f"pt1: {pt1} pt2: {pt2} dist: {dist}, o1: {orientation1} o2: {orientation2}"
-            )
+    if (
+        dist == 0
+        or not math.isclose(np.linalg.norm(orientation1), 1, abs_tol=1e-5)
+        or not math.isclose(np.linalg.norm(orientation2), 1, abs_tol=1e-5)
+    ):
+        raise ValueError(
+            f"pt1: {pt1} pt2: {pt2} dist: {dist}, o1: {orientation1} o2: {orientation2}"
+        )
 
-        k1_sq = 1 - np.dot(dif, orientation1) / dist
-        k2_sq = 1 - np.dot(dif, orientation2) / dist
+    k1_sq = 1 - np.dot(dif, orientation1) / dist
+    k2_sq = 1 - np.dot(dif, orientation2) / dist
 
-        k_cost = np.mean([k1_sq, k2_sq])
+    k_cost = np.mean([k1_sq, k2_sq])
 
-        if np.isnan(dist) or np.isnan(k_cost):
-            raise ValueError(f"NAN cost: distance - {dist}, curv - {k_cost}")
+    if np.isnan(dist) or np.isnan(k_cost):
+        raise ValueError(f"NAN cost: distance - {dist}, curv - {k_cost}")
 
-        # if combined  average angle is tighter than 45 deg or either is tighter than 30 deg
-        if 1 - k1_sq < -0.87 or 1 - k2_sq < -0.87:
-            return np.inf, np.inf
-        else:
-            return dist, k_cost
+    # if combined  average angle is tighter than 45 deg or either is tighter than 30 deg
+    if 1 - k1_sq < -0.87 or 1 - k2_sq < -0.87:
+        return np.inf, np.inf
+    else:
+        return dist, k_cost
+
 
 def _compute_dist_cost(pair, res, coef_dist=10, coef_curv=1000):
     state1_data = pair[0]
@@ -77,10 +80,7 @@ def _compute_dist_cost(pair, res, coef_dist=10, coef_curv=1000):
 
     if state1_dict["fragment"] == state2_dict["fragment"]:
         return (state1, state2, np.inf)
-    elif (
-        state1_dict["type"] == "fragment"
-        and state2_dict["type"] == "fragment"
-    ):
+    elif state1_dict["type"] == "fragment" and state2_dict["type"] == "fragment":
         pt1 = state1_dict["point2"]
         orientation1 = state1_dict["orientation2"]
         pt2 = state2_dict["point1"]
@@ -93,13 +93,13 @@ def _compute_dist_cost(pair, res, coef_dist=10, coef_curv=1000):
             pt2=pt2,
             orientation2=orientation2,
         )
-        cost = coef_dist*(dist**2) + coef_curv*k_cost
+        cost = coef_dist * (dist**2) + coef_curv * k_cost
         return (state1, state2, cost)
     else:
         raise ValueError("no two fragments?")
-    
-def _line_int_coord(loc1: List[int], loc2: List[int], tiered_path: str):
 
+
+def _line_int_coord(loc1: List[int], loc2: List[int], tiered_path: str):
     image_tiered = zarr.open(tiered_path, mode="r")
     corner1 = [np.amin([loc1[i], loc2[i]]) for i in range(len(loc1))]
     corner2 = [np.amax([loc1[i], loc2[i]]) for i in range(len(loc1))]
@@ -130,6 +130,7 @@ def _line_int_coord(loc1: List[int], loc2: List[int], tiered_path: str):
 
     return sum
 
+
 def _compute_int_cost(pair, tiered_path):
     state1_data = pair[0]
     state1 = state1_data[0]
@@ -138,23 +139,18 @@ def _compute_int_cost(pair, tiered_path):
     state2_data = pair[1]
     state2 = state2_data[0]
     state2_dict = state2_data[1]
-    
 
-    if state1_dict["fragment"] == state2_dict[
-        "fragment"
-    ]:
+    if state1_dict["fragment"] == state2_dict["fragment"]:
         return (state1, state2, np.inf)
-    elif (
-        state1_dict["type"] == "fragment"
-        and state2_dict["type"] == "fragment"
-    ):
-        int_cost = _line_int_coord(state1_dict["point2"], state2_dict["point1"], tiered_path=tiered_path)
+    elif state1_dict["type"] == "fragment" and state2_dict["type"] == "fragment":
+        int_cost = _line_int_coord(
+            state1_dict["point2"], state2_dict["point1"], tiered_path=tiered_path
+        )
         return (state1, state2, int_cost)
 
     else:
         raise ValueError("No two fragments?")
 
-         
 
 class ViterBrain:
     def __init__(
@@ -294,9 +290,7 @@ class ViterBrain:
 
         return cost, nonline_point
 
-    def compute_all_costs_dist(
-        self, data_dir: str
-    ) -> None:
+    def compute_all_costs_dist(self, data_dir: str) -> None:
         """Splits up transition computation tasks then assembles them into networkx graph
 
         Args:
@@ -312,7 +306,7 @@ class ViterBrain:
             os.makedirs(data_dir)
         else:
             print(f"Data will be stored in {data_dir}")
-        
+
         data = []
         for state in range(self.num_states):
             data.append(np.multiply(G.nodes[state]["point2"], self.resolution))
@@ -332,17 +326,16 @@ class ViterBrain:
                 state2_data = (state2, G.nodes[state2])
                 pairs.append((state1_data, state2_data))
 
-
         print(f"{len(pairs)} for {self.num_states} states")
-        
+
         chunk_size = 100000
         for start in tqdm(range(0, len(pairs), chunk_size), desc="pair chunks"):
             pairs_chunk = itertools.islice(pairs, start, start + chunk_size)
-            cost_data = Parallel(n_jobs=parallel)(#, backend="threading")(
-                delayed(_compute_dist_cost)(
-                    pair, self.resolution
+            cost_data = Parallel(n_jobs=parallel)(  # , backend="threading")(
+                delayed(_compute_dist_cost)(pair, self.resolution)
+                for pair in tqdm(
+                    pairs_chunk, desc="pair", leave=False, total=chunk_size
                 )
-                for pair in tqdm(pairs_chunk, desc="pair", leave=False, total=chunk_size)
             )
             for cost in tqdm(cost_data, desc="adding edges"):
                 if np.isfinite(cost[-1]):
@@ -369,7 +362,6 @@ class ViterBrain:
 
         return self._line_int_coord(loc1, loc2) + G.nodes[state2]["image_cost"]
 
-
     def compute_all_costs_int(self) -> None:
         """Splits up transition computation tasks then assembles them into networkx graph"""
         parallel = self.parallel
@@ -384,17 +376,19 @@ class ViterBrain:
         chunk_size = 100000
         for start in tqdm(range(0, len(pairs), chunk_size), desc="pair chunks"):
             pairs_chunk = itertools.islice(pairs, start, start + chunk_size)
-            cost_data = Parallel(n_jobs=parallel)(#, backend="threading")(
-                delayed(_compute_int_cost)(
-                    pair, self.tiered_path
+            cost_data = Parallel(n_jobs=parallel)(  # , backend="threading")(
+                delayed(_compute_int_cost)(pair, self.tiered_path)
+                for pair in tqdm(
+                    pairs_chunk, desc="pair", leave=False, total=chunk_size
                 )
-                for pair in tqdm(pairs_chunk, desc="pair", leave=False, total=chunk_size)
             )
             for cost in tqdm(cost_data, desc="adding edges"):
                 if np.isfinite(cost[-1]):
                     G.edges[cost[0], cost[1]]["int_cost"] = cost[-1]
-                    G.edges[cost[0], cost[1]]["total_cost"] = G.edges[cost[0], cost[1]]["dist_cost"] + G.edges[cost[0], cost[1]]["int_cost"]
-
+                    G.edges[cost[0], cost[1]]["total_cost"] = (
+                        G.edges[cost[0], cost[1]]["dist_cost"]
+                        + G.edges[cost[0], cost[1]]["int_cost"]
+                    )
 
     def shortest_path(self, coord1: List[int], coord2: List[int]) -> List[List[int]]:
         """Compute coordinate path from one coordinate to another.
