@@ -27,22 +27,20 @@ print(
     f"Processing project {project_path} with (if applicable) CZI: {czi_path} channel {fg_channel} using brainlit @ {brainlit_path}, ilastik @ {ilastik_program_path} parallel {parallel}"
 )
 
-# /cis/home/tathey/ilastik-1.4.0-Linux/run_ilastik.sh  --headless --project=/cis/project/sriram/ilastik_dataaxon_segmentation.ilp /cis/project/sriram/ng_data/sriram-adipo-brain1-im3-timing/data_bin/image_0-20_0-400_0-400.h5
-
 times = {}
 
 # # Convert to zarr
 zarr_paths = [
     "/cis/project/sriram/ng_data/sriram-220-p29-brain2/fg.zarr",
     "",
-]  # hard coded
+]  # hard coded option
 
-# start = time.time()
-# zarr_paths = czi_to_zarr(
-#     czi_path=czi_path, out_dir=project_path, fg_channel=fg_channel, parallel=2
-# )
-# times["Convert CZI to ZARR"]= time.time() - start
-# print([f"{key}:{times[key]}" for key in times.keys()])
+start = time.time()
+zarr_paths = czi_to_zarr(
+    czi_path=czi_path, out_dir=project_path, fg_channel=fg_channel, parallel=2
+)
+times["Convert CZI to ZARR"] = time.time() - start
+print([f"{key}:{times[key]}" for key in times.keys()])
 
 ## Convert to OME zarr
 ome_path = project_path / "fg_ome.zarr"  # path of ome zarr to be made
@@ -81,17 +79,17 @@ sg = state_generation(
         resolution[0] / 1000,
         resolution[1] / 1000,
     ],  # ome zarr is zxy, in microns
-    prob_path=prob_path,
+    # prob_path=prob_path,
     # fragment_path=fragment_path,
     # tiered_path=tiered_path,
     # states_path=states_path,
 )
 
 
-# start = time.time()
-# sg.predict(data_bin=data_bin)
-# times["Run ilastik"]= time.time() - start
-# print([f"{key}:{times[key]}" for key in times.keys()])
+start = time.time()
+sg.predict(data_bin=data_bin)
+times["Run ilastik"] = time.time() - start
+print([f"{key}:{times[key]}" for key in times.keys()])
 
 start = time.time()
 sg.compute_frags()

@@ -35,10 +35,6 @@ def _read_czi_slice(czi, C, Z):
 def _write_zrange_thread(zarr_path, czi_path, channel, zs):
     czi = aicspylibczi.CziFile(czi_path)
 
-
-def _write_zrange_thread(zarr_path, czi_path, channel, zs):
-    czi = aicspylibczi.CziFile(czi_path)
-
     zarr_fg = zarr.open(zarr_path)
     for z in zs:
         zarr_fg[z, :, :] = _read_czi_slice(czi, C=channel, Z=z)
@@ -58,11 +54,6 @@ def czi_to_zarr(
     Returns:
         list: paths to zarrs that were written
     """
-    if fg_channel == 0:
-        bg_channel = 1
-    else:
-        bg_channel = 0
-
     zarr_paths = []
     czi = aicspylibczi.CziFile(czi_path)
 

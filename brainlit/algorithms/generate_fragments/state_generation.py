@@ -185,24 +185,6 @@ class state_generation:
             stderr=subprocess.PIPE,
         )
 
-        # probs_fname = str(fname.with_suffix("")) + "_Probabilities.h5"
-
-        # with h5py.File(probs_fname, "r") as f:
-        #     pred = f.get("exported_data")
-
-        #     if self.ndims == 4:
-        #         pred = np.squeeze(pred[1, :, :, :])
-        #     else:
-        #         pred = np.squeeze(pred[:, :, :, 1])
-
-        #     probabilities[corner1[0] : corner2[0], corner1[1] : corner2[1], corner1[2] : corner2[2]] = pred
-
-        # if os.path.isfile(probs_fname) and os.path.isfile(fname):
-        #     os.remove(fname)
-        #     os.remove(probs_fname)
-        # else:
-        #     print(f"file(s) not found {probs_fname}, {fname}")
-
     def predict(self, data_bin: str) -> None:
         """Run ilastik on zarr image
 
