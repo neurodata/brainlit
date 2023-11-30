@@ -6,6 +6,8 @@ import numpy as np
 from brainlit.algorithms.connect_fragments.viterbrain import (
     ViterBrain,
     explain_viterbrain,
+    _curv_dist,
+    _compute_dist_cost,
 )
 from brainlit.preprocessing import image_process
 import networkx as nx
@@ -127,7 +129,28 @@ def create_vb(tmp_path_factory):
         image_cost=0,
         twin=6,
     )
-    G.add_node(8, type="soma", fragment=5, soma_coords=np.argwhere(labels == 5))
+    G.add_node(
+        8,
+        type="fragment",
+        fragment=5,
+        point1=[52, 85, 0],
+        point2=[52, 99, 0],
+        orientation1=[0, 1, 0],
+        orientation2=[0, 1, 0],
+        image_cost=0,
+        twin=9,
+    )
+    G.add_node(
+        9,
+        type="fragment",
+        fragment=5,
+        point1=[52, 99, 0],
+        point2=[52, 85, 0],
+        orientation1=[0, -1, 0],
+        orientation2=[0, -1, 0],
+        image_cost=0,
+        twin=8,
+    )
 
     vb = ViterBrain(
         G=G,
@@ -151,45 +174,60 @@ def test_frag_frag_dist_bad_input(create_vb):
     vb_og = create_vb
     vb = copy.deepcopy(vb_og)
 
+    # distance between two states of same fragment
     vb.nxGraph.nodes[0]["point2"] = [0, 0, 0]
     vb.nxGraph.nodes[0]["orientation2"] = [1, 1, 0]
     vb.nxGraph.nodes[1]["point1"] = [1, 0, 0]
     vb.nxGraph.nodes[1]["orientation1"] = [1, 0, 0]
-    with pytest.raises(ValueError):
-        vb.frag_frag_dist(state1=0, state2=1)
+    result = _compute_dist_cost(
+        ((0, vb.nxGraph.nodes[0]), (1, vb.nxGraph.nodes[1])), res=[1, 1, 1]
+    )
+    assert result[2] == np.inf
+
+    # orientation1 of state2 is not unit length
     vb.nxGraph.nodes[0]["point2"] = [0, 0, 0]
     vb.nxGraph.nodes[0]["orientation2"] = [1, 0, 0]
-    vb.nxGraph.nodes[1]["point1"] = [1, 0, 0]
-    vb.nxGraph.nodes[1]["orientation1"] = [1, 1, 0]
+    vb.nxGraph.nodes[2]["point1"] = [1, 0, 0]
+    vb.nxGraph.nodes[2]["orientation1"] = [1, 1, 0]
     with pytest.raises(ValueError):
-        vb.frag_frag_dist(state1=0, state2=1)
+        _compute_dist_cost(
+            ((0, vb.nxGraph.nodes[0]), (2, vb.nxGraph.nodes[2])), res=[1, 1, 1]
+        )
+
+    # nan orientation will give nan curvature
     vb.nxGraph.nodes[0]["point2"] = [0, 0, 0]
     vb.nxGraph.nodes[0]["orientation2"] = [np.nan, 0, 0]
-    vb.nxGraph.nodes[1]["point1"] = [1, 0, 0]
-    vb.nxGraph.nodes[1]["orientation1"] = [1, 0, 0]
+    vb.nxGraph.nodes[2]["point1"] = [1, 0, 0]
+    vb.nxGraph.nodes[2]["orientation1"] = [1, 0, 0]
     with pytest.raises(ValueError):
-        vb.frag_frag_dist(state1=0, state2=1)
+        _compute_dist_cost(
+            ((0, vb.nxGraph.nodes[0]), (2, vb.nxGraph.nodes[2])), res=[1, 1, 1]
+        )
+
+    # identical points will give nan curvature
     vb.nxGraph.nodes[0]["point2"] = [0, 0, 0]
     vb.nxGraph.nodes[0]["orientation2"] = [1, 0, 0]
-    vb.nxGraph.nodes[1]["point1"] = [0, 0, 0]
-    vb.nxGraph.nodes[1]["orientation1"] = [1, 0, 0]
+    vb.nxGraph.nodes[2]["point1"] = [0, 0, 0]
+    vb.nxGraph.nodes[2]["orientation1"] = [1, 0, 0]
     with pytest.raises(ValueError):
-        vb.frag_frag_dist(state1=0, state2=1)
+        _compute_dist_cost(
+            ((0, vb.nxGraph.nodes[0]), (2, vb.nxGraph.nodes[2])), res=[1, 1, 1]
+        )
 
 
 def test_explain_viterbrain(create_vb):
     vb = create_vb
 
-    vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
-    vb.compute_all_costs_int(vb._line_int)
+    vb.compute_all_costs_dist()
+    vb.compute_all_costs_int()
     explain_viterbrain(vb, c1=[52, 0, 0], c2=[50, 90, 0])
 
 
 def test_shortest_path(create_vb):
     vb = create_vb
 
-    vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
-    vb.compute_all_costs_int(vb._line_int)
+    vb.compute_all_costs_dist()
+    vb.compute_all_costs_int()
     vb.shortest_path([52, 0, 0], [50, 90, 0])
 
 
@@ -201,30 +239,65 @@ def test_shortest_path(create_vb):
 def test_frag_frag_dist(create_vb):
     vb = create_vb
 
-    cost = vb.frag_frag_dist_coord(
-        pt1=[0, 0, 0], orientation1=[1, 0, 0], pt2=[1, 0, 0], orientation2=[1, 0, 0]
+    dist, k_cost = _curv_dist(
+        res=[1, 1, 1],
+        pt1=[0, 0, 0],
+        orientation1=[1, 0, 0],
+        pt2=[1, 0, 0],
+        orientation2=[1, 0, 0],
     )
-    assert cost == 1.0
+    assert dist == 1.0
+    assert k_cost == 0
 
-    cost = vb.frag_frag_dist_coord(
-        pt1=[0, 0, 0], orientation1=[1, 0, 0], pt2=[2, 0, 0], orientation2=[1, 0, 0]
+    dist, k_cost = _curv_dist(
+        res=[1, 1, 1],
+        pt1=[0, 0, 0],
+        orientation1=[1, 0, 0],
+        pt2=[2, 0, 0],
+        orientation2=[1, 0, 0],
     )
-    assert cost == 4.0
+    assert dist == 2.0
+    assert k_cost == 0
 
-    cost = vb.frag_frag_dist_coord(
-        pt1=[0, 0, 0], orientation1=[1, 0, 0], pt2=[1, 0, 0], orientation2=[0, 1, 0]
+    dist, k_cost = _curv_dist(
+        res=[1, 1, 1],
+        pt1=[0, 0, 0],
+        orientation1=[1, 0, 0],
+        pt2=[1, 0, 0],
+        orientation2=[0, 1, 0],
     )
-    assert cost == 1.5
+    assert dist == 1.0
+    assert k_cost == 0.5
 
-    cost = vb.frag_frag_dist_coord(
-        pt1=[0, 0, 0], orientation1=[0, 1, 0], pt2=[1, 0, 0], orientation2=[0, 1, 0]
+    dist, k_cost = _curv_dist(
+        res=[1, 1, 1],
+        pt1=[0, 0, 0],
+        orientation1=[0, 1, 0],
+        pt2=[1, 0, 0],
+        orientation2=[0, 1, 0],
     )
-    assert cost == 2.0
+    assert dist == 1.0
+    assert k_cost == 1.0
 
-    cost = vb.frag_frag_dist_coord(
-        pt1=[0, 0, 0], orientation1=[1, 0, 0], pt2=[2, 0, 0], orientation2=[-1, 0, 0]
+    dist, k_cost = _curv_dist(
+        res=[2, 1, 3],
+        pt1=[0, 0, 0],
+        orientation1=[0, 1, 0],
+        pt2=[1, 0, 0],
+        orientation2=[0, 1, 0],
     )
-    assert cost == np.inf
+    assert dist == 2.0
+    assert k_cost == 1.0
+
+    dist, k_cost = _curv_dist(
+        res=[1, 1, 1],
+        pt1=[0, 0, 0],
+        orientation1=[1, 0, 0],
+        pt2=[2, 0, 0],
+        orientation2=[-1, 0, 0],
+    )
+    assert dist == np.inf
+    assert k_cost == np.inf
 
 
 def test_frag_frag_dist_simple(create_vb):
@@ -246,7 +319,9 @@ def test_line_int_zero(create_vb):
 def test_viterbrain(create_vb):
     vb = create_vb
 
-    vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
-    vb.compute_all_costs_int(vb._line_int)
+    vb.compute_all_costs_dist()
+    vb.compute_all_costs_int()
     assert_array_equal(nx.shortest_path(vb.nxGraph, source=0, target=8), [0, 2, 4, 8])
-    assert len(vb.shortest_path([49, 10, 0], [44, 90, 0])) == 8
+    assert (
+        len(vb.shortest_path([49, 10, 0], [44, 90, 0])) == 9
+    )  # start point + state 0 endpoints + state 2 endpoints + state 4 endpoints + state 8 start point + end point

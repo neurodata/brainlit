@@ -290,26 +290,19 @@ class ViterBrain:
 
         return cost, nonline_point
 
-    def compute_all_costs_dist(self, data_dir: str) -> None:
-        """Splits up transition computation tasks then assembles them into networkx graph
-
-        Args:
-            frag_frag_func (function): function that computes transition cost between fragments
-            frag_soma_func (function): function that computes transition cost between fragments
-        """
+    def compute_all_costs_dist(self) -> None:
+        """Splits up transition computation tasks then assembles them into networkx graph"""
         parallel = self.parallel
         G = self.nxGraph
 
-        isExist = os.path.exists(data_dir)
-        if not isExist:
-            print(f"Creating directory: {data_dir}")
-            os.makedirs(data_dir)
-        else:
-            print(f"Data will be stored in {data_dir}")
-
         data = []
         for state in range(self.num_states):
-            data.append(np.multiply(G.nodes[state]["point2"], self.resolution))
+            if G.nodes[state]["type"] == "fragment":
+                data.append(np.multiply(G.nodes[state]["point2"], self.resolution))
+            elif G.nodes[state]["type"] == "soma":
+                print(
+                    f"Warning: Component of type soma is encountered which will not be connected to the graph"
+                )
         data = np.stack(data, axis=0)
         kdt1 = cKDTree(data)
         data = []

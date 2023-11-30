@@ -4,15 +4,12 @@ from pathlib import Path
 from brainlit.algorithms.generate_fragments.state_generation import state_generation
 import networkx as nx
 import pickle
-from numpy.testing import (
-    assert_array_equal,
-)
 import pytest
 import os
 import shutil
 
 
-soma_coords = [[50, 90, 0]]
+soma_coords = []
 
 res = [0.1, 0.1, 0.1]
 
@@ -101,18 +98,6 @@ def test_state_generation_inputs(init_3d_im_lab):
             ilastik_project_path=None,
         )
 
-    im_file = data_dir / "im_badchunks.zarr"
-    zarr.open(im_file, mode="w", shape=(2, 10, 10, 10), chunks=(5, 5), dtype="float")
-
-    with pytest.raises(ValueError):
-        sg = state_generation(
-            image_path=im_file,
-            new_layers_dir=data_dir,
-            ilastik_program_path=None,
-            ilastik_project_path=None,
-            chunk_size=[1, 5, 5, 5],
-        )
-
 
 ############################
 ### functionality checks ###
@@ -135,7 +120,6 @@ def test_compute_frags(init_3d_im_lab):
         new_layers_dir=data_dir,
         ilastik_program_path=None,
         ilastik_project_path=None,
-        chunk_size=[50, 50, 1],
         soma_coords=soma_coords,
         resolution=res,
         prob_path=im_file,
@@ -153,7 +137,6 @@ def test_state_generation_3d(init_3d_im_lab):
         new_layers_dir=data_dir,
         ilastik_program_path=None,
         ilastik_project_path=None,
-        chunk_size=[50, 50, 1],
         soma_coords=soma_coords,
         resolution=res,
         prob_path=im_file,
@@ -170,7 +153,6 @@ def test_state_generation_3d(init_3d_im_lab):
         new_layers_dir=str(data_dir),
         ilastik_program_path=None,
         ilastik_project_path=None,
-        chunk_size=[50, 50, 1],
         soma_coords=soma_coords,
         resolution=res,
         prob_path=str(im_file),
@@ -179,7 +161,6 @@ def test_state_generation_3d(init_3d_im_lab):
 
     sg.compute_image_tiered()
     sg.compute_soma_lbls()
-    assert_array_equal(sg.soma_lbls, [5])
 
     sg.compute_states("nb")
     with pytest.raises(NotImplementedError):
@@ -189,7 +170,7 @@ def test_state_generation_3d(init_3d_im_lab):
         G = pickle.load(handle)
     for node in G.nodes:
         print(G.nodes[node])
-    assert len(G.nodes) == 9  # 2 states per fragment plus one soma state
+    assert len(G.nodes) == 10  # 2 states per fragment
 
     sg.compute_edge_weights()
     sg.compute_bfs()
@@ -203,7 +184,6 @@ def test_state_generation_4d(init_4d_im_probs_lab):
         new_layers_dir=str(data_dir),
         ilastik_program_path=None,
         ilastik_project_path=None,
-        chunk_size=[50, 50, 1],
         soma_coords=soma_coords,
         fg_channel=0,
         resolution=res,
@@ -213,7 +193,6 @@ def test_state_generation_4d(init_4d_im_probs_lab):
 
     sg.compute_image_tiered()
     sg.compute_soma_lbls()
-    assert_array_equal(sg.soma_lbls, [5])
 
     sg.compute_states("nb")
     with pytest.raises(NotImplementedError):
@@ -223,7 +202,7 @@ def test_state_generation_4d(init_4d_im_probs_lab):
         G = pickle.load(handle)
     for node in G.nodes:
         print(G.nodes[node])
-    assert len(G.nodes) == 9  # 2 states per fragment plus one soma state
+    assert len(G.nodes) == 10  # 2 states per fragment
 
     sg.compute_edge_weights()
     sg.compute_bfs()

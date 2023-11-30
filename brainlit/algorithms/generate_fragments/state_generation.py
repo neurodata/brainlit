@@ -34,7 +34,6 @@ class state_generation:
         ilastik_program_path (str): Path to ilastik program.
         ilastik_project_path (str): Path to ilastik project for segmentation of image.
         fg_channel (int): Channel of image taken to be foreground.
-        chunk_size (List[float]): Chunk size too be used in parallel processing. Defaults to [375, 375, 125].
         soma_coords (List[list]): List of coordinates of soma centers. Defaults to [].
         resolution (List[float): Resolution of image in microns. Defaults to [0.3, 0.3, 1].
         parallel (int): Number of threads to use for parallel processing. Defaults to 1.
@@ -49,7 +48,8 @@ class state_generation:
         ilastik_program_path (str): Path to ilastik program.
         ilastik_project_path (str): Path to ilastik project for segmentation of image.
         fg_channel (int): Channel of image taken to be foreground.
-        chunk_size (List[float], optional): Chunk size too be used in parallel processing.
+        image_shape (List[int]): Shape of image at image_path.
+        image_chunks (List[int]): Chunk size of image at image_path.
         soma_coords (List[list], optional): List of coordinates of soma centers.
         resolution (List[float], optional): Resolution of image in microns.
         parallel (int, optional): Number of threads to use for parallel processing.
@@ -207,6 +207,8 @@ class state_generation:
             dtype="float64",
         )
 
+        # For a 4 cores, chunk size is the greatest multiple of the image chunks that is less than 2000
+        # Chunk sizes decrease with the number of cores.
         chunk_size = [
             c * np.amax([1, int(np.ceil((2000 / c) * (4 / self.parallel) ** (1 / 3)))])
             for c in self.image_chunks[-3:]
@@ -912,10 +914,7 @@ class state_generation:
             parallel=self.parallel,
         )
 
-        viterbrain.compute_all_costs_dist(
-            data_dir=Path(self.new_layers_dir) / "data_temp"
-        )
-
+        viterbrain.compute_all_costs_dist()
         viterbrain.compute_all_costs_int()
 
         print(f"# Edges: {viterbrain.nxGraph.number_of_edges()}")
