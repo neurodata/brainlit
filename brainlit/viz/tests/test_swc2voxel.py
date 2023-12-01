@@ -1,7 +1,5 @@
 from brainlit.viz.swc2voxel import Bresenham3D
 from pytest import raises
-import numpy as np
-import pandas as pd
 
 ####################
 ### input checks ###
