@@ -37,7 +37,6 @@ REQUIRED_PACKAGES = [
     "statannotations>=0.4.4",
     "trimesh==3.21.7",  # newer versions of this use embreex which is not found on netlify's pip. This is a requirement of igenous-pipeline.
     "igneous-pipeline",
-    "embreex<=2.17.7.post1",
     "torch",
     "torchvision",
     "torchaudio",
