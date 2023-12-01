@@ -36,6 +36,7 @@ REQUIRED_PACKAGES = [
     "similaritymeasures>=0.4.4",
     "statannotations>=0.4.4",
     "igneous-pipeline",
+    "embreex<=2.17.7.post1"
 ]
 
 # Find savanna version.
