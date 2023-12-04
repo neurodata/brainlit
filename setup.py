@@ -14,6 +14,7 @@ AUTHOR_EMAIL = "tathey1@jhu.edu"
 URL = "https://github.com/neurodata/brainlit"
 MINIMUM_PYTHON_VERSION = 3, 7  # Minimum of Python 3.7
 REQUIRED_PACKAGES = [
+    "astroid<3",
     "numpy==1.23.2",
     "CloudReg",
     "aicspylibczi>=3.0.5",
