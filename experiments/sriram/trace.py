@@ -31,27 +31,28 @@ use env_39 on local
 
 cis:
 use env_38 on dwalin
-- python cors_webserver.py -d "/cis/home/tathey/projects/mouselight/sriram/neuroglancer_data/somez/" -p 9010
-- python cors_webserver.py -d "/cis/project/sriram/ng_data/" -p 9010
+- python cors_webserver.py -d "/cis/project/sriram/ng_data/sriram-220-p29-brain2/" -p 9010
 
 url:
-zarr://http://127.0.0.1:9010/exp227/fg_ome.zarr
+zarr://http://127.0.0.1:9010/fg_ome.zarr
 a soma - 5346, 14801, 330
 """
 
 sriram_exp_data_dir = Path(os.path.abspath(__file__)).parents[0] / "data" / "test-czi"
+cis_data_dir = Path(
+    "/cis/project/sriram/ng_data/sriram-adipo-brain1-im3-timing/"
+)  # Path("/cis/project/sriram/ng_data/sriram-220-p29-brain2/")
+
 im_path_local = str(
     sriram_exp_data_dir / "fg_ome.zarr" / "0"
 )  # E:\\Projects\\KolodkinLab\\Sriram\\brainlit-tracing\\brainlit\\experiments\\sriram\\data\\
-im_path_cis = "/cis/project/sriram/ng_data/sriram-adipo-brain1-im3/fg_ome.zarr/0/"
+im_path_cis = str(cis_data_dir / "fg_ome.zarr/0/")
 
 trace_path_local = f"precomputed://file://{str(sriram_exp_data_dir / 'traces')}"
-trace_path_cis = (
-    "precomputed://file:///cis/project/sriram/ng_data/sriram-adipo-brain1-im3/traces"
-)
+trace_path_cis = f"precomputed://file://{str(cis_data_dir)}/traces"
 
 vb_path_local = str(sriram_exp_data_dir / "viterbrain.pickle")
-vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pickle"
+vb_path_cis = str(cis_data_dir / "viterbrain.pickle")
 
 ######################
 # Enter inputs below #
@@ -59,17 +60,15 @@ vb_path_cis = "/cis/home/tathey/projects/mouselight/sriram/somez_viterbrain.pick
 
 
 port = "9010"
-trace_path = trace_path_local  # cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
-im_path = im_path_local  # ckloudvolume compatible path or path to local zarr
-im_url = f"zarr://http://127.0.0.1:{port}/test-czi/fg_ome.zarr"  # ng compatible url
-trace_url = (
-    f"precomputed://http://127.0.0.1:{port}/test-czi/traces"  # ng compatible url
-)
+trace_path = trace_path_cis  # cloudvolume compatible path, e.g. start with precomputed://file:// followed by file path
+im_path = im_path_cis  # ckloudvolume compatible path or path to local zarr
+im_url = f"zarr://http://127.0.0.1:{port}/fg_ome.zarr"  # ng compatible url
+trace_url = f"precomputed://http://127.0.0.1:{port}/traces"  # ng compatible url
 assisted_tracing = True
 
 if assisted_tracing:
-    vb_path = vb_path_local
-    frag_layer = f"zarr://http://127.0.0.1:{port}/test-czi/labels.zarr"
+    vb_path = vb_path_cis
+    frag_layer = f"zarr://http://127.0.0.1:{port}/labels_ome.zarr"
 else:
     vb_path = None
     frag_layer = None
@@ -78,10 +77,14 @@ else:
 data = np.random.random((10, 10, 10)) * 255
 viewer = napari.Viewer()
 layer = viewer.add_image(data)
+pts_layer = viewer.add_points([[-1, -1, -1]], size=1, face_color="red", symbol="disc")
+path_layer = viewer.add_shapes([[[-1, -1, -1], [-2, -2, -2]]], shape_type="path")
 
 
 def show_napari(subvol):
     layer.data = subvol
+    pts_layer.data = pts
+    path_layer.data = path
 
 
 class ViterBrainViewer(neuroglancer.Viewer):
@@ -114,6 +117,9 @@ class ViterBrainViewer(neuroglancer.Viewer):
             )
 
         # add layers
+        dimensions = neuroglancer.CoordinateSpace(
+            names=["x", "y", "z"], units="nm", scales=cv_dict["traces"].resolution
+        )
         with self.txn() as s:
             s.layers["traces"] = neuroglancer.SegmentationLayer(
                 source=trace_url,
@@ -131,10 +137,11 @@ class ViterBrainViewer(neuroglancer.Viewer):
         self.actions.add("f_find", self.trace)
         self.actions.add("n_newtrace", self.newtrace)
         self.actions.add("c_clearlast", self.clearlast)
-        self.actions.add("s_save", self.print)
+        self.actions.add("s_save", self.p_print)
         self.actions.add("d_draw", self.line)
         self.actions.add("h_hook", self.hook)
         self.actions.add("v_view", self.view)
+        self.actions.add("w_snip", self.wallerian_snip)
         with self.config_state.txn() as s:
             s.input_event_bindings.viewer["keys"] = "s_select"
             s.input_event_bindings.viewer["keyf"] = "f_find"
@@ -144,12 +151,14 @@ class ViterBrainViewer(neuroglancer.Viewer):
             s.input_event_bindings.viewer["keyd"] = "d_draw"
             s.input_event_bindings.viewer["shift+keyh"] = "h_hook"
             s.input_event_bindings.viewer["shift+keyv"] = "v_view"
+            s.input_event_bindings.viewer["shift+keyw"] = "w_snip"
             s.status_messages["hello"] = "Welcome to the ViterBrain tracer"
 
         # open vb object
         if vb_path:
             with open(vb_path, "rb") as handle:
                 self.vb = pickle.load(handle)
+                print(f"Fragment path: {self.vb.fragment_path}")
         else:
             self.vb = None
 
@@ -171,6 +180,13 @@ class ViterBrainViewer(neuroglancer.Viewer):
         self.napari_viewer = napari_viewer
 
     def build_kdtree(self):
+        """Build KDTree of points to access skeleton vertices in a region
+
+        Returns:
+            int: lowest integer for which there does not exist a skeleton with that ID.
+            scipy.spatial.KDTree: kdtree of skeleton vertices (of all skeletons with ID < skel_num)
+            list: list of 2-tuples associated with points that generated KDTree. First element is skeleton number, second is vertex number.
+        """
         vol = self.cv_dict["traces"]
         skel_num = 0
         pts_total = []
@@ -185,12 +201,14 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 break
 
             skel_num += 1
-        if skel_num == 0:
+
+        if len(pts_total) == 0:
             pts_total = None
             kdtree = None
         else:
             pts_total = np.concatenate(pts_total, axis=0)
             kdtree = KDTree(pts_total)
+
         return skel_num, kdtree, ids_total
 
     def add_point(self, name, color, coord):
@@ -268,14 +286,67 @@ class ViterBrainViewer(neuroglancer.Viewer):
 
     def hook(self, s):
         _, kdtree, ids_total = self.build_kdtree()
-        _, closest_idx = kdtree.query(s.mouse_voxel_coordinates)
+        cur_pt = [int(p) for p in s.mouse_voxel_coordinates]
+
+        _, closest_idx = kdtree.query(cur_pt)
         self.start_pt = [int(p) for p in s.mouse_voxel_coordinates]
         self.cur_skel = ids_total[closest_idx][0]
         self.cur_skel_head = ids_total[closest_idx][1]
+        self.num_skels -= 1
         print(
             f"Hooking into skeleton #{self.cur_skel} at id {self.cur_skel_head}: {self.start_pt}"
         )
         self.add_point("start", "#0f0", s.mouse_voxel_coordinates)
+
+    def wallerian_snip(self, s):
+        vol = self.cv_dict["traces"]
+        skel = vol.skeleton.get(self.cur_skel)
+
+        G = nx.Graph()
+        for n in range(skel.vertices.shape[0]):
+            G.add_node(n, pos=skel.vertices[n, :])
+        G.add_edges_from(skel.edges)
+
+        ccs = [cc for cc in nx.connected_components(G)]
+        if len(ccs) != 1:
+            raise ValueError(
+                f"{len(ccs)} connected components in skeleton {self.cur_skel}"
+            )
+
+        if G.degree[self.cur_skel_head] > 1:
+            G.remove_edges_from(list(G.edges(self.cur_skel_head)))
+            components = sorted(nx.connected_components(G), key=len)
+            print(
+                f"Removing component with {len(components[1])} nodes out of {len(components)} components"
+            )
+            G.remove_nodes_from(components[0])
+            G.remove_nodes_from(components[1])
+            G = nx.relabel.convert_node_labels_to_integers(G, first_label=0)
+
+            vertices = np.array([G.nodes[i]["pos"] for i in G.nodes])
+            edges = np.array([e for e in G.edges])
+
+            skel = Skeleton(
+                segid=self.cur_skel, vertices=vertices, edges=edges, space="voxel"
+            )
+            skel.extra_attributes = [
+                attr for attr in skel.extra_attributes if attr["data_type"] == "float32"
+            ]
+            vol.skeleton.upload(skel)
+
+            with self.txn() as vs:  # trace
+                layer_names = [l.name for l in vs.layers]
+                if "start" in layer_names:
+                    del vs.layers["start"]
+                if "end" in layer_names:
+                    del vs.layers["end"]
+
+            self.start_pt = None
+            self.end_pt = None
+        else:
+            raise ValueError(
+                f"Trying to split skel {self.cur_skel} and node {self.cur_skel_head} which has degree {G.degree[self.cur_skel_head]} (<1)"
+            )
 
     def trace(self, s):
         if not self.vb:
@@ -286,36 +357,41 @@ class ViterBrainViewer(neuroglancer.Viewer):
         with self.txn() as vs:  # trace
             layer_names = [l.name for l in vs.layers]
 
-        if "start" in layer_names and "end" in layer_names:
+        if "start" in layer_names:
             if "end" in layer_names:
-                with self.txn() as vs:  # trace
+                with self.txn() as vs:
                     del vs.layers["start"]
                     vs.layers["end"].name = "start"
             else:
                 self.end_pt = [int(p) for p in s.mouse_voxel_coordinates]
-                with self.txn() as vs:  # trace
+                with self.txn() as vs:
                     del vs.layers["start"]
                 self.add_point("start", "#0f0", s.mouse_voxel_coordinates)
+
             print(f"Tracing path from {self.start_pt} to {self.end_pt}")
 
             try:
+                dim_order = [2, 0, 1]
                 start_coord = [
-                    self.start_pt[i] for i in [2, 0, 1]
+                    self.start_pt[i] for i in dim_order
                 ]  # correct dimension swap (originiating during ome-zarr conversion)
-                end_coord = [self.end_pt[i] for i in [2, 0, 1]]
+                end_coord = [self.end_pt[i] for i in dim_order]
+
                 path = self.vb.shortest_path(coord1=start_coord, coord2=end_coord)
-                path = [[pt[1], pt[2], pt[0]] for pt in path]
+                path = [
+                    [pt[dim_order.index(i)] for i in range(len(dim_order))]
+                    for pt in path
+                ]
+
                 print(path)
+
+                self.render_line(path)
+                self.start_pt = self.end_pt
+                self.end_pt = None
             except nx.NetworkXNoPath:
                 print("No path found")
                 return
 
-            self.render_line(path, layer_names)
-            with self.txn() as vs:  # trace
-                del vs.layers["start"]
-                self.start_pt = self.end_pt
-                self.end_pt = None
-                vs.layers["end"].name = "start"
         else:
             print("No start layer yet")
 
@@ -339,20 +415,22 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 path = [self.start_pt[:3], self.end_pt[:3]]
             else:
                 path = [self.start_pt, self.end_pt]
-            self.render_line(path, layer_names)
+            self.render_line(path)
             self.start_pt = self.end_pt
             self.end_pt = None
         else:
             print("No start layer yet")
 
-    def render_line(self, path, layer_names):
+    def render_line(self, path):
         with self.txn() as vs:  # trace
-            self.cur_skel_coords.append(path)
+            layer_names = [l.name for l in vs.layers]
+            self.cur_skel_coords.append([node for node in path])
             trace_layer_name = f"vb_traces_{self.cur_skel}"
             if trace_layer_name in layer_names:
                 del vs.layers[trace_layer_name]
 
             coords_list = [inner for outer in self.cur_skel_coords for inner in outer]
+
             skel_source = self.SkeletonSource(self.dimensions)
             skel_source.add_skeleton(coords_list=coords_list)
             vs.layers.append(
@@ -360,7 +438,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 layer=neuroglancer.SegmentationLayer(
                     source=[
                         neuroglancer.LocalVolume(
-                            data=np.zeros(self.im_shape, dtype=np.uint32),
+                            data=np.zeros([10, 10, 10], dtype=np.uint32),
                             dimensions=self.dimensions,
                         ),
                         skel_source,
@@ -370,8 +448,17 @@ class ViterBrainViewer(neuroglancer.Viewer):
             )
 
     def clearlast(self, s):
+        with self.txn() as vs:
+            layer_names = [l.name for l in vs.layers]
+            if "start" in layer_names:
+                print(f"Deleting start layer")
+                del vs.layers["start"]
+            if "end" in layer_names:
+                print(f"Deleting end layer")
+                del vs.layers["end"]
+
         if len(self.cur_skel_coords) == 0:
-            print("Nothing to clear")
+            print("No paths to clear")
         else:
             self.cur_skel_coords = self.cur_skel_coords[:-1]
 
@@ -380,10 +467,6 @@ class ViterBrainViewer(neuroglancer.Viewer):
                 trace_layer_name = f"vb_traces_{self.cur_skel}"
                 if trace_layer_name in layer_names:
                     del vs.layers[trace_layer_name]
-                if "start" in layer_names:
-                    del vs.layers["start"]
-                if "end" in layer_names:
-                    del vs.layers["end"]
 
             if len(self.cur_skel_coords) > 0:
                 coord = self.cur_skel_coords[-1][-1]
@@ -402,7 +485,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
                         layer=neuroglancer.SegmentationLayer(
                             source=[
                                 neuroglancer.LocalVolume(
-                                    data=np.zeros(self.im_shape, dtype=np.uint32),
+                                    data=np.zeros([10, 10, 10], dtype=np.uint32),
                                     dimensions=self.dimensions,
                                 ),
                                 skel_source,
@@ -413,7 +496,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
 
     def newtrace(self, s):
         print(f"Saving trace #{self.cur_skel+1}")
-        self.print(s)
+        self.p_print(s)
         with self.txn() as vs:  # trace
             layer_names = [l.name for l in vs.layers]
             if "start" in layer_names:
@@ -429,7 +512,7 @@ class ViterBrainViewer(neuroglancer.Viewer):
         self.cur_skel_head = 0
         print(f"Creating new trace #{self.cur_skel}")
 
-    def print(self, s):
+    def p_print(self, s):
         if len(self.cur_skel_coords) == 0:
             print("No coordinates to save")
         else:

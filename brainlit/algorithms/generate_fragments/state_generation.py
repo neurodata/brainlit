@@ -20,6 +20,7 @@ import pickle
 import networkx as nx
 from typing import List, Tuple, Union
 from pathlib import Path
+import time
 
 # import pcurve.pcurve as pcurve
 
@@ -33,7 +34,6 @@ class state_generation:
         ilastik_program_path (str): Path to ilastik program.
         ilastik_project_path (str): Path to ilastik project for segmentation of image.
         fg_channel (int): Channel of image taken to be foreground.
-        chunk_size (List[float]): Chunk size too be used in parallel processing. Defaults to [375, 375, 125].
         soma_coords (List[list]): List of coordinates of soma centers. Defaults to [].
         resolution (List[float): Resolution of image in microns. Defaults to [0.3, 0.3, 1].
         parallel (int): Number of threads to use for parallel processing. Defaults to 1.
@@ -48,7 +48,8 @@ class state_generation:
         ilastik_program_path (str): Path to ilastik program.
         ilastik_project_path (str): Path to ilastik project for segmentation of image.
         fg_channel (int): Channel of image taken to be foreground.
-        chunk_size (List[float], optional): Chunk size too be used in parallel processing.
+        image_shape (List[int]): Shape of image at image_path.
+        image_chunks (List[int]): Chunk size of image at image_path.
         soma_coords (List[list], optional): List of coordinates of soma centers.
         resolution (List[float], optional): Resolution of image in microns.
         parallel (int, optional): Number of threads to use for parallel processing.
@@ -70,7 +71,6 @@ class state_generation:
         ilastik_program_path: str,
         ilastik_project_path: str,
         fg_channel: int = 0,
-        chunk_size: List[float] = [375, 375, 125],
         soma_coords: List[list] = [],
         resolution: List[float] = [0.3, 0.3, 1],
         parallel: int = 1,
@@ -113,24 +113,19 @@ class state_generation:
         self.states_path = states_path
 
         image = zarr.open(image_path, mode="r")
-        if len(image.shape) == 4:
+        if len(image.shape) == 4 and image.shape[0] <= 3:
             self.ndims = 4
         elif len(image.shape) == 3:
             self.ndims = 3
         else:
             raise ValueError(
-                f"Image must be 3D (xyz) or 4D (cxyz), rather than shape: {image.shape}"
+                f"Image must be 3D (xyz) or 4D (cxyz) with at most 3 channels, rather than shape: {image.shape}"
             )
 
         self.fg_channel = fg_channel
         self.image_shape = image.shape
+        self.image_chunks = image.chunks
 
-        if len(chunk_size) == 4 and chunk_size[0] != self.image_shape[0]:
-            raise ValueError(
-                f"Chunk size must include all channels and be 4D (cxyz), not {chunk_size}"
-            )
-
-        self.chunk_size = chunk_size
         self.soma_coords = soma_coords
         self.resolution = resolution
         self.parallel = parallel
@@ -139,7 +134,7 @@ class state_generation:
             [prob_path, fragment_path, tiered_path], ["prob", "frag", "tiered"]
         ):
             if other_im is not None:
-                other_image = zarr.open(other_im, mode="r")
+                other_image = zarr.open_array(other_im, mode="r")
                 if (self.ndims == 4 and other_image.shape != self.image_shape[1:]) or (
                     self.ndims == 3 and other_image.shape != self.image_shape
                 ):
@@ -202,22 +197,33 @@ class state_generation:
 
         image = zarr.open(self.image_path, mode="r")
         prob_fname = str(Path(self.new_layers_dir) / "probs.zarr")
+        self.prob_path = prob_fname
 
         probabilities = zarr.open(
             prob_fname,
             mode="w",
             shape=image.shape[-3:],
-            chunks=image.chunks[1:],
+            chunks=image.chunks[-3:],
             dtype="float64",
         )
-        chunk_size = self.chunk_size
 
-        corners = _get_corners(image.shape[-3:], chunk_size)
-        corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
+        # For a 4 cores, chunk size is the greatest multiple of the image chunks that is less than 2000
+        # Chunk sizes decrease with the number of cores.
+        chunk_size = [
+            c * np.amax([1, int(np.ceil((2000 / c) * (4 / self.parallel) ** (1 / 3)))])
+            for c in self.image_chunks[-3:]
+        ]
 
         print(
             f"Processing image of shape {image.shape} with chunks {image.chunks} into probability image {prob_fname} of shape {probabilities.shape}"
         )
+
+        corners = _get_corners(image.shape[-3:], chunk_size)
+
+        chunk_count = 6
+        corners_chunks = [
+            corners[i : i + chunk_count] for i in range(0, len(corners), chunk_count)
+        ]
 
         for corner_chunk in tqdm(corners_chunks, desc="Computing Ilastik Predictions"):
             Parallel(n_jobs=self.parallel, backend="threading")(
@@ -249,18 +255,23 @@ class state_generation:
                     else:
                         pred = np.squeeze(pred[:, :, :, 1])
 
-                    probabilities[x:x2, y:y2, z:z2] = pred
+                    try:
+                        probabilities[x:x2, y:y2, z:z2] = pred
+                    except:
+                        raise ValueError(
+                            f"predict has size: {pred.shape}*{pred.itemsize}={pred.itemsize*pred.size}"
+                        )
 
             for f in os.listdir(data_bin):
                 fname = os.path.join(data_bin, f)
                 if "image" in f or "Probabilities" in f:
                     os.remove(fname)
 
-        self.prob_path = prob_fname
-
-    def _get_frag_specifications(self) -> list:
+    def _get_frag_specifications(self, chunk_vol: int = None) -> list:
         image = zarr.open(self.image_path, mode="r")
-        chunk_size = self.chunk_size
+        chunk_size = [
+            c * np.amax([1, int(np.ceil(200 / c))]) for c in self.image_chunks[-3:]
+        ]
         soma_coords = self.soma_coords
 
         specifications = []
@@ -275,7 +286,7 @@ class state_generation:
                     for soma_coord in soma_coords:
                         if (
                             np.less_equal([x, y, z], soma_coord).all()
-                            and np.less_equal(
+                            and np.less(
                                 soma_coord,
                                 [x2, y2, z2],
                             ).all()
@@ -289,6 +300,13 @@ class state_generation:
                             "soma_coords": soma_coords_new,
                         }
                     )
+
+        if chunk_vol is not None:
+            set_size = int(np.ceil(chunk_vol / np.product(chunk_size)))
+            specifications = [
+                specifications[i : i + set_size]
+                for i in np.arange(0, len(specifications), set_size)
+            ]
 
         return specifications
 
@@ -305,7 +323,7 @@ class state_generation:
         Returns:
             tuple: tuple containing corner coordinates and fragment image
         """
-        threshold = 0.9
+        threshold = 0.5
 
         prob = zarr.open(self.prob_path, mode="r")
 
@@ -368,32 +386,40 @@ class state_generation:
             mode="w",
             shape=probs.shape,
             chunks=probs.chunks,
-            dtype="uint16",
+            dtype="uint32",
         )
 
         print(f"Constructing fragment image {frag_fname} of shape {fragments.shape}")
 
-        specifications = self._get_frag_specifications()
-
-        results = Parallel(n_jobs=self.parallel, backend="threading")(
-            delayed(self._split_frags_thread)(
-                specification["corner1"],
-                specification["corner2"],
-                specification["soma_coords"],
-            )
-            for specification in tqdm(specifications, desc="Splitting fragments...")
+        specification_sets = self._get_frag_specifications(
+            chunk_vol=np.product([200, 200, 100000])
         )
-
         max_label = 0
-        for result in tqdm(results, desc="Renaming fragments..."):
-            corner1, corner2, labels = result
-            labels[labels > 0] += max_label
-            max_label = np.amax([max_label, np.amax(labels)])
-            fragments[
-                corner1[0] : corner2[0],
-                corner1[1] : corner2[1],
-                corner1[2] : corner2[2],
-            ] = labels
+
+        for specifications in tqdm(
+            specification_sets, desc="Chunking fragment generation..."
+        ):
+            results = Parallel(n_jobs=self.parallel, backend="threading")(
+                delayed(self._split_frags_thread)(
+                    specification["corner1"],
+                    specification["corner2"],
+                    specification["soma_coords"],
+                )
+                for specification in tqdm(
+                    specifications, desc="Splitting fragments...", leave=False
+                )
+            )
+
+            for result in tqdm(results, desc="Renaming fragments..."):
+                corner1, corner2, labels = result
+                labels[labels > 0] += max_label
+                max_label = np.amax([max_label, np.amax(labels)])
+                fragments[
+                    corner1[0] : corner2[0],
+                    corner1[1] : corner2[1],
+                    corner1[2] : corner2[2],
+                ] = labels
+
         print(f"*****************Number of components: {max_label}*******************")
 
         self.fragment_path = frag_fname
@@ -510,23 +536,30 @@ class state_generation:
 
         self.kde = kde
 
-        specifications = self._get_frag_specifications()
-
-        results = Parallel(n_jobs=self.parallel, backend="threading")(
-            delayed(self._compute_image_tiered_thread)(
-                specification["corner1"],
-                specification["corner2"],
-            )
-            for specification in tqdm(specifications, desc="Computing tiered image...")
+        specification_sets = self._get_frag_specifications(
+            chunk_vol=np.product([200, 200, 100000])
         )
 
-        for result in results:
-            corner1, corner2, image_tiered = result
-            tiered[
-                corner1[0] : corner2[0],
-                corner1[1] : corner2[1],
-                corner1[2] : corner2[2],
-            ] = image_tiered
+        for specifications in tqdm(
+            specification_sets, desc="Chunking tiered image generation..."
+        ):
+            results = Parallel(n_jobs=self.parallel, backend="threading")(
+                delayed(self._compute_image_tiered_thread)(
+                    specification["corner1"],
+                    specification["corner2"],
+                )
+                for specification in tqdm(
+                    specifications, desc="Computing tiered image...", leave=False
+                )
+            )
+
+            for result in results:
+                corner1, corner2, image_tiered = result
+                tiered[
+                    corner1[0] : corner2[0],
+                    corner1[1] : corner2[1],
+                    corner1[2] : corner2[2],
+                ] = image_tiered
 
         self.tiered_path = tiered_fname
 
@@ -828,17 +861,20 @@ class state_generation:
 
         self.states_path = states_fname
 
-    def compute_edge_weights(self) -> None:
+    def compute_edge_weights(self, frag_path=None) -> None:
         """Create viterbrain object and compute edge weights"""
         viterbrain_fname = str(Path(self.new_layers_dir) / "viterbrain.pickle")
 
         with open(self.states_path, "rb") as handle:
             G = pickle.load(handle)
 
+        if frag_path is None:
+            frag_path = self.fragment_path
+
         viterbrain = ViterBrain(
             G,
             self.tiered_path,
-            fragment_path=self.fragment_path,
+            fragment_path=frag_path,
             resolution=self.resolution,
             coef_curv=1000,
             coef_dist=10,
@@ -846,11 +882,7 @@ class state_generation:
             parallel=self.parallel,
         )
 
-        viterbrain.compute_all_costs_dist(
-            frag_frag_func=viterbrain.frag_frag_dist,
-            frag_soma_func=viterbrain.frag_soma_dist,
-        )
-
+        viterbrain.compute_all_costs_dist()
         viterbrain.compute_all_costs_int()
 
         print(f"# Edges: {viterbrain.nxGraph.number_of_edges()}")

@@ -8,6 +8,7 @@ from brainlit.BrainLine.parse_ara import build_tree
 from tqdm import tqdm
 from brainlit.BrainLine.imports import *
 import json
+import zarr
 
 
 def download_subvolumes(
@@ -45,7 +46,6 @@ def download_subvolumes(
         data_dir = Path(data_dir)
 
     base_dir = data_dir / f"brain{brain_id}" / dataset_to_save
-    antibody_layer, background_layer, endogenous_layer = layer_names
 
     vols = []
     if "base_s3" in brain2paths[brain_id].keys():

@@ -154,7 +154,9 @@ def plot_results(
             brain_name = brain_id
         base_dir = data_dir + f"/brain{brain_name}/{dset}/"
         data_files = _find_sample_names(base_dir, dset="", add_dir=True)
-        test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
+        test_files = [
+            file[: file.rfind(".")] + "_Probabilities.h5" for file in data_files
+        ]
 
         best_fscore = 0
         best_thresh = -1
@@ -316,7 +318,7 @@ def examine_threshold(
     base_dir = data_dir + f"/brain{brain_id}/{dset}/"
 
     data_files = _find_sample_names(base_dir, dset="", add_dir=True)
-    test_files = [file.split(".")[0] + "_Probabilities.h5" for file in data_files]
+    test_files = [file[: file.rfind(".")] + "_Probabilities.h5" for file in data_files]
 
     size_thresh = 500
 
