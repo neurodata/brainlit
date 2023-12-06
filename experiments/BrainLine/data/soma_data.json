@@ -297,6 +297,17 @@
             "subtype": "gad2 vgat",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=WKud4lZHk6AKRw"
         },
+        "MS50_v2": {
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_11_21/MS50/",
+            "base_local": "precomputed://file:///mnt/data/Neuroglancer_Data/2023_11_21/MS50/",
+            "val_info": {
+                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=YvzL4sHjs4vcPw",
+                "somas_layer": "soma_val",
+                "nonsomas_layer": "nonsoma_val"
+            },
+            "subtype": "gad2 vgat",
+            "somas_atlas_url": ""
+        },
         "MS39": {
             "base_local": "precomputed://file:///mnt/data/Neuroglancer_Data/2023_07_28/MS39/",
             "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_07_28/MS39/",

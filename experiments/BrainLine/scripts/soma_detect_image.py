@@ -9,12 +9,12 @@ Inputs
 # -dir_base
 # data_dir and results_dir ARE CLEAR
 # threshold IS CORRECT
-brain = "MS21"
+brain = "MS50_v2"
 antibody_layer = "Ch_647"
 background_layer = "Ch_561"
 endogenous_layer = "Ch_488"
 
-threshold = 0.52  # threshold to use for ilastik
+threshold = 0.62  # threshold to use for ilastik
 brainline_exp_dir = Path(os.getcwd()) / Path(__file__).parents[1]
 data_dir = (
     brainline_exp_dir / "data" / "brainr_temp"
@@ -32,16 +32,16 @@ ilastik_project = brainline_exp_dir / "data" / "models" / "soma" / "matt_soma_ra
 
 
 min_coords = [
-    1024,
+    -1,
     -1,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
 max_coords = [
-    7000,
-    -1,
+    6119,
+    9359,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
-ncpu = 2  # 16  # number of cores to use for detection
+ncpu = 3  # 16  # number of cores to use for detection
 chunk_size = [1024, 1024, 1024]  # [256, 256, 300]
 
 """ 
