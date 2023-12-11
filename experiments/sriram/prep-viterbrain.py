@@ -72,7 +72,6 @@ sg = state_generation(
     new_layers_dir=project_path,
     ilastik_program_path=ilastik_program_path,
     ilastik_project_path=ilastik_project_path,
-    chunk_size=chunk_size,
     parallel=parallel,
     resolution=[
         resolution[2] / 1000,
