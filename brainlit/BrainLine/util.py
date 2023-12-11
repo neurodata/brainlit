@@ -90,8 +90,8 @@ def download_subvolumes(
             images = []
             for vol in vols:
                 if vol == "zero":
-                    image = np.zeros([2*radius-1 for k in range(3)], dtype=dtype)
-                else: 
+                    image = np.zeros([2 * radius - 1 for k in range(3)], dtype=dtype)
+                else:
                     image = vol[
                         center[0] - radius + 1 : center[0] + radius,
                         center[1] - radius + 1 : center[1] + radius,
@@ -99,7 +99,7 @@ def download_subvolumes(
                     ]
                     image = image[:, :, :, 0]
                 images.append(image)
-           
+
             image = np.squeeze(np.stack(images, axis=0))
 
             fname = (
@@ -316,6 +316,7 @@ def _fold(image):
     left = left + np.flip(right, axis=1)
     return left
 
+
 def create_transformed_mask_info(brain, data_file):
     atlas_vol = CloudVolume(
         "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017"
@@ -326,7 +327,7 @@ def create_transformed_mask_info(brain, data_file):
     brain2paths = data["brain2paths"]
     layer_path = brain2paths[brain]["base_s3"] + "axon_mask_transformed"
     print(f"Writing info file at {layer_path}")
-    
+
     info = CloudVolume.create_new_info(
         num_channels=1,
         layer_type="image",
@@ -339,5 +340,3 @@ def create_transformed_mask_info(brain, data_file):
     )
     vol_mask = CloudVolume(layer_path, info=info)
     vol_mask.commit_info()
-
-

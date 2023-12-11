@@ -123,7 +123,7 @@ class SomaDistribution(BrainDistribution):
         ontology_file: str,
         show_plots: bool = True,
         bootstrap: int = 0,
-        shuffle: bool = False
+        shuffle: bool = False,
     ):
         super().__init__(brain_ids, data_file, ontology_file)
         self.show_plots = show_plots
@@ -136,9 +136,8 @@ class SomaDistribution(BrainDistribution):
             for brain_id in brain_ids:
                 subtypes.append(self.brain2paths[brain_id]["subtype"])
             random.shuffle(subtypes)
-            for subtype, brain_id in zip(subtypes,brain_ids):
+            for subtype, brain_id in zip(subtypes, brain_ids):
                 self.brain2paths[brain_id]["subtype"] = subtype
-
 
         if bootstrap > 0:
             new_ids = []
@@ -148,14 +147,13 @@ class SomaDistribution(BrainDistribution):
                     name = f"{brain_id}-{bootstrap_iter}"
                     n = atlas_points[brain_id].shape[0]
                     sample = np.random.randint(0, n, size=n)
-                    pts = atlas_points[brain_id][sample,:]
+                    pts = atlas_points[brain_id][sample, :]
 
                     self.atlas_points[name] = pts
                     new_ids.append(name)
                     self.subtype_counts[subtype] += 1
                     self.brain2paths[name] = {"subtype": subtype}
             self.brain_ids += new_ids
-
 
         id_to_regioncounts_l = self._get_regions(atlas_points, side="l")
         self.id_to_regioncounts = id_to_regioncounts_l
@@ -274,7 +272,9 @@ class SomaDistribution(BrainDistribution):
 
         slice = np.squeeze(vol_atlas[z, :, :])
         newslice, borders, half_width = self._slicetolabels(slice, fold_on=fold_on)
-        heatmap = np.zeros([borders.shape[0], borders.shape[1], depth_radius*2+1, 3])
+        heatmap = np.zeros(
+            [borders.shape[0], borders.shape[1], depth_radius * 2 + 1, 3]
+        )
 
         if self.show_plots:
             if plot_type == "napari":
@@ -311,9 +311,9 @@ class SomaDistribution(BrainDistribution):
                         im_coord[1] = 2 * half_width - im_coord[1]
 
                     fg_points.append([im_coord[0], im_coord[1]])
-                    heatmap[
-                        int(im_coord[0]), int(im_coord[1]), depth, channel
-                    ] += 1 /subtype_counts[gtype]
+                    heatmap[int(im_coord[0]), int(im_coord[1]), depth, channel] += (
+                        1 / subtype_counts[gtype]
+                    )
             if self.show_plots:
                 if plot_type == "napari":
                     v.add_points(
@@ -339,20 +339,41 @@ class SomaDistribution(BrainDistribution):
         if self.show_plots:
             if plot_type == "napari":
                 for c in range(3):
-                    heatmap[:, :, :, c] = ndi.gaussian_filter(heatmap[:, :, :, c], sigma=3)
-                v.add_image(heatmap[:,:,depth_radius,:], scale=[10, 10], name=f"Heatmap")  # , rgb=True)
+                    heatmap[:, :, :, c] = ndi.gaussian_filter(
+                        heatmap[:, :, :, c], sigma=3
+                    )
+                v.add_image(
+                    heatmap[:, :, depth_radius, :], scale=[10, 10], name=f"Heatmap"
+                )  # , rgb=True)
 
-                
-                for subtype1, subtype2 in zip(["tph2 gad2", "tph2 gad2", "tph2 vglut3"], ["tph2 vglut3", "gad2 vgat", "gad2 vgat"]):
-                    diffpos = heatmap[:,:,depth_radius,channel_map[subtype_colors[subtype1]]] - heatmap[:,:,depth_radius,channel_map[subtype_colors[subtype2]]]
+                for subtype1, subtype2 in zip(
+                    ["tph2 gad2", "tph2 gad2", "tph2 vglut3"],
+                    ["tph2 vglut3", "gad2 vgat", "gad2 vgat"],
+                ):
+                    diffpos = (
+                        heatmap[
+                            :, :, depth_radius, channel_map[subtype_colors[subtype1]]
+                        ]
+                        - heatmap[
+                            :, :, depth_radius, channel_map[subtype_colors[subtype2]]
+                        ]
+                    )
                     diffneg = np.copy(diffpos)
-                    diffpos[diffpos<0] = 0
-                    diffneg[diffneg>0] = 0
+                    diffpos[diffpos < 0] = 0
+                    diffneg[diffneg > 0] = 0
                     diffneg = np.abs(diffneg)
-                    heatdiff = 0*heatmap
-                    heatdiff[:,:,depth_radius, channel_map[subtype_colors[subtype1]]] = diffpos
-                    heatdiff[:,:,depth_radius, channel_map[subtype_colors[subtype2]]] = diffneg
-                    v.add_image(heatdiff[:,:,depth_radius,:], scale=[10, 10], name=f"{subtype1} - {subtype2}")  # , rgb=True)
+                    heatdiff = 0 * heatmap
+                    heatdiff[
+                        :, :, depth_radius, channel_map[subtype_colors[subtype1]]
+                    ] = diffpos
+                    heatdiff[
+                        :, :, depth_radius, channel_map[subtype_colors[subtype2]]
+                    ] = diffneg
+                    v.add_image(
+                        heatdiff[:, :, depth_radius, :],
+                        scale=[10, 10],
+                        name=f"{subtype1} - {subtype2}",
+                    )  # , rgb=True)
                 v.add_labels(borders * 2, scale=[10, 10], name=f"z={z}")
 
                 v.scale_bar.unit = "um"
@@ -450,24 +471,24 @@ class SomaDistribution(BrainDistribution):
             "hue": "Subtype",
             "data": df,
             # "jitter": False,
-            "dodge": True
+            "dodge": True,
         }
 
         sns.set(font_scale=2)
-        bplot = sns.stripplot(ax=axes[0,0], orient="h", legend=False, **fig_args)
-        fig_args["boxprops"] = {'facecolor':'none'}
-        bplot = sns.boxplot(ax=axes[0,0], orient="h", **fig_args)
+        bplot = sns.stripplot(ax=axes[0, 0], orient="h", legend=False, **fig_args)
+        fig_args["boxprops"] = {"facecolor": "none"}
+        bplot = sns.boxplot(ax=axes[0, 0], orient="h", **fig_args)
         bplot.set_xscale("log")
 
         fig_args.pop("dodge")
         fig_args.pop("boxprops")
         fig_args["style"] = "Brain ID"
-        sns.scatterplot(ax=axes[1,0], **fig_args)
+        sns.scatterplot(ax=axes[1, 0], **fig_args)
         bplot.set_xscale("log")
         fig_args.pop("style")
 
         if len(subtypes) > 1:
-            annotator = self._configure_annotator(df, axes[0,0], "Somas (#)")
+            annotator = self._configure_annotator(df, axes[0, 0], "Somas (#)")
             annotator.new_plot(bplot, orient="h", plot="boxplot", **fig_args)
             annotator.apply_and_annotate()
 
@@ -475,45 +496,47 @@ class SomaDistribution(BrainDistribution):
         fig_args["x"] = "Percent of Total Somas (%)"
         fig_args["dodge"] = True
 
-        bplot = sns.stripplot(ax=axes[0,1], orient="h", legend=False, **fig_args)
-        fig_args["boxprops"] = {'facecolor':'none'}
-        bplot = sns.boxplot(ax=axes[0,1], orient="h", **fig_args)
+        bplot = sns.stripplot(ax=axes[0, 1], orient="h", legend=False, **fig_args)
+        fig_args["boxprops"] = {"facecolor": "none"}
+        bplot = sns.boxplot(ax=axes[0, 1], orient="h", **fig_args)
         bplot.set_xscale("log")
 
         fig_args.pop("dodge")
         fig_args.pop("boxprops")
         fig_args["style"] = "Brain ID"
-        sns.scatterplot(ax=axes[1,1], **fig_args)
+        sns.scatterplot(ax=axes[1, 1], **fig_args)
         bplot.set_xscale("log")
         fig_args.pop("style")
 
         if len(subtypes) > 1:
             annotator = self._configure_annotator(
-                df, axes[0,1], "Percent of Total Somas (%)"
+                df, axes[0, 1], "Percent of Total Somas (%)"
             )
             annotator.new_plot(bplot, orient="h", plot="boxplot", **fig_args)
             annotator.apply_and_annotate()
 
         # third panel
         if normalize_region >= 0:
-            fig_args["x"]= "Normalized Somas"
+            fig_args["x"] = "Normalized Somas"
             fig_args["dodge"] = True
 
             sns.set(font_scale=2)
-            bplot = sns.stripplot(ax=axes[0,2], orient="h", legend=False, **fig_args)
-            fig_args["boxprops"] = {'facecolor':'none'}
-            bplot = sns.boxplot(ax=axes[0,2], orient="h", **fig_args)
+            bplot = sns.stripplot(ax=axes[0, 2], orient="h", legend=False, **fig_args)
+            fig_args["boxprops"] = {"facecolor": "none"}
+            bplot = sns.boxplot(ax=axes[0, 2], orient="h", **fig_args)
             bplot.set_xscale("log")
 
             fig_args.pop("dodge")
             fig_args.pop("boxprops")
             fig_args["style"] = "Brain ID"
-            sns.scatterplot(ax=axes[1,2], **fig_args)
+            sns.scatterplot(ax=axes[1, 2], **fig_args)
             bplot.set_xscale("log")
             fig_args.pop("style")
 
             if len(subtypes) > 1:
-                annotator = self._configure_annotator(df, axes[0,2], "Normalized Somas")
+                annotator = self._configure_annotator(
+                    df, axes[0, 2], "Normalized Somas"
+                )
                 annotator.new_plot(bplot, orient="h", plot="boxplot", **fig_args)
                 annotator.apply_and_annotate()
 
@@ -655,8 +678,10 @@ class SomaDistribution(BrainDistribution):
     def _configure_annotator(self, df, axis, ind_variable: str):
         subtype_counts = self._get_subtype_counts()
         test = "Mann-Whitney"
-        test = StatTest(_log_ttest_ind, test_long_name='Log t-test_ind', test_short_name='log-t')
-        #test = "t-test_ind"
+        test = StatTest(
+            _log_ttest_ind, test_long_name="Log t-test_ind", test_short_name="log-t"
+        )
+        # test = "t-test_ind"
         correction = "fdr_by"
 
         pairs = []
@@ -698,7 +723,7 @@ class SomaDistribution(BrainDistribution):
 
         return annotator
 
-    def dcorr_test(self, subtype1, subtype2, bin_size = [2000,2000,2000]):
+    def dcorr_test(self, subtype1, subtype2, bin_size=[2000, 2000, 2000]):
         brain2paths = self.brain2paths
         brain_ids = self.brain_ids
         atlas_points = self.atlas_points
@@ -719,24 +744,30 @@ class SomaDistribution(BrainDistribution):
             else:
                 continue
 
-            blocks = np.zeros([int(s / b) + 1 for s,b in zip(shp, bin_size_vox)])
+            blocks = np.zeros([int(s / b) + 1 for s, b in zip(shp, bin_size_vox)])
             points = atlas_points[brain_id]
             for xi, x in enumerate(np.arange(0, shp[0], bin_size_vox[0])):
                 for yi, y in enumerate(np.arange(0, shp[1], bin_size_vox[1])):
                     for zi, z in enumerate(np.arange(0, shp[2], bin_size_vox[2])):
-                        bin_points = points[(points[:,0] >= x) & (points[:,0] < x+bin_size_vox[0]) & (points[:,1] >= y) & (points[:,1] < y+bin_size_vox[1]) & (points[:,2] >= z) & (points[:,2] < z+bin_size_vox[2]),:]
+                        bin_points = points[
+                            (points[:, 0] >= x)
+                            & (points[:, 0] < x + bin_size_vox[0])
+                            & (points[:, 1] >= y)
+                            & (points[:, 1] < y + bin_size_vox[1])
+                            & (points[:, 2] >= z)
+                            & (points[:, 2] < z + bin_size_vox[2]),
+                            :,
+                        ]
                         blocks[xi, yi, zi] = bin_points.shape[0]
                         # raise ValueError()
-            vector = np.array(blocks.flatten(), dtype='float')
+            vector = np.array(blocks.flatten(), dtype="float")
             vector /= np.sum(vector)
 
             vectors.append(vector)
         subtypes = np.array(subtypes)
         vectors = np.array(vectors)
 
-
         print(dcor.independence.distance_covariance_test(subtypes, vectors))
-
 
         z = 800
         if "filepath" in brain2paths["atlas"].keys():
@@ -747,8 +778,14 @@ class SomaDistribution(BrainDistribution):
         slice = np.squeeze(vol_atlas[z, :, :])
         newslice, borders, half_width = self._slicetolabels(slice, fold_on=False)
         v = napari.Viewer()
-        v.add_image(np.squeeze(blocks[int(10*z / bin_size[0]),:,:]), scale=[bin_size[1], bin_size[2]], name="block")
-        v.add_labels(borders * 2, scale=[10, 10], name=f"{subtype1} vs {subtype2} z={z}")
+        v.add_image(
+            np.squeeze(blocks[int(10 * z / bin_size[0]), :, :]),
+            scale=[bin_size[1], bin_size[2]],
+            name="block",
+        )
+        v.add_labels(
+            borders * 2, scale=[10, 10], name=f"{subtype1} vs {subtype2} z={z}"
+        )
 
         v.scale_bar.unit = "um"
         v.scale_bar.visible = True
@@ -887,7 +924,7 @@ def collect_regional_segmentation(
         os.makedirs(outdir)
     else:
         print(f"Downloaded data will be stored in {outdir}")
-        
+
     outdir = Path(outdir)
     with open(data_file) as f:
         data = json.load(f)
@@ -897,7 +934,7 @@ def collect_regional_segmentation(
     if s3_reg:
         dir_base_s3 = brain2paths[brain_id]["base_s3"]
     else:
-        dir_base_s3=dir_base_mask
+        dir_base_s3 = dir_base_mask
 
     dir = os.path.join(dir_base_mask, "axon_mask")
     vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
@@ -926,6 +963,7 @@ def collect_regional_segmentation(
     outpath = outdir / fname
     with open(outpath, "wb") as f:
         pickle.dump(volumes, f)
+
 
 class AxonDistribution(BrainDistribution):
     """Generates visualizations of results of axon segmentations of a set of brains. Implements BrainDistribution.
@@ -1169,7 +1207,7 @@ class AxonDistribution(BrainDistribution):
 
         sns.set(font_scale=2)
         bplot = sns.stripplot(ax=axes[0], orient="h", legend=False, **fig_args)
-        fig_args["boxprops"] = {'facecolor':'none'}
+        fig_args["boxprops"] = {"facecolor": "none"}
         bplot = sns.boxplot(ax=axes[0], orient="h", **fig_args)
         bplot.set_xscale("log")
 
@@ -1189,7 +1227,7 @@ class AxonDistribution(BrainDistribution):
         }
 
         bplot = sns.stripplot(ax=axes[1], orient="h", legend=False, **fig_args)
-        fig_args["boxprops"] = {'facecolor':'none'}
+        fig_args["boxprops"] = {"facecolor": "none"}
         bplot = sns.boxplot(ax=axes[1], orient="h", **fig_args)
         bplot.set_xscale("log")
 
@@ -1213,7 +1251,7 @@ class AxonDistribution(BrainDistribution):
 
             sns.set(font_scale=2)
             bplot = sns.stripplot(ax=axes[2], orient="h", legend=False, **fig_args)
-            fig_args["boxprops"] = {'facecolor':'none'}
+            fig_args["boxprops"] = {"facecolor": "none"}
             bplot = sns.boxplot(ax=axes[2], orient="h", **fig_args)
             bplot.set_xscale("log")
 

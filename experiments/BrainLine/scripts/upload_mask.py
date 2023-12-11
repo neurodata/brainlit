@@ -8,7 +8,9 @@ import os
 from tqdm import tqdm
 from cloudvolume import EmptyVolumeException
 
-local_vol = CloudVolume("precomputed://file:///mnt/data/Neuroglancer_Data/2023_04_10/MS12/axon_mask")
+local_vol = CloudVolume(
+    "precomputed://file:///mnt/data/Neuroglancer_Data/2023_04_10/MS12/axon_mask"
+)
 
 brain_id = "MS12"
 antibody_layer = "Ch_647"
@@ -26,7 +28,9 @@ ncpu = 2
 
 
 ilastik_path = "/Applications/ilastik-1.4.0b21-OSX.app/Contents/ilastik-release/run_ilastik.sh"  # "/data/tathey1/matt_wright/ilastik/ilastik-1.4.0rc5-Linux/run_ilastik.sh"  # path to ilastik executable
-ilastik_project = brainline_exp_dir / "data" / "models" / "axon" / "axon_segmentation.ilp"  # "/data/tathey1/matt_wright/ilastik/model1/axon_segmentation.ilp"  # path to ilastik
+ilastik_project = (
+    brainline_exp_dir / "data" / "models" / "axon" / "axon_segmentation.ilp"
+)  # "/data/tathey1/matt_wright/ilastik/model1/axon_segmentation.ilp"  # path to ilastik
 ilastik_path = "/home/user/Documents/ilastik-1.4.0-Linux/run_ilastik.sh"
 
 alli = ApplyIlastik_LargeImage(
@@ -35,7 +39,6 @@ alli = ApplyIlastik_LargeImage(
     ncpu=ncpu,
     data_file=data_file,
 )
-
 
 
 with open(data_file) as f:
@@ -54,7 +57,9 @@ vol = CloudVolume(sample_path, parallel=True, mip=0, fill_missing=True)
 try:
     CloudVolume(mask_dir)
 except:
-    assert np.all([c_ilastik % c_vol == 0 for c_ilastik, c_vol in zip(chunk_size, [128, 128, 2])])
+    assert np.all(
+        [c_ilastik % c_vol == 0 for c_ilastik, c_vol in zip(chunk_size, [128, 128, 2])]
+    )
     alli._make_mask_info(mask_dir, vol, [128, 128, 2])
 
 s3_vol = CloudVolume(mask_dir)
@@ -63,8 +68,14 @@ corners = _get_corners(local_vol.shape, local_vol.chunk_size)
 
 for corner in tqdm(corners):
     try:
-        s3_vol[corner[0][0]:corner[1][0],corner[0][1]:corner[1][1],corner[0][2]:corner[1][2]] = local_vol[corner[0][0]:corner[1][0],corner[0][1]:corner[1][1],corner[0][2]:corner[1][2]]
+        s3_vol[
+            corner[0][0] : corner[1][0],
+            corner[0][1] : corner[1][1],
+            corner[0][2] : corner[1][2],
+        ] = local_vol[
+            corner[0][0] : corner[1][0],
+            corner[0][1] : corner[1][1],
+            corner[0][2] : corner[1][2],
+        ]
     except EmptyVolumeException:
         pass
-
-

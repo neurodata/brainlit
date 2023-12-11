@@ -5,9 +5,7 @@ import os
 """
 Inputs
 """
-brain_ids = [
-    "11537"
-]  # list of sample IDs to be shown
+brain_ids = ["11537"]  # list of sample IDs to be shown
 
 
 brainline_exp_dir = Path(os.getcwd()) / Path(__file__).parents[1]
@@ -22,7 +20,7 @@ min_coords = [
 max_coords = [
     7167,
     10237,
-    -1, # abbreviated
+    -1,  # abbreviated
 ]  # max coords or -1 if you want to process everything along that dimension
 ncpu = 11  # number of cores to use for collection
 s3_reg = True
@@ -45,4 +43,3 @@ for brain in brain_ids:
         max_coords=max_coords,
         s3_reg=s3_reg,
     )
-

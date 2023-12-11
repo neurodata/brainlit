@@ -50,14 +50,19 @@ class ApplyIlastik:
         self.brains = brains
 
     def _apply_ilastik(self, fnames):
-        command = [self.ilastik_path, "--headless", f"--project={self.project_path}"] + fnames
+        command = [
+            self.ilastik_path,
+            "--headless",
+            f"--project={self.project_path}",
+        ] + fnames
 
-        subprocess.run(command,
+        subprocess.run(
+            command,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
 
-    def process_subvols(self, dset: str = 'val', ncpu: int = 6):
+    def process_subvols(self, dset: str = "val", ncpu: int = 6):
         """Apply ilastik to all validation subvolumes of the specified brain ids in the specified directory
 
         Args:
@@ -76,8 +81,11 @@ class ApplyIlastik:
             items_total += _find_sample_names(path, dset="", add_dir=True)
             print(f"Applying ilastik to {items_total}")
 
-            n_images = len(items_total)//ncpu
-            items_chunks = [items_total[i: i+n_images] for i in range(0, len(items_total), n_images)]
+            n_images = len(items_total) // ncpu
+            items_chunks = [
+                items_total[i : i + n_images]
+                for i in range(0, len(items_total), n_images)
+            ]
 
             Parallel(n_jobs=ncpu)(
                 delayed(self._apply_ilastik)(items_chunk)
@@ -172,8 +180,10 @@ def plot_results(
                 elif channel_dim == 3:
                     pred = pred[:, :, :, positive_channel]
                 else:
-                    raise ValueError(f"Channel dimension should be first or last, not {channel_dim}")
-                
+                    raise ValueError(
+                        f"Channel dimension should be first or last, not {channel_dim}"
+                    )
+
                 mask = pred > threshold
                 cntr = [s // 2 for s in mask.shape]
 
@@ -207,7 +217,9 @@ def plot_results(
                                 false_pos += 1
                 elif object_type == "axon":
                     filename_lab_3 = filename[:-17] + "-image_3channel_Labels.h5"
-                    filename_lab_2 = filename[:-17] + "-image_2channel_Labels.h5" #backward compatibility
+                    filename_lab_2 = (
+                        filename[:-17] + "-image_2channel_Labels.h5"
+                    )  # backward compatibility
                     if os.path.isfile(filename_lab_3):
                         filename_lab = filename_lab_3
                     elif os.path.isfile(filename_lab_2):
@@ -332,8 +344,10 @@ def examine_threshold(
         elif channel_dim == 3:
             pred = pred[:, :, :, positive_channel]
         else:
-            raise ValueError(f"Channel dimension should be first or last, not {channel_dim}")
-        
+            raise ValueError(
+                f"Channel dimension should be first or last, not {channel_dim}"
+            )
+
         mask = pred > threshold
         cntr = [s // 2 for s in mask.shape]
 
@@ -362,7 +376,9 @@ def examine_threshold(
                             f = h5py.File(im_fname, "r")
                             im = f.get("image_3channel")
                             viewer = napari.Viewer(ndisplay=3)
-                            viewer.add_image(im[0, :, :, :], name=filename.split("/")[-1])
+                            viewer.add_image(
+                                im[0, :, :, :], name=filename.split("/")[-1]
+                            )
                             viewer.add_image(im[1, :, :, :], name="bg")
                             viewer.add_image(im[2, :, :, :], name="endo")
                             viewer.add_labels(mask)
@@ -399,7 +415,9 @@ def examine_threshold(
                         )
         elif object_type == "axon":
             filename_lab_3 = filename[:-17] + "-image_3channel_Labels.h5"
-            filename_lab_2 = filename[:-17] + "-image_2channel_Labels.h5" #backward compatibility
+            filename_lab_2 = (
+                filename[:-17] + "-image_2channel_Labels.h5"
+            )  # backward compatibility
             if os.path.isfile(filename_lab_3):
                 fname_lab = filename_lab_3
             elif os.path.isfile(filename_lab_2):
@@ -410,7 +428,7 @@ def examine_threshold(
                 gt = gt[0, :, :, :]
             elif channel_dim == 3:
                 gt = gt[:, :, :, 0]
-            
+
             if positive_channel == 1:
                 pos_labels = gt == 2
                 neg_labels = gt == 1
@@ -561,17 +579,22 @@ class ApplyIlastik_LargeImage:
             try:
                 CloudVolume(mask_dir)
             except:
-                assert np.all([c_ilastik % c_vol == 0 for c_ilastik, c_vol in zip(chunk_size, [128, 128, 2])])
+                assert np.all(
+                    [
+                        c_ilastik % c_vol == 0
+                        for c_ilastik, c_vol in zip(chunk_size, [128, 128, 2])
+                    ]
+                )
                 self._make_mask_info(mask_dir, vol, [128, 128, 2])
 
         corners = _get_corners(
             shape, chunk_size, max_coords=max_coords, min_coords=min_coords
         )
 
-
         if self.ncpu == 1:
             for corner in tqdm(corners):
-                self._process_chunk(corner[0],
+                self._process_chunk(
+                    corner[0],
                     corner[1],
                     volume_base_dir_read,
                     volume_base_dir_write,
@@ -579,7 +602,8 @@ class ApplyIlastik_LargeImage:
                     threshold,
                     data_dir,
                     self.object_type,
-                    results_dir,)
+                    results_dir,
+                )
         else:
             Parallel(n_jobs=self.ncpu)(
                 delayed(self._process_chunk)(
@@ -595,7 +619,6 @@ class ApplyIlastik_LargeImage:
                 )
                 for corner in tqdm(corners, leave=False)
             )
-
 
     def _make_mask_info(self, mask_dir: str, vol: CloudVolume, chunk_size: list):
         info = CloudVolume.create_new_info(
@@ -614,7 +637,6 @@ class ApplyIlastik_LargeImage:
         vol_mask = CloudVolume(mask_dir, info=info, compress=False)
         vol_mask.commit_info()
 
-
     def _process_chunk(
         self,
         c1: list,
@@ -626,7 +648,7 @@ class ApplyIlastik_LargeImage:
         data_dir: Path,
         object_type: str,
         results_dir: str = None,
-    ):  
+    ):
         mip = 0
         area_threshold = 500
 
@@ -644,14 +666,12 @@ class ApplyIlastik_LargeImage:
             ims = []
             for vol in vols:
                 if vol == "zero":
-                    im = np.zeros([c2[i]-c1[i] for i in range(3)], dtype = dtype)
+                    im = np.zeros([c2[i] - c1[i] for i in range(3)], dtype=dtype)
                 else:
                     im = np.squeeze(vol[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]])
                 ims.append(im)
 
-            image_3channel = np.squeeze(
-                np.stack(ims, axis=0)
-            )
+            image_3channel = np.squeeze(np.stack(ims, axis=0))
         except:
             print(f"File read error at: {c1}")
             return
@@ -713,7 +733,7 @@ class ApplyIlastik_LargeImage:
                 dir_mask, parallel=1, mip=mip, fill_missing=True, compress=False
             )
             vol_mask[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]] = mask
-        
+
         os.remove(fname)
         os.remove(str(fname.with_suffix("")) + "_Probabilities.h5")
 
