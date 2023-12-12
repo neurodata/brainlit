@@ -35,9 +35,20 @@ def compute_parameterization(positions: np.array) -> np.array:
 
 
 class CubicHermiteChain(PPoly):
-    """A third order spline class (continuous piecewise cubic representation), that is fit to a set of positions and one-sided derivatives. This is not a standard spline class (e.g. b-splines), because the derivatives are not necessarily continuous at the knots.
+    """A third order spline class (continuous piecewise cubic representation), that is fit to a set of positions and one-sided derivatives. This is not a standard spline class (e.g. b-splines), because the derivatives are not necessarily continuous at the knots. A subclass of PPoly, a piecewise polynomial class from scipy.
 
-    A subclass of PPoly, a piecewise polynomial class from scipy.
+    Arguments:
+        x (np.array): Independent variable, shape n.
+        y (np.array): Independent variable, shape n x d.
+        left_dydx (np.array): Derivatives on left sides of cubic segments (i.e. right hand derivatives of knots), shape n-1 x d.
+        right_dy_dx (np.array): Derivatives on right sides of cubic segments (i.e. left hand derivatives of knots), shape n-1 x d.
+        extrapolate (np.array, optional): If bool,  determines whether to extrapolate to out-of-bounds points based on first and last intervals, or to return NaNs. If ‘periodic’, periodic extrapolation is used.
+
+    Attributes:
+        axis:
+
+    Raises:
+        ValueError: Left derivatives (left_dydx) and right derivatives (right_dydx) must have same shape.
     """
 
     def __init__(
@@ -48,21 +59,6 @@ class CubicHermiteChain(PPoly):
         right_dydx: np.array,
         extrapolate=None,
     ):
-        """Initialize object via:
-
-        Parameters
-        ----------
-        x : np.array
-            Independent variable, shape n.
-        y : np.array
-            Dependent variable, shape n x d.
-        left_dydx : np.array
-            Derivatives on left sides of cubic segments (i.e. right hand derivatives of knots), shape n-1 x d.
-        right_dy_dx : np.array
-            Derivatives on right sides of cubic segments (i.e. left hand derivatives of knots), shape n-1 x d.
-        extrapolate : np.array
-            If bool, determines whether to extrapolate to out-of-bounds points based on first and last intervals, or to return NaNs. If ‘periodic’, periodic extrapolation is used. Default is True.
-        """
         if extrapolate is None:
             extrapolate = True
 
@@ -101,11 +97,9 @@ class GeometricGraph(nx.Graph):
         remove_duplicates (bool, optional): Whether to automatically remove consecutive nodes with the same location. Defaults to False. Defaults to False.
 
     Attributes:
-        segments:
-        cycle:
         root: Sample index corresponding to the root node.
-        spline_type:
-        spline_tree:
+        spline_type: Whether splines are b-splines or cubic hermite splines.
+        spline_tree: Tree of splines that model the trace branches.
 
     Raises:
         ValueError: If two nodes in a row in the SWC file have the same location and the user has not opted to remove duplicates.
@@ -115,8 +109,6 @@ class GeometricGraph(nx.Graph):
         self, df: pd.DataFrame = None, root=1, remove_duplicates=False
     ) -> None:
         super(GeometricGraph, self).__init__()
-        self.segments = None
-        self.cycle = None
         self.root = root
         self.spline_type = None
         self.spline_tree = None
@@ -199,19 +191,24 @@ class GeometricGraph(nx.Graph):
     def fit_spline_tree_invariant(
         self, spline_type: Union[BSpline, CubicHermiteSpline] = BSpline, k=3
     ):
-        r"""Construct a spline tree based on the path lengths.
+        """Construct a spline tree based on the path lengths.
 
-        Arguments:
-            spline_type: BSpline or CubicHermiteSpline, spline type that will be fit to the data. BSplines are typically used to fit position data only, and CubicHermiteSplines can only be used if derivative, and independent variable information is also known.
+        Args:
+            spline_type (Union[BSpline, CubicHermiteSpline], optional): spline type that will be fit to the data. BSplines are typically used to fit position data only, and CubicHermiteSplines can only be used if derivative, and independent variable information is also known. Defaults to BSpline.
+            k (int, optional): Order of spline for bsplines. Defaults to 3.
 
         Raises:
-            ValueError: check if every node is unigue in location
-            ValueError: check if every node is assigned to at least one edge
-            ValueError: check if the graph contains undirected cycle(s)
-            ValueErorr: check if the graph has disconnected segment(s)
+            KeyError: Make sure all nodes have loc attribute.
+            ValueError: loc attributes must be flat arrays
+            ValueError: loc attributes must not be empty
+            ValueError: loc attributes must contain 3 coordinates
+            ValueError: loc attributes must be unique for different nodes.
+            ValueError: graph must be connected.
+            ValueError: graph cannot contain cycles.
+            ValueError: graph must be connected.
 
         Returns:
-            spline_tree: nx.DiGraph a parent tree with the longest path in the directed graph
+            nx.DiGraph: graph of splines that model the branches.
         """
 
         # check integrity of 'loc' attributes in the neuron
