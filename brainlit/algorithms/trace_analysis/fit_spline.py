@@ -100,7 +100,9 @@ class GeometricGraph(nx.Graph):
     It extends `nx.Graph` and rejects duplicate node input.
     """
 
-    def __init__(self, df: pd.DataFrame = None, root=1, remove_duplicates=False) -> None:
+    def __init__(
+        self, df: pd.DataFrame = None, root=1, remove_duplicates=False
+    ) -> None:
         super(GeometricGraph, self).__init__()
         self.segments = None
         self.cycle = None
@@ -153,26 +155,32 @@ class GeometricGraph(nx.Graph):
                 self.add_edge(parent, child)
 
     def _remove_duplicate_nodes(self):
-        node_ids = [n for n in self.nodes]
-        LOCs = np.array([np.ndarray.tolist(self.nodes[node]["loc"]) for node in self.nodes])
-        unq, count = np.unique(LOCs, axis=0, return_counts=True)
+        replacements = {}
+        for node in self.nodes:
+            nbrs = self.neighbors(node)
 
-        for duplicate_loc in unq[count>1]:
-            duplicate_ids = node_ids[np.where(np.all(LOCs==duplicate_loc,axis=1))]
-            if len(duplicate_ids) > 2:
-                raise ValueError(f"More than 2 duplicates: {duplicate_ids} at {duplicate_loc}")
-            else:
-                for duplicate_id in duplicate_ids[1:]:
-                    duplicate_nbrs = self.neighbors(duplicate_id)
-                    if len(duplicate_nbrs) > 2:
-                        raise ValueError(f"Duplicate node {duplicate_id} at {duplicate_loc} is a branch point")
-                    else:
-                        parent = np.amin(duplicate_nbrs)
-                        child = np.amax(duplicate_nbrs)
-                        self.add_edge(parent, child)
-                        self.remove_node(duplicate_id)
+            for nbr in nbrs:
+                if np.all(self.nodes[node]["loc"] == self.nodes[nbr]["loc"]):
+                    sorted = np.sort([node, nbr])
+                    replacements[sorted[1]] = sorted[0]
 
+        changes = True
+        while changes:
+            changes = False
+            for key in replacements.keys():
+                replacement = replacements[key]
+                if replacement in replacements:
+                    replacements[key] = replacements[replacement]
+                    changes = True
+        print(replacements)
 
+        for key in replacements.keys():
+            replacement = replacements[key]
+            nbrs = self.neighbors(node)
+            for nbr in nbrs:
+                if nbr != replacement:
+                    self.add_edge(replacement, nbr)
+            self.remove_node(key)
 
     def fit_spline_tree_invariant(
         self, spline_type: Union[BSpline, CubicHermiteSpline] = BSpline, k=3
