@@ -93,11 +93,22 @@ Geometric Graph class
 
 
 class GeometricGraph(nx.Graph):
-    r"""The shape of the neurons are expressed and fitted with splines in this undirected graph class.
+    """The shape of the neurons are expressed and fitted with splines in this undirected graph class. The geometry of the neurons are projected on undirected graphs, based on which the trees of neurons consisted for splines is constructed. It is required that each node has a loc attribute identifying that points location in space, and the location should be defined in 3-dimensional cartesian coordinates. It extends `nx.Graph` and rejects duplicate node input.
 
-    The geometry of the neurons are projected on undirected graphs, based on which the trees of neurons consisted for splines is constructed.
-    It is required that each node has a loc attribute identifying that points location in space, and the location should be defined in 3-dimensional cartesian coordinates.
-    It extends `nx.Graph` and rejects duplicate node input.
+    Arguments:
+        df (pd.DataFrame, optional): Indices, coordinates, and parents of each node in the swc. Defaults to None.
+        root (int, optional): Sample index (in the dataframe) that is the root node. Defaults to 1.
+        remove_duplicates (bool, optional): Whether to automatically remove consecutive nodes with the same location. Defaults to False. Defaults to False.
+
+    Attributes:
+        segments:
+        cycle:
+        root: Sample index corresponding to the root node.
+        spline_type:
+        spline_tree:
+
+    Raises:
+        ValueError: If two nodes in a row in the SWC file have the same location and the user has not opted to remove duplicates.
     """
 
     def __init__(
@@ -117,18 +128,17 @@ class GeometricGraph(nx.Graph):
     ) -> "GeometricGraph":
         """Converts dataframe of swc in voxel coordinates into a GeometricGraph
 
-        Parameters
-        ----------
-        df_neuron : :class:`pandas.DataFrame`
-            Indicies, coordinates, and parents of each node in the swc.
-        remove_duplicates : boolean
-            Whether to automatically remove consecutive nodes with the same location.
-        Returns
-        -------
-        G : :class:`brainlit.algorithms.trace_analysis.fit_spline.GeometricGraph`
-            Neuron from swc represented as GeometricGraph. Coordinates `x,y,z`
-            are accessible in the `loc` attribute.
+        Args:
+            df_neuron (pd.DataFrame): Indices, coordinates, and parents of each node in the swc.
+            remove_duplicates (bool, optional): Whether to automatically remove consecutive nodes with the same location. Defaults to False.
+
+        Raises:
+            ValueError: If two nodes in a row in the SWC file have the same location and the user has not opted to remove duplicates.
+
+        Returns:
+            GeometricGraph: Neuron from swc represented as GeometricGraph. Coordinates `x,y,z` are accessible in the `loc` attribute.
         """
+
         # build graph
         for _, row in df_neuron.iterrows():
             # extract id
