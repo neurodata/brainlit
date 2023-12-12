@@ -100,7 +100,7 @@ class GeometricGraph(nx.Graph):
     It extends `nx.Graph` and rejects duplicate node input.
     """
 
-    def __init__(self, df: pd.DataFrame = None, root=1) -> None:
+    def __init__(self, df: pd.DataFrame = None, root=1, remove_duplicates=False) -> None:
         super(GeometricGraph, self).__init__()
         self.segments = None
         self.cycle = None
@@ -109,6 +109,8 @@ class GeometricGraph(nx.Graph):
         self.spline_tree = None
         if df is not None:
             self.__init_from_df(df)
+        if remove_duplicates:
+            self._remove_duplicate_nodes()
 
     def __init_from_df(self, df_neuron: pd.DataFrame) -> "GeometricGraph":
         """Converts dataframe of swc in voxel coordinates into a GeometricGraph
@@ -149,6 +151,28 @@ class GeometricGraph(nx.Graph):
             parent = int(row["parent"])
             if parent > min(df_neuron["parent"]):
                 self.add_edge(parent, child)
+
+    def _remove_duplicate_nodes(self):
+        node_ids = [n for n in self.nodes]
+        LOCs = np.array([np.ndarray.tolist(self.nodes[node]["loc"]) for node in self.nodes])
+        unq, count = np.unique(LOCs, axis=0, return_counts=True)
+
+        for duplicate_loc in unq[count>1]:
+            duplicate_ids = node_ids[np.where(np.all(LOCs==duplicate_loc,axis=1))]
+            if len(duplicate_ids) > 2:
+                raise ValueError(f"More than 2 duplicates: {duplicate_ids} at {duplicate_loc}")
+            else:
+                for duplicate_id in duplicate_ids[1:]:
+                    duplicate_nbrs = self.neighbors(duplicate_id)
+                    if len(duplicate_nbrs) > 2:
+                        raise ValueError(f"Duplicate node {duplicate_id} at {duplicate_loc} is a branch point")
+                    else:
+                        parent = np.amin(duplicate_nbrs)
+                        child = np.amax(duplicate_nbrs)
+                        self.add_edge(parent, child)
+                        self.remove_node(duplicate_id)
+
+
 
     def fit_spline_tree_invariant(
         self, spline_type: Union[BSpline, CubicHermiteSpline] = BSpline, k=3
