@@ -110,32 +110,25 @@ class GeometricGraph(nx.Graph):
         self.spline_type = None
         self.spline_tree = None
         if df is not None:
-            self.__init_from_df(df)
-        if remove_duplicates:
-            self._remove_duplicate_nodes()
+            self.__init_from_df(df, remove_duplicates=remove_duplicates)
 
-    def __init_from_df(self, df_neuron: pd.DataFrame) -> "GeometricGraph":
+    def __init_from_df(
+        self, df_neuron: pd.DataFrame, remove_duplicates=False
+    ) -> "GeometricGraph":
         """Converts dataframe of swc in voxel coordinates into a GeometricGraph
 
         Parameters
         ----------
         df_neuron : :class:`pandas.DataFrame`
             Indicies, coordinates, and parents of each node in the swc.
+        remove_duplicates : boolean
+            Whether to automatically remove consecutive nodes with the same location.
         Returns
         -------
         G : :class:`brainlit.algorithms.trace_analysis.fit_spline.GeometricGraph`
             Neuron from swc represented as GeometricGraph. Coordinates `x,y,z`
             are accessible in the `loc` attribute.
         """
-
-        # check that there are not duplicate nodes
-        dx = np.expand_dims(np.diff(df_neuron["x"].to_numpy()), axis=0).T
-        dy = np.expand_dims(np.diff(df_neuron["y"].to_numpy()), axis=0).T
-        dz = np.expand_dims(np.diff(df_neuron["z"].to_numpy()), axis=0).T
-        dr = np.concatenate((dx, dy, dz), axis=1)
-        if not all([any(du != 0) for du in dr]):
-            raise ValueError("cannot build GeometricGraph with duplicate nodes")
-
         # build graph
         for _, row in df_neuron.iterrows():
             # extract id
@@ -154,7 +147,18 @@ class GeometricGraph(nx.Graph):
             if parent > min(df_neuron["parent"]):
                 self.add_edge(parent, child)
 
+        if remove_duplicates:
+            self._remove_duplicate_nodes()
+        else:
+            dx = np.expand_dims(np.diff(df_neuron["x"].to_numpy()), axis=0).T
+            dy = np.expand_dims(np.diff(df_neuron["y"].to_numpy()), axis=0).T
+            dz = np.expand_dims(np.diff(df_neuron["z"].to_numpy()), axis=0).T
+            dr = np.concatenate((dx, dy, dz), axis=1)
+            if not all([any(du != 0) for du in dr]) and not remove_duplicates:
+                raise ValueError("cannot build GeometricGraph with duplicate nodes")
+
     def _remove_duplicate_nodes(self):
+        """Collapse consecutive nodes at the same location into a single node"""
         replacements = {}
         for node in self.nodes:
             nbrs = self.neighbors(node)

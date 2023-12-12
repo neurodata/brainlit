@@ -166,43 +166,16 @@ def test_init_from_df(vars_local):
 
 
 def test_remove_duplicates():
-    # test the number of splines is correct
-    neuron = GeometricGraph()
-    # add nodes
-    neuron.add_node(1, loc=np.array([0, 0, 0]))
-    neuron.add_node(2, loc=np.array([100, 0, 0]))
-    neuron.add_node(3, loc=np.array([100, 100, 0]))
-    neuron.add_node(4, loc=np.array([0, 100, 0]))
-    neuron.add_node(
-        5, loc=np.array([0, 0, 0])
-    )  # duplicate w/1 but shouldn't be removed
-    neuron.add_node(6, loc=np.array([0, -100, 0]))
-    neuron.add_node(7, loc=np.array([0, -100, 0]))  # duplicate w/6, should be removed
-    neuron.add_node(8, loc=np.array([0, -200, 0]))
-    neuron.add_node(9, loc=np.array([100, -200, 0]))
-    neuron.add_node(10, loc=np.array([0, -200, 0]))  # duplicate w/8, should be removed=
-    neuron.add_node(11, loc=np.array([0, -300, 0]))
-    neuron.add_node(12, loc=np.array([0, -300, 0]))
-    neuron.add_node(13, loc=np.array([0, -300, 0]))
-    neuron.add_node(14, loc=np.array([0, -300, 0]))
+    x = [0, 100, 100, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0]
+    y = [0, 0, 100, 100, 0, -100, -100, -200, -200, -200, -300, -300, -300, -300]
+    z = [0 for i in x]
+    sample = [i + 1 for i in range(len(x))]
+    parent = [-1, 1, 2, 3, 4, 5, 6, 7, 8, 8, 8, 11, 12, 13]
+    data = {"x": x, "y": y, "z": z, "sample": sample, "parent": parent}
 
-    # add edges
-    neuron.add_edge(1, 2)
-    neuron.add_edge(2, 3)
-    neuron.add_edge(3, 4)
-    neuron.add_edge(4, 5)
-    neuron.add_edge(5, 6)
-    neuron.add_edge(6, 7)
-    neuron.add_edge(7, 8)
-    neuron.add_edge(8, 9)
-    neuron.add_edge(8, 10)
-    neuron.add_edge(8, 11)
-    neuron.add_edge(11, 12)
-    neuron.add_edge(12, 13)
-    neuron.add_edge(13, 14)
+    df = pd.DataFrame(data=data)
 
-    assert len(neuron.nodes) == 14
-    neuron._remove_duplicate_nodes()
+    neuron = GeometricGraph(df=df, remove_duplicates=True)
     assert set(neuron.nodes) == set([1, 2, 3, 4, 5, 6, 8, 9, 11])
 
 
