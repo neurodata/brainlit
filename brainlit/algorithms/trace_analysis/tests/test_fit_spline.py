@@ -83,7 +83,10 @@ def test_fit_spline_tree_invariant_bad_input():
     neuron_duplicate_loc = GeometricGraph()
     neuron_duplicate_loc.add_node(1, loc=np.array([100, 100, 200]))
     neuron_duplicate_loc.add_node(2, loc=np.array([100, 100, 200]))
-    with pytest.raises(ValueError, match=r"there are duplicate nodes"):
+    with pytest.raises(
+        ValueError,
+        match=r"there are duplicate nodes and this object was initialized with remove_duplicates=False",
+    ):
         neuron_duplicate_loc.fit_spline_tree_invariant()
 
     # test edges must be a valid cover of the graph
@@ -138,11 +141,30 @@ def test_init_from_bad_df():
         "parent": [-1, 1],
     }
     df = pd.DataFrame(data=d)
-    print(df)
     with pytest.raises(
         ValueError, match="cannot build GeometricGraph with duplicate nodes"
     ):
         GeometricGraph(df=df)
+
+    # Duplicate connected nodes but they are not consecutive in the dataframe.
+    # So the initialization check will miss this but fit_spline_tree_invariant won't.
+    d = {
+        "sample": [1, 2, 3],
+        "structure": [0, 0, 0],
+        "x": [1, 2, 1],
+        "y": [2, 2, 2],
+        "z": [3, 3, 3],
+        "r": [1, 1, 1],
+        "parent": [-1, 1, 1],
+    }
+    df = pd.DataFrame(data=d)
+    neuron = GeometricGraph(df=df)
+
+    with pytest.raises(
+        ValueError,
+        match="there are duplicate nodes and this object was initialized with remove_duplicates=False",
+    ):
+        neuron.fit_spline_tree_invariant()
 
 
 ##################
@@ -177,6 +199,9 @@ def test_remove_duplicates():
 
     neuron = GeometricGraph(df=df, remove_duplicates=True)
     assert set(neuron.nodes) == set([1, 2, 3, 4, 5, 6, 8, 9, 11])
+    
+    spline_tree = neuron.fit_spline_tree_invariant()
+    assert len(spline_tree.nodes) == 2
 
 
 def test_splNum():

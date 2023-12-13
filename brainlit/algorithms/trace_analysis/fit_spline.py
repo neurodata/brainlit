@@ -100,6 +100,7 @@ class GeometricGraph(nx.Graph):
         root: Sample index corresponding to the root node.
         spline_type: Whether splines are b-splines or cubic hermite splines.
         spline_tree: Tree of splines that model the trace branches.
+        removed_duplicates: Whether connected nodes with the same loc attribute were merged.
 
     Raises:
         ValueError: If two nodes in a row in the SWC file have the same location and the user has not opted to remove duplicates.
@@ -112,6 +113,7 @@ class GeometricGraph(nx.Graph):
         self.root = root
         self.spline_type = None
         self.spline_tree = None
+        self.removed_duplicates = False
         if df is not None:
             self.__init_from_df(df, remove_duplicates=remove_duplicates)
 
@@ -182,11 +184,13 @@ class GeometricGraph(nx.Graph):
 
         for key in replacements.keys():
             replacement = replacements[key]
-            nbrs = self.neighbors(node)
+            nbrs = self.neighbors(key)
             for nbr in nbrs:
                 if nbr != replacement:
                     self.add_edge(replacement, nbr)
             self.remove_node(key)
+
+        self.removed_duplicates = True
 
     def fit_spline_tree_invariant(
         self, spline_type: Union[BSpline, CubicHermiteSpline] = BSpline, k=3
@@ -230,7 +234,14 @@ class GeometricGraph(nx.Graph):
         LOCs.sort()
         unique_LOCs = list(LOC for LOC, _ in itertools.groupby(LOCs))
         if len(LOCs) != len(unique_LOCs):
-            raise ValueError("there are duplicate nodes")
+            if self.removed_duplicates:
+                warnings.warn(
+                    "There are still duplicate locations after removing connected duplicates."
+                )
+            else:
+                raise ValueError(
+                    "there are duplicate nodes and this object was initialized with remove_duplicates=False"
+                )
 
         # check the graph is edge-covering
         if not nx.algorithms.is_edge_cover(self, self.edges):
