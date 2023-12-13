@@ -199,7 +199,7 @@ def test_remove_duplicates():
 
     neuron = GeometricGraph(df=df, remove_duplicates=True)
     assert set(neuron.nodes) == set([1, 2, 3, 4, 5, 6, 8, 9, 11])
-    
+
     spline_tree = neuron.fit_spline_tree_invariant()
     assert len(spline_tree.nodes) == 2
 

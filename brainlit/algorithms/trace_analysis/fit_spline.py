@@ -180,7 +180,6 @@ class GeometricGraph(nx.Graph):
                 if replacement in replacements:
                     replacements[key] = replacements[replacement]
                     changes = True
-        print(replacements)
 
         for key in replacements.keys():
             replacement = replacements[key]
