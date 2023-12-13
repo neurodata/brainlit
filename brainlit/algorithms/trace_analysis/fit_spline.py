@@ -132,24 +132,21 @@ class GeometricGraph(nx.Graph):
         Returns:
             GeometricGraph: Neuron from swc represented as GeometricGraph. Coordinates `x,y,z` are accessible in the `loc` attribute.
         """
-
+        nodes = []
+        edges = []
+        min_parent = min(df_neuron["parent"])
         # build graph
         for _, row in df_neuron.iterrows():
-            # extract id
             id = int(row["sample"])
 
-            # add nodes
-            loc_x = row["x"]
-            loc_y = row["y"]
-            loc_z = row["z"]
-            loc = np.array([loc_x, loc_y, loc_z])
-            self.add_node(id, loc=loc)
+            nodes.append((id, {"loc": np.array([row["x"], row["y"], row["z"]])}))
 
-            # add edges
-            child = id
             parent = int(row["parent"])
-            if parent > min(df_neuron["parent"]):
-                self.add_edge(parent, child)
+            if parent > min_parent:
+                edges.append((parent, id))
+
+        self.add_nodes_from(nodes)
+        self.add_edges_from(edges)
 
         if remove_duplicates:
             self._remove_duplicate_nodes()
