@@ -35,9 +35,20 @@ def compute_parameterization(positions: np.array) -> np.array:
 
 
 class CubicHermiteChain(PPoly):
-    """A third order spline class (continuous piecewise cubic representation), that is fit to a set of positions and one-sided derivatives. This is not a standard spline class (e.g. b-splines), because the derivatives are not necessarily continuous at the knots.
+    """A third order spline class (continuous piecewise cubic representation), that is fit to a set of positions and one-sided derivatives. This is not a standard spline class (e.g. b-splines), because the derivatives are not necessarily continuous at the knots. A subclass of PPoly, a piecewise polynomial class from scipy.
 
-    A subclass of PPoly, a piecewise polynomial class from scipy.
+    Arguments:
+        x (np.array): Independent variable, shape n.
+        y (np.array): Independent variable, shape n x d.
+        left_dydx (np.array): Derivatives on left sides of cubic segments (i.e. right hand derivatives of knots), shape n-1 x d.
+        right_dy_dx (np.array): Derivatives on right sides of cubic segments (i.e. left hand derivatives of knots), shape n-1 x d.
+        extrapolate (np.array, optional): If bool,  determines whether to extrapolate to out-of-bounds points based on first and last intervals, or to return NaNs. If ‘periodic’, periodic extrapolation is used.
+
+    Attributes:
+        axis:
+
+    Raises:
+        ValueError: Left derivatives (left_dydx) and right derivatives (right_dydx) must have same shape.
     """
 
     def __init__(
@@ -48,21 +59,6 @@ class CubicHermiteChain(PPoly):
         right_dydx: np.array,
         extrapolate=None,
     ):
-        """Initialize object via:
-
-        Parameters
-        ----------
-        x : np.array
-            Independent variable, shape n.
-        y : np.array
-            Dependent variable, shape n x d.
-        left_dydx : np.array
-            Derivatives on left sides of cubic segments (i.e. right hand derivatives of knots), shape n-1 x d.
-        right_dy_dx : np.array
-            Derivatives on right sides of cubic segments (i.e. left hand derivatives of knots), shape n-1 x d.
-        extrapolate : np.array
-            If bool, determines whether to extrapolate to out-of-bounds points based on first and last intervals, or to return NaNs. If ‘periodic’, periodic extrapolation is used. Default is True.
-        """
         if extrapolate is None:
             extrapolate = True
 
@@ -93,44 +89,49 @@ Geometric Graph class
 
 
 class GeometricGraph(nx.Graph):
-    r"""The shape of the neurons are expressed and fitted with splines in this undirected graph class.
+    """The shape of the neurons are expressed and fitted with splines in this undirected graph class. The geometry of the neurons are projected on undirected graphs, based on which the trees of neurons consisted for splines is constructed. It is required that each node has a loc attribute identifying that points location in space, and the location should be defined in 3-dimensional cartesian coordinates. It extends `nx.Graph` and rejects duplicate node input.
 
-    The geometry of the neurons are projected on undirected graphs, based on which the trees of neurons consisted for splines is constructed.
-    It is required that each node has a loc attribute identifying that points location in space, and the location should be defined in 3-dimensional cartesian coordinates.
-    It extends `nx.Graph` and rejects duplicate node input.
+    Arguments:
+        df (pd.DataFrame, optional): Indices, coordinates, and parents of each node in the swc. Defaults to None.
+        root (int, optional): Sample index (in the dataframe) that is the root node. Defaults to 1.
+        remove_duplicates (bool, optional): Whether to automatically remove consecutive nodes with the same location. Defaults to False. Defaults to False.
+
+    Attributes:
+        root: Sample index corresponding to the root node.
+        spline_type: Whether splines are b-splines or cubic hermite splines.
+        spline_tree: Tree of splines that model the trace branches.
+        removed_duplicates: Whether connected nodes with the same loc attribute were merged.
+
+    Raises:
+        ValueError: If two nodes in a row in the SWC file have the same location and the user has not opted to remove duplicates.
     """
 
-    def __init__(self, df: pd.DataFrame = None, root=1) -> None:
+    def __init__(
+        self, df: pd.DataFrame = None, root=1, remove_duplicates=False
+    ) -> None:
         super(GeometricGraph, self).__init__()
-        self.segments = None
-        self.cycle = None
         self.root = root
         self.spline_type = None
         self.spline_tree = None
+        self.removed_duplicates = False
         if df is not None:
-            self.__init_from_df(df)
+            self.__init_from_df(df, remove_duplicates=remove_duplicates)
 
-    def __init_from_df(self, df_neuron: pd.DataFrame) -> "GeometricGraph":
+    def __init_from_df(
+        self, df_neuron: pd.DataFrame, remove_duplicates=False
+    ) -> "GeometricGraph":
         """Converts dataframe of swc in voxel coordinates into a GeometricGraph
 
-        Parameters
-        ----------
-        df_neuron : :class:`pandas.DataFrame`
-            Indicies, coordinates, and parents of each node in the swc.
-        Returns
-        -------
-        G : :class:`brainlit.algorithms.trace_analysis.fit_spline.GeometricGraph`
-            Neuron from swc represented as GeometricGraph. Coordinates `x,y,z`
-            are accessible in the `loc` attribute.
-        """
+        Args:
+            df_neuron (pd.DataFrame): Indices, coordinates, and parents of each node in the swc.
+            remove_duplicates (bool, optional): Whether to automatically remove consecutive nodes with the same location. Defaults to False.
 
-        # check that there are not duplicate nodes
-        dx = np.expand_dims(np.diff(df_neuron["x"].to_numpy()), axis=0).T
-        dy = np.expand_dims(np.diff(df_neuron["y"].to_numpy()), axis=0).T
-        dz = np.expand_dims(np.diff(df_neuron["z"].to_numpy()), axis=0).T
-        dr = np.concatenate((dx, dy, dz), axis=1)
-        if not all([any(du != 0) for du in dr]):
-            raise ValueError("cannot build GeometricGraph with duplicate nodes")
+        Raises:
+            ValueError: If two nodes in a row in the SWC file have the same location and the user has not opted to remove duplicates.
+
+        Returns:
+            GeometricGraph: Neuron from swc represented as GeometricGraph. Coordinates `x,y,z` are accessible in the `loc` attribute.
+        """
 
         # build graph
         for _, row in df_neuron.iterrows():
@@ -150,22 +151,67 @@ class GeometricGraph(nx.Graph):
             if parent > min(df_neuron["parent"]):
                 self.add_edge(parent, child)
 
+        if remove_duplicates:
+            self._remove_duplicate_nodes()
+        else:
+            dx = np.expand_dims(np.diff(df_neuron["x"].to_numpy()), axis=0).T
+            dy = np.expand_dims(np.diff(df_neuron["y"].to_numpy()), axis=0).T
+            dz = np.expand_dims(np.diff(df_neuron["z"].to_numpy()), axis=0).T
+            dr = np.concatenate((dx, dy, dz), axis=1)
+            if not all([any(du != 0) for du in dr]) and not remove_duplicates:
+                raise ValueError("cannot build GeometricGraph with duplicate nodes")
+
+    def _remove_duplicate_nodes(self):
+        """Collapse consecutive nodes at the same location into a single node"""
+        replacements = {}
+        for node in self.nodes:
+            nbrs = self.neighbors(node)
+
+            for nbr in nbrs:
+                if np.all(self.nodes[node]["loc"] == self.nodes[nbr]["loc"]):
+                    sorted = np.sort([node, nbr])
+                    replacements[sorted[1]] = sorted[0]
+
+        changes = True
+        while changes:
+            changes = False
+            for key in replacements.keys():
+                replacement = replacements[key]
+                if replacement in replacements:
+                    replacements[key] = replacements[replacement]
+                    changes = True
+
+        for key in replacements.keys():
+            replacement = replacements[key]
+            nbrs = self.neighbors(key)
+            for nbr in nbrs:
+                if nbr != replacement:
+                    self.add_edge(replacement, nbr)
+            self.remove_node(key)
+
+        self.removed_duplicates = True
+
     def fit_spline_tree_invariant(
         self, spline_type: Union[BSpline, CubicHermiteSpline] = BSpline, k=3
     ):
-        r"""Construct a spline tree based on the path lengths.
+        """Construct a spline tree based on the path lengths.
 
-        Arguments:
-            spline_type: BSpline or CubicHermiteSpline, spline type that will be fit to the data. BSplines are typically used to fit position data only, and CubicHermiteSplines can only be used if derivative, and independent variable information is also known.
+        Args:
+            spline_type (Union[BSpline, CubicHermiteSpline], optional): spline type that will be fit to the data. BSplines are typically used to fit position data only, and CubicHermiteSplines can only be used if derivative, and independent variable information is also known. Defaults to BSpline.
+            k (int, optional): Order of spline for bsplines. Defaults to 3.
 
         Raises:
-            ValueError: check if every node is unigue in location
-            ValueError: check if every node is assigned to at least one edge
-            ValueError: check if the graph contains undirected cycle(s)
-            ValueErorr: check if the graph has disconnected segment(s)
+            KeyError: Make sure all nodes have loc attribute.
+            ValueError: loc attributes must be flat arrays
+            ValueError: loc attributes must not be empty
+            ValueError: loc attributes must contain 3 coordinates
+            ValueError: loc attributes must be unique for different nodes.
+            ValueError: graph must be connected.
+            ValueError: graph cannot contain cycles.
+            ValueError: graph must be connected.
 
         Returns:
-            spline_tree: nx.DiGraph a parent tree with the longest path in the directed graph
+            nx.DiGraph: graph of splines that model the branches.
         """
 
         # check integrity of 'loc' attributes in the neuron
@@ -187,7 +233,14 @@ class GeometricGraph(nx.Graph):
         LOCs.sort()
         unique_LOCs = list(LOC for LOC, _ in itertools.groupby(LOCs))
         if len(LOCs) != len(unique_LOCs):
-            raise ValueError("there are duplicate nodes")
+            if self.removed_duplicates:
+                warnings.warn(
+                    "There are still duplicate locations after removing connected duplicates."
+                )
+            else:
+                raise ValueError(
+                    "there are duplicate nodes and this object was initialized with remove_duplicates=False"
+                )
 
         # check the graph is edge-covering
         if not nx.algorithms.is_edge_cover(self, self.edges):

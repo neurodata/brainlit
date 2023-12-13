@@ -11,8 +11,8 @@ import pytest
 @pytest.fixture(scope="module")
 def create_compute_vb(tmp_path_factory, create_vb):
     vb = create_vb
-    vb.compute_all_costs_dist(vb.frag_frag_dist, vb.frag_soma_dist)
-    vb.compute_all_costs_int(vb._line_int)
+    vb.compute_all_costs_dist()
+    vb.compute_all_costs_int()
 
     data_dir = tmp_path_factory.mktemp("data")
     my_test_file = str(data_dir / "viterbrain.pickle")

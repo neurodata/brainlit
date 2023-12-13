@@ -39,6 +39,7 @@ Trace Analysis
 	:members:
 .. autoapiclass:: GeometricGraph
 	:members:
+.. autoapifunction:: compute_parameterization
 
 .. currentmodule:: brainlit.algorithms.detect_somas
 

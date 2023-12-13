@@ -5,6 +5,7 @@ from brainlit.algorithms.trace_analysis.fit_spline import CubicHermiteChain
 from scipy.interpolate import splprep, splev
 from tqdm import tqdm
 from similaritymeasures import frechet_dist
+import time
 
 
 def replace_root(neuron):
@@ -124,7 +125,7 @@ def remove_path(path):
 class ZerothFirstOrderNeuron:
     """Class used to combine a Diffeomorphic Action with an nGauge Neuron."""
 
-    def __init__(self, neuron, da=None, sampling=None):
+    def __init__(self, neuron, da=None, sampling=None, print_time=False):
         """Apply a diffeomorphis action to an nGauge Neuron trace.
 
         Args:
@@ -139,8 +140,15 @@ class ZerothFirstOrderNeuron:
 
         if da is not None:
             DG = self._ground_truth(DG, da)
+
+            t0 = time.time()
             DG = self._zeroth_order(DG, da)
+            t1 = time.time()
             DG = self._first_order(DG, da)
+            t2 = time.time()
+
+            if time:
+                print(f"{t1-t0} for zeroth order, {t2-t1} for first order")
 
         self.DG = DG
 
