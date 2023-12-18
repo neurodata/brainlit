@@ -14,7 +14,7 @@ antibody_layer = "Ch_647"
 background_layer = "Ch_561"
 endogenous_layer = "Ch_488"
 
-threshold = 0.62  # threshold to use for ilastik
+threshold = 0.72  # threshold to use for ilastik
 brainline_exp_dir = Path(os.getcwd()) / Path(__file__).parents[1]
 data_dir = (
     brainline_exp_dir / "data" / "brainr_temp"
@@ -39,8 +39,8 @@ min_coords = [
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
 max_coords = [
-    6119,
-    9359,
+    5957,
+    11000,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
 ncpu = 3  # 16  # number of cores to use for detection
