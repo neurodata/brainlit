@@ -207,10 +207,10 @@ class state_generation:
             dtype="float64",
         )
 
-        # For a 4 cores, chunk size is the greatest multiple of the image chunks that is less than 2000
+        # For a 4 cores, chunk size is the greatest multiple of the image chunks that is less than 1000
         # Chunk sizes decrease with the number of cores.
         chunk_size = [
-            c * np.amax([1, int(np.ceil((2000 / c) * (4 / self.parallel) ** (1 / 3)))])
+            c * np.amax([1, int(np.ceil((1000 / c) * (4 / self.parallel) ** (1 / 3)))])
             for c in self.image_chunks[-3:]
         ]
 
