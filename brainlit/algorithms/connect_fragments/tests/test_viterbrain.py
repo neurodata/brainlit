@@ -9,6 +9,7 @@ from brainlit.algorithms.connect_fragments.viterbrain import (
     _curv_dist,
     _compute_dist_cost,
     _line_int_zero,
+    _line_int_coord,
     _dist_simple,
 )
 from brainlit.preprocessing import image_process
@@ -17,6 +18,23 @@ from numpy.testing import (
     assert_array_equal,
 )
 import copy
+
+
+@pytest.fixture(scope="session")
+def create_im_tiered(tmp_path_factory):
+    data_dir = tmp_path_factory.mktemp("data")
+
+    im_path = data_dir / "image_tiered.zarr"
+
+    z_tiered = zarr.open(
+        im_path, mode="w", shape=(10, 10, 10), chunks=(5, 5, 5), dtype="uint16"
+    )
+    ra = np.zeros((10, 10, 10), dtype="uint16")
+    ra[5, 5, :] = np.arange(10)
+
+    z_tiered[:, :, :] = ra[:, :, :]
+
+    return im_path
 
 
 @pytest.fixture(scope="session")
@@ -484,6 +502,12 @@ def test_line_int_zero(create_vb):
     G = vb.nxGraph
     cost = _line_int_zero(G.nodes[0]["point2"], G.nodes[6]["point1"], tiered_path="")
     assert cost == 0
+
+
+def test_line_int_coord(create_im_tiered):
+    im_path = create_im_tiered
+    sum = _line_int_coord([5, 5, 0], [5, 5, 9], im_path)
+    assert sum == 36
 
 
 def test_viterbrain(create_vb):
