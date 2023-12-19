@@ -7,7 +7,11 @@ from brainlit.algorithms.connect_fragments.viterbrain import (
     ViterBrain,
     explain_viterbrain,
     _curv_dist,
+    _dist_simple,
     _compute_dist_cost,
+    _line_int_zero,
+    _line_int_coord,
+    _compute_int_cost,
 )
 from brainlit.preprocessing import image_process
 import networkx as nx
@@ -15,6 +19,24 @@ from numpy.testing import (
     assert_array_equal,
 )
 import copy
+from networkx import NetworkXNoPath
+
+
+@pytest.fixture(scope="session")
+def create_im_tiered(tmp_path_factory):
+    data_dir = tmp_path_factory.mktemp("data")
+
+    im_path = data_dir / "image_tiered.zarr"
+
+    z_tiered = zarr.open(
+        im_path, mode="w", shape=(10, 10, 10), chunks=(5, 5, 5), dtype="uint16"
+    )
+    ra = np.zeros((10, 10, 10), dtype="uint16")
+    ra[5, 5, :] = np.arange(10)
+
+    z_tiered[:, :, :] = ra[:, :, :]
+
+    return im_path
 
 
 @pytest.fixture(scope="session")
@@ -302,7 +324,7 @@ def create_vb_soma(tmp_path_factory):
 ####################
 
 
-def test_frag_frag_dist_bad_input(create_vb):
+def test_compute_dist_cost(create_vb):
     vb_og = create_vb
     vb = copy.deepcopy(vb_og)
 
@@ -316,34 +338,36 @@ def test_frag_frag_dist_bad_input(create_vb):
     )
     assert result[2] == np.inf
 
+
+def test_curv_dist_bad_input(create_vb):
     # orientation1 of state2 is not unit length
-    vb.nxGraph.nodes[0]["point2"] = [0, 0, 0]
-    vb.nxGraph.nodes[0]["orientation2"] = [1, 0, 0]
-    vb.nxGraph.nodes[2]["point1"] = [1, 0, 0]
-    vb.nxGraph.nodes[2]["orientation1"] = [1, 1, 0]
     with pytest.raises(ValueError):
-        _compute_dist_cost(
-            ((0, vb.nxGraph.nodes[0]), (2, vb.nxGraph.nodes[2])), res=[1, 1, 1]
+        _curv_dist(
+            res=[1, 1, 1],
+            pt1=[0, 0, 0],
+            orientation1=[1, 0, 0],
+            pt2=[1, 0, 0],
+            orientation2=[1, 1, 0],
         )
 
     # nan orientation will give nan curvature
-    vb.nxGraph.nodes[0]["point2"] = [0, 0, 0]
-    vb.nxGraph.nodes[0]["orientation2"] = [np.nan, 0, 0]
-    vb.nxGraph.nodes[2]["point1"] = [1, 0, 0]
-    vb.nxGraph.nodes[2]["orientation1"] = [1, 0, 0]
     with pytest.raises(ValueError):
-        _compute_dist_cost(
-            ((0, vb.nxGraph.nodes[0]), (2, vb.nxGraph.nodes[2])), res=[1, 1, 1]
+        _curv_dist(
+            res=[1, 1, 1],
+            pt1=[0, 0, 0],
+            orientation1=[np.nan, 0, 0],
+            pt2=[1, 0, 0],
+            orientation2=[1, 0, 0],
         )
 
     # identical points will give nan curvature
-    vb.nxGraph.nodes[0]["point2"] = [0, 0, 0]
-    vb.nxGraph.nodes[0]["orientation2"] = [1, 0, 0]
-    vb.nxGraph.nodes[2]["point1"] = [0, 0, 0]
-    vb.nxGraph.nodes[2]["orientation1"] = [1, 0, 0]
     with pytest.raises(ValueError):
-        _compute_dist_cost(
-            ((0, vb.nxGraph.nodes[0]), (2, vb.nxGraph.nodes[2])), res=[1, 1, 1]
+        _curv_dist(
+            res=[1, 1, 1],
+            pt1=[0, 0, 0],
+            orientation1=[1, 0, 0],
+            pt2=[0, 0, 0],
+            orientation2=[1, 0, 0],
         )
 
 
@@ -368,7 +392,7 @@ def test_shortest_path(create_vb):
 ############################
 
 
-def test_frag_frag_dist(create_vb):
+def test_curv_dist(create_vb):
     vb = create_vb
 
     dist, k_cost = _curv_dist(
@@ -442,12 +466,27 @@ def test_frag_frag_dist(create_vb):
     assert k_cost == np.inf
 
 
-def test_frag_frag_dist_simple(create_vb):
+def test_dist_simple(create_vb):
     vb = create_vb
-    cost = vb.frag_frag_dist_simple(state1=0, state2=2)
+    G = vb.nxGraph
+    cost = _dist_simple(
+        res=[1, 1, 1],
+        pt0=G.nodes[0]["point1"],
+        pt1=G.nodes[0]["point2"],
+        orientation1=G.nodes[0]["orientation2"],
+        pt2=G.nodes[2]["point1"],
+        orientation2=G.nodes[2]["orientation1"],
+    )
     assert cost == 24 + 6**2
 
-    cost = vb.frag_frag_dist_simple(state1=0, state2=6)
+    cost = _dist_simple(
+        res=[1, 1, 1],
+        pt0=G.nodes[0]["point1"],
+        pt1=G.nodes[0]["point2"],
+        orientation1=G.nodes[0]["orientation2"],
+        pt2=G.nodes[6]["point1"],
+        orientation2=G.nodes[6]["orientation1"],
+    )
     assert cost == np.inf
 
 
@@ -462,9 +501,28 @@ def test_frag_soma_dist(create_vb_soma):
 
 def test_line_int_zero(create_vb):
     vb = create_vb
-
-    cost = vb._line_int_zero(state1=0, state2=6)
+    G = vb.nxGraph
+    cost = _line_int_zero(G.nodes[0]["point2"], G.nodes[6]["point1"], tiered_path="")
     assert cost == 0
+
+
+def test_line_int_coord(create_im_tiered):
+    im_path = create_im_tiered
+    sum = _line_int_coord([5, 5, 0], [5, 5, 9], im_path)
+    assert sum == 36
+
+
+def test_compute_int_cost(create_vb):
+    vb = create_vb
+    G = vb.nxGraph
+
+    s1, s2 = 0, 1
+    state1_data = (s1, G.nodes[s1])
+    state2_data = (s2, G.nodes[s2])
+
+    s1, s2, cost = _compute_int_cost((state1_data, state2_data), "")
+
+    assert cost == np.inf
 
 
 def test_viterbrain(create_vb):

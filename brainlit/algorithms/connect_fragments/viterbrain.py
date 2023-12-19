@@ -69,6 +69,25 @@ def _curv_dist(
         return dist, k_cost
 
 
+def _dist_simple(
+    res: List[float],
+    pt0: List[int],
+    pt1: List[int],
+    orientation1: List[int],
+    pt2: List[int],
+    orientation2: List[int],
+) -> float:
+    dif = np.multiply(np.subtract(pt2, pt1), res)
+    dist2 = np.linalg.norm(dif)
+    if dist2 > 20:
+        return np.inf
+
+    dif = np.multiply(np.subtract(pt1, pt0), res)
+    dist1 = np.linalg.norm(dif)
+
+    return dist1 + dist2**2
+
+
 def _compute_dist_cost(pair, res, coef_dist=10, coef_curv=1000):
     state1_data = pair[0]
     state1 = state1_data[0]
@@ -81,19 +100,29 @@ def _compute_dist_cost(pair, res, coef_dist=10, coef_curv=1000):
     if state1_dict["fragment"] == state2_dict["fragment"]:
         return (state1, state2, np.inf)
     elif state1_dict["type"] == "fragment" and state2_dict["type"] == "fragment":
+        pt0 = state1_dict["point1"]
         pt1 = state1_dict["point2"]
         orientation1 = state1_dict["orientation2"]
         pt2 = state2_dict["point1"]
         orientation2 = state2_dict["orientation1"]
 
-        dist, k_cost = _curv_dist(
+        cost = _dist_simple(
             res=res,
+            pt0=pt0,
             pt1=pt1,
             orientation1=orientation1,
             pt2=pt2,
             orientation2=orientation2,
         )
-        cost = coef_dist * (dist**2) + coef_curv * k_cost
+
+        # dist, k_cost = _curv_dist(
+        #     res=res,
+        #     pt1=pt1,
+        #     orientation1=orientation1,
+        #     pt2=pt2,
+        #     orientation2=orientation2,
+        # )
+        # cost = coef_dist*(dist**2) + coef_curv*k_cost
         return (state1, state2, cost)
     else:
         raise ValueError("no two fragments?")
@@ -131,6 +160,10 @@ def _line_int_coord(loc1: List[int], loc2: List[int], tiered_path: str):
     return sum
 
 
+def _line_int_zero(loc1: List[int], loc2: List[int], tiered_path: str):
+    return 0
+
+
 def _compute_int_cost(pair, tiered_path):
     state1_data = pair[0]
     state1 = state1_data[0]
@@ -143,9 +176,9 @@ def _compute_int_cost(pair, tiered_path):
     if state1_dict["fragment"] == state2_dict["fragment"]:
         return (state1, state2, np.inf)
     elif state1_dict["type"] == "fragment" and state2_dict["type"] == "fragment":
-        int_cost = _line_int_coord(
+        int_cost = _line_int_zero(
             state1_dict["point2"], state2_dict["point1"], tiered_path=tiered_path
-        )
+        )  # _line_int_coord("") + state2_data["image_cost"]
         return (state1, state2, int_cost)
 
     else:
@@ -205,28 +238,6 @@ class ViterBrain:
             else:
                 comp_to_states[frag] = [node]
         self.comp_to_states = comp_to_states
-
-    def frag_frag_dist_simple(
-        self,
-        state1: int,
-        state2: int,
-        verbose: bool = False,
-    ) -> float:
-        G = self.nxGraph
-        res = self.resolution
-
-        pt1 = G.nodes[state1]["point1"]
-        pt2 = G.nodes[state1]["point2"]
-        pt3 = G.nodes[state2]["point1"]
-        dif = np.multiply(np.subtract(pt3, pt2), res)
-        dist2 = np.linalg.norm(dif)
-        if dist2 > 20:
-            return np.inf
-
-        dif = np.multiply(np.subtract(pt2, pt1), res)
-        dist1 = np.linalg.norm(dif)
-
-        return dist1 + dist2**2
 
     def frag_soma_dist(
         self,
@@ -336,25 +347,6 @@ class ViterBrain:
 
         print(f"{len(G.edges)} edges")
 
-    def _line_int_zero(self, state1: int, state2: int):
-        return 0
-
-    def _line_int(self, state1: int, state2: int = None, pt2: List = None) -> float:
-        """Compute line integral of image likelihood costs between two coordinates
-
-        Args:
-            state1 (int): first state ID.
-            loc2 (int): second state ID.
-
-        Returns:
-            [float]: sum of image likelihood costs
-        """
-        G = self.nxGraph
-        loc1 = G.nodes[state1]["point2"]
-        loc2 = G.nodes[state2]["point1"]
-
-        return self._line_int_coord(loc1, loc2) + G.nodes[state2]["image_cost"]
-
     def compute_all_costs_int(self) -> None:
         """Splits up transition computation tasks then assembles them into networkx graph"""
         parallel = self.parallel
@@ -430,12 +422,8 @@ class ViterBrain:
 
         if min_cost == -1:
             raise nx.NetworkXNoPath(f"No path found between {coord1} and {coord2}")
-
-        # create coordinate list
-        coords = [coord1]
-        if min_cost == -1:
-            print("No valid path found, returning straight line")
         else:
+            coords = [coord1]
             coords.append(list(self.nxGraph.nodes[states[0]]["point2"]))
             for i, state in enumerate(states[1:]):
                 if self.nxGraph.nodes[state]["type"] == "fragment":
@@ -446,7 +434,7 @@ class ViterBrain:
                     if i != len(states) - 2:
                         raise ValueError("Soma state is not last state")
 
-        coords.append(coord2)
+            coords.append(coord2)
 
         return coords
 
