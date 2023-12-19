@@ -178,7 +178,7 @@ def _compute_int_cost(pair, tiered_path):
     elif state1_dict["type"] == "fragment" and state2_dict["type"] == "fragment":
         int_cost = _line_int_zero(
             state1_dict["point2"], state2_dict["point1"], tiered_path=tiered_path
-        )  # _line_int_coord("")
+        )  # _line_int_coord("") + state2_data["image_cost"]
         return (state1, state2, int_cost)
 
     else:
@@ -347,22 +347,6 @@ class ViterBrain:
 
         print(f"{len(G.edges)} edges")
 
-    def _line_int(self, state1: int, state2: int = None, pt2: List = None) -> float:
-        """Compute line integral of image likelihood costs between two coordinates
-
-        Args:
-            state1 (int): first state ID.
-            loc2 (int): second state ID.
-
-        Returns:
-            [float]: sum of image likelihood costs
-        """
-        G = self.nxGraph
-        loc1 = G.nodes[state1]["point2"]
-        loc2 = G.nodes[state2]["point1"]
-
-        return self._line_int_coord(loc1, loc2) + G.nodes[state2]["image_cost"]
-
     def compute_all_costs_int(self) -> None:
         """Splits up transition computation tasks then assembles them into networkx graph"""
         parallel = self.parallel
@@ -438,12 +422,8 @@ class ViterBrain:
 
         if min_cost == -1:
             raise nx.NetworkXNoPath(f"No path found between {coord1} and {coord2}")
-
-        # create coordinate list
-        coords = [coord1]
-        if min_cost == -1:
-            print("No valid path found, returning straight line")
         else:
+            coords = [coord1]
             coords.append(list(self.nxGraph.nodes[states[0]]["point2"]))
             for i, state in enumerate(states[1:]):
                 if self.nxGraph.nodes[state]["type"] == "fragment":
@@ -454,7 +434,7 @@ class ViterBrain:
                     if i != len(states) - 2:
                         raise ValueError("Soma state is not last state")
 
-        coords.append(coord2)
+            coords.append(coord2)
 
         return coords
 

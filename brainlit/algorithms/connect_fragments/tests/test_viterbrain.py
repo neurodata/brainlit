@@ -7,10 +7,11 @@ from brainlit.algorithms.connect_fragments.viterbrain import (
     ViterBrain,
     explain_viterbrain,
     _curv_dist,
+    _dist_simple,
     _compute_dist_cost,
     _line_int_zero,
     _line_int_coord,
-    _dist_simple,
+    _compute_int_cost,
 )
 from brainlit.preprocessing import image_process
 import networkx as nx
@@ -18,6 +19,7 @@ from numpy.testing import (
     assert_array_equal,
 )
 import copy
+from networkx import NetworkXNoPath
 
 
 @pytest.fixture(scope="session")
@@ -508,6 +510,19 @@ def test_line_int_coord(create_im_tiered):
     im_path = create_im_tiered
     sum = _line_int_coord([5, 5, 0], [5, 5, 9], im_path)
     assert sum == 36
+
+
+def test_compute_int_cost(create_vb):
+    vb = create_vb
+    G = vb.nxGraph
+    s1, s2 = 0, 1
+
+    state1_data = (s1, G.nodes[s1])
+    state2_data = (s2, G.nodes[s2])
+
+    s1, s2, cost = _compute_int_cost((state1_data, state2_data), "")
+
+    assert cost == np.inf
 
 
 def test_viterbrain(create_vb):
