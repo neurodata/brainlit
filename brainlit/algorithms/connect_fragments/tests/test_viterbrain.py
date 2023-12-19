@@ -392,7 +392,7 @@ def test_shortest_path(create_vb):
 ############################
 
 
-def test_frag_frag_dist(create_vb):
+def test_curv_dist(create_vb):
     vb = create_vb
 
     dist, k_cost = _curv_dist(
@@ -466,7 +466,7 @@ def test_frag_frag_dist(create_vb):
     assert k_cost == np.inf
 
 
-def test_frag_frag_dist_simple(create_vb):
+def test_dist_simple(create_vb):
     vb = create_vb
     G = vb.nxGraph
     cost = _dist_simple(
@@ -515,8 +515,8 @@ def test_line_int_coord(create_im_tiered):
 def test_compute_int_cost(create_vb):
     vb = create_vb
     G = vb.nxGraph
-    s1, s2 = 0, 1
 
+    s1, s2 = 0, 1
     state1_data = (s1, G.nodes[s1])
     state2_data = (s2, G.nodes[s2])
 
