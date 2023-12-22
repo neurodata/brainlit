@@ -202,26 +202,24 @@ def _find_sample_names(dir, dset="", add_dir=False):
 def _setup_atlas_graph(ontology_json_path: str):
     """Create networkx graph of regions in allen atlas (from ara_structure_ontology.json). Initially uses vikram's code in build_tree, then converts to networkx.
 
+    Args:
+        ontology_json_path (str): path to ontology json.
+
     Returns:
         nx.DiGraph: graph representing hierarchy of allen parcellation.
     """
-    cd = Path(os.path.dirname(__file__))
-
     # create vikram object
     f = json.load(
         open(
-            cd / "data" / "ara_structure_ontology.json",
+            ontology_json_path,
             "r",
         )
     )
 
     tree = build_tree(f)
-    stack = [tree]
 
     # create nx graph
     queue = [tree]
-    cur_level = -1
-    counter = 0
     G = nx.DiGraph()
     max_level = 0
 

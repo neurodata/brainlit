@@ -252,8 +252,7 @@
                 "nonsomas_layer": "nonsoma_val"
             },
             "subtype": "tph2 gad2",
-            "somas_atlas_path": "",
-            "somas_atlas_url": ""
+            "somas_atlas_path": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/wholebrain_results/atlas_somas_MS25_v2/"
         },
         "MS36": {
             "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_13/MS36/",
