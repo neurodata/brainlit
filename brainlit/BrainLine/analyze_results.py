@@ -43,13 +43,20 @@ class BrainDistribution:
         brain_ids (list): List of brain IDs (keys of data json file).
     """
 
-    def __init__(self, brain_ids: list, data_file: str, ontology_file: str):
+    def __init__(self, brain_ids: list, data_file: str, ontology_file: str, fixes_file: str = None):
         self.brain_ids = brain_ids
         with open(data_file) as f:
             data = json.load(f)
         self.brain2paths = data["brain2paths"]
         self.subtype_counts = self._get_subtype_counts()
         self.ontology_file = ontology_file
+
+        if fixes_file == None:
+            self.ontology_fixes = None
+        else:
+            with open(fixes_file) as f:
+                data = json.load(f)
+            self.ontology_fixes = data
 
     def _slicetolabels(self, slice, fold_on: bool = False, atlas_level: int = 5):
         region_graph = _setup_atlas_graph(self.ontology_file)
@@ -121,11 +128,12 @@ class SomaDistribution(BrainDistribution):
         brain_ids: list,
         data_file: str,
         ontology_file: str,
+        fixes_file: str = None,
         show_plots: bool = True,
         bootstrap: int = 0,
         shuffle: bool = False,
     ):
-        super().__init__(brain_ids, data_file, ontology_file)
+        super().__init__(brain_ids, data_file, ontology_file, fixes_file)
         self.show_plots = show_plots
 
         atlas_points = self._retrieve_soma_coords(brain_ids)
@@ -209,6 +217,7 @@ class SomaDistribution(BrainDistribution):
 
     def _get_regions(self, points: dict, side: str = None):
         brain2paths = self.brain2paths
+        ontology_fixes = self.ontology_fixes
         if "filepath" in brain2paths["atlas"].keys():
             vol_atlas = io.imread(brain2paths["atlas"]["filepath"])
         else:
@@ -227,6 +236,9 @@ class SomaDistribution(BrainDistribution):
                     continue
                 try:
                     region = int(vol_atlas[point_int[0], point_int[1], point_int[2]])
+
+                    if ontology_fixes != None and str(region) in ontology_fixes.keys():
+                        region = ontology_fixes[str(region)]["replacement"]
                 except IndexError:
                     continue
                 except OutOfBoundsError:
@@ -566,6 +578,7 @@ class SomaDistribution(BrainDistribution):
                         region_graph.nodes[region][brain_id]
                         + id_to_regioncounts[brain_id][region]
                     )
+                
 
         # propagate counts up the hierarchy
         for brain_id in brain_ids:
@@ -989,9 +1002,10 @@ class AxonDistribution(BrainDistribution):
         data_file: str,
         regional_distribution_dir: str,
         ontology_file: str,
+        fixes_file: str = None,
         show_plots: bool = True,
     ):
-        super().__init__(brain_ids, data_file, ontology_file)
+        super().__init__(brain_ids, data_file, ontology_file, fixes_file)
         self.regional_distribution_dir = regional_distribution_dir
         region_graph, total_axon_vols = self._setup_regiongraph(
             regional_distribution_dir
@@ -1002,6 +1016,7 @@ class AxonDistribution(BrainDistribution):
     def _setup_regiongraph(self, regional_distribution_dir):
         regional_distribution_dir = self.regional_distribution_dir
         brain_ids = self.brain_ids
+        ontology_fixes = self.ontology_fixes
         region_graph = _setup_atlas_graph(self.ontology_file)
         max_level = 0
 
@@ -1023,14 +1038,19 @@ class AxonDistribution(BrainDistribution):
                 quantification_dict = pickle.load(f)
 
             for region in quantification_dict.keys():
-                if region in region_graph.nodes:
-                    region_graph.nodes[region][brain_id + " axon"] = region_graph.nodes[
-                        region
-                    ][brain_id + " axon"] + float(quantification_dict[region][1])
-                    region_graph.nodes[region][
+                if ontology_fixes != None and str(region) in ontology_fixes.keys():
+                    region_idx = ontology_fixes[str(region)]["replacement"]
+                else:
+                    region_idx = region
+
+                if region_idx in region_graph.nodes:
+                    region_graph.nodes[region_idx][brain_id + " axon"] = region_graph.nodes[
+                        region_idx
+                    ][brain_id + " axon"] + float(quantification_dict[region_idx][1])
+                    region_graph.nodes[region_idx][
                         brain_id + " total"
-                    ] = region_graph.nodes[region][brain_id + " total"] + float(
-                        quantification_dict[region][0]
+                    ] = region_graph.nodes[region_idx][brain_id + " total"] + float(
+                        quantification_dict[region_idx][0]
                     )
 
         total_axon_vols = {}
