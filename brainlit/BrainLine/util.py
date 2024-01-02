@@ -8,7 +8,7 @@ from brainlit.BrainLine.parse_ara import build_tree
 from tqdm import tqdm
 from brainlit.BrainLine.imports import *
 import json
-import zarr
+from cloudvolume.exceptions import OutOfBoundsError
 
 
 def download_subvolumes(
@@ -338,3 +338,33 @@ def create_transformed_mask_info(brain, data_file):
     )
     vol_mask = CloudVolume(layer_path, info=info)
     vol_mask.commit_info()
+
+
+def dir_to_atlas_pts(dir, outname, atlas_file):
+    """Read coordinates from JSON, remove points that don't fall in interior of atlas, and write a text file.
+
+    Args:
+        dir (str): Path to folder with JSON files that contain detection coordiantes.
+        outname (str): Name of file to be written.
+        atlas_file (str): Name of downloaded atlas parcellation image.
+    """
+    vol = io.imread(atlas_file)
+    files = [Path(dir) / f for f in os.listdir(dir) if os.path.splitext(f)[1] == ".json"]
+
+    coords = []
+    for file in tqdm(files, "Processing point files..."):
+        with open(file) as f:
+            json_file = json.load(f)
+
+        for pt in tqdm(json_file, "Finding interior points..."):
+            coord = pt["point"]
+            try:
+                if vol[int(coord[0]),int(coord[1]),int(coord[2])] != 0:
+                    coords.append(str(coord))
+            except IndexError:
+                pass
+
+    with open(outname, 'a') as f:
+        f.write("\n".join(coords))
+
+        

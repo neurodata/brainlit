@@ -24,7 +24,7 @@
             "subtype": "test_type"
         },
         "8557": {
-            "base": "precomputed://s3://smartspim-precomputed-volumes/2021_10_06/8557/",
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2021_10_06/8557/",
             "base2": "precomputed://https://dlab-colm.neurodata.io/2021_10_06/8557/Ch_488",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=3p4kSvgMMFl61Q",
