@@ -9,12 +9,12 @@ Inputs
 # -dir_base
 # data_dir and results_dir ARE CLEAR
 # threshold IS CORRECT
-brain = "MS50_v2"
+brain = "1252B"
 antibody_layer = "Ch_647"
 background_layer = "Ch_561"
 endogenous_layer = "Ch_488"
 
-threshold = 0.72  # threshold to use for ilastik
+threshold = 0.7  # threshold to use for ilastik
 brainline_exp_dir = Path(os.getcwd()) / Path(__file__).parents[1]
 data_dir = (
     brainline_exp_dir / "data" / "brainr_temp"
@@ -39,7 +39,7 @@ min_coords = [
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
 max_coords = [
-    5957,
+    6097,
     11000,
     -1,
 ]  # max coords or -1 if you want to process everything along that dimension
