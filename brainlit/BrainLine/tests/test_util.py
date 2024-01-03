@@ -5,6 +5,8 @@ from brainlit.BrainLine import util
 from cloudvolume import CloudVolume
 from pathlib import Path
 import os
+import json
+from skimage import io
 
 
 @pytest.fixture(scope="session")
@@ -193,3 +195,24 @@ def test_fold():
     test_fold = util._fold(img)
 
     assert_array_equal(true_fold, test_fold)
+
+
+def test_dir_to_atlas_pts(tmp_path):
+    json_dir = tmp_path / "json_data"
+    json_dir.mkdir()
+
+    json_data = [{"point": [-1, 0, 0]}, {"point": [1, 1, 1]}, {"point": [2, 1, 1]}]
+    with open(json_dir / "json1.json", "w") as f:
+        json.dump(json_data, f)
+
+    json_data = [{"point": [0, 0, 0]}, {"point": [1, 2, 1]}]
+    with open(json_dir / "json2.json", "w") as f:
+        json.dump(json_data, f)
+
+    atlas_file = tmp_path / "atlas.tif"
+    atlas_im = np.zeros((3, 3, 3), dtype="uint16")
+    atlas_im[1:, 1:, 1:] = 1
+    io.imsave(atlas_file, atlas_im)
+
+    outname = tmp_path / "filtered.txt"
+    util.dir_to_atlas_pts(dir=json_dir, outname=outname, atlas_file=atlas_file)

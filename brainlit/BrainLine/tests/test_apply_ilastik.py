@@ -10,6 +10,7 @@ import os
 import pytest
 import matplotlib.pyplot as plt
 from pathlib import Path
+from datetime import date
 
 
 def test_ApplyIlastik():
@@ -46,19 +47,9 @@ def axon_data_dir(tmp_path_factory):
     return data_dir
 
 
-def test_move_results(axon_data_dir):
-    data_dir_str = str(axon_data_dir)
-    apl = ApplyIlastik(
-        ilastik_path="test",
-        project_path="test",
-        brains_path=data_dir_str,
-        brains=["test"],
-    )
-    apl.move_results()
-
-
 def test_plot_results_axon(axon_data_dir):
     data_dir_str = str(axon_data_dir)
+
     test_max_fscore, test_best_threshold = plot_results(
         data_dir=data_dir_str,
         brain_ids=["test"],
@@ -158,3 +149,19 @@ def test_ApplyIlastik_LargeImage():
         ilastik_path="", ilastik_project="", ncpu=1, data_file=data_file
     )
     # Sample data is there but file path in data json is specific to thomastathey
+
+
+def test_move_results(axon_data_dir):
+    data_dir_str = str(axon_data_dir)
+
+    apl = ApplyIlastik(
+        ilastik_path="test",
+        project_path="test",
+        brains_path=data_dir_str,
+        brains=["test"],
+    )
+
+    apl.move_results()
+
+    newdir = apl.brains_path / f"braintest/val/results{date.today()}"
+    assert len(os.listdir(newdir)) == 1

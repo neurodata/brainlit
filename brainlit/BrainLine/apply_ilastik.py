@@ -36,7 +36,7 @@ class ApplyIlastik:
     Attributes:
         ilastk_path (str): Path to ilastik executable.
         project_path (str): Path to ilastik project.
-        brains_path (str): Path to directory that contains brain samples subdirectories.
+        brains_path (Path): Path to directory that contains brain samples subdirectories.
         brains (list): List of brain sample names.
 
     """
@@ -46,7 +46,7 @@ class ApplyIlastik:
     ):
         self.ilastik_path = ilastik_path
         self.project_path = project_path
-        self.brains_path = brains_path
+        self.brains_path = Path(brains_path)
         self.brains = brains
 
     def _apply_ilastik(self, fnames):
@@ -76,7 +76,7 @@ class ApplyIlastik:
                 brain_name = "r2"
             else:
                 brain_name = brain
-            path = f"{self.brains_path}brain{brain_name}/{dset}/"
+            path = self.brains_path / f"brain{brain_name}" / dset
 
             items_total += _find_sample_names(path, dset="", add_dir=True)
             print(f"Applying ilastik to {items_total}")
@@ -102,8 +102,8 @@ class ApplyIlastik:
             # else:
             #     brain_name = brain
 
-            brain_dir = f"{self.brains_path}brain{brain}/val/"
-            results_dir = brain_dir + "results" + str(date.today()) + "/"
+            brain_dir = self.brains_path / f"brain{brain}" / "val"
+            results_dir = brain_dir / f"results{date.today()}"
 
             if not os.path.exists(results_dir):
                 print(f"Creating directory: {results_dir}")
@@ -111,8 +111,9 @@ class ApplyIlastik:
 
             items = _find_sample_names(brain_dir, dset="", add_dir=False)
             for item in items:
-                result_path = brain_dir + item[:-3] + "_Probabilities.h5"
-                shutil.move(result_path, results_dir + item[:-3] + "_Probabilities.h5")
+                prob_fname = f"{item[:-3]}_Probabilities.h5"
+                result_path = brain_dir / prob_fname
+                shutil.move(result_path, results_dir / prob_fname)
 
 
 def plot_results(
