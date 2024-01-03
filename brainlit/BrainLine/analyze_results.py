@@ -29,7 +29,6 @@ from brainrender.actors import Points, Volume
 import json
 from cloudvolume.exceptions import OutOfBoundsError
 from pathlib import Path
-import dcor
 import random
 
 
