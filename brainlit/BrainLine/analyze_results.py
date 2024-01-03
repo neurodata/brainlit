@@ -459,17 +459,14 @@ class SomaDistribution(BrainDistribution):
             "y": "Region",
             "hue": "Subtype",
             "data": df,
-            # "jitter": False,
-            "dodge": True,
         }
 
         sns.set(font_scale=2)
-        bplot = sns.stripplot(ax=axes[0, 0], orient="h", legend=False, **fig_args)
+        bplot = sns.scatterplot(ax=axes[0, 0], **fig_args)
         fig_args["boxprops"] = {"facecolor": "none"}
         bplot = sns.boxplot(ax=axes[0, 0], orient="h", **fig_args)
         bplot.set_xscale("log")
 
-        fig_args.pop("dodge")
         fig_args.pop("boxprops")
         fig_args["style"] = "Brain ID"
         sns.scatterplot(ax=axes[1, 0], **fig_args)
@@ -483,14 +480,12 @@ class SomaDistribution(BrainDistribution):
 
         # second panel
         fig_args["x"] = "Percent of Total Somas (%)"
-        fig_args["dodge"] = True
 
-        bplot = sns.stripplot(ax=axes[0, 1], orient="h", legend=False, **fig_args)
+        bplot = sns.scatterplot(ax=axes[0, 1], **fig_args)
         fig_args["boxprops"] = {"facecolor": "none"}
         bplot = sns.boxplot(ax=axes[0, 1], orient="h", **fig_args)
         bplot.set_xscale("log")
 
-        fig_args.pop("dodge")
         fig_args.pop("boxprops")
         fig_args["style"] = "Brain ID"
         sns.scatterplot(ax=axes[1, 1], **fig_args)
@@ -507,15 +502,13 @@ class SomaDistribution(BrainDistribution):
         # third panel
         if normalize_region >= 0:
             fig_args["x"] = "Normalized Somas"
-            fig_args["dodge"] = True
 
             sns.set(font_scale=2)
-            bplot = sns.stripplot(ax=axes[0, 2], orient="h", legend=False, **fig_args)
+            bplot = sns.scatterplot(ax=axes[0, 2], **fig_args)
             fig_args["boxprops"] = {"facecolor": "none"}
             bplot = sns.boxplot(ax=axes[0, 2], orient="h", **fig_args)
             bplot.set_xscale("log")
 
-            fig_args.pop("dodge")
             fig_args.pop("boxprops")
             fig_args["style"] = "Brain ID"
             sns.scatterplot(ax=axes[1, 2], **fig_args)
@@ -1199,12 +1192,10 @@ class AxonDistribution(BrainDistribution):
             "y": "Region",
             "hue": "Subtype",
             "data": df,
-            # "jitter": False,
-            "dodge": True,
         }
 
         sns.set(font_scale=2)
-        bplot = sns.stripplot(ax=axes[0], orient="h", legend=False, **fig_args)
+        bplot = sns.scatterplot(ax=axes[0], **fig_args)
         fig_args["boxprops"] = {"facecolor": "none"}
         bplot = sns.boxplot(ax=axes[0], orient="h", **fig_args)
         bplot.set_xscale("log")
@@ -1220,11 +1211,9 @@ class AxonDistribution(BrainDistribution):
             "y": "Region",
             "hue": "Subtype",
             "data": df,
-            # "jitter": False,
-            "dodge": True,
         }
 
-        bplot = sns.stripplot(ax=axes[1], orient="h", legend=False, **fig_args)
+        bplot = sns.scatterplot(ax=axes[1], **fig_args)
         fig_args["boxprops"] = {"facecolor": "none"}
         bplot = sns.boxplot(ax=axes[1], orient="h", **fig_args)
         bplot.set_xscale("log")
@@ -1243,12 +1232,10 @@ class AxonDistribution(BrainDistribution):
                 "y": "Region",
                 "hue": "Subtype",
                 "data": df,
-                # "jitter": False,
-                "dodge": True,
             }
 
             sns.set(font_scale=2)
-            bplot = sns.stripplot(ax=axes[2], orient="h", legend=False, **fig_args)
+            bplot = sns.scatterplot(ax=axes[2], **fig_args)
             fig_args["boxprops"] = {"facecolor": "none"}
             bplot = sns.boxplot(ax=axes[2], orient="h", **fig_args)
             bplot.set_xscale("log")

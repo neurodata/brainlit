@@ -6,7 +6,8 @@
             "filepath": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/ara/ara_10um.tif"
         },
         "test": {
-            "base": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/brainlit/BrainLine/data/example/",
+            "base_s3": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/brainlit/BrainLine/data/example/",
+            "base_local": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/brainlit/BrainLine/data/example/",
             "transformed_mask": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/brainlit/BrainLine/data/example/axon_mask_transformed/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=rywXvJ3kVOV71w",
@@ -38,7 +39,7 @@
             "subtype": "sert cre"
         },
         "8613": {
-            "base": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/",
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/",
             "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_01_14/8613/axon_mask_transformed",
             "subtype": "tph2 vglut3"
         },
@@ -54,7 +55,7 @@
             "subtype": "tbd"
         },
         "8650": {
-            "base": "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/",
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/",
             "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_01_21/8650/axon_mask_transformed",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=tnXt-hF7Uyuq-w",
@@ -63,7 +64,7 @@
             "subtype": "tph2 gad2"
         },
         "8589": {
-            "base": "precomputed://s3://smartspim-precomputed-volumes/2022_11_03/8589/",
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2022_11_03/8589/",
             "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_11_03/8589/axon_mask_transformed",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=sCrJq3bVmN5N4Q",
@@ -72,7 +73,7 @@
             "subtype": "tph2 vglut3"
         },
         "8590": {
-            "base": "precomputed://s3://smartspim-precomputed-volumes/2022_03_04/8590/",
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2022_03_04/8590/",
             "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_03_04/8590/axon_mask_transformed",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=gq91htCi35XdPw",
@@ -81,7 +82,7 @@
             "subtype": "tph2 vglut3"
         },
         "8649": {
-            "base": "precomputed://s3://smartspim-precomputed-volumes/2022_03_28/8649/",
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2022_03_28/8649/",
             "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_03_28/8649/axon_mask_transformed",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=b0unpdsrz-bO6A",
@@ -139,7 +140,7 @@
             "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_10_26/11537/axon_mask_transformed"
         },
         "8786": {
-            "base": "precomputed://s3://smartspim-precomputed-volumes/2022_11_02/8786/",
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2022_11_02/8786/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=YRB3G4Hn19TjIA",
                 "layer": "val"
@@ -148,7 +149,7 @@
             "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_11_02/8786/axon_mask_transformed"
         },
         "8790": {
-            "base": "precomputed://s3://smartspim-precomputed-volumes/2022_11_01/8790/",
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2022_11_01/8790/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=hhlEcKDIfqrY-w",
                 "layer": "val"
@@ -157,7 +158,6 @@
             "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2022_11_01/8790/axon_mask_transformed"
         },
         "MS32": {
-            "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_03/MS32/",
             "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_04_03/MS32/",
             "val_info": {
                 "url": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_axon/brainMS32/val.json",
@@ -172,7 +172,6 @@
             "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2023_04_03/MS32/axon_mask_transformed"
         },
         "MS15": {
-            "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_03/MS15/",
             "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_04_03/MS15/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=uN171hvFEvDw-Q",
@@ -182,7 +181,6 @@
             "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2023_04_03/MS15/axon_mask_transformed"
         },
         "MS29": {
-            "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_07/MS29/",
             "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_04_07/MS29/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=gf8YOhsEvdGXgQ",
@@ -196,7 +194,6 @@
             "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2023_04_07/MS29/axon_mask_transformed"
         },
         "MS11": {
-            "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_10/MS11/",
             "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_04_10/MS11/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=kcPAtNm-SdK2IQ",
@@ -216,7 +213,7 @@
             "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2023_04_10/MS12/axon_mask_transformed"
         },
         "MS10": {
-            "base": "precomputed://s3://smartspim-precomputed-volumes/2023_04_28/MS10/",
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_04_28/MS10/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=43c44vvUgelrsw",
                 "layer": "val"
@@ -224,7 +221,6 @@
             "subtype": "gad2 vgat"
         },
         "MS9": {
-            "base": "precomputed://file:///mnt/data/Neuroglancer_Data/2023_05_24/MS9/",
             "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_05_24/MS9/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=30O_uxkW67rv2Q",
@@ -234,7 +230,6 @@
             "transformed_mask": "precomputed://s3://smartspim-precomputed-volumes/2023_05_24/MS9/axon_mask_transformed"
         },
         "MS33": {
-            "base": "precomputed://s3://smartspim-precomputed-volumes/2023_09_18/MS33/",
             "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_09_18/MS33/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=H3idZ1oxxfEWdg",

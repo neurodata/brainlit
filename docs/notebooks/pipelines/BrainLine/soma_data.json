@@ -16,8 +16,7 @@
                 "nonsomas_layer": "nonsoma_val"
             },
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=iRoE0KP6J0ULDg",
-            "subtype": "test_type",
-            "base": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/docs/notebooks/pipelines/BrainLine/example-data/"
+            "subtype": "test_type"
         },
         "biccn": {
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=8VHD-seixZg9pg",

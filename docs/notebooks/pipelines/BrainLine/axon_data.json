@@ -15,8 +15,7 @@
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=Ap9ZkdUyOAZqMg",
                 "layer": "val"
             },
-            "subtype": "test_type",
-            "base": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/docs/notebooks/pipelines/BrainLine/example-data/"
+            "subtype": "test_type"
         },
         "pytest": {
             "base_s3": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/",
