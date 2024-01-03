@@ -188,7 +188,7 @@ def plot_results(
                 cntr = [s // 2 for s in mask.shape]
 
                 if object_type == "soma":
-                    if filename.split("/")[-1] in doubles:
+                    if filename.split("/")[-1].split("_Probabilities")[0] in doubles:
                         newpos = 2
                     else:
                         newpos = 1
@@ -352,7 +352,7 @@ def examine_threshold(
         cntr = [s // 2 for s in mask.shape]
 
         if object_type == "soma":
-            if filename.split("/")[-1] in doubles:
+            if filename.split("/")[-1].split("_Probabilities")[0] in doubles:
                 newpos = 2
             else:
                 newpos = 1

@@ -349,7 +349,9 @@ def dir_to_atlas_pts(dir, outname, atlas_file):
         atlas_file (str): Name of downloaded atlas parcellation image.
     """
     vol = io.imread(atlas_file)
-    files = [Path(dir) / f for f in os.listdir(dir) if os.path.splitext(f)[1] == ".json"]
+    files = [
+        Path(dir) / f for f in os.listdir(dir) if os.path.splitext(f)[1] == ".json"
+    ]
 
     coords = []
     for file in tqdm(files, "Processing point files..."):
@@ -359,12 +361,10 @@ def dir_to_atlas_pts(dir, outname, atlas_file):
         for pt in tqdm(json_file, "Finding interior points..."):
             coord = pt["point"]
             try:
-                if vol[int(coord[0]),int(coord[1]),int(coord[2])] != 0:
+                if vol[int(coord[0]), int(coord[1]), int(coord[2])] != 0:
                     coords.append(str(coord))
             except IndexError:
                 pass
 
-    with open(outname, 'a') as f:
+    with open(outname, "a") as f:
         f.write("\n".join(coords))
-
-        

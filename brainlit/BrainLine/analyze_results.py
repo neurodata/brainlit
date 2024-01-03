@@ -43,7 +43,13 @@ class BrainDistribution:
         brain_ids (list): List of brain IDs (keys of data json file).
     """
 
-    def __init__(self, brain_ids: list, data_file: str, ontology_file: str, fixes_file: str = None):
+    def __init__(
+        self,
+        brain_ids: list,
+        data_file: str,
+        ontology_file: str,
+        fixes_file: str = None,
+    ):
         self.brain_ids = brain_ids
         with open(data_file) as f:
             data = json.load(f)
@@ -358,34 +364,6 @@ class SomaDistribution(BrainDistribution):
                     heatmap[:, :, depth_radius, :], scale=[10, 10], name=f"Heatmap"
                 )  # , rgb=True)
 
-                for subtype1, subtype2 in zip(
-                    ["tph2 gad2", "tph2 gad2", "tph2 vglut3"],
-                    ["tph2 vglut3", "gad2 vgat", "gad2 vgat"],
-                ):
-                    diffpos = (
-                        heatmap[
-                            :, :, depth_radius, channel_map[subtype_colors[subtype1]]
-                        ]
-                        - heatmap[
-                            :, :, depth_radius, channel_map[subtype_colors[subtype2]]
-                        ]
-                    )
-                    diffneg = np.copy(diffpos)
-                    diffpos[diffpos < 0] = 0
-                    diffneg[diffneg > 0] = 0
-                    diffneg = np.abs(diffneg)
-                    heatdiff = 0 * heatmap
-                    heatdiff[
-                        :, :, depth_radius, channel_map[subtype_colors[subtype1]]
-                    ] = diffpos
-                    heatdiff[
-                        :, :, depth_radius, channel_map[subtype_colors[subtype2]]
-                    ] = diffneg
-                    v.add_image(
-                        heatdiff[:, :, depth_radius, :],
-                        scale=[10, 10],
-                        name=f"{subtype1} - {subtype2}",
-                    )  # , rgb=True)
                 v.add_labels(borders * 2, scale=[10, 10], name=f"z={z}")
 
                 v.scale_bar.unit = "um"
@@ -578,7 +556,6 @@ class SomaDistribution(BrainDistribution):
                         region_graph.nodes[region][brain_id]
                         + id_to_regioncounts[brain_id][region]
                     )
-                
 
         # propagate counts up the hierarchy
         for brain_id in brain_ids:
@@ -858,7 +835,7 @@ def _compute_composition_corner(corners, outdir, dir_base_mask, dir_base_s3):
         return
 
     dir = dir_base_mask + "axon_mask"
-    vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=False)
+    vol_mask = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
 
     dir = dir_base_s3 + "atlas_to_target"
     vol_reg = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
@@ -1044,9 +1021,11 @@ class AxonDistribution(BrainDistribution):
                     region_idx = region
 
                 if region_idx in region_graph.nodes:
-                    region_graph.nodes[region_idx][brain_id + " axon"] = region_graph.nodes[
-                        region_idx
-                    ][brain_id + " axon"] + float(quantification_dict[region_idx][1])
+                    region_graph.nodes[region_idx][
+                        brain_id + " axon"
+                    ] = region_graph.nodes[region_idx][brain_id + " axon"] + float(
+                        quantification_dict[region_idx][1]
+                    )
                     region_graph.nodes[region_idx][
                         brain_id + " total"
                     ] = region_graph.nodes[region_idx][brain_id + " total"] + float(

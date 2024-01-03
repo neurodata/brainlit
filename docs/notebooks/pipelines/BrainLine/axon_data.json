@@ -8,16 +8,18 @@
         },
         "test": {
             "comment": "Sampled used for demos, need to download precomputed data and put in brainlit/BrainLine/data/example. Data should be served via neuroglancer's cors_webserver.py",
-            "base": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/docs/notebooks/pipelines/BrainLine/example-data/",
+            "base_s3": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/docs/notebooks/pipelines/BrainLine/example-data/",
+            "base_local": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/docs/notebooks/pipelines/BrainLine/example-data/",
             "transformed_mask": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/docs/notebooks/pipelines/BrainLine/example-data/axon_mask_transformed/",
             "val_info": {
-                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=QSzxzDKIRWgvmw",
+                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=Ap9ZkdUyOAZqMg",
                 "layer": "val"
             },
-            "subtype": "test_type"
+            "subtype": "test_type",
+            "base": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/docs/notebooks/pipelines/BrainLine/example-data/"
         },
         "pytest": {
-            "base": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/",
+            "base_s3": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/",
             "val_info": {
                 "url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=_7H3OM-IAEgp0Q",
                 "layer": "val"
