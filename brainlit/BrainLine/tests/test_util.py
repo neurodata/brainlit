@@ -278,7 +278,7 @@ def test_dir_to_atlas_pts(tmp_path):
     json_dir = tmp_path / "json_data"
     json_dir.mkdir()
 
-    json_data = [{"point": [-1, 0, 0]}, {"point": [1, 1, 1]}, {"point": [2, 1, 1]}]
+    json_data = [{"point": [10, 0, 0]}, {"point": [1, 1, 1]}, {"point": [2, 1, 1]}]
     with open(json_dir / "json1.json", "w") as f:
         json.dump(json_data, f)
 
@@ -293,3 +293,9 @@ def test_dir_to_atlas_pts(tmp_path):
 
     outname = tmp_path / "filtered.txt"
     util.dir_to_atlas_pts(dir=json_dir, outname=outname, atlas_file=atlas_file)
+
+    with open(outname, "r") as f:
+        for count, _ in enumerate(f):
+            pass
+
+    assert count + 1 == 3
