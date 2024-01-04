@@ -44,6 +44,10 @@ def test_slicetolabels(ontology_path, fixes_file):
         new_slice, np.array([[0, 997, 315], [315, 315, 315]], dtype="int")
     )
 
+    new_slice, _, half_width = sd._slicetolabels(slice, fold_on=True, atlas_level=5)
+    assert half_width == 2
+    assert_array_equal(new_slice, np.array([[0, 997], [315, 315]], dtype="int"))
+
 
 # SomaDistribution
 
@@ -75,6 +79,17 @@ def test_SomaDistribution(ontology_path):
     )
     sd.region_barchart(
         regions=[362, 795], composite_regions={"Olfactory Bulb": [507, 698, 1016]}
+    )
+
+
+def test_SomaDistribution_shuffle_bootstrap(ontology_path):
+    sd = SomaDistribution(
+        ["pytest", "pytest2"],
+        data_file=soma_data_file,
+        ontology_file=ontology_path,
+        show_plots=False,
+        bootstrap=1,
+        shuffle=True,
     )
 
 
