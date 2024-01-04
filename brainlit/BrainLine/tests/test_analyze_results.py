@@ -4,40 +4,65 @@ import pickle
 import pytest
 from pathlib import Path
 import os
+import numpy as np
+from numpy.testing import assert_array_equal
+
+soma_data_file = (
+    Path(os.path.abspath(__file__)).parents[3]
+    / "docs"
+    / "notebooks"
+    / "pipelines"
+    / "BrainLine"
+    / "soma_data.json"
+)
 
 
-def test_SomaDistribution_no_somasatlasurl(ontology_path):
-    data_file = (
-        Path(os.path.abspath(__file__)).parents[3]
-        / "docs"
-        / "notebooks"
-        / "pipelines"
-        / "BrainLine"
-        / "soma_data.json"
+@pytest.fixture(scope="session")
+def fixes_file():
+    fixes_file = (
+        Path(os.path.abspath(__file__)).parents[1] / "data" / "open-nd-ara-fixes.json"
+    )
+    return fixes_file
+
+
+# BrainDistribution
+
+
+def test_slicetolabels(ontology_path, fixes_file):
+    sd = SomaDistribution(
+        ["pytest"],
+        data_file=soma_data_file,
+        ontology_file=ontology_path,
+        show_plots=False,
+        fixes_file=fixes_file,
     )
 
+    slice = np.array([[0, 997, 315], [184, 68, 667]], dtype="int")
+    new_slice, _, half_width = sd._slicetolabels(slice, fold_on=False, atlas_level=5)
+    assert half_width == -1
+    assert_array_equal(
+        new_slice, np.array([[0, 997, 315], [315, 315, 315]], dtype="int")
+    )
+
+
+# SomaDistribution
+
+
+def test_SomaDistribution_no_somasatlasurl(ontology_path, fixes_file):
     with pytest.raises(ValueError):
         SomaDistribution(
             ["pytest_nosomasatlasurl"],
-            data_file=data_file,
+            data_file=soma_data_file,
             ontology_file=ontology_path,
             show_plots=False,
+            fixes_file=fixes_file,
         )
 
 
 def test_SomaDistribution(ontology_path):
-    data_file = (
-        Path(os.path.abspath(__file__)).parents[3]
-        / "docs"
-        / "notebooks"
-        / "pipelines"
-        / "BrainLine"
-        / "soma_data.json"
-    )
-
     sd = SomaDistribution(
         ["pytest", "pytest2"],
-        data_file=data_file,
+        data_file=soma_data_file,
         ontology_file=ontology_path,
         show_plots=False,
     )
@@ -53,8 +78,14 @@ def test_SomaDistribution(ontology_path):
     )
 
 
+# Other methods
+
+
 def test_collect_regional_segmentation():
     pass  # would need to create axon_mask and atlas_to_target layers
+
+
+# AxonDistribution
 
 
 def test_AxonDistribution(tmp_path, ontology_path):
