@@ -16,6 +16,17 @@ def make_data_dir(tmp_path_factory):
 
 
 @pytest.fixture(scope="session")
+def make_bad_datafile(make_data_dir):
+    data_dir = make_data_dir
+    bad_data_file = data_dir / "bad_data.json"
+    bad_type = {"object_type": "invalid", "brain2paths": {}}
+    with open(bad_data_file, "w") as f:
+        json.dump(bad_type, f)
+
+    return bad_data_file
+
+
+@pytest.fixture(scope="session")
 def ontology_path():
     ontology_json_path = (
         Path(os.path.abspath(__file__)).parents[1]
@@ -48,10 +59,22 @@ def test_find_atlas_level_label(ontology_path):
     assert new_label == 8
 
 
-def test_download_subvolumes(make_data_dir):
-    # Axon
+def test_download_subvolumes(make_data_dir, make_bad_datafile):
     data_dir = make_data_dir  # tmp_path_factory.mktemp("data")
-    layer_names = ["average_10um"] * 3
+    layer_names = ["average_10um", "average_10um", "zero"]
+
+    # Data file with bad object_fype
+    bad_data_file = make_bad_datafile
+    with pytest.raises(ValueError):
+        util.download_subvolumes(
+            data_dir=data_dir,
+            brain_id="pytest",
+            layer_names=layer_names,
+            dataset_to_save="val",
+            data_file=bad_data_file,
+        )
+
+    # Axon
     data_file = (
         Path(os.path.abspath(__file__)).parents[3]
         / "docs"

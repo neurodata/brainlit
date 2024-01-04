@@ -14,6 +14,35 @@ from pathlib import Path
 from datetime import date
 
 
+@pytest.fixture(scope="session")
+def axon_data_dir(tmp_path_factory):
+    data_dir = tmp_path_factory.mktemp("data")
+    brain_dir = data_dir / "braintest"
+    brain_dir.mkdir()
+    val_dir = brain_dir / "val"
+    val_dir.mkdir()
+
+    labels = np.ones((2, 10, 10, 10), dtype=np.uint16)
+    labels[0, 0, 0, :] = 2
+    labels_path = val_dir / "subvol-image_3channel_Labels.h5"
+    with h5py.File(str(labels_path), "w") as f:
+        dset = f.create_dataset("exported_data", data=labels)
+
+    im_probs = np.zeros((2, 10, 10, 10))
+    im_probs[0, 0, 0, :5] = 0.9
+    path = val_dir / "subvol_Probabilities.h5"
+    with h5py.File(path, "w") as f:
+        f.create_dataset("exported_data", data=im_probs)
+
+    im = np.zeros((3, 10, 10, 10))
+    im[0, 0, 0, :5] = 0.9
+    path = val_dir / "subvol.h5"
+    with h5py.File(path, "w") as f:
+        f.create_dataset("image_3channel", data=im)
+
+    return data_dir
+
+
 # ApplyIlastik
 
 
@@ -34,7 +63,7 @@ def test_processsubvols_none(axon_data_dir):
         apl.process_subvols()
 
     # brainr1
-    val_dir = axon_data_dir / "brain8557"
+    val_dir = axon_data_dir / "brainr1"
     val_dir.mkdir()
     val_dir = val_dir / "val"
     val_dir.mkdir()
@@ -50,7 +79,7 @@ def test_processsubvols_none(axon_data_dir):
         apl.process_subvols()
 
     # brainr2
-    val_dir = axon_data_dir / "brain8555"
+    val_dir = axon_data_dir / "brainr2"
     val_dir.mkdir()
     val_dir = val_dir / "val"
     val_dir.mkdir()
@@ -87,35 +116,6 @@ def test_move_results(axon_data_dir):
 
 
 # Other methods
-
-
-@pytest.fixture(scope="session")
-def axon_data_dir(tmp_path_factory):
-    data_dir = tmp_path_factory.mktemp("data")
-    brain_dir = data_dir / "braintest"
-    brain_dir.mkdir()
-    val_dir = brain_dir / "val"
-    val_dir.mkdir()
-
-    labels = np.ones((2, 10, 10, 10), dtype=np.uint16)
-    labels[0, 0, 0, :] = 2
-    labels_path = val_dir / "subvol-image_3channel_Labels.h5"
-    with h5py.File(str(labels_path), "w") as f:
-        dset = f.create_dataset("exported_data", data=labels)
-
-    im_probs = np.zeros((2, 10, 10, 10))
-    im_probs[0, 0, 0, :5] = 0.9
-    path = val_dir / "subvol_Probabilities.h5"
-    with h5py.File(path, "w") as f:
-        f.create_dataset("exported_data", data=im_probs)
-
-    im = np.zeros((3, 10, 10, 10))
-    im[0, 0, 0, :5] = 0.9
-    path = val_dir / "subvol.h5"
-    with h5py.File(path, "w") as f:
-        f.create_dataset("image_3channel", data=im)
-
-    return data_dir
 
 
 def test_plot_results_axon(axon_data_dir):
