@@ -823,7 +823,7 @@ class ApplyIlastik_LargeImage:
         ]
         for layer in ngl_json["layers"]:
             if layer["name"] == ng_layer_name:
-                source_pieces = layer["source"].split("/")
+                source_pieces = layer["source"]["url"].split("/")
                 source = ""
                 for piece in source_pieces[:-1]:
                     source += piece
