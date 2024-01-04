@@ -15,11 +15,16 @@ def make_data_dir(tmp_path_factory):
     return data_dir
 
 
+# Makes a data file with invalid object_type, and a sample where info files can be written
 @pytest.fixture(scope="session")
 def make_bad_datafile(make_data_dir):
     data_dir = make_data_dir
     bad_data_file = data_dir / "bad_data.json"
-    bad_type = {"object_type": "invalid", "brain2paths": {}}
+    base_s3 = f"precomputed://file://{str(data_dir)}"
+    bad_type = {
+        "object_type": "invalid",
+        "brain2paths": {"write_info": {"base_s3": base_s3}},
+    }
     with open(bad_data_file, "w") as f:
         json.dump(bad_type, f)
 
@@ -65,7 +70,7 @@ def test_download_subvolumes(make_data_dir, make_bad_datafile):
 
     # Data file with bad object_fype
     bad_data_file = make_bad_datafile
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e_info:
         util.download_subvolumes(
             data_dir=data_dir,
             brain_id="pytest",
@@ -73,6 +78,29 @@ def test_download_subvolumes(make_data_dir, make_bad_datafile):
             dataset_to_save="val",
             data_file=bad_data_file,
         )
+    assert e_info.value.args[0] == f"object_type must be soma or axon, not invalid"
+
+    # Sample with no brain_s3 path
+    data_file = (
+        Path(os.path.abspath(__file__)).parents[3]
+        / "docs"
+        / "notebooks"
+        / "pipelines"
+        / "BrainLine"
+        / "axon_data.json"
+    )
+    with pytest.raises(ValueError) as e_info:
+        util.download_subvolumes(
+            data_dir=data_dir,
+            brain_id="pytest_nobases3",
+            layer_names=layer_names,
+            dataset_to_save="val",
+            data_file=data_file,
+        )
+    assert (
+        e_info.value.args[0]
+        == f"base_s3 not an entry in brain2paths for brain pytest_nobases3"
+    )
 
     # Axon
     data_file = (
@@ -95,6 +123,13 @@ def test_download_subvolumes(make_data_dir, make_bad_datafile):
     assert len(files) == 2
 
     # Soma
+    # data_dir is string and data folder has already been made
+
+    output_dir = data_dir / "brainpytest_download"
+    output_dir.mkdir()
+    output_dir = output_dir / "val"
+    output_dir.mkdir()
+
     data_file = (
         Path(os.path.abspath(__file__)).parents[3]
         / "docs"
@@ -104,18 +139,32 @@ def test_download_subvolumes(make_data_dir, make_bad_datafile):
         / "soma_data.json"
     )
     util.download_subvolumes(
-        data_dir=data_dir,
+        data_dir=str(data_dir),
         brain_id="pytest_download",
         layer_names=layer_names,
         dataset_to_save="val",
         data_file=data_file,
     )
-    output_dir = data_dir / "brainpytest_download" / "val"
     files = os.listdir(output_dir)
     assert len(files) == 2
 
 
-def test_json_to_points():
+def test_json_to_points(make_data_dir):
+    data_dir = make_data_dir
+    json_data = {
+        "layers": [
+            {
+                "type": "annotation",
+                "name": "points",
+                "annotations": [{"point": [0, 1, 2]}],
+            }
+        ]
+    }
+    json_path = data_dir / "json_file.json"
+    with open(json_path, "w") as f:
+        json.dump(json_data, f)
+    point_layers = util.json_to_points(str(json_path))
+
     url = "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=ki9d3Hsk5jcsJg"
     point_layers = util.json_to_points(url)
     keys = point_layers.keys()
@@ -218,6 +267,11 @@ def test_fold():
     test_fold = util._fold(img)
 
     assert_array_equal(true_fold, test_fold)
+
+
+def test_create_transformed_mask_info(make_bad_datafile):
+    bad_data_file = make_bad_datafile
+    util.create_transformed_mask_info(brain="write_info", data_file=bad_data_file)
 
 
 def test_dir_to_atlas_pts(tmp_path):
