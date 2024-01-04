@@ -24,7 +24,7 @@ REQUIRED_PACKAGES = [
     "networkx>=2.1",
     "scikit-learn==1.1.2",  # issues with pairwise_distances_argmin_min (e.g. used in NeuronTrace) on other versions
     "scipy>=1.1.0",
-    "seaborn>=0.12.2",
+    "seaborn",
     "tifffile>=2020.7.17",
     "napari[pyqt5]>=0.2.11",
     "PyQt5<=5.15.7",  # bc there was an error with 5.15.8, can remove once that's resolved

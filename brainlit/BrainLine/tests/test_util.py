@@ -5,12 +5,30 @@ from brainlit.BrainLine import util
 from cloudvolume import CloudVolume
 from pathlib import Path
 import os
+import json
+from skimage import io
 
 
 @pytest.fixture(scope="session")
 def make_data_dir(tmp_path_factory):
     data_dir = tmp_path_factory.mktemp("data")
     return data_dir
+
+
+# Makes a data file with invalid object_type, and a sample where info files can be written
+@pytest.fixture(scope="session")
+def make_bad_datafile(make_data_dir):
+    data_dir = make_data_dir
+    bad_data_file = data_dir / "bad_data.json"
+    base_s3 = f"precomputed://file://{str(data_dir)}"
+    bad_type = {
+        "object_type": "invalid",
+        "brain2paths": {"write_info": {"base_s3": base_s3}},
+    }
+    with open(bad_data_file, "w") as f:
+        json.dump(bad_type, f)
+
+    return bad_data_file
 
 
 @pytest.fixture(scope="session")
@@ -46,10 +64,45 @@ def test_find_atlas_level_label(ontology_path):
     assert new_label == 8
 
 
-def test_download_subvolumes(make_data_dir):
-    # Axon
+def test_download_subvolumes(make_data_dir, make_bad_datafile):
     data_dir = make_data_dir  # tmp_path_factory.mktemp("data")
-    layer_names = ["average_10um"] * 3
+    layer_names = ["average_10um", "average_10um", "zero"]
+
+    # Data file with bad object_fype
+    bad_data_file = make_bad_datafile
+    with pytest.raises(ValueError) as e_info:
+        util.download_subvolumes(
+            data_dir=data_dir,
+            brain_id="pytest",
+            layer_names=layer_names,
+            dataset_to_save="val",
+            data_file=bad_data_file,
+        )
+    assert e_info.value.args[0] == f"object_type must be soma or axon, not invalid"
+
+    # Sample with no brain_s3 path
+    data_file = (
+        Path(os.path.abspath(__file__)).parents[3]
+        / "docs"
+        / "notebooks"
+        / "pipelines"
+        / "BrainLine"
+        / "axon_data.json"
+    )
+    with pytest.raises(ValueError) as e_info:
+        util.download_subvolumes(
+            data_dir=data_dir,
+            brain_id="pytest_nobases3",
+            layer_names=layer_names,
+            dataset_to_save="val",
+            data_file=data_file,
+        )
+    assert (
+        e_info.value.args[0]
+        == f"base_s3 not an entry in brain2paths for brain pytest_nobases3"
+    )
+
+    # Axon
     data_file = (
         Path(os.path.abspath(__file__)).parents[3]
         / "docs"
@@ -70,6 +123,13 @@ def test_download_subvolumes(make_data_dir):
     assert len(files) == 2
 
     # Soma
+    # data_dir is string and data folder has already been made
+
+    output_dir = data_dir / "brainpytest_download"
+    output_dir.mkdir()
+    output_dir = output_dir / "val"
+    output_dir.mkdir()
+
     data_file = (
         Path(os.path.abspath(__file__)).parents[3]
         / "docs"
@@ -79,18 +139,32 @@ def test_download_subvolumes(make_data_dir):
         / "soma_data.json"
     )
     util.download_subvolumes(
-        data_dir=data_dir,
+        data_dir=str(data_dir),
         brain_id="pytest_download",
         layer_names=layer_names,
         dataset_to_save="val",
         data_file=data_file,
     )
-    output_dir = data_dir / "brainpytest_download" / "val"
     files = os.listdir(output_dir)
     assert len(files) == 2
 
 
-def test_json_to_points():
+def test_json_to_points(make_data_dir):
+    data_dir = make_data_dir
+    json_data = {
+        "layers": [
+            {
+                "type": "annotation",
+                "name": "points",
+                "annotations": [{"point": [0, 1, 2]}],
+            }
+        ]
+    }
+    json_path = data_dir / "json_file.json"
+    with open(json_path, "w") as f:
+        json.dump(json_data, f)
+    point_layers = util.json_to_points(str(json_path))
+
     url = "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=ki9d3Hsk5jcsJg"
     point_layers = util.json_to_points(url)
     keys = point_layers.keys()
@@ -193,3 +267,35 @@ def test_fold():
     test_fold = util._fold(img)
 
     assert_array_equal(true_fold, test_fold)
+
+
+def test_create_transformed_mask_info(make_bad_datafile):
+    bad_data_file = make_bad_datafile
+    util.create_transformed_mask_info(brain="write_info", data_file=bad_data_file)
+
+
+def test_dir_to_atlas_pts(tmp_path):
+    json_dir = tmp_path / "json_data"
+    json_dir.mkdir()
+
+    json_data = [{"point": [10, 0, 0]}, {"point": [1, 1, 1]}, {"point": [2, 1, 1]}]
+    with open(json_dir / "json1.json", "w") as f:
+        json.dump(json_data, f)
+
+    json_data = [{"point": [0, 0, 0]}, {"point": [1, 2, 1]}]
+    with open(json_dir / "json2.json", "w") as f:
+        json.dump(json_data, f)
+
+    atlas_file = tmp_path / "atlas.tif"
+    atlas_im = np.zeros((3, 3, 3), dtype="uint16")
+    atlas_im[1:, 1:, 1:] = 1
+    io.imsave(atlas_file, atlas_im)
+
+    outname = tmp_path / "filtered.txt"
+    util.dir_to_atlas_pts(dir=json_dir, outname=outname, atlas_file=atlas_file)
+
+    with open(outname, "r") as f:
+        for count, _ in enumerate(f):
+            pass
+
+    assert count + 1 == 3

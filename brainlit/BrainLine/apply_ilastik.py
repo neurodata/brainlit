@@ -36,7 +36,7 @@ class ApplyIlastik:
     Attributes:
         ilastk_path (str): Path to ilastik executable.
         project_path (str): Path to ilastik project.
-        brains_path (str): Path to directory that contains brain samples subdirectories.
+        brains_path (Path): Path to directory that contains brain samples subdirectories.
         brains (list): List of brain sample names.
 
     """
@@ -46,23 +46,23 @@ class ApplyIlastik:
     ):
         self.ilastik_path = ilastik_path
         self.project_path = project_path
-        self.brains_path = brains_path
+        self.brains_path = Path(brains_path)
         self.brains = brains
 
-    def _apply_ilastik(self, fname):
-        if os.path.isfile(fname) and ".h5" in fname:
-            subprocess.run(
-                [
-                    self.ilastik_path,
-                    "--headless",
-                    f"--project={self.project_path}",
-                    fname,
-                ],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
+    def _apply_ilastik(self, fnames):
+        command = [
+            self.ilastik_path,
+            "--headless",
+            f"--project={self.project_path}",
+        ] + fnames
 
-    def process_subvols(self, ncpu: int = 6):
+        subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+    def process_subvols(self, dset: str = "val", ncpu: int = 6):
         """Apply ilastik to all validation subvolumes of the specified brain ids in the specified directory
 
         Args:
@@ -70,14 +70,27 @@ class ApplyIlastik:
         """
         items_total = []
         for brain in tqdm(self.brains, desc="Gathering brains..."):
-            path = f"{self.brains_path}brain{brain}/val/"
+            if brain == "8557":
+                brain_name = "r1"
+            elif brain == "8555":
+                brain_name = "r2"
+            else:
+                brain_name = brain
+            path = self.brains_path / f"brain{brain_name}" / dset
 
             items_total += _find_sample_names(path, dset="", add_dir=True)
+            print(f"Applying ilastik to {items_total}")
 
-        Parallel(n_jobs=ncpu)(
-            delayed(self._apply_ilastik)(item)
-            for item in tqdm(items_total, desc="running ilastik...")
-        )
+            n_images = len(items_total) // ncpu
+            items_chunks = [
+                items_total[i : i + n_images]
+                for i in range(0, len(items_total), n_images)
+            ]
+
+            Parallel(n_jobs=ncpu)(
+                delayed(self._apply_ilastik)(items_chunk)
+                for items_chunk in tqdm(items_chunks, desc="running ilastik...")
+            )
 
     def move_results(self):
         """Move results from process_subvols to a new subfolder."""
@@ -89,8 +102,8 @@ class ApplyIlastik:
             # else:
             #     brain_name = brain
 
-            brain_dir = f"{self.brains_path}brain{brain}/val/"
-            results_dir = brain_dir + "results" + str(date.today()) + "/"
+            brain_dir = self.brains_path / f"brain{brain}" / "val"
+            results_dir = brain_dir / f"results{date.today()}"
 
             if not os.path.exists(results_dir):
                 print(f"Creating directory: {results_dir}")
@@ -98,8 +111,9 @@ class ApplyIlastik:
 
             items = _find_sample_names(brain_dir, dset="", add_dir=False)
             for item in items:
-                result_path = brain_dir + item[:-3] + "_Probabilities.h5"
-                shutil.move(result_path, results_dir + item[:-3] + "_Probabilities.h5")
+                prob_fname = f"{item[:-3]}_Probabilities.h5"
+                result_path = brain_dir / prob_fname
+                shutil.move(result_path, results_dir / prob_fname)
 
 
 def plot_results(
@@ -107,6 +121,7 @@ def plot_results(
     brain_ids: list,
     object_type: str,
     positive_channel: int,
+    dset: str = "val",
     doubles: list = [],
     show_plot: bool = True,
 ):
@@ -138,7 +153,13 @@ def plot_results(
 
     thresholds = list(np.arange(0.0, 1.0, 0.02))
     for brain_id in tqdm(brain_ids, desc="Processing Brains"):
-        base_dir = data_dir + f"/brain{brain_id}/val/"
+        if brain_id == "8557":
+            brain_name = "r1"
+        elif brain_id == "8555":
+            brain_name = "r2"
+        else:
+            brain_name = brain_id
+        base_dir = data_dir + f"/brain{brain_name}/{dset}/"
         data_files = _find_sample_names(base_dir, dset="", add_dir=True)
         test_files = [
             file[: file.rfind(".")] + "_Probabilities.h5" for file in data_files
@@ -154,11 +175,21 @@ def plot_results(
             for filename in tqdm(test_files, disable=True):
                 f = h5py.File(filename, "r")
                 pred = f.get("exported_data")
-                pred = pred[positive_channel, :, :, :]
+                channel_dim = np.argmin(pred.shape)
+                if channel_dim == 0:
+                    pred = pred[positive_channel, :, :, :]
+                elif channel_dim == 3:
+                    pred = pred[:, :, :, positive_channel]
+                else:
+                    raise ValueError(
+                        f"Channel dimension should be first or last, not {channel_dim}"
+                    )
+
                 mask = pred > threshold
+                cntr = [s // 2 for s in mask.shape]
 
                 if object_type == "soma":
-                    if filename.split("/")[-1] in doubles:
+                    if filename.split("/")[-1].split("_Probabilities")[0] in doubles:
                         newpos = 2
                     else:
                         newpos = 1
@@ -168,9 +199,14 @@ def plot_results(
                     if "pos" in filename:
                         num_detected = 0
                         tot_pos += newpos
+                        no_cntr_yet = True
                         for prop in props:
                             if prop["area"] > size_thresh:
-                                if num_detected < newpos:
+                                if labels[cntr[0], cntr[1], cntr[2]] == prop["label"]:
+                                    true_pos += 1
+                                    num_detected += 1
+                                    no_cntr_yet = False
+                                elif num_detected < newpos - no_cntr_yet:
                                     true_pos += 1
                                     num_detected += 1
                                 else:
@@ -181,10 +217,21 @@ def plot_results(
                             if prop["area"] > size_thresh:
                                 false_pos += 1
                 elif object_type == "axon":
-                    filename_lab = filename[:-17] + "-image_3channel_Labels.h5"
+                    filename_lab_3 = filename[:-17] + "-image_3channel_Labels.h5"
+                    filename_lab_2 = (
+                        filename[:-17] + "-image_2channel_Labels.h5"
+                    )  # backward compatibility
+                    if os.path.isfile(filename_lab_3):
+                        filename_lab = filename_lab_3
+                    elif os.path.isfile(filename_lab_2):
+                        filename_lab = filename_lab_2
+
                     f = h5py.File(filename_lab, "r")
                     gt = f.get("exported_data")
-                    gt = gt[0, :, :, :]
+                    if channel_dim == 0:
+                        gt = gt[0, :, :, :]
+                    elif channel_dim == 3:
+                        gt = gt[:, :, :, 0]
                     pos_labels = gt == 2
                     neg_labels = gt == 1
 
@@ -223,7 +270,7 @@ def plot_results(
     for i, brain_id in enumerate(brain_ids_data):
         brain_ids_data[i] = (
             brain_id
-            + f" - MaxFS: {best_fscores[brain_id][0]:.2f} @thresh: {best_fscores[brain_id][1]}"
+            + f" - FS: {best_fscores[brain_id][0]:.2f} @ {best_fscores[brain_id][1]:.2f}"
         )
 
     dict = {
@@ -247,7 +294,7 @@ def plot_results(
         )
         plt.xlim([0, 1.1])
         plt.ylim([0, 1.1])
-        plt.title(f"Brain {brain_id} Validation: {tot_pos}+ {tot_neg}-")
+        print(f"Brain {brain_id} Validation: {tot_pos}+ {tot_neg}-")
         plt.legend()
         return fig, best_fscore, best_thresh  # plt.show()
 
@@ -260,6 +307,7 @@ def examine_threshold(
     threshold: float,
     object_type: str,
     positive_channel: int,
+    dset: str = "val",
     doubles: list = [],
     show_plot: bool = True,
 ):
@@ -278,7 +326,7 @@ def examine_threshold(
         ValueError: If object_type is neither axon nor soma
         ValueError: If positive_channel is not 0 or 1.
     """
-    base_dir = data_dir + f"/brain{brain_id}/val/"
+    base_dir = data_dir + f"/brain{brain_id}/{dset}/"
 
     data_files = _find_sample_names(base_dir, dset="", add_dir=True)
     test_files = [file[: file.rfind(".")] + "_Probabilities.h5" for file in data_files]
@@ -291,11 +339,21 @@ def examine_threshold(
         print(f"*************File: {im_fname}*********")
         f = h5py.File(filename, "r")
         pred = f.get("exported_data")
-        pred = pred[positive_channel, :, :, :]
+        channel_dim = np.argmin(pred.shape)
+        if channel_dim == 0:
+            pred = pred[positive_channel, :, :, :]
+        elif channel_dim == 3:
+            pred = pred[:, :, :, positive_channel]
+        else:
+            raise ValueError(
+                f"Channel dimension should be first or last, not {channel_dim}"
+            )
+
         mask = pred > threshold
+        cntr = [s // 2 for s in mask.shape]
 
         if object_type == "soma":
-            if filename.split("/")[-1] in doubles:
+            if filename.split("/")[-1].split("_Probabilities")[0] in doubles:
                 newpos = 2
             else:
                 newpos = 1
@@ -303,18 +361,25 @@ def examine_threshold(
             labels = measure.label(mask)
             props = measure.regionprops(labels)
             if "pos" in filename:
+                no_cntr_yet = True
                 num_detected = 0
                 for prop in props:
                     area = prop["area"]
                     if area > size_thresh:
-                        num_detected += 1
                         print(f"area of detected object: {area}")
-                        if num_detected > newpos and show_plot:
+                        if labels[cntr[0], cntr[1], cntr[2]] == prop["label"]:
+                            num_detected += 1
+                            no_cntr_yet = False
+                        elif num_detected < newpos - no_cntr_yet:
+                            num_detected += 1
+                        elif show_plot:
                             print(f"Soma false positive Area: {area}")
                             f = h5py.File(im_fname, "r")
                             im = f.get("image_3channel")
                             viewer = napari.Viewer(ndisplay=3)
-                            viewer.add_image(im[0, :, :, :], name=filename)
+                            viewer.add_image(
+                                im[0, :, :, :], name=filename.split("/")[-1]
+                            )
                             viewer.add_image(im[1, :, :, :], name="bg")
                             viewer.add_image(im[2, :, :, :], name="endo")
                             viewer.add_labels(mask)
@@ -323,12 +388,12 @@ def examine_threshold(
                                 name=f"soma false positive area: {area}",
                             )
 
-                if num_detected == 0 and show_plot:
+                if num_detected < newpos and show_plot:
                     print(f"Soma false negative")
                     f = h5py.File(im_fname, "r")
                     im = f.get("image_3channel")
                     viewer = napari.Viewer(ndisplay=3)
-                    viewer.add_image(im[0, :, :, :], name=filename)
+                    viewer.add_image(im[0, :, :, :], name=filename.split("/")[-1])
                     viewer.add_image(im[1, :, :, :], name="bg")
                     viewer.add_image(im[2, :, :, :], name="endo")
                     viewer.add_labels(mask, name="Soma false negative")
@@ -341,7 +406,7 @@ def examine_threshold(
                         f = h5py.File(im_fname, "r")
                         im = f.get("image_3channel")
                         viewer = napari.Viewer(ndisplay=3)
-                        viewer.add_image(im[0, :, :, :], name=filename)
+                        viewer.add_image(im[0, :, :, :], name=filename.split("/")[-1])
                         viewer.add_image(im[1, :, :, :], name="bg")
                         viewer.add_image(im[2, :, :, :], name="endo")
                         viewer.add_labels(mask)
@@ -350,10 +415,21 @@ def examine_threshold(
                             name=f"nonsoma false positive area: {area}",
                         )
         elif object_type == "axon":
-            fname_lab = im_fname[: im_fname.rfind(".")] + "-image_3channel_Labels.h5"
+            filename_lab_3 = filename[:-17] + "-image_3channel_Labels.h5"
+            filename_lab_2 = (
+                filename[:-17] + "-image_2channel_Labels.h5"
+            )  # backward compatibility
+            if os.path.isfile(filename_lab_3):
+                fname_lab = filename_lab_3
+            elif os.path.isfile(filename_lab_2):
+                fname_lab = filename_lab_2
             f = h5py.File(fname_lab, "r")
             gt = f.get("exported_data")
-            gt = gt[0, :, :, :]
+            if channel_dim == 0:
+                gt = gt[0, :, :, :]
+            elif channel_dim == 3:
+                gt = gt[:, :, :, 0]
+
             if positive_channel == 1:
                 pos_labels = gt == 2
                 neg_labels = gt == 1
@@ -379,16 +455,25 @@ def examine_threshold(
             else:
                 precision = true_pos / (true_pos + false_pos)
 
-            if (precision < 0.8 or recall) < 0.8 and show_plot:
+            if (precision < 0.8 or recall < 0.8) and show_plot:
                 f = h5py.File(im_fname, "r")
-                im = f.get("image_3channel")
+                keys = list(f.keys())
+                if len(keys) > 1:
+                    raise ValueError(f"Multiple keys in image file: {keys}")
+                else:
+                    key = keys[0]
+                im = f.get(key)
                 print(f"prec{precision} recall: {recall}")
                 viewer = napari.Viewer(ndisplay=3)
-                viewer.add_image(im[0, :, :, :], name=f"{im_fname}")
-                viewer.add_image(im[1, :, :, :], name="bg")
-                viewer.add_image(im[2, :, :, :], name="endo")
+                if len(im.shape) == 3:
+                    viewer.add_image(im, name=f"{im_fname}")
+                else:
+                    for layer in range(im.shape[0]):
+                        viewer.add_image(im[layer, :, :, :], name=f"{layer}-{im_fname}")
                 viewer.add_labels(mask, name="mask")
                 viewer.add_labels(pos_labels + 2 * neg_labels, name="pos labels")
+            else:
+                print(f"Precision: {precision}, recall: {recall}")
 
         else:
             raise ValueError(f"object_type must be axon or soma, not {object_type}")
@@ -465,8 +550,9 @@ class ApplyIlastik_LargeImage:
             max_coords (list, optional): Upper bound of bounding box on which to apply ilastk (i.e. does not apply ilastik beyond these bounds). Defaults to [-1, -1, -1].
         """
         results_dir = self.results_dir
-        volume_base_dir = self.brain2paths[brain_id]["base"]
-        sample_path = volume_base_dir + layer_names[0]
+        volume_base_dir_read = self.brain2paths[brain_id]["base_local"]
+        volume_base_dir_write = self.brain2paths[brain_id]["base_s3"]
+        sample_path = volume_base_dir_read + layer_names[1]
         vol = CloudVolume(sample_path, parallel=True, mip=0, fill_missing=True)
         shape = vol.shape
         print(f"Processing: {sample_path} with shape {shape} at threshold {threshold}")
@@ -488,34 +574,52 @@ class ApplyIlastik_LargeImage:
                 print(f"Creating directory: {results_dir}")
                 os.makedirs(results_dir)
             else:
-                print(f"Downloaded data will be stored in {results_dir}")
+                print(f"Soma detections data will be stored in {results_dir}")
         elif self.object_type == "axon":
-            mask_dir = volume_base_dir + "axon_mask"
+            mask_dir = volume_base_dir_write + "axon_mask"
             try:
                 CloudVolume(mask_dir)
             except:
-                self._make_mask_info(mask_dir, vol, chunk_size)
+                assert np.all(
+                    [
+                        c_ilastik % c_vol == 0
+                        for c_ilastik, c_vol in zip(chunk_size, [128, 128, 2])
+                    ]
+                )
+                self._make_mask_info(mask_dir, vol, [128, 128, 2])
 
         corners = _get_corners(
             shape, chunk_size, max_coords=max_coords, min_coords=min_coords
         )
-        corners_chunks = [corners[i : i + 100] for i in range(0, len(corners), 100)]
-        for corners_chunk in tqdm(corners_chunks, desc="corner chunks"):
-            Parallel(n_jobs=self.ncpu)(
-                delayed(self._process_chunk)(
+
+        if self.ncpu == 1:
+            for corner in tqdm(corners):
+                self._process_chunk(
                     corner[0],
                     corner[1],
-                    volume_base_dir,
+                    volume_base_dir_read,
+                    volume_base_dir_write,
                     layer_names,
                     threshold,
                     data_dir,
                     self.object_type,
                     results_dir,
                 )
-                for corner in tqdm(corners_chunk, leave=False)
+        else:
+            Parallel(n_jobs=self.ncpu)(
+                delayed(self._process_chunk)(
+                    corner[0],
+                    corner[1],
+                    volume_base_dir_read,
+                    volume_base_dir_write,
+                    layer_names,
+                    threshold,
+                    data_dir,
+                    self.object_type,
+                    results_dir,
+                )
+                for corner in tqdm(corners, leave=False)
             )
-            for f in os.listdir(data_dir):
-                os.remove(os.path.join(data_dir, f))
 
     def _make_mask_info(self, mask_dir: str, vol: CloudVolume, chunk_size: list):
         info = CloudVolume.create_new_info(
@@ -538,7 +642,8 @@ class ApplyIlastik_LargeImage:
         self,
         c1: list,
         c2: list,
-        volume_base_dir: str,
+        volume_base_dir_read: str,
+        volume_base_dir_write: str,
         layer_names: list,
         threshold: float,
         data_dir: Path,
@@ -548,74 +653,90 @@ class ApplyIlastik_LargeImage:
         mip = 0
         area_threshold = 500
 
-        dir_fg = volume_base_dir + layer_names[0]
-        vol_fg = CloudVolume(dir_fg, parallel=1, mip=mip, fill_missing=False)
-        dir_bg = volume_base_dir + layer_names[1]
-        vol_bg = CloudVolume(dir_bg, parallel=1, mip=mip, fill_missing=True)
-        dir_endo = volume_base_dir + layer_names[2]
-        vol_endo = CloudVolume(dir_endo, parallel=1, mip=mip, fill_missing=True)
+        vols = []
+        for layer_name in layer_names:
+            if layer_name == "zero":
+                vol = "zero"
+            else:
+                dir = volume_base_dir_read + layer_name
+                vol = CloudVolume(dir, parallel=1, mip=mip, fill_missing=True)
+                dtype = vol.dtype
+            vols.append(vol)
 
         try:
-            image_3channel = np.squeeze(
-                np.stack(
-                    [
-                        vol_fg[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]],
-                        vol_bg[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]],
-                        vol_endo[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]],
-                    ],
-                    axis=0,
-                )
-            )
-        except exceptions.EmptyVolumeException:
+            ims = []
+            for vol in vols:
+                if vol == "zero":
+                    im = np.zeros([c2[i] - c1[i] for i in range(3)], dtype=dtype)
+                else:
+                    im = np.squeeze(vol[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]])
+                ims.append(im)
+
+            image_3channel = np.squeeze(np.stack(ims, axis=0))
+        except:
+            print(f"File read error at: {c1}")
             return
 
         fname = f"image_{c1[0]}_{c1[1]}_{c1[2]}.h5"
         fname = data_dir / fname
-
         with h5py.File(fname, "w") as f:
             dset = f.create_dataset("image_3channel", data=image_3channel)
 
-        subprocess.run(
-            [
-                f"{self.ilastik_path}",
-                "--headless",
-                f"--project={self.ilastik_project}",
-                fname,
-            ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        # subprocess.run(["/Applications/ilastik-1.3.3post3-OSX.app/Contents/ilastik-release/run_ilastik.sh", "--headless", "--project=/Users/thomasathey/Documents/mimlab/mouselight/ailey/benchmark_formal/brain3/matt_benchmark_formal_brain3.ilp", fname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        for attempt in range(3):
+            subprocess.run(
+                [
+                    f"{self.ilastik_path}",
+                    "--headless",
+                    f"--project={self.ilastik_project}",
+                    fname,
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
 
-        fname_prob = str(fname)[: str(fname).rfind(".")] + "_Probabilities.h5"
-        with h5py.File(fname_prob, "r") as f:
-            pred = f.get("exported_data")
-            if object_type == "soma":
-                fname_results = f"image_{c1[0]}_{c1[1]}_{c1[2]}_somas.txt"
-                fname_results = results_dir / fname_results
-                pred = pred[0, :, :, :]
-                mask = pred > threshold
-                labels = measure.label(mask)
-                props = measure.regionprops(labels)
+            fname_prob = str(fname).split(".")[0] + "_Probabilities.h5"
+            try:
+                with h5py.File(fname_prob, "r") as f:
+                    pred = f.get("exported_data")
+                    if object_type == "soma":
+                        pred = pred[0, :, :, :]
+                        mask = pred > threshold
+                        labels = measure.label(mask)
+                        props = measure.regionprops(labels)
+                    elif object_type == "axon":
+                        pred = pred[1, :, :, :]
+                        mask = np.array(pred > threshold).astype("uint64")
+                break
+            except:
+                if attempt >= 2:
+                    raise ValueError(f"Tried to evaluate thrice and failed")
+                if os.path.isfile(fname_prob):
+                    os.remove(fname_prob)
+                continue
 
-                results = []
-                for prop in props:
-                    if prop["area"] > area_threshold:
-                        location = list(np.add(c1, prop["centroid"]))
-                        results.append(location)
-                if len(results) > 0:
-                    with open(fname_results, "w") as f2:
-                        for location in results:
-                            f2.write(str(location))
-                            f2.write("\n")
-            elif object_type == "axon":
-                dir_mask = volume_base_dir + "axon_mask"
-                vol_mask = CloudVolume(
-                    dir_mask, parallel=1, mip=mip, fill_missing=True, compress=False
-                )
-                pred = pred[1, :, :, :]
-                mask = np.array(pred > threshold).astype("uint64")
-                vol_mask[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]] = mask
+        if object_type == "soma":
+            fname_results = f"image_{c1[0]}_{c1[1]}_{c1[2]}_somas.txt"
+            fname_results = results_dir / fname_results
+
+            results = []
+            for prop in props:
+                if prop["area"] > area_threshold:
+                    location = list(np.add(c1, prop["centroid"]))
+                    results.append(location)
+            if len(results) > 0:
+                with open(fname_results, "w") as f2:
+                    for location in results:
+                        f2.write(str(location))
+                        f2.write("\n")
+        elif object_type == "axon":
+            dir_mask = volume_base_dir_write + "axon_mask"
+            vol_mask = CloudVolume(
+                dir_mask, parallel=1, mip=mip, fill_missing=True, compress=False
+            )
+            vol_mask[c1[0] : c2[0], c1[1] : c2[1], c1[2] : c2[2]] = mask
+
+        os.remove(fname)
+        os.remove(str(fname.with_suffix("")) + "_Probabilities.h5")
 
     def collect_soma_results(self, brain_id: str):
         """Combine all soma detections and post to neuroglancer. Intended for use after apply_ilastik_parallel.
@@ -702,7 +823,7 @@ class ApplyIlastik_LargeImage:
         ]
         for layer in ngl_json["layers"]:
             if layer["name"] == ng_layer_name:
-                source_pieces = layer["source"].split("/")
+                source_pieces = layer["source"]["url"].split("/")
                 source = ""
                 for piece in source_pieces[:-1]:
                     source += piece
@@ -738,7 +859,7 @@ def downsample_mask(brain, data_file, ncpu: int = 1, bounds: list = None):
     brain2paths = data["brain2paths"]
     if object_type != "axon":
         raise ValueError(f"Entered non-axon data file")
-    dir_base = brain2paths[brain]["base"]
+    dir_base = brain2paths[brain]["base_s3"]
     layer_path = dir_base + "axon_mask"
 
     tq = LocalTaskQueue(parallel=ncpu)

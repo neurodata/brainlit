@@ -5,16 +5,24 @@ from brainlit.BrainLine.apply_ilastik import (
     examine_threshold,
     ApplyIlastik,
     ApplyIlastik_LargeImage,
+    downsample_mask,
 )
 import os
+import shutil
 import pytest
 import matplotlib.pyplot as plt
 from pathlib import Path
+from datetime import date
 
 
-def test_ApplyIlastik():
-    # need to have ilastik downlaoded
-    pass
+soma_data_file = (
+    Path(os.path.abspath(__file__)).parents[3]
+    / "docs"
+    / "notebooks"
+    / "pipelines"
+    / "BrainLine"
+    / "soma_data.json"
+)
 
 
 @pytest.fixture(scope="session")
@@ -46,19 +54,84 @@ def axon_data_dir(tmp_path_factory):
     return data_dir
 
 
-def test_move_results(axon_data_dir):
-    data_dir_str = str(axon_data_dir)
+# ApplyIlastik
+
+
+def test_processsubvols_none(axon_data_dir):
+    val_dir = axon_data_dir / "brainnonexistant"
+    val_dir.mkdir()
+    val_dir = val_dir / "val"
+    val_dir.mkdir()
+
     apl = ApplyIlastik(
         ilastik_path="test",
         project_path="test",
-        brains_path=data_dir_str,
+        brains_path=axon_data_dir,
+        brains=["nonexistant"],
+    )
+
+    with pytest.raises(ValueError):
+        apl.process_subvols()
+
+    # brainr1
+    val_dir = axon_data_dir / "brainr1"
+    val_dir.mkdir()
+    val_dir = val_dir / "val"
+    val_dir.mkdir()
+
+    apl = ApplyIlastik(
+        ilastik_path="test",
+        project_path="test",
+        brains_path=axon_data_dir,
+        brains=["8557"],
+    )
+
+    with pytest.raises(ValueError):
+        apl.process_subvols()
+
+    # brainr2
+    val_dir = axon_data_dir / "brainr2"
+    val_dir.mkdir()
+    val_dir = val_dir / "val"
+    val_dir.mkdir()
+
+    apl = ApplyIlastik(
+        ilastik_path="test",
+        project_path="test",
+        brains_path=axon_data_dir,
+        brains=["8555"],
+    )
+
+    with pytest.raises(ValueError):
+        apl.process_subvols()
+
+
+def test_move_results(axon_data_dir):
+    apl = ApplyIlastik(
+        ilastik_path="test",
+        project_path="test",
+        brains_path=axon_data_dir,
         brains=["test"],
     )
+
     apl.move_results()
+
+    # Check that file was moved
+    newdir = apl.brains_path / f"braintest/val/results{date.today()}"
+    moved_files = os.listdir(newdir)
+    assert len(moved_files) == 1
+
+    # Move files back
+    for moved_file in moved_files:
+        shutil.move(newdir / moved_file, apl.brains_path / "braintest/val" / moved_file)
+
+
+# Other methods
 
 
 def test_plot_results_axon(axon_data_dir):
     data_dir_str = str(axon_data_dir)
+
     test_max_fscore, test_best_threshold = plot_results(
         data_dir=data_dir_str,
         brain_ids=["test"],
@@ -145,7 +218,17 @@ def test_examine_threshold_soma(soma_data_dir):
     )
 
 
-def test_ApplyIlastik_LargeImage():
+def test_downsample_mask_somafile():
+    with pytest.raises(ValueError) as e_info:
+        downsample_mask(brain="placeholder", data_file=soma_data_file)
+    assert e_info.value.args[0] == f"Entered non-axon data file"
+
+
+# ApplyIlastik_LargeImage
+
+
+def test_ApplyIlastik_LargeImage(soma_data_dir):
+    # Axon data
     data_file = (
         Path(os.path.abspath(__file__)).parents[3]
         / "docs"
@@ -157,4 +240,24 @@ def test_ApplyIlastik_LargeImage():
     aili = ApplyIlastik_LargeImage(
         ilastik_path="", ilastik_project="", ncpu=1, data_file=data_file
     )
+    aili.collect_axon_results(brain_id="pytest", ng_layer_name="average_10um")
     # Sample data is there but file path in data json is specific to thomastathey
+
+    # Soma data
+    data_dir = soma_data_dir
+    aili = ApplyIlastik_LargeImage(
+        ilastik_path="",
+        ilastik_project="",
+        ncpu=1,
+        data_file=soma_data_file,
+        results_dir=str(data_dir),
+    )
+
+    somas_path = aili.results_dir / "somas.txt"
+    print(somas_path)
+    with open(somas_path, "w") as f:
+        f.write("[-1, 1, 1]\n")
+        f.write("[1, 1, 1]\n")
+        f.write("[2, 1, 1]\n")
+
+    aili.collect_soma_results(brain_id="pytest_download")

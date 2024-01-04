@@ -8,7 +8,7 @@ from brainlit.BrainLine.parse_ara import build_tree
 from tqdm import tqdm
 from brainlit.BrainLine.imports import *
 import json
-import zarr
+from cloudvolume.exceptions import OutOfBoundsError
 
 
 def download_subvolumes(
@@ -46,19 +46,22 @@ def download_subvolumes(
         data_dir = Path(data_dir)
 
     base_dir = data_dir / f"brain{brain_id}" / dataset_to_save
+    antibody_layer, background_layer, endogenous_layer = layer_names
 
-    if "base" in brain2paths[brain_id].keys():
-        base_dir_im = brain2paths[brain_id]["base"]
-        vols = []
-        for layer_name in layer_names:
-            dir = base_dir_im + layer_name
-            if dir[-5:] == ".zarr":
-                vol = zarr.open_array(dir + "/0/")
-                print(f"zarr {layer_name}: {vol.shape}")
+    vols = []
+    if "base_s3" in brain2paths[brain_id].keys():
+        base_dir_s3 = brain2paths[brain_id]["base_s3"]
+        for layer in [antibody_layer, background_layer, endogenous_layer]:
+            if layer == "zero":
+                vol = "zero"
             else:
+                dir = base_dir_s3 + layer
                 vol = CloudVolume(dir, parallel=1, mip=0, fill_missing=True)
-                print(f"layer {layer_name}: {vol.shape} at {vol.resolution}")
+                print(f"{layer} shape: {vol.shape} at {vol.resolution}")
+                dtype = vol.dtype
             vols.append(vol)
+    else:
+        raise ValueError(f"base_s3 not an entry in brain2paths for brain {brain_id}")
 
     dataset_title = dataset_to_save + "_info"
     url = brain2paths[brain_id][dataset_title]["url"]
@@ -84,17 +87,17 @@ def download_subvolumes(
 
     for suffix, centers in zip(suffixes, centers_groups):
         for i, center in enumerate(tqdm(centers, desc="Saving samples")):
-            center = [int(c) for c in center]
             images = []
             for vol in vols:
-                print(center)
-                print(radius)
-                image = vol[
-                    center[0] - radius + 1 : center[0] + radius,
-                    center[1] - radius + 1 : center[1] + radius,
-                    center[2] - radius + 1 : center[2] + radius,
-                ]
-                image = np.squeeze(image)
+                if vol == "zero":
+                    image = np.zeros([2 * radius - 1 for k in range(3)], dtype=dtype)
+                else:
+                    image = vol[
+                        center[0] - radius + 1 : center[0] + radius,
+                        center[1] - radius + 1 : center[1] + radius,
+                        center[2] - radius + 1 : center[2] + radius,
+                    ]
+                    image = image[:, :, :, 0]
                 images.append(image)
 
             image = np.squeeze(np.stack(images, axis=0))
@@ -199,26 +202,24 @@ def _find_sample_names(dir, dset="", add_dir=False):
 def _setup_atlas_graph(ontology_json_path: str):
     """Create networkx graph of regions in allen atlas (from ara_structure_ontology.json). Initially uses vikram's code in build_tree, then converts to networkx.
 
+    Args:
+        ontology_json_path (str): path to ontology json.
+
     Returns:
         nx.DiGraph: graph representing hierarchy of allen parcellation.
     """
-    cd = Path(os.path.dirname(__file__))
-
     # create vikram object
     f = json.load(
         open(
-            cd / "data" / "ara_structure_ontology.json",
+            ontology_json_path,
             "r",
         )
     )
 
     tree = build_tree(f)
-    stack = [tree]
 
     # create nx graph
     queue = [tree]
-    cur_level = -1
-    counter = 0
     G = nx.DiGraph()
     max_level = 0
 
@@ -312,3 +313,58 @@ def _fold(image):
     right = image[:, half_width:]
     left = left + np.flip(right, axis=1)
     return left
+
+
+def create_transformed_mask_info(brain, data_file):
+    atlas_vol = CloudVolume(
+        "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017"
+    )
+
+    with open(data_file) as f:
+        data = json.load(f)
+    brain2paths = data["brain2paths"]
+    layer_path = brain2paths[brain]["base_s3"] + "axon_mask_transformed"
+    print(f"Writing info file at {layer_path}")
+
+    info = CloudVolume.create_new_info(
+        num_channels=1,
+        layer_type="image",
+        data_type="uint16",  # Channel images might be 'uint8'
+        encoding="raw",  # raw, jpeg, compressed_segmentation, fpzip, kempressed
+        resolution=atlas_vol.resolution,  # Voxel scaling, units are in nanometers
+        voxel_offset=atlas_vol.voxel_offset,
+        chunk_size=[32, 32, 32],  # units are voxels
+        volume_size=atlas_vol.volume_size,  # e.g. a cubic millimeter dataset
+    )
+    vol_mask = CloudVolume(layer_path, info=info)
+    vol_mask.commit_info()
+
+
+def dir_to_atlas_pts(dir, outname, atlas_file):
+    """Read coordinates from JSON, remove points that don't fall in interior of atlas, and write a text file.
+
+    Args:
+        dir (str): Path to folder with JSON files that contain detection coordiantes.
+        outname (str): Name of file to be written.
+        atlas_file (str): Name of downloaded atlas parcellation image.
+    """
+    vol = io.imread(atlas_file)
+    files = [
+        Path(dir) / f for f in os.listdir(dir) if os.path.splitext(f)[1] == ".json"
+    ]
+
+    coords = []
+    for file in tqdm(files, "Processing point files..."):
+        with open(file) as f:
+            json_file = json.load(f)
+
+        for pt in tqdm(json_file, "Finding interior points..."):
+            coord = pt["point"]
+            try:
+                if vol[int(coord[0]), int(coord[1]), int(coord[2])] != 0:
+                    coords.append(str(coord))
+            except IndexError:
+                pass
+
+    with open(outname, "a") as f:
+        f.write("\n".join(coords))
