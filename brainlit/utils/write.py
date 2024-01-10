@@ -11,6 +11,7 @@ from joblib import Parallel, delayed
 import os
 from cloudvolume import CloudVolume
 import json
+from skimage.measure import block_reduce
 
 
 def _read_czi_slice(czi, C, Z):
@@ -138,6 +139,101 @@ def zarr_to_omezarr(zarr_path: str, out_path: str, res: list):
     root = zarr.group(store=store)
     write_image(image=dra, group=root, axes="zxy")
     _edit_ome_metadata(out_path, res)
+
+
+def _write_slice_ome(z: int, lvl: int, z_in_path: str, zgr_path: str):
+    z_in = zarr.open(z_in_path)
+    zgr = zarr.open_group(zgr_path)
+    z_out = zgr[str(lvl)]
+
+    im_slice = np.squeeze(z_in[z, :, :])
+    if lvl > 0:
+        im_ds = block_reduce(im_slice, block_size=2**lvl)
+    else:
+        im_ds = im_slice
+
+    z_out[z, :, :] = im_ds
+
+
+def zarr_to_omezarr_single(zarr_path: str, out_path: str, res: list, parallel: int = 1):
+    """Convert 3D zarr to ome-zarr manually. Chunk size in z is 1.
+
+    Args:
+        zarr_path (str): Path to zarr.
+        out_path (str): Path of ome-zarr to be created.
+        res (list): List of xyz resolution values in nanometers.
+        parallel (int): Number of cores to use.
+
+    Raises:
+        ValueError: If zarr to be written already exists.
+        ValueError: If conversion is not 3D array.
+    """
+    if os.path.exists(out_path):
+        raise ValueError(
+            f"{out_path} already exists, please delete the existing file or change the name of the ome-zarr to be created."
+        )
+
+    zra = zarr.open(zarr_path)
+    sz0 = zra.shape
+
+    if len(sz0) != 3:
+        raise ValueError("Conversion only supported for 3D arrays")
+
+    zgr = zarr.group(out_path)
+
+    for lvl in tqdm(range(5), desc="Writing different levels..."):
+        im_slice = np.squeeze(zra[0, :, :])
+        if lvl > 0:
+            im_ds = block_reduce(im_slice, block_size=2**lvl)
+        else:
+            im_ds = im_slice
+        chunk_size = [1, np.amin((200, im_ds.shape[0])), np.amin((200, im_ds.shape[1]))]
+
+        zra_lvl = zgr.create(
+            str(lvl),
+            shape=(sz0[0], im_ds.shape[0], im_ds.shape[1]),
+            chunks=chunk_size,
+            dtype=zra.dtype,
+            dimension_separator="/",
+        )
+
+        if parallel == 1:
+            for z in tqdm(range(sz0[0]), desc="Writing slices...", leave=False):
+                _write_slice_ome(z, lvl, zarr_path, out_path)
+        else:
+            Parallel(n_jobs=parallel, backend="threading")(
+                delayed(_write_slice_ome)(
+                    z, lvl, z_in_path=zarr_path, zgr_path=out_path
+                )
+                for z in tqdm(range(sz0[0]), desc="Saving slices...")
+            )
+
+    axes = []
+    for dim in ["z", "x", "y"]:
+        axes.append({"name": dim, "type": "space", "unit": "micrometer"})
+
+    datasets = []
+    for lvl in range(5):
+        datasets.append(
+            {
+                "path": str(lvl),
+                "coordinateTransformations": [
+                    {
+                        "type": "scale",
+                        "scale": [res[2], res[0] * 2**lvl, res[1] * 2**lvl],
+                    }
+                ],
+            }
+        )
+
+    json_data = {
+        "multiscales": [
+            {"axes": axes, "datasets": datasets, "name": "/", "version": "0.4"}
+        ]
+    }
+
+    with open(Path(out_path) / ".zattrs", "w") as f:
+        json.dump(json_data, f, indent=4)
 
 
 def _edit_ome_metadata(out_path: str, res: list):
