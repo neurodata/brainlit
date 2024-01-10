@@ -220,7 +220,11 @@ def zarr_to_omezarr_single(zarr_path: str, out_path: str, res: list, parallel: i
                 "coordinateTransformations": [
                     {
                         "type": "scale",
-                        "scale": [res[2], res[0] * 2**lvl, res[1] * 2**lvl],
+                        "scale": [
+                            res[2] / 1000,
+                            res[0] * 2**lvl / 1000,
+                            res[1] * 2**lvl / 1000,
+                        ],
                     }
                 ],
             }
