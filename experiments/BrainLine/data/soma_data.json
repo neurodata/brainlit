@@ -233,7 +233,6 @@
         },
         "MS25": {
             "base_s3": "precomputed://file:///mnt/data/Neuroglancer_Data/2023_04_14/MS25/",
-            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_04_14/MS25/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=s76nWlFZjjg-lQ",
                 "somas_layer": "soma_val",
@@ -283,6 +282,16 @@
                 "somas_layer": "soma_val",
                 "nonsomas_layer": "nonsoma_val"
             },
+            "starter_train_info": {
+                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=uiGhai7eTPU8xg",
+                "somas_layer": "start_train",
+                "nonsomas_layer": "nonstart_train"
+            },
+            "starter_val_info": {
+                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=Vm-cDYnBgMZCEg",
+                "somas_layer": "start_val",
+                "nonsomas_layer": "nonstart_val"
+            },
             "subtype": "tph2 gad2",
             "somas_atlas_path": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/wholebrain_results/atlas_somas_MS23/",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=haZlIiduEDJlOA"
@@ -293,6 +302,11 @@
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=uk9B5uXeUQfsdA",
                 "somas_layer": "soma_val",
                 "nonsomas_layer": "nonsoma_val"
+            },
+            "starter_val_info": {
+                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=cewxv5X_nL9P2w",
+                "somas_layer": "start_val",
+                "nonsomas_layer": "nonstart_val"
             },
             "subtype": "tph2 gad2",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=GARK_nAwpm9gAA"
@@ -345,6 +359,17 @@
             "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2023_12_20/1252B/",
             "val_info": {
                 "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=zgiW1wL8q-E4mg",
+                "somas_layer": "soma_val",
+                "nonsomas_layer": "nonsoma_val"
+            },
+            "subtype": "tph2 vglut3",
+            "somas_atlas_path": "/Users/thomasathey/Documents/mimlab/mouselight/ailey/detection_soma/wholebrain_results/atlas_somas_1252B/"
+        },
+        "8030R": {
+            "base_local": "precomputed://file:///mnt/data/Neuroglancer_Data/2024_01_02/8030R/",
+            "base_s3": "precomputed://s3://smartspim-precomputed-volumes/2024_01_02/8030R/",
+            "val_info": {
+                "url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=2IOg-6dGysMKyA",
                 "somas_layer": "soma_val",
                 "nonsomas_layer": "nonsoma_val"
             },
