@@ -733,6 +733,8 @@ class NeuronTrace:
                     branch = int(name[idx])
                 except ValueError:
                     pass
+            elif len(line) == 0:
+                pass
             elif line[0] != "#":
                 in_header = False
             header_length += 1
