@@ -1,9 +1,13 @@
 {
     "object_type": "soma",
     "brain2paths": {
-        "atlas": {
+        "atlas_old": {
             "url": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017",
             "filepath": "/mnt/NAS/Neuroglancer Data/brainlit_archive/ara_10um.tif"
+        },
+        "atlas": {
+            "url": "precomputed://https://open-neurodata.s3.amazonaws.com/ara_2016/sagittal_10um/annotation_10um_2017",
+            "filepath": "/home/user/Downloads/ara_10um.tif"
         },
         "test": {
             "base_local": "precomputed://file:///Users/thomasathey/Documents/mimlab/mouselight/brainlit_parent/brainlit/brainlit/BrainLine/data/example/",
@@ -318,6 +322,7 @@
                 "nonsomas_layer": "nonsoma_val"
             },
             "subtype": "gad2 vgat",
+            "somas_atlas_path": "/home/user/brainlit/experiments/BrainLine/data/wholebrain-results/soma/atlas_somas_MS50_v2/",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=1t7-PP1WrOqTLQ"
         },
         "MS39": {
@@ -329,6 +334,7 @@
                 "nonsomas_layer": "nonsoma_val"
             },
             "subtype": "gad2 vgat",
+            "somas_atlas_path": "/home/user/brainlit/experiments/BrainLine/data/wholebrain-results/soma/atlas_somas_MS39/",
             "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=ebbZ0XEKgFjHKg"
         },
         "MS21": {

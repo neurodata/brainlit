@@ -93,13 +93,13 @@ class BrainDistribution:
                 new_labels[new_label] = name
 
         labels = measure.label(newslice)
-        borders = 0 * labels
+        borders = np.zeros_like(labels) # 0 * labels
         for label in tqdm(np.unique(labels), desc=f"Processing labels"):
             if label != 0:
                 mask = np.array(labels == label, dtype="int")
                 erode = np.array(ndi.binary_erosion(mask))
                 outline = mask - erode
-                borders += outline
+                borders[outline > 0] = 1 #borders += outline
 
         if fold_on:
             half_width = np.round(borders.shape[1] / 2).astype(int)
@@ -345,14 +345,15 @@ class SomaDistribution(BrainDistribution):
                     )
             if self.show_plots:
                 if plot_type == "napari":
-                    v.add_points(
-                        fg_points,
-                        symbol=symbols[gtype_counts[gtype]],
-                        face_color=subtype_colors[gtype],
-                        size=10,
-                        name=f"{key}: {gtype}",
-                        scale=[10, 10],
-                    )
+                    pass
+                    # v.add_points(
+                    #     fg_points,
+                    #     symbol=symbols[gtype_counts[gtype]],
+                    #     face_color=subtype_colors[gtype],
+                    #     size=10,
+                    #     name=f"{key}: {gtype}",
+                    #     scale=[10, 10],
+                    # )
                 elif plot_type == "plt":
                     fg_points = np.array(fg_points)
                     plt.scatter(
@@ -371,14 +372,21 @@ class SomaDistribution(BrainDistribution):
                     heatmap[:, :, :, c] = ndi.gaussian_filter(
                         heatmap[:, :, :, c], sigma=3
                     )
+                heatmap = heatmap[:, :, depth_radius, :]
+
+                
+                heatmap[newslice == 0] = 1
+                vals = heatmap[newslice != 0].flatten()
+
                 v.add_image(
-                    heatmap[:, :, depth_radius, :], scale=[10, 10], name=f"Heatmap"
+                    heatmap, scale=[10, 10], name=f"Heatmap", contrast_limits=(0, np.percentile(vals, 99))
                 )  # , rgb=True)
 
-                v.add_labels(borders * 2, scale=[10, 10], name=f"z={z}")
+                v.add_labels(borders > 0, scale=[10, 10], name=f"z={z}", color={1: "white"})
 
                 v.scale_bar.unit = "um"
                 v.scale_bar.visible = True
+                v.theme = 'light'
                 napari.run()
                 return v
             elif plot_type == "plt":
@@ -397,6 +405,7 @@ class SomaDistribution(BrainDistribution):
         brain2paths = self.brain2paths
 
         brainrender.settings.WHOLE_SCREEN = False
+        brainrender.settings.SHOW_AXES = False
         scene = Scene(atlas_name="allen_mouse_50um", title="Input Somas", screenshots_folder="/home/user/misc_tommy/figures/")
         scene.add_brain_region(brain_region, alpha=0.15)
 
@@ -1128,6 +1137,7 @@ class AxonDistribution(BrainDistribution):
             v.add_labels(borders * 2, scale=[10, 10], name=f"z={z}")
             v.scale_bar.unit = "um"
             v.scale_bar.visible = True
+            v.theme = 'light'
             napari.run()
             return v
 
@@ -1144,6 +1154,7 @@ class AxonDistribution(BrainDistribution):
         atlas_bg_mask = np.swapaxes(np.squeeze(atlas_bg_mask), 0, -1)
 
         brainrender.settings.WHOLE_SCREEN = False
+
         scene = Scene(atlas_name="allen_mouse_50um", title="Axon Projections", screenshots_folder="/home/user/misc_tommy/figures/")
         scene.add_brain_region(brain_region, alpha=0.15)
 
