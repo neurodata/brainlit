@@ -36,7 +36,8 @@
                 "nonsomas_layer": "<unknown>"
             },
             "somas_atlas_path": "/home/user/brainlit/experiments/BrainLine/data/wholebrain-results/soma/atlas_somas_8557/",
-            "somas_atlas_url": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=4M6ppFjZAUijkg",
+            "somas_atlas_url_4k": "https://ara.viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=4M6ppFjZAUijkg",
+            "somas_target_url": "https://viz.neurodata.io/?json_url=https://json.neurodata.io/v1?NGStateID=XapPubVGXSmc6g",
             "subtype": "tph2 vglut3"
         },
         "8555": {

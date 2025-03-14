@@ -2,7 +2,7 @@ import numpy as np
 from cloudreg.scripts.transform_points import NGLink
 from cloudvolume import CloudVolume, exceptions
 from tqdm import tqdm
-from skimage import io, measure
+from skimage import io, measure, morphology
 from brainlit.BrainLine.util import (
     _find_atlas_level_label,
     _fold,
@@ -1154,6 +1154,8 @@ class AxonDistribution(BrainDistribution):
         atlas_bg_mask = np.swapaxes(np.squeeze(atlas_bg_mask), 0, -1)
 
         brainrender.settings.WHOLE_SCREEN = False
+        brainrender.settings.SHOW_AXES = False
+        #brainrender.settings.DEFAULT_CAMERA = "top_side"
 
         scene = Scene(atlas_name="allen_mouse_50um", title="Axon Projections", screenshots_folder="/home/user/misc_tommy/figures/")
         scene.add_brain_region(brain_region, alpha=0.15)
@@ -1177,8 +1179,11 @@ class AxonDistribution(BrainDistribution):
             im_total = np.squeeze(im_total)
             im_total = np.swapaxes(im_total, 0, 2)
 
-            print(atlas_bg_mask.shape)
-            print(im_total.shape)
+            print(np.unique(im_total))
+            im_total = im_total > 0
+            im_total = morphology.binary_erosion(im_total)
+            
+
             im_total[atlas_bg_mask] = 0
 
             # make a volume actor and add
