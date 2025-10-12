@@ -120,6 +120,29 @@ class BrainDistribution:
             else:
                 counts[subtype] = 1
         return counts
+    
+
+    def _dark_to_light(self, heatmap, parcellation):
+        bg = np.ones((heatmap.shape[0], heatmap.shape[1], 3), dtype=np.uint8) * 255
+        bg_mask = np.stack([parcellation for i in range(3)], axis=-1)
+        bg_mask = np.array(bg_mask == 0).astype(np.uint8)
+        bg[bg_mask == 0] = 200
+        
+
+        mx = np.amax(heatmap)
+
+        heatmap_light = np.copy(heatmap)
+
+        heatmap_light /= mx 
+
+        brightness = heatmap_light.mean(axis=2)
+        thresh_low = 0.0
+        thresh_high = 0.3 
+        alpha = np.clip((brightness - thresh_low)/(thresh_high-thresh_low),0,1)
+        alpha = alpha[...,np.newaxis]
+        blended = np.concatenate((heatmap_light, alpha), axis=-1)
+
+        return bg, blended
 
 
 class SomaDistribution(BrainDistribution):
@@ -268,6 +291,7 @@ class SomaDistribution(BrainDistribution):
 
         return id_to_regioncounts
 
+
     def napari_coronal_section(
         self,
         z: int,
@@ -374,18 +398,24 @@ class SomaDistribution(BrainDistribution):
                     )
                 heatmap = heatmap[:, :, depth_radius, :]
 
-                
-                heatmap[newslice == 0] = 1
+                heatmap[newslice == 0] = 0
+
+                bg, heatmap = self._dark_to_light(heatmap, newslice)
                 vals = heatmap[newslice != 0].flatten()
 
                 v.add_image(
-                    heatmap, scale=[10, 10], name=f"Heatmap", contrast_limits=(0, np.percentile(vals, 99))
-                )  # , rgb=True)
+                    bg, scale=[10, 10], name=f"Heatmap", rgb=True
+                ) 
+
+                v.add_image(
+                    heatmap, scale=[10, 10], name=f"Heatmap", rgb=True, contrast_limits=(0, np.percentile(vals, 98))
+                ) 
 
                 v.add_labels(borders > 0, scale=[10, 10], name=f"z={z}", color={1: "white"})
 
                 v.scale_bar.unit = "um"
                 v.scale_bar.visible = True
+
                 v.theme = 'light'
                 napari.run()
                 return v
@@ -1131,10 +1161,21 @@ class AxonDistribution(BrainDistribution):
         rgb_heatmap = [0 * newslice if type(i) == int else i for i in rgb_heatmap]
 
         rgb_heatmap = np.stack(rgb_heatmap, axis=-1)
+        rgb_heatmap[newslice == 0] = 0
 
         if self.show_plots:
-            v.add_image(rgb_heatmap, rgb=True, scale=[10, 10], name=f"{subtype_colors}")
-            v.add_labels(borders * 2, scale=[10, 10], name=f"z={z}")
+            bg, heatmap = self._dark_to_light(rgb_heatmap, newslice)
+            vals = heatmap[newslice != 0].flatten()
+
+            v.add_image(
+                bg, scale=[10, 10], name=f"Heatmap", rgb=True
+            ) 
+
+            v.add_image(
+                heatmap, scale=[10, 10], name=f"Heatmap", rgb=True#, contrast_limits=(0, np.percentile(vals, 98))
+            ) 
+            #v.add_image(rgb_heatmap, rgb=True, scale=[10, 10], name=f"{subtype_colors}")
+            v.add_labels(borders > 0, scale=[10, 10], name=f"z={z}", color={1:"white"})
             v.scale_bar.unit = "um"
             v.scale_bar.visible = True
             v.theme = 'light'
@@ -1178,10 +1219,6 @@ class AxonDistribution(BrainDistribution):
 
             im_total = np.squeeze(im_total)
             im_total = np.swapaxes(im_total, 0, 2)
-
-            print(np.unique(im_total))
-            im_total = im_total > 0
-            im_total = morphology.binary_erosion(im_total)
             
 
             im_total[atlas_bg_mask] = 0
@@ -1195,15 +1232,13 @@ class AxonDistribution(BrainDistribution):
                     subtype
                 ],  # use matplotlib colormaps to color the volume
             )
-
+            
             scene.add(actor)
 
-        # # render
-        # scene.content
 
         if self.show_plots:
-            # scene.render()
-            scene.screenshot()
+            scene.render()
+            #scene.screenshot()
 
     def region_barchart(
         self, regions: list, composite_regions: dict = {}, normalize_region: int = -1
